@@ -66,14 +66,42 @@ BUILT_DIRECTORY = "dist/browser/sim"
 
 # Every exported function this check calls with inputs chosen for it, by module.
 TABLE = {
-    "game.js": ["newGame", "characterName", "createCharacter", "setProgram", "send", "canSendMap", "restart",
-                "end", "setPaused", "passRealTime", "advanceMinutes"],
-    "hex.js": ["offsetToAxial", "sameHex", "hexDistance", "tileAt", "neighbours", "nearestTile",
-               "hexCenter", "hexCorners", "tileLabel"],
+    "game.js": [
+        "newGame",
+        "characterName",
+        "createCharacter",
+        "setProgram",
+        "send",
+        "canSendMap",
+        "restart",
+        "end",
+        "setPaused",
+        "passRealTime",
+        "advanceMinutes",
+    ],
+    "hex.js": [
+        "offsetToAxial",
+        "sameHex",
+        "hexDistance",
+        "tileAt",
+        "neighbours",
+        "nearestTile",
+        "hexCenter",
+        "hexCorners",
+        "tileLabel",
+    ],
     "layout.js": ["drawLayout"],
-    "program.js": ["conditionHolds", "walkTarget", "actionFeasible", "chooseActivity",
-                   "chooseCombatRule",
-                   "conditionNumber", "onStep", "itemFor", "campfireTarget"],
+    "program.js": [
+        "conditionHolds",
+        "walkTarget",
+        "actionFeasible",
+        "chooseActivity",
+        "chooseCombatRule",
+        "conditionNumber",
+        "onStep",
+        "itemFor",
+        "campfireTarget",
+    ],
     "random.js": ["nextRandom", "streamState", "mixSeed"],
     "run.js": ["newMapRun", "stepMinute", "finishMinute"],
     "combat.js": ["resolveCombat"],
@@ -112,41 +140,68 @@ def walk_to(resource):
     return {"kind": "walkTo", "resource": resource}
 
 
-CAMPFIRE_ACTIONS = [{"kind": kind} for kind in (
-    "walkToCampfire", "craftCampfire", "lightCampfire", "lightItem", "feedCampfire", "eat")]
-ACTIONS = ([{"kind": "explore"}, {"kind": "wander"}] + [walk_to(r) for r in RESOURCES]
-           + [gather(r) for r in RESOURCES] + CAMPFIRE_ACTIONS)
-CONDITIONS = ([ALWAYS] + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7, 50)]
-              + [below("temperatureBelow", v) for v in (30, 35.2, 36.5, 37)]
-              + [below("satietyBelow", v) for v in (0, 30, 50, 100)]
-              + [below("natureEnergyBelow", v) for v in (0, 30, 100)]
-              + [item_below(i, v) for i in ITEMS for v in (0, 1, 8)]
-              + [below("campfireLeftBelow", v) for v in (0, 1, 20, 120)] + [AWAY])
-CONDITION_KINDS = ["always", "hereBelow", "temperatureBelow", "satietyBelow", "natureEnergyBelow",
-                   "itemBelow", "campfireLeftBelow", "awayFromCampfire"]
+CAMPFIRE_ACTIONS = [
+    {"kind": kind}
+    for kind in (
+        "walkToCampfire",
+        "craftCampfire",
+        "lightCampfire",
+        "lightItem",
+        "feedCampfire",
+        "eat",
+    )
+]
+ACTIONS = (
+    [{"kind": "explore"}, {"kind": "wander"}]
+    + [walk_to(r) for r in RESOURCES]
+    + [gather(r) for r in RESOURCES]
+    + CAMPFIRE_ACTIONS
+)
+CONDITIONS = (
+    [ALWAYS]
+    + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7, 50)]
+    + [below("temperatureBelow", v) for v in (30, 35.2, 36.5, 37)]
+    + [below("satietyBelow", v) for v in (0, 30, 50, 100)]
+    + [below("natureEnergyBelow", v) for v in (0, 30, 100)]
+    + [item_below(i, v) for i in ITEMS for v in (0, 1, 8)]
+    + [below("campfireLeftBelow", v) for v in (0, 1, 20, 120)]
+    + [AWAY]
+)
+CONDITION_KINDS = [
+    "always",
+    "hereBelow",
+    "temperatureBelow",
+    "satietyBelow",
+    "natureEnergyBelow",
+    "itemBelow",
+    "campfireLeftBelow",
+    "awayFromCampfire",
+]
 PROGRAMS = [
     program_from_rules([]),
     # Every condition kind and every action kind: the acceptance program of
     # tests/sim/acceptance.test.mjs.
-    program_from_rules([
-        rule(below("satietyBelow", 35), {"kind": "eat"}),
-        rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
-        rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
-        rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
-        rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
-        rule(item_below("berry", 1), gather("berry")),
-        rule(item_below("berry", 1), walk_to("berry")),
-        rule(here_below("berry", 1), {"kind": "explore"}),
-        rule(item_below("berry", 1), {"kind": "wander"}),
-        rule(item_below("stick", 8), gather("stick")),
-        rule(item_below("stick", 8), walk_to("stick")),
-        rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
-        rule(ALWAYS, {"kind": "explore"}),
-        rule(AWAY, {"kind": "walkToCampfire"}),
-        rule(ALWAYS, gather("stick")),
-        rule(ALWAYS, gather("berry")),
-        rule(ALWAYS, {"kind": "wander"}),
-    ]),
+    program_from_rules(
+        [
+            rule(below("satietyBelow", 35), {"kind": "eat"}),
+            rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+            rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+            rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+            rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+            rule(item_below("berry", 1), gather("berry")),
+            rule(item_below("berry", 1), walk_to("berry")),
+            rule(here_below("berry", 1), {"kind": "explore"}),
+            rule(item_below("berry", 1), {"kind": "wander"}),
+            rule(item_below("stick", 8), gather("stick")),
+            rule(item_below("stick", 8), walk_to("stick")),
+            rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+            rule(ALWAYS, {"kind": "explore"}),
+            rule(AWAY, {"kind": "walkToCampfire"}),
+            rule(ALWAYS, gather("stick")),
+            rule(ALWAYS, gather("berry")),
+            rule(ALWAYS, {"kind": "wander"}),
+        ]
+    ),
     program_from_rules([rule(ALWAYS, {"kind": "wander"})]),
 ]
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -161,16 +216,31 @@ MINUTES = 240
 SEEDS = [0, 1, 204219582, 4294967295]
 
 INPUTS = {
-    "actions": ACTIONS, "conditions": CONDITIONS, "programs": PROGRAMS, "sent": SENT,
+    "actions": ACTIONS,
+    "conditions": CONDITIONS,
+    "programs": PROGRAMS,
+    "sent": SENT,
     "names": NAMES,
-    "t": T, "tOther": T_OTHER, "minutes": MINUTES, "seeds": SEEDS, "resources": list(RESOURCES),
-    "streams": ["layout", "wander", "gather"], "realMs": [0, 999, 1000, 61000],
-    "advance": [0, 1, 25], "sizes": [1, 24], "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
-    "conditionKinds": CONDITION_KINDS, "uses": ["fuel", "food", "lightable"],
-    "warmths": [0, 0.15, 0.5, 0.65], "satieties": [0, 25], "renewalMinutes": [1, 119, 120],
+    "t": T,
+    "tOther": T_OTHER,
+    "minutes": MINUTES,
+    "seeds": SEEDS,
+    "resources": list(RESOURCES),
+    "streams": ["layout", "wander", "gather"],
+    "realMs": [0, 999, 1000, 61000],
+    "advance": [0, 1, 25],
+    "sizes": [1, 24],
+    "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
+    "conditionKinds": CONDITION_KINDS,
+    "uses": ["fuel", "food", "lightable"],
+    "warmths": [0, 0.15, 0.5, 0.65],
+    "satieties": [0, 25],
+    "renewalMinutes": [1, 119, 120],
 }
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -424,6 +494,7 @@ for (const [module, names] of Object.entries(exported)) {
 }
 writeFileSync(outPath, JSON.stringify(report));
 """
+)
 
 
 def node():
@@ -447,8 +518,9 @@ def drive():
             handle.write(DRIVER)
         with open(inputs, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(INPUTS, handle)
-        code, output = support.run([node(), script, directory, inputs, out_path,
-                                    json.dumps(TABLE)], work)
+        code, output = support.run(
+            [node(), script, directory, inputs, out_path, json.dumps(TABLE)], work
+        )
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -467,32 +539,55 @@ def report():
 
 
 class SimulationInputs(unittest.TestCase):
-
     def test_no_exported_function_changes_its_arguments(self):
         # invariant: simulation-inputs
         result = report()
-        self.assertEqual(result["changes"], [], "an exported function of the simulation "
-                                                "changed a value passed to it")
+        self.assertEqual(
+            result["changes"],
+            [],
+            "an exported function of the simulation changed a value passed to it",
+        )
         for module, names in TABLE.items():
             for name in names:
-                self.assertGreater(result["calls"].get(f"{module} {name}", 0), 0,
-                                   f"{module} {name} was never called")
-        for label in ("combat.js resolveCombat", "program.js chooseCombatRule",
-                      "run.js finishMinute"):
-            self.assertGreater(result["successes"].get(label, 0), 0,
-                               f"{label} had no successful frozen-input call: "
-                               f"{result['errors'].get(label)}")
+                self.assertGreater(
+                    result["calls"].get(f"{module} {name}", 0),
+                    0,
+                    f"{module} {name} was never called",
+                )
+        for label in (
+            "combat.js resolveCombat",
+            "program.js chooseCombatRule",
+            "run.js finishMinute",
+        ):
+            self.assertGreater(
+                result["successes"].get(label, 0),
+                0,
+                f"{label} had no successful frozen-input call: {result['errors'].get(label)}",
+            )
         self.assertGreater(result["total"], 1000, "the run made too few calls to mean much")
 
     def test_control_the_checker_sees_each_kind_of_change(self):
         # invariant: simulation-inputs
         controls = report()["controls"]
-        for name in ("topLevel", "pushRule", "pushCopyRule", "lowerStock", "deleteKey", "addUndefined",
-                     "setNaN"):
-            self.assertIs(controls.get(name), True,
-                          f"the checker misses the change the made-up function {name} makes")
-        self.assertIs(controls.get("pure"), False,
-                      "the checker reports a made-up function that changes nothing")
+        for name in (
+            "topLevel",
+            "pushRule",
+            "pushCopyRule",
+            "lowerStock",
+            "deleteKey",
+            "addUndefined",
+            "setNaN",
+        ):
+            self.assertIs(
+                controls.get(name),
+                True,
+                f"the checker misses the change the made-up function {name} makes",
+            )
+        self.assertIs(
+            controls.get("pure"),
+            False,
+            "the checker reports a made-up function that changes nothing",
+        )
 
 
 if __name__ == "__main__":

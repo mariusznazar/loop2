@@ -44,10 +44,10 @@ import sys
 import tempfile
 import time
 
-START_LIMIT = 180        # seconds the first test that needs Docker waits for a daemon to answer
-ANSWER_LIMIT = 30        # seconds for one question to the daemon to answer
+START_LIMIT = 180  # seconds the first test that needs Docker waits for a daemon to answer
+ANSWER_LIMIT = 30  # seconds for one question to the daemon to answer
 START_COMMAND_LIMIT = 60  # seconds for `docker desktop start` itself to return
-POLL_INTERVAL = 1        # seconds between two asks of the daemon while waiting
+POLL_INTERVAL = 1  # seconds between two asks of the daemon while waiting
 
 if sys.platform == "win32":
     import msvcrt
@@ -70,6 +70,7 @@ else:
             return False
         return True
 
+
 STATE_VARIABLE = "LOOP2_DOCKER_RUN_STATE"
 LIMIT_VARIABLE = "LOOP2_DOCKER_START_LIMIT"
 
@@ -87,8 +88,9 @@ def daemon_answers(timeout=ANSWER_LIMIT):
     if docker is None:
         return False
     try:
-        result = subprocess.run([docker, "system", "df"],
-                                stdin=subprocess.DEVNULL, capture_output=True, timeout=timeout)
+        result = subprocess.run(
+            [docker, "system", "df"], stdin=subprocess.DEVNULL, capture_output=True, timeout=timeout
+        )
     except (OSError, subprocess.TimeoutExpired):
         return False
     return result.returncode == 0 and result.stdout.strip() != b""
@@ -97,9 +99,12 @@ def daemon_answers(timeout=ANSWER_LIMIT):
 def desktop_present(timeout=ANSWER_LIMIT):
     """True when this computer's `docker` has the `desktop` command, which Docker Desktop installs."""
     try:
-        result = subprocess.run([docker_command(), "desktop", "--help"],
-                                stdin=subprocess.DEVNULL, capture_output=True,
-                                timeout=timeout)
+        result = subprocess.run(
+            [docker_command(), "desktop", "--help"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=timeout,
+        )
     except (OSError, subprocess.TimeoutExpired):
         return False
     return result.returncode == 0
@@ -177,9 +182,13 @@ def start_lock(deadline):
 def start_desktop(timeout=START_COMMAND_LIMIT):
     """Asks Docker Desktop to start, without waiting for it and without keeping its output."""
     with contextlib.suppress(OSError, subprocess.TimeoutExpired):
-        subprocess.run([docker_command(), "desktop", "start", "--detach"],
-                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, timeout=timeout)
+        subprocess.run(
+            [docker_command(), "desktop", "start", "--detach"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+        )
 
 
 def within(deadline, cap):
@@ -234,8 +243,10 @@ def started_gap(limit, deadline):
 
 def unfinished_gap(limit):
     """The gap of a start that did not finish in the limit, recorded for the run."""
-    gap = (f"no Docker daemon answers: the gate tried to start Docker Desktop and no daemon "
-           f"answered within {limit:g} seconds")
+    gap = (
+        f"no Docker daemon answers: the gate tried to start Docker Desktop and no daemon "
+        f"answered within {limit:g} seconds"
+    )
     record_gap(gap)
     return gap
 

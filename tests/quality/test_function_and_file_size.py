@@ -24,12 +24,20 @@ def size_reports(directory=None):
     (file, line, message), in the order the script prints them. A script that does not end with 0
     fails the test with its output."""
     command = ["node", SIZE_RULES] + ([str(directory)] if directory else [])
-    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
-                            encoding="utf-8", errors="backslashreplace", timeout=900,
-                            check=False)
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="backslashreplace",
+        timeout=900,
+        check=False,
+    )
     if result.returncode:
-        raise AssertionError(f"{SIZE_RULES} ended with {result.returncode}:\n"
-                             + result.stdout + result.stderr)
+        raise AssertionError(
+            f"{SIZE_RULES} ended with {result.returncode}:\n" + result.stdout + result.stderr
+        )
     reports = []
     for text in result.stdout.splitlines():
         found = REPORT_LINE.match(text)
@@ -67,9 +75,12 @@ def file_source(lines, blank_and_comment=0):
 def nested_function_source(name, lines):
     """A function of `lines` lines in all that holds a nested function of 79 lines."""
     inner = function_source("inner", 79).splitlines()
-    outer = [f"function {name}() {{",
-             *[f"  const value{index} = {index};" for index in range(lines - 2 - 79)],
-             *["  " + text for text in inner], "}"]
+    outer = [
+        f"function {name}() {{",
+        *[f"  const value{index} = {index};" for index in range(lines - 2 - 79)],
+        *["  " + text for text in inner],
+        "}",
+    ]
     return "\n".join(outer) + "\n"
 
 
@@ -90,9 +101,12 @@ CONTROL_FILES = {
     "tests/over-function.test.mjs": function_source("overTestFunction", 201),
     # the two exceptions of D-425, whole, and no other place
     "src/browser/sim/saved-game.ts": file_source(801),
-    "src/server/account-routes.ts": (function_source("accountRoutes", 201).replace(
-        "function accountRoutes", "export function accountRoutes")
-        + function_source("otherRoute", 201)),
+    "src/server/account-routes.ts": (
+        function_source("accountRoutes", 201).replace(
+            "function accountRoutes", "export function accountRoutes"
+        )
+        + function_source("otherRoute", 201)
+    ),
     "src/server/other-routes.ts": function_source("accountRoutes", 201),
     # the scripts, the code of the balance instrument and the agent-workflow directories the linter
     # of D-29 reaches
@@ -100,10 +114,12 @@ CONTROL_FILES = {
     "balance/over-function.mjs": function_source("overBalanceFunction", 201),
     ".claude/hooks/over-hook.js": function_source("overHook", 201),
     # no inline comment and no suppressions file hides a report
-    "src/browser/view/hidden.ts": ("/* eslint-disable max-lines-per-function */\n"
-                                   + function_source("hiddenFunction", 201)),
-    "eslint-suppressions.json": ('{"src/browser/view/over-function.ts": '
-                                 '{"max-lines-per-function": {"count": 1}}}\n'),
+    "src/browser/view/hidden.ts": (
+        "/* eslint-disable max-lines-per-function */\n" + function_source("hiddenFunction", 201)
+    ),
+    "eslint-suppressions.json": (
+        '{"src/browser/view/over-function.ts": {"max-lines-per-function": {"count": 1}}}\n'
+    ),
     # files the linter of D-29 does not lint are not measured
     "elsewhere/big.mjs": file_source(801) + function_source("elsewhereFunction", 201),
     "dist/big.js": file_source(801) + function_source("builtFunction", 201),
@@ -112,25 +128,44 @@ CONTROL_FILES = {
 # What the script must report on that tree: the file and the message ESLint gives, which holds the
 # size. The line is left to the script.
 CONTROL_REPORTS = {
-    ("src/browser/view/over-function.ts",
-     "Function 'overFunction' has too many lines (201). Maximum allowed is 200."),
+    (
+        "src/browser/view/over-function.ts",
+        "Function 'overFunction' has too many lines (201). Maximum allowed is 200.",
+    ),
     ("src/browser/view/over-file.ts", "File has too many lines (801). Maximum allowed is 800."),
-    ("src/browser/view/nested.ts",
-     "Function 'outer' has too many lines (201). Maximum allowed is 200."),
-    ("src/browser/view/view.tsx", "Function 'View' has too many lines (201). Maximum allowed is 200."),
-    ("tests/over-function.test.mjs",
-     "Function 'overTestFunction' has too many lines (201). Maximum allowed is 200."),
-    ("src/server/account-routes.ts",
-     "Function 'otherRoute' has too many lines (201). Maximum allowed is 200."),
-    ("src/server/other-routes.ts",
-     "Function 'accountRoutes' has too many lines (201). Maximum allowed is 200."),
+    (
+        "src/browser/view/nested.ts",
+        "Function 'outer' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        "src/browser/view/view.tsx",
+        "Function 'View' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        "tests/over-function.test.mjs",
+        "Function 'overTestFunction' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        "src/server/account-routes.ts",
+        "Function 'otherRoute' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        "src/server/other-routes.ts",
+        "Function 'accountRoutes' has too many lines (201). Maximum allowed is 200.",
+    ),
     ("scripts/over-file.mjs", "File has too many lines (801). Maximum allowed is 800."),
-    ("balance/over-function.mjs",
-     "Function 'overBalanceFunction' has too many lines (201). Maximum allowed is 200."),
-    (".claude/hooks/over-hook.js",
-     "Function 'overHook' has too many lines (201). Maximum allowed is 200."),
-    ("src/browser/view/hidden.ts",
-     "Function 'hiddenFunction' has too many lines (201). Maximum allowed is 200."),
+    (
+        "balance/over-function.mjs",
+        "Function 'overBalanceFunction' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        ".claude/hooks/over-hook.js",
+        "Function 'overHook' has too many lines (201). Maximum allowed is 200.",
+    ),
+    (
+        "src/browser/view/hidden.ts",
+        "Function 'hiddenFunction' has too many lines (201). Maximum allowed is 200.",
+    ),
 }
 
 
@@ -144,8 +179,10 @@ class FunctionAndFileSize(unittest.TestCase):
         # data: eslint.config.mjs
         reports = size_reports()
         if reports:
-            self.fail("functions and files over a threshold of D-425:\n"
-                      + "\n".join(f"{file}:{line}: {message}" for file, line, message in reports))
+            self.fail(
+                "functions and files over a threshold of D-425:\n"
+                + "\n".join(f"{file}:{line}: {message}" for file, line, message in reports)
+            )
 
     def test_control_the_script_reports_what_stands_over_a_threshold_and_nothing_else(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -154,8 +191,9 @@ class FunctionAndFileSize(unittest.TestCase):
                 (tree / path).parent.mkdir(parents=True, exist_ok=True)
                 (tree / path).write_text(text, encoding="utf-8", newline="\n")
             reports = size_reports(tree)
-        self.assertEqual(sorted({(file, message) for file, _, message in reports}),
-                         sorted(CONTROL_REPORTS))
+        self.assertEqual(
+            sorted({(file, message) for file, _, message in reports}), sorted(CONTROL_REPORTS)
+        )
         self.assertEqual(len(reports), len(CONTROL_REPORTS))
 
 

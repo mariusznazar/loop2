@@ -40,9 +40,9 @@ from scripts import docker_gate
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ICONS = os.path.join(ROOT, "assets", "icons")
 
-BUILD_TIMEOUT = 1200    # seconds for the image build
-COMMAND_TIMEOUT = 120   # seconds for any other docker command
-SERVE_WAIT = 60         # seconds for the started container to answer GET /
+BUILD_TIMEOUT = 1200  # seconds for the image build
+COMMAND_TIMEOUT = 120  # seconds for any other docker command
+SERVE_WAIT = 60  # seconds for the started container to answer GET /
 
 SVG_MEDIA_TYPE = "image/svg+xml"
 HTML_MEDIA_TYPE = "text/html"
@@ -69,8 +69,14 @@ def docker():
 
 def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
     """(exit code, combined output) of a docker command run from the repository root."""
-    result = subprocess.run([docker(), *arguments], cwd=ROOT, stdin=subprocess.DEVNULL,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    result = subprocess.run(
+        [docker(), *arguments],
+        cwd=ROOT,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
     return result.returncode, result.stdout.decode("utf-8", "replace")
 
 
@@ -86,7 +92,6 @@ def icon_files():
 
 
 class ImageServesIcons(unittest.TestCase):
-
     def test_built_image_serves_every_icon_and_the_page(self):
         icons = icon_files()
         self.assertTrue(icons, "assets/icons/ holds no SVG file; nothing to look for in the image")
@@ -98,8 +103,15 @@ class ImageServesIcons(unittest.TestCase):
         # out still leaves no image or container; removing a name that does not exist is harmless.
         # Cleanups run last-registered first: the container, then the image it holds.
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
-        code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=image-icons-check",
-                                  "-t", tag, ".", timeout=BUILD_TIMEOUT)
+        code, output = docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=image-icons-check",
+            "-t",
+            tag,
+            ".",
+            timeout=BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         start_production_container(self, tag, name)
 
@@ -110,32 +122,49 @@ class ImageServesIcons(unittest.TestCase):
             if code == 0 or time.monotonic() > deadline:
                 break
             time.sleep(1)
-        self.assertEqual(code, 0, f"GET in the container failed within {SERVE_WAIT} s:\n"
-                                  f"{output}{errors}\ncontainer log:\n{docker_run('logs', name)[1]}")
+        self.assertEqual(
+            code,
+            0,
+            f"GET in the container failed within {SERVE_WAIT} s:\n"
+            f"{output}{errors}\ncontainer log:\n{docker_run('logs', name)[1]}",
+        )
         answers = {a["path"]: a for a in json.loads(output.strip().splitlines()[-1])}
 
         page = answers["/"]
         self.assertEqual(page["status"], 200, f"GET / in the container: {page['status']}")
-        self.assertTrue((page["type"] or "").startswith(HTML_MEDIA_TYPE),
-                        f"GET / in the container answers media type {page['type']!r}")
+        self.assertTrue(
+            (page["type"] or "").startswith(HTML_MEDIA_TYPE),
+            f"GET / in the container answers media type {page['type']!r}",
+        )
 
         for icon, expected in icons.items():
             answer = answers[f"/icons/{icon}"]
             with self.subTest(icon=icon):
-                self.assertEqual(answer["status"], 200,
-                                 f"GET /icons/{icon} in the container: {answer['status']}")
-                self.assertTrue((answer["type"] or "").startswith(SVG_MEDIA_TYPE),
-                                f"GET /icons/{icon} answers media type {answer['type']!r}")
-                self.assertEqual(base64.b64decode(answer["body"]), expected,
-                                 f"GET /icons/{icon} answers bytes other than "
-                                 f"assets/icons/{icon}")
+                self.assertEqual(
+                    answer["status"], 200, f"GET /icons/{icon} in the container: {answer['status']}"
+                )
+                self.assertTrue(
+                    (answer["type"] or "").startswith(SVG_MEDIA_TYPE),
+                    f"GET /icons/{icon} answers media type {answer['type']!r}",
+                )
+                self.assertEqual(
+                    base64.b64decode(answer["body"]),
+                    expected,
+                    f"GET /icons/{icon} answers bytes other than assets/icons/{icon}",
+                )
 
     def probe(self, name, paths):
-        result = subprocess.run([docker(), "exec", "-i", name, "node", "-", *paths],
-                                input=HTTP_PROBE.encode("utf-8"), capture_output=True,
-                                timeout=COMMAND_TIMEOUT)
-        return (result.returncode, result.stdout.decode("utf-8", "replace"),
-                result.stderr.decode("utf-8", "replace"))
+        result = subprocess.run(
+            [docker(), "exec", "-i", name, "node", "-", *paths],
+            input=HTTP_PROBE.encode("utf-8"),
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
+        return (
+            result.returncode,
+            result.stdout.decode("utf-8", "replace"),
+            result.stderr.decode("utf-8", "replace"),
+        )
 
 
 if __name__ == "__main__":

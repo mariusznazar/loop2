@@ -38,8 +38,11 @@ class Scenario:
 
     def touch(self, *names):
         for name in names:
-            path = (environment.venv_python(self.root) if name == "python"
-                    else environment.venv_tool(self.root, name))
+            path = (
+                environment.venv_python(self.root)
+                if name == "python"
+                else environment.venv_tool(self.root, name)
+            )
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("", encoding="utf-8")
 
@@ -57,9 +60,13 @@ class Scenario:
                 self.listed = PINNED
                 self.broken = None
             return subprocess.CompletedProcess(
-                command, self.install_code, "Collecting ruff\n",
+                command,
+                self.install_code,
+                "Collecting ruff\n",
                 "ERROR: Could not find a version that satisfies the requirement ruff\n"
-                if self.install_code else "")
+                if self.install_code
+                else "",
+            )
         if self.broken and "--version" in shown and Path(shown[0]).stem == self.broken:
             return subprocess.CompletedProcess(command, 1, "", "cannot run")
         return subprocess.CompletedProcess(command, 0, "version\n", "")
@@ -99,8 +106,11 @@ class QualityEnvironmentTests(unittest.TestCase):
         # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
         scenario = self.scenario(present=("python", "ruff"))
         environment.ensure_quality_environment(self.root, run=scenario, python="python")
-        order = [("venv" in command, "install" in command) for command in scenario.commands
-                 if "venv" in command or "install" in command]
+        order = [
+            ("venv" in command, "install" in command)
+            for command in scenario.commands
+            if "venv" in command or "install" in command
+        ]
         self.assertEqual(order, [(True, False), (False, True)])
         install = scenario.ran("install")[0]
         self.assertEqual(install[-3:], ["--require-hashes", "-r", "requirements-quality.txt"])
@@ -127,8 +137,9 @@ class QualityEnvironmentTests(unittest.TestCase):
         absent = self.scenario(present=())
         environment.ensure_quality_environment(self.root, run=absent, python="python")
         self.assertEqual(len(absent.ran("install")), 1)
-        older = self.scenario(listed=[{"name": "ruff", "version": "1.2.2"}, *PINNED[1:]],
-                              install_code=0)
+        older = self.scenario(
+            listed=[{"name": "ruff", "version": "1.2.2"}, *PINNED[1:]], install_code=0
+        )
         environment.ensure_quality_environment(self.root, run=older, python="python")
         self.assertEqual(len(older.ran("install")), 1)
 
@@ -141,7 +152,9 @@ class QualityEnvironmentTests(unittest.TestCase):
         self.assertIn("after the install", message)
         self.assertRegex(message, r"shellcheck(\.exe)? is missing")
 
-    def test_a_failed_install_ends_in_the_one_message_with_the_directory_the_command_and_the_output(self):
+    def test_a_failed_install_ends_in_the_one_message_with_the_directory_the_command_and_the_output(
+        self,
+    ):
         # decision: D-424 "Where the environment cannot be made, the test fails with the one message that says so, naming `.runs/quality-venv` and the command that installs it, and no check is skipped"
         scenario = self.scenario(present=(), install_code=1)
         with self.assertRaises(environment.EnvironmentNotMade) as caught:

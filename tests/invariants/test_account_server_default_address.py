@@ -35,10 +35,17 @@ import unittest
 import loop2_invariant_support as support
 
 LISTEN_VARIABLES = ("LOOP2_LISTEN_HOST", "LOOP2_LISTEN_PORT")
-ACCOUNT_VARIABLES = ("LOOP2_DATABASE_PATH", "LOOP2_SESSION_SECRET_FILE",
-                     "LOOP2_PUBLIC_ORIGIN", "LOOP2_PROXY_MODE",
-                     "LOOP2_MAIL_FROM", "LOOP2_SMTP_HOST", "LOOP2_SMTP_PORT",
-                     "LOOP2_SMTP_USER", "LOOP2_SMTP_PASSWORD_FILE")
+ACCOUNT_VARIABLES = (
+    "LOOP2_DATABASE_PATH",
+    "LOOP2_SESSION_SECRET_FILE",
+    "LOOP2_PUBLIC_ORIGIN",
+    "LOOP2_PROXY_MODE",
+    "LOOP2_MAIL_FROM",
+    "LOOP2_SMTP_HOST",
+    "LOOP2_SMTP_PORT",
+    "LOOP2_SMTP_USER",
+    "LOOP2_SMTP_PASSWORD_FILE",
+)
 DEFAULT_READY_LINE = re.compile(r"(?m)^Loop: http://127\.0\.0\.1:3000$")
 ANY_READY_LINE = re.compile(r"(?m)^Loop: .*$")
 OCCUPIED_DEFAULT = re.compile(r"127\.0\.0\.1:3000.*EADDRINUSE|EADDRINUSE.*127\.0\.0\.1:3000")
@@ -46,14 +53,16 @@ START_WAIT = 15  # seconds for the server to print a readiness line or exit
 
 
 def environment_without_listen_or_account_settings(node_env):
-    environment = {name: value for name, value in os.environ.items()
-                   if name not in LISTEN_VARIABLES + ACCOUNT_VARIABLES}
+    environment = {
+        name: value
+        for name, value in os.environ.items()
+        if name not in LISTEN_VARIABLES + ACCOUNT_VARIABLES
+    }
     environment["NODE_ENV"] = node_env
     return environment
 
 
 class AccountServerDefaultAddress(unittest.TestCase):
-
     def assert_default_address(self, environment):
         """Start the built server with `environment` and check the readiness line or the
         occupied-address exit on 127.0.0.1:3000."""
@@ -65,8 +74,13 @@ class AccountServerDefaultAddress(unittest.TestCase):
         stdout_path = os.path.join(log_dir, "stdout.txt")
         stderr_path = os.path.join(log_dir, "stderr.txt")
         with open(stdout_path, "wb") as stdout, open(stderr_path, "wb") as stderr:
-            process = support.popen([node, copy.file("dist/server/main.js")], copy.path,
-                                    env=environment, stdout=stdout, stderr=stderr)
+            process = support.popen(
+                [node, copy.file("dist/server/main.js")],
+                copy.path,
+                env=environment,
+                stdout=stdout,
+                stderr=stderr,
+            )
             try:
                 deadline = time.monotonic() + START_WAIT
                 while True:
@@ -82,16 +96,21 @@ class AccountServerDefaultAddress(unittest.TestCase):
         output = f"--- stdout ---\n{out}\n--- stderr ---\n{err}"
         ready = ANY_READY_LINE.search(out)
         if ready:
-            self.assertRegex(out, DEFAULT_READY_LINE,
-                             f"the server reported ready on another address:\n{output}")
+            self.assertRegex(
+                out, DEFAULT_READY_LINE, f"the server reported ready on another address:\n{output}"
+            )
             return
-        self.assertTrue(exited, f"the server neither reported ready nor exited within "
-                                f"{START_WAIT} s:\n{output}")
-        self.assertNotEqual(process.returncode, 0,
-                            f"the server exited 0 without reporting ready:\n{output}")
-        self.assertRegex(err, OCCUPIED_DEFAULT,
-                         f"the server exited without naming an occupied 127.0.0.1:3000:\n"
-                         f"{output}")
+        self.assertTrue(
+            exited, f"the server neither reported ready nor exited within {START_WAIT} s:\n{output}"
+        )
+        self.assertNotEqual(
+            process.returncode, 0, f"the server exited 0 without reporting ready:\n{output}"
+        )
+        self.assertRegex(
+            err,
+            OCCUPIED_DEFAULT,
+            f"the server exited without naming an occupied 127.0.0.1:3000:\n{output}",
+        )
 
     def test_server_without_listen_variables_takes_127_0_0_1_3000(self):
         # invariant: account-server-default-address
@@ -103,23 +122,30 @@ class AccountServerDefaultAddress(unittest.TestCase):
         self.addCleanup(shutil.rmtree, settings_dir, ignore_errors=True)
         secret_file = os.path.join(settings_dir, "session-secrets.json")
         with open(secret_file, "w", encoding="utf-8") as handle:
-            json.dump([base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode()
-                       for _ in range(2)], handle)
+            json.dump(
+                [
+                    base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode()
+                    for _ in range(2)
+                ],
+                handle,
+            )
         password_file = os.path.join(settings_dir, "smtp-password")
         with open(password_file, "w", encoding="utf-8") as handle:
             handle.write("synthetic-smtp-password")
         environment = environment_without_listen_or_account_settings("production")
-        environment.update({
-            "LOOP2_DATABASE_PATH": os.path.join(settings_dir, "accounts.sqlite"),
-            "LOOP2_SESSION_SECRET_FILE": secret_file,
-            "LOOP2_PUBLIC_ORIGIN": "https://game.example.test:8443",
-            "LOOP2_PROXY_MODE": "cloudflare-tunnel",
-            "LOOP2_MAIL_FROM": "sender@mail.example.test",
-            "LOOP2_SMTP_HOST": "smtp.example.test",
-            "LOOP2_SMTP_PORT": "587",
-            "LOOP2_SMTP_USER": "sender@mail.example.test",
-            "LOOP2_SMTP_PASSWORD_FILE": password_file,
-        })
+        environment.update(
+            {
+                "LOOP2_DATABASE_PATH": os.path.join(settings_dir, "accounts.sqlite"),
+                "LOOP2_SESSION_SECRET_FILE": secret_file,
+                "LOOP2_PUBLIC_ORIGIN": "https://game.example.test:8443",
+                "LOOP2_PROXY_MODE": "cloudflare-tunnel",
+                "LOOP2_MAIL_FROM": "sender@mail.example.test",
+                "LOOP2_SMTP_HOST": "smtp.example.test",
+                "LOOP2_SMTP_PORT": "587",
+                "LOOP2_SMTP_USER": "sender@mail.example.test",
+                "LOOP2_SMTP_PASSWORD_FILE": password_file,
+            }
+        )
         self.assert_default_address(environment)
 
 

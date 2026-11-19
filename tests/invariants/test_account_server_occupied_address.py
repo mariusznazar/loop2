@@ -21,7 +21,6 @@ def ready_line(port):
 
 
 class AccountServerOccupiedAddress(unittest.TestCase):
-
     def test_occupied_address_exits_without_reporting_ready(self):
         # invariant: account-server-occupied-address
         copy = support.built_copy()
@@ -34,8 +33,9 @@ class AccountServerOccupiedAddress(unittest.TestCase):
                 self.assertRegex(server.output(), ready_line(server.port))
             finally:
                 server.stop()
-            self.assertFalse(support.port_in_use(server.port),
-                             "server address remained occupied after stop")
+            self.assertFalse(
+                support.port_in_use(server.port), "server address remained occupied after stop"
+            )
 
         require_normal_launch()
 
@@ -48,8 +48,11 @@ class AccountServerOccupiedAddress(unittest.TestCase):
             result = subprocess.run(
                 [node, copy.file("dist/server/main.js")],
                 cwd=copy.path,
-                env={**os.environ, "LOOP2_LISTEN_HOST": support.HOST,
-                     "LOOP2_LISTEN_PORT": str(port)},
+                env={
+                    **os.environ,
+                    "LOOP2_LISTEN_HOST": support.HOST,
+                    "LOOP2_LISTEN_PORT": str(port),
+                },
                 capture_output=True,
                 text=True,
                 timeout=10,

@@ -22,12 +22,14 @@ import deploy_script_support as support
 
 PREVIOUS = "0123456789abcdef0123456789abcdef01234567"
 PRUNE = ["image", "prune", "--force", "--filter", "label=org.opencontainers.image.title=loop2"]
-WHOLE_DOCKER_INFO = ("Client:\n Version: 28.1.1\nServer:\n Name: " + support.SENTINEL_HOST
-                     + "\n Docker Root Dir: /var/lib/docker\n")
+WHOLE_DOCKER_INFO = (
+    "Client:\n Version: 28.1.1\nServer:\n Name: "
+    + support.SENTINEL_HOST
+    + "\n Docker Root Dir: /var/lib/docker\n"
+)
 
 
 class DeploySwitchTestCase(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -42,8 +44,11 @@ class DeploySwitchTestCase(unittest.TestCase):
         return self.fixture.run(ssh_original_command=self.sha)
 
     def compose_calls(self, result, subcommand):
-        return [call for call in result.calls["docker"]
-                if call[:1] == ["compose"] and subcommand in call]
+        return [
+            call
+            for call in result.calls["docker"]
+            if call[:1] == ["compose"] and subcommand in call
+        ]
 
     def log_lines(self):
         return self.fixture.log_text().splitlines()
@@ -55,8 +60,10 @@ class DeploySwitchTestCase(unittest.TestCase):
         return found[0]
 
     def restore_line(self, previous=PREVIOUS):
-        return (f"previously running commit: {previous}; to restore run loop2-deploy {previous} "
-                "on the server")
+        return (
+            f"previously running commit: {previous}; to restore run loop2-deploy {previous} "
+            "on the server"
+        )
 
     def assert_old_game_logged_after_the_build(self, result):
         old_game = self.index_of("old game")
@@ -82,7 +89,6 @@ class DeploySwitchTestCase(unittest.TestCase):
 
 
 class Success(DeploySwitchTestCase):
-
     def test_switch_probe_prune_and_last_line(self):
         # decision: D-08 "The existing loop container remains untouched"
         # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
@@ -93,10 +99,30 @@ class Success(DeploySwitchTestCase):
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
-        self.assertEqual(self.compose_calls(result, "up"), [
-            ["compose", "--project-name", "loop2", "-f", compose_file, "up", "-d", "--no-build",
-             "--no-deps", "--remove-orphans", "--force-recreate", "--wait", "--wait-timeout",
-             "120", "app", "cloudflared"]], result)
+        self.assertEqual(
+            self.compose_calls(result, "up"),
+            [
+                [
+                    "compose",
+                    "--project-name",
+                    "loop2",
+                    "-f",
+                    compose_file,
+                    "up",
+                    "-d",
+                    "--no-build",
+                    "--no-deps",
+                    "--remove-orphans",
+                    "--force-recreate",
+                    "--wait",
+                    "--wait-timeout",
+                    "120",
+                    "app",
+                    "cloudflared",
+                ]
+            ],
+            result,
+        )
         probes = [call for call in result.calls["docker"] if call[:1] == ["exec"]]
         self.assertEqual(len(probes), 1, result)
         self.assertEqual(probes[0][:4], ["exec", "loop2", "node", "-e"], result)
@@ -118,14 +144,19 @@ class Success(DeploySwitchTestCase):
     def test_repeated_deployment_of_the_running_commit_succeeds(self):
         result = self.deploy(running=self.sha)
         self.assertEqual(result.code, 0, result)
-        self.assertTrue(self.log_lines()[-1].endswith(f"deployed {self.sha}, previously "
-                                                      f"{self.sha}"))
+        self.assertTrue(
+            self.log_lines()[-1].endswith(f"deployed {self.sha}, previously {self.sha}")
+        )
         self.assertEqual(len(self.compose_calls(result, "build")), 1, result)
         self.assertEqual(len(self.compose_calls(result, "up")), 1, result)
 
     def test_old_game_not_found_is_logged_and_the_deployment_still_succeeds(self):
-        self.fixture.answer("docker", exit_code=1, stdout="Error: No such container: loop\n",
-                            match="inspect --type container * loop")
+        self.fixture.answer(
+            "docker",
+            exit_code=1,
+            stdout="Error: No such container: loop\n",
+            match="inspect --type container * loop",
+        )
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         line = self.log_lines()[self.index_of("old game")]
@@ -141,43 +172,62 @@ class Success(DeploySwitchTestCase):
 
 
 class FailedStart(DeploySwitchTestCase):
-
     def test_failed_health_wait_exits_8_with_the_restore_line_and_container_logs(self):
         # decision: D-08 "The existing loop container remains untouched"
         # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
-        for failure in ("container loop2 is unhealthy",
-                        "container loop2-cloudflared is unhealthy", "secret file is missing"):
+        for failure in (
+            "container loop2 is unhealthy",
+            "container loop2-cloudflared is unhealthy",
+            "secret file is missing",
+        ):
             with self.subTest(failure=failure):
                 self.fixture = support.DeployFixture()
                 self.addCleanup(self.fixture.remove)
                 self.sha = self.fixture.deployable_commit()
                 self.fixture.install()
-                self.fixture.answer("docker", exit_code=1, stdout=failure + "\n",
-                                    match="compose * up *")
-                self.fixture.answer("docker", stdout="LAST-CONTAINER-LINE listening failed\n",
-                                    match="compose * logs * --tail 50 *")
-                self.fixture.answer("docker", stdout="DUMPED-CONTAINER-LINE\n",
-                                    match="compose * logs *")
+                self.fixture.answer(
+                    "docker", exit_code=1, stdout=failure + "\n", match="compose * up *"
+                )
+                self.fixture.answer(
+                    "docker",
+                    stdout="LAST-CONTAINER-LINE listening failed\n",
+                    match="compose * logs * --tail 50 *",
+                )
+                self.fixture.answer(
+                    "docker", stdout="DUMPED-CONTAINER-LINE\n", match="compose * logs *"
+                )
                 result = self.deploy()
                 self.assert_failed_start(result)
-                self.assertEqual([c for c in result.calls["docker"] if c[:1] == ["exec"]], [], result)
+                self.assertEqual(
+                    [c for c in result.calls["docker"] if c[:1] == ["exec"]], [], result
+                )
                 # Two `logs` calls: the dump before the start (no --tail) and the failed start's
                 # last lines (--tail 50), the second after the failed `up`.
                 logs = self.compose_calls(result, "logs")
                 self.assertEqual(len(logs), 2, result)
                 for call in logs:
-                    self.assertEqual(call[:5], ["compose", "--project-name", "loop2", "-f",
-                                                support.shell_path(self.fixture.checkout)
-                                                + "/compose.yaml"])
+                    self.assertEqual(
+                        call[:5],
+                        [
+                            "compose",
+                            "--project-name",
+                            "loop2",
+                            "-f",
+                            support.shell_path(self.fixture.checkout) + "/compose.yaml",
+                        ],
+                    )
                     self.assertEqual(call[-2:], ["app", "cloudflared"])
                 dump, last_lines = logs
                 self.assertNotIn("--tail", dump)
                 self.assertEqual(last_lines[5:8], ["logs", "--no-color", "--tail"], last_lines)
                 self.assertEqual(last_lines[8], "50", last_lines)
                 docker = result.calls["docker"]
-                self.assertLess(docker.index(dump), docker.index(self.compose_calls(result, "up")[0]))
-                self.assertLess(docker.index(self.compose_calls(result, "up")[0]),
-                                docker.index(last_lines))
+                self.assertLess(
+                    docker.index(dump), docker.index(self.compose_calls(result, "up")[0])
+                )
+                self.assertLess(
+                    docker.index(self.compose_calls(result, "up")[0]), docker.index(last_lines)
+                )
                 self.assertIn("LAST-CONTAINER-LINE", self.fixture.log_text())
                 self.assertNotIn("LAST-CONTAINER-LINE", result.output)
                 self.assertNotIn("DUMPED-CONTAINER-LINE", self.fixture.log_text())
@@ -201,8 +251,9 @@ class FailedStart(DeploySwitchTestCase):
                 self.addCleanup(self.fixture.remove)
                 self.sha = self.fixture.deployable_commit()
                 self.fixture.install()
-                self.fixture.answer("docker", exit_code=exit_code, stdout=answer,
-                                    match="exec loop2 node -e *")
+                self.fixture.answer(
+                    "docker", exit_code=exit_code, stdout=answer, match="exec loop2 node -e *"
+                )
                 result = self.deploy()
                 self.assert_failed_start(result)
                 self.assertIn("probe", self.log_lines()[-1])
@@ -216,12 +267,14 @@ class FailedStart(DeploySwitchTestCase):
 
 
 class NeverInTheOutputOrTheCommands(DeploySwitchTestCase):
-
     def runs(self):
         """A success, a failed build, a failed start and a failed probe."""
         results = [self.deploy()]
-        for rule in (("docker", 1, "compose * build *"), ("docker", 1, "compose * up *"),
-                     ("docker", 0, "exec loop2 node -e *")):
+        for rule in (
+            ("docker", 1, "compose * build *"),
+            ("docker", 1, "compose * up *"),
+            ("docker", 0, "exec loop2 node -e *"),
+        ):
             self.fixture = support.DeployFixture()
             self.addCleanup(self.fixture.remove)
             self.sha = self.fixture.deployable_commit()

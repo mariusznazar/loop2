@@ -13,28 +13,45 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 NPM = ROOT / "node_modules/npm/bin/npm-cli.js"
-AUDIT = ["audit", "--json", "--package-lock-only", "--audit-level=low", "--include=dev",
-         "--include=optional", "--include=peer", "--registry=https://registry.npmjs.org/"]
+AUDIT = [
+    "audit",
+    "--json",
+    "--package-lock-only",
+    "--audit-level=low",
+    "--include=dev",
+    "--include=optional",
+    "--include=peer",
+    "--registry=https://registry.npmjs.org/",
+]
 BLOCKING = {"low", "moderate", "high", "critical"}
 
 
 def git(*arguments):
-    return subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True,
-                          check=True).stdout
+    return subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, check=True).stdout
 
 
 def advisories(report):
     """The (package, advisory) pairs of blocking severity in an `npm audit --json` report."""
     if "error" in report or not isinstance(report.get("vulnerabilities"), dict):
         raise ValueError("npm audit gave no complete report: " + json.dumps(report))
-    return {(via["name"], via["source"]) for entry in report["vulnerabilities"].values()
-            for via in entry["via"] if isinstance(via, dict) and via["severity"] in BLOCKING}
+    return {
+        (via["name"], via["source"])
+        for entry in report["vulnerabilities"].values()
+        for via in entry["via"]
+        if isinstance(via, dict) and via["severity"] in BLOCKING
+    }
 
 
 def audit(directory):
     # npm audit exits 1 both on a finding and on a failed request; the report tells them apart.
-    result = subprocess.run(["node", NPM, *AUDIT], cwd=directory, capture_output=True,
-                            text=True, encoding="utf-8", check=False)
+    result = subprocess.run(
+        ["node", NPM, *AUDIT],
+        cwd=directory,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
     return advisories(json.loads(result.stdout))
 
 

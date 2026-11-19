@@ -78,12 +78,18 @@ INTERNAL_PROBE = 'Promise.all(["/", "/api/loop2-deploy-probe"].map(async path =>
 # Any other command, alias, option or object fails.
 ALLOWED_DOCKER = {
     "info": ({"--format": True, "-f": True}, ()),
-    "inspect": ({"--type": True, "--format": True, "-f": True},
-                (EXPECTED_CONTAINER, "loop2-cloudflared", OLD_CONTAINER)),
-    "logs": ({"--tail": True, "-n": True, "--timestamps": False, "-t": False},
-             (EXPECTED_CONTAINER, "loop2-cloudflared")),
-    "image prune": ({"--force": False, "-f": False, "--all": False, "-a": False,
-                     "--filter": True}, ()),
+    "inspect": (
+        {"--type": True, "--format": True, "-f": True},
+        (EXPECTED_CONTAINER, "loop2-cloudflared", OLD_CONTAINER),
+    ),
+    "logs": (
+        {"--tail": True, "-n": True, "--timestamps": False, "-t": False},
+        (EXPECTED_CONTAINER, "loop2-cloudflared"),
+    ),
+    "image prune": (
+        {"--force": False, "-f": False, "--all": False, "-a": False, "--filter": True},
+        (),
+    ),
 }
 # `docker container <x>` forms read as the top-level command they equal.
 CONTAINER_FORMS = {"inspect": "inspect", "logs": "logs"}
@@ -94,21 +100,50 @@ PRUNE_FILTERS = (EXPECTED_PRUNE_FILTER, "dangling=true")
 COMPOSE_GLOBAL = {"-p": True, "--project-name": True, "-f": True, "--file": True}
 ALLOWED_COMPOSE = {
     "build": {"--pull": False, "--no-cache": False, "--quiet": False, "-q": False},
-    "up": {"-d": False, "--detach": False, "--no-build": False, "--no-deps": False,
-           "--remove-orphans": False, "--wait": False, "--wait-timeout": True,
-           "--force-recreate": False},
-    "logs": {"--no-color": False, "--tail": True, "-n": True, "--timestamps": False,
-             "-t": False},
+    "up": {
+        "-d": False,
+        "--detach": False,
+        "--no-build": False,
+        "--no-deps": False,
+        "--remove-orphans": False,
+        "--wait": False,
+        "--wait-timeout": True,
+        "--force-recreate": False,
+    },
+    "logs": {"--no-color": False, "--tail": True, "-n": True, "--timestamps": False, "-t": False},
     "ps": {"--all": False, "-a": False, "--format": True, "--quiet": False, "-q": False},
 }
 DOCKER_ENDPOINT_VARIABLES = re.compile(
     r"(?<![A-Za-z0-9_])(?:DOCKER_HOST|DOCKER_CONTEXT|DOCKER_CONFIG|DOCKER_TLS_VERIFY|"
-    r"DOCKER_CERT_PATH|COMPOSE_PROJECT_NAME|COMPOSE_FILE|COMPOSE_PROFILES)(?![A-Za-z0-9_])")
+    r"DOCKER_CERT_PATH|COMPOSE_PROJECT_NAME|COMPOSE_FILE|COMPOSE_PROFILES)(?![A-Za-z0-9_])"
+)
 COMPOSE_TOP_KEYS = ("name", "services", "secrets", "volumes")
-COMPOSE_SERVICE_KEYS = ("container_name", "build", "ports", "expose", "mem_limit",
-                        "memswap_limit", "cpus", "pids_limit", "restart", "init", "healthcheck",
-                        "labels", "environment", "command", "entrypoint", "user", "working_dir",
-                        "read_only", "stop_signal", "stop_grace_period", "logging", "depends_on", "secrets", "volumes")
+COMPOSE_SERVICE_KEYS = (
+    "container_name",
+    "build",
+    "ports",
+    "expose",
+    "mem_limit",
+    "memswap_limit",
+    "cpus",
+    "pids_limit",
+    "restart",
+    "init",
+    "healthcheck",
+    "labels",
+    "environment",
+    "command",
+    "entrypoint",
+    "user",
+    "working_dir",
+    "read_only",
+    "stop_signal",
+    "stop_grace_period",
+    "logging",
+    "depends_on",
+    "secrets",
+    "volumes",
+)
 COMPOSE_BUILD_KEYS = ("context", "dockerfile", "args", "labels", "target")
 
 
@@ -165,8 +200,9 @@ def docker_problems(words):
         return [f"`docker {' '.join(words[:2])}` is not a command a deployment may run"]
     allowed, objects_allowed = ALLOWED_DOCKER[name]
     problems, options, objects = split_options(rest, allowed)
-    problems += [f"object `{o}` is not one `{name}` may name" for o in objects
-                 if o not in objects_allowed]
+    problems += [
+        f"object `{o}` is not one `{name}` may name" for o in objects if o not in objects_allowed
+    ]
     if name == "inspect" and not container_form and options.get("--type") != [INSPECT_TYPE]:
         problems.append(f"`inspect` without `--type {INSPECT_TYPE}`")
     if name == "inspect" and len(objects) != 1:
@@ -198,13 +234,17 @@ def compose_problems(words):
         if not compose_file.startswith(EXPECTED_CHECKOUT):
             problems.append(f"Compose file `{compose_file}` outside `{EXPECTED_CHECKOUT}`")
     if index >= len(words) or words[index] not in ALLOWED_COMPOSE:
-        return problems + [f"compose subcommand {words[index:index + 1]} is not one a "
-                           f"deployment may run"]
+        return problems + [
+            f"compose subcommand {words[index : index + 1]} is not one a deployment may run"
+        ]
     subcommand = words[index]
-    found, _options, objects = split_options(words[index + 1:], ALLOWED_COMPOSE[subcommand])
+    found, _options, objects = split_options(words[index + 1 :], ALLOWED_COMPOSE[subcommand])
     problems += [f"compose {subcommand}: {p}" for p in found]
-    problems += [f"compose {subcommand}: object `{o}` is not a loop2 service"
-                 for o in objects if o not in EXPECTED_SERVICES]
+    problems += [
+        f"compose {subcommand}: object `{o}` is not a loop2 service"
+        for o in objects
+        if o not in EXPECTED_SERVICES
+    ]
     return problems
 
 
@@ -222,8 +262,7 @@ def secret_problems(top, services):
         "loop2_smtp_password": "/etc/loop2/smtp-password",
     }
     if set(definitions) != set(expected):
-        return ["secrets must define only the tunnel token, the session keys and the SMTP "
-                "password"]
+        return ["secrets must define only the tunnel token, the session keys and the SMTP password"]
     for name, path in expected.items():
         definition = definitions[name]
         if definition.value:
@@ -234,16 +273,22 @@ def secret_problems(top, services):
             problems.append(f"{name} must use only a file source")
         elif fields["file"].value != path or fields["file"].block:
             problems.append(f"{name} names another host source")
-    grants = {"app": ["loop2_session_secrets", "loop2_smtp_password"],
-              "cloudflared": [EXPECTED_SECRET]}
+    grants = {
+        "app": ["loop2_session_secrets", "loop2_smtp_password"],
+        "cloudflared": [EXPECTED_SECRET],
+    }
     for name, keys in services.items():
         grant = keys.get("secrets")
         if name not in grants:
             if grant is not None:
                 problems.append(f"secret granted to unexpected service {name}")
             continue
-        if grant is None or grant.value or [line.strip() for line in grant.block
-                                           if line.strip()] != ["- " + g for g in grants[name]]:
+        if (
+            grant is None
+            or grant.value
+            or [line.strip() for line in grant.block if line.strip()]
+            != ["- " + g for g in grants[name]]
+        ):
             problems.append(f"{name} must receive only its named short-form secrets")
         if name == "cloudflared":
             for key in ("environment", "env_file", "entrypoint", "user"):
@@ -270,8 +315,12 @@ def volume_problems(top, services):
     for name, keys in services.items():
         mount = keys.get("volumes")
         if name == "app":
-            if mount is None or mount.value or [line.strip() for line in mount.block
-                                               if line.strip()] != ["- accounts:/app/data"]:
+            if (
+                mount is None
+                or mount.value
+                or [line.strip() for line in mount.block if line.strip()]
+                != ["- accounts:/app/data"]
+            ):
                 problems.append("application must mount only accounts at /app/data")
         elif mount is not None:
             problems.append(f"volume granted to {name}, not only the application")
@@ -281,8 +330,10 @@ def volume_problems(top, services):
 def code_lines(text):
     """The lines of a YAML file, each less its comment, a comment line left empty so that the
     numbers of the lines stay."""
-    return ["" if line.lstrip().startswith("#") else support._strip_comment(line)
-            for line in text.splitlines()]
+    return [
+        "" if line.lstrip().startswith("#") else support._strip_comment(line)
+        for line in text.splitlines()
+    ]
 
 
 # A made-up script for the shell reader, and the Docker commands it must find in it.
@@ -306,7 +357,7 @@ READER_EXPECTED = [
 ]
 READER_UNREADABLE = (
     "#!/usr/bin/env bash\ncat <<EOF\ndocker compose --project-name loop down\n",
-    "#!/usr/bin/env bash\necho \"never closed\ndocker compose --project-name loop down\n",
+    '#!/usr/bin/env bash\necho "never closed\ndocker compose --project-name loop down\n',
     "#!/usr/bin/env bash\nout=$(docker compose --project-name loop2 down\n)\n",
 )
 # Redirections: a descriptor against its operator is left out, a number standing apart stays.
@@ -327,8 +378,7 @@ class ShellReaderReadsTheWholeScript(unittest.TestCase):
         self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
 
     def test_shell_reader_keeps_words_beside_redirections(self):
-        self.assertEqual(support.docker_commands(READER_REDIRECTIONS),
-                         READER_REDIRECTIONS_EXPECTED)
+        self.assertEqual(support.docker_commands(READER_REDIRECTIONS), READER_REDIRECTIONS_EXPECTED)
 
     def test_shell_reader_fails_on_what_it_cannot_read(self):
         for script in READER_UNREADABLE:
@@ -338,7 +388,6 @@ class ShellReaderReadsTheWholeScript(unittest.TestCase):
 
 
 class DeployScriptActsOnLoop2Alone(unittest.TestCase):
-
     def setUp(self):
         self.text = support.read_required(DEPLOY_SCRIPT)
         self.docker = support.docker_commands(self.text)
@@ -346,8 +395,11 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
     def test_script_runs_docker_compose(self):
         # invariant: loop2-host-sharing
         compose = [words for _n, words in self.docker if words[:1] == ["compose"]]
-        self.assertTrue(compose, f"{DEPLOY_SCRIPT} runs no `docker compose` command, so the "
-                                 "commands this check reads cannot be found")
+        self.assertTrue(
+            compose,
+            f"{DEPLOY_SCRIPT} runs no `docker compose` command, so the "
+            "commands this check reads cannot be found",
+        )
 
     def test_every_compose_command_names_the_loop2_project(self):
         # invariant: loop2-host-sharing
@@ -361,15 +413,22 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
                 problems.append(f"line {number}: project {projects}: {' '.join(words)}")
             for compose_file in options.get("-f", []) + options.get("--file", []):
                 if not compose_file.startswith(EXPECTED_CHECKOUT):
-                    problems.append(f"line {number}: Compose file {compose_file!r}: "
-                                    f"{' '.join(words)}")
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs `docker compose` on a project "
-                                       f"other than `{EXPECTED_PROJECT}`")
+                    problems.append(
+                        f"line {number}: Compose file {compose_file!r}: {' '.join(words)}"
+                    )
+        self.assertEqual(
+            problems,
+            [],
+            f"{DEPLOY_SCRIPT} runs `docker compose` on a project other than `{EXPECTED_PROJECT}`",
+        )
 
     def test_nothing_takes_a_project_down(self):
         # invariant: loop2-host-sharing
-        found = [f"line {number}: {' '.join(words)}"
-                 for number, words in support.shell_commands(self.text) if "down" in words]
+        found = [
+            f"line {number}: {' '.join(words)}"
+            for number, words in support.shell_commands(self.text)
+            if "down" in words
+        ]
         self.assertEqual(found, [], f"{DEPLOY_SCRIPT} takes a Compose project down")
 
     def test_old_deployment_is_only_read(self):
@@ -380,36 +439,59 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
         for number, words in self.docker:
             docker_lines.setdefault(number, []).append(words)
         for number, words in support.shell_commands(self.text):
-            named = [w for w in words if OLD_NAME_WORD.match(w)
-                     and not re.fullmatch(r"[A-Za-z_]\w*=.*", w)]
+            named = [
+                w
+                for w in words
+                if OLD_NAME_WORD.match(w) and not re.fullmatch(r"[A-Za-z_]\w*=.*", w)
+            ]
             if not named:
                 continue
             read_only = any(support.is_docker(w) for w in words) and any(
-                plain_words(d)[:1] in (["inspect"], ["ps"]) and set(named) <= set(d)
-                and not docker_problems(d) for d in docker_lines.get(number, []))
+                plain_words(d)[:1] in (["inspect"], ["ps"])
+                and set(named) <= set(d)
+                and not docker_problems(d)
+                for d in docker_lines.get(number, [])
+            )
             if not read_only:
                 problems.append(f"line {number}: {' '.join(words)}")
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} names the old loop deployment outside a "
-                                       "read-only `docker inspect` or `docker ps`")
+        self.assertEqual(
+            problems,
+            [],
+            f"{DEPLOY_SCRIPT} names the old loop deployment outside a "
+            "read-only `docker inspect` or `docker ps`",
+        )
 
     def test_every_docker_command_is_one_a_deployment_may_run(self):
         # invariant: loop2-host-sharing
         # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, logs and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
-        problems = [f"line {number}: docker {' '.join(words)}: {p}"
-                    for number, words in self.docker for p in docker_problems(words)]
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs a Docker command, option or object "
-                                       "outside the list a deployment may run")
+        problems = [
+            f"line {number}: docker {' '.join(words)}: {p}"
+            for number, words in self.docker
+            for p in docker_problems(words)
+        ]
+        self.assertEqual(
+            problems,
+            [],
+            f"{DEPLOY_SCRIPT} runs a Docker command, option or object "
+            "outside the list a deployment may run",
+        )
 
     def test_no_variable_points_docker_elsewhere(self):
         # invariant: loop2-host-sharing
-        found = [f"line {number}: {code.strip()}" for number, code in
-                 support._logical_lines(self.text) if DOCKER_ENDPOINT_VARIABLES.search(code)]
-        self.assertEqual(found, [], f"{DEPLOY_SCRIPT} names a variable that points Docker or "
-                                    "Compose at another endpoint, configuration or project")
+        found = [
+            f"line {number}: {code.strip()}"
+            for number, code in support._logical_lines(self.text)
+            if DOCKER_ENDPOINT_VARIABLES.search(code)
+        ]
+        self.assertEqual(
+            found,
+            [],
+            f"{DEPLOY_SCRIPT} names a variable that points Docker or "
+            "Compose at another endpoint, configuration or project",
+        )
 
 
 class ComposeServiceAsksNoPrivilege(unittest.TestCase):
-
     def setUp(self):
         self.text = support.read_required(COMPOSE_FILE)
         self.top, self.services = support.compose_outline(self.text)
@@ -417,8 +499,9 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
     def test_compose_top_holds_only_project_services_and_own_resources(self):
         # invariant: loop2-host-sharing
         others = sorted(k for k in self.top if k not in COMPOSE_TOP_KEYS)
-        self.assertEqual(others, [], f"{COMPOSE_FILE} sets top-level keys beyond "
-                                     f"{COMPOSE_TOP_KEYS}")
+        self.assertEqual(
+            others, [], f"{COMPOSE_FILE} sets top-level keys beyond {COMPOSE_TOP_KEYS}"
+        )
 
     def test_service_sets_only_keys_that_grant_nothing(self):
         # invariant: loop2-host-sharing
@@ -426,14 +509,21 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.assertEqual(set(self.services), set(EXPECTED_SERVICES))
         problems = []
         for name, keys in self.services.items():
-            problems += [f"service `{name}` sets `{k}` {keys[k]!r}" for k in keys
-                         if k not in COMPOSE_SERVICE_KEYS]
+            problems += [
+                f"service `{name}` sets `{k}` {keys[k]!r}"
+                for k in keys
+                if k not in COMPOSE_SERVICE_KEYS
+            ]
             if "build" in keys and keys["build"].block:
                 build = support._yaml_mapping(keys["build"].block, keys["build"].line + 1)
-                problems += [f"service `{name}` build sets `{k}` {build[k]!r}" for k in build
-                             if k not in COMPOSE_BUILD_KEYS]
-        self.assertEqual(problems, [], f"{COMPOSE_FILE} asks the host for more than a default "
-                                       "container has")
+                problems += [
+                    f"service `{name}` build sets `{k}` {build[k]!r}"
+                    for k in build
+                    if k not in COMPOSE_BUILD_KEYS
+                ]
+        self.assertEqual(
+            problems, [], f"{COMPOSE_FILE} asks the host for more than a default container has"
+        )
 
     def test_runtime_secrets_are_granted_only_to_their_consumers(self):
         # invariant: loop2-host-sharing
@@ -459,22 +549,28 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         environment = self.services["app"].get("environment")
         self.assertIsNotNone(environment, "application account settings are missing")
         fields = support._yaml_mapping(environment.block, environment.line + 1)
-        self.assertEqual({key: field.value for key, field in fields.items()}, {
-            "LOOP2_DATABASE_PATH": "/app/data/accounts.sqlite",
-            "LOOP2_SESSION_SECRET_FILE": "/run/secrets/loop2_session_secrets",
-            "LOOP2_PUBLIC_ORIGIN": "https://loop2.mariusznazar.com",
-            "LOOP2_PROXY_MODE": "cloudflare-tunnel",
-            "LOOP2_MAIL_FROM": "loop2@mariusznazar.com",
-            "LOOP2_SMTP_HOST": "outsider.mikr.us",
-            "LOOP2_SMTP_PORT": "587",
-            "LOOP2_SMTP_USER": "loop2@mariusznazar.com",
-            "LOOP2_SMTP_PASSWORD_FILE": "/run/secrets/loop2_smtp_password",
-        })
+        self.assertEqual(
+            {key: field.value for key, field in fields.items()},
+            {
+                "LOOP2_DATABASE_PATH": "/app/data/accounts.sqlite",
+                "LOOP2_SESSION_SECRET_FILE": "/run/secrets/loop2_session_secrets",
+                "LOOP2_PUBLIC_ORIGIN": "https://loop2.mariusznazar.com",
+                "LOOP2_PROXY_MODE": "cloudflare-tunnel",
+                "LOOP2_MAIL_FROM": "loop2@mariusznazar.com",
+                "LOOP2_SMTP_HOST": "outsider.mikr.us",
+                "LOOP2_SMTP_PORT": "587",
+                "LOOP2_SMTP_USER": "loop2@mariusznazar.com",
+                "LOOP2_SMTP_PASSWORD_FILE": "/run/secrets/loop2_smtp_password",
+            },
+        )
 
     def test_no_docker_socket(self):
         # invariant: loop2-host-sharing
-        found = [f"line {number}: {line.strip()}"
-                 for number, line in enumerate(code_lines(self.text), 1) if "docker.sock" in line]
+        found = [
+            f"line {number}: {line.strip()}"
+            for number, line in enumerate(code_lines(self.text), 1)
+            if "docker.sock" in line
+        ]
         self.assertEqual(found, [], f"{COMPOSE_FILE} names the Docker socket")
 
 
@@ -503,7 +599,6 @@ volumes:
 
 
 class NarrowAllowances(unittest.TestCase):
-
     def test_exec_refuses_other_targets_programs_and_privileges(self):
         approved = ["exec", "loop2", "node", "-e", INTERNAL_PROBE]
         self.assertEqual(docker_problems(approved), [])
@@ -522,42 +617,65 @@ class NarrowAllowances(unittest.TestCase):
         approved = APPROVED_RESOURCES
         self.assertEqual(secret_problems(*support.compose_outline(approved)), [])
         cases = {
-            "other tunnel host file": approved.replace("/etc/loop2/cloudflared-token", "/etc/shadow"),
-            "other session host file": approved.replace("/etc/loop2/session-secrets", "/etc/shadow"),
+            "other tunnel host file": approved.replace(
+                "/etc/loop2/cloudflared-token", "/etc/shadow"
+            ),
+            "other session host file": approved.replace(
+                "/etc/loop2/session-secrets", "/etc/shadow"
+            ),
             "other SMTP host file": approved.replace("/etc/loop2/smtp-password", "/etc/shadow"),
             "environment source for the SMTP password": approved.replace(
-                "file: /etc/loop2/smtp-password", "environment: SMTP_PASSWORD"),
+                "file: /etc/loop2/smtp-password", "environment: SMTP_PASSWORD"
+            ),
             "external source for the SMTP password": approved.replace(
-                "file: /etc/loop2/smtp-password", "external: true"),
+                "file: /etc/loop2/smtp-password", "external: true"
+            ),
             "additional field on the SMTP password": approved.replace(
                 "file: /etc/loop2/smtp-password",
-                "file: /etc/loop2/smtp-password\n    name: shared-secret"),
+                "file: /etc/loop2/smtp-password\n    name: shared-secret",
+            ),
             "connector gets the SMTP password": approved.replace(
-                "- cloudflare_tunnel_token", "- cloudflare_tunnel_token\n      - loop2_smtp_password"),
+                "- cloudflare_tunnel_token",
+                "- cloudflare_tunnel_token\n      - loop2_smtp_password",
+            ),
             "connector gets only the SMTP password": approved.replace(
-                "- cloudflare_tunnel_token", "- loop2_smtp_password"),
+                "- cloudflare_tunnel_token", "- loop2_smtp_password"
+            ),
             "application lacks the SMTP password": approved.replace(
-                "      - loop2_smtp_password\n", ""),
+                "      - loop2_smtp_password\n", ""
+            ),
             "application gets a fourth grant": approved.replace(
-                "- loop2_smtp_password", "- loop2_smtp_password\n      - cloudflare_tunnel_token"),
+                "- loop2_smtp_password", "- loop2_smtp_password\n      - cloudflare_tunnel_token"
+            ),
             "long grant of the SMTP password with override": approved.replace(
-                "- loop2_smtp_password", "- source: loop2_smtp_password\n        mode: 0444"),
-            "environment source": approved.replace("file: /etc/loop2/session-secrets",
-                                                    "environment: SESSION_KEYS"),
-            "external source": approved.replace("file: /etc/loop2/session-secrets",
-                                                 "external: true"),
-            "additional source field": approved.replace("file: /etc/loop2/session-secrets",
-                "file: /etc/loop2/session-secrets\n    name: shared-secret"),
-            "application gets tunnel token": approved.replace("- loop2_session_secrets",
-                                                               "- cloudflare_tunnel_token"),
-            "connector gets session keys": approved.replace("- cloudflare_tunnel_token",
-                                                             "- loop2_session_secrets"),
-            "additional grant": approved.replace("- loop2_session_secrets",
-                "- loop2_session_secrets\n      - cloudflare_tunnel_token"),
-            "long grant with override": approved.replace("- loop2_session_secrets",
-                "- source: loop2_session_secrets\n        target: other"),
-            "root connector": approved.replace("  cloudflared:\n", "  cloudflared:\n"
-                                                 "    user: root\n"),
+                "- loop2_smtp_password", "- source: loop2_smtp_password\n        mode: 0444"
+            ),
+            "environment source": approved.replace(
+                "file: /etc/loop2/session-secrets", "environment: SESSION_KEYS"
+            ),
+            "external source": approved.replace(
+                "file: /etc/loop2/session-secrets", "external: true"
+            ),
+            "additional source field": approved.replace(
+                "file: /etc/loop2/session-secrets",
+                "file: /etc/loop2/session-secrets\n    name: shared-secret",
+            ),
+            "application gets tunnel token": approved.replace(
+                "- loop2_session_secrets", "- cloudflare_tunnel_token"
+            ),
+            "connector gets session keys": approved.replace(
+                "- cloudflare_tunnel_token", "- loop2_session_secrets"
+            ),
+            "additional grant": approved.replace(
+                "- loop2_session_secrets",
+                "- loop2_session_secrets\n      - cloudflare_tunnel_token",
+            ),
+            "long grant with override": approved.replace(
+                "- loop2_session_secrets", "- source: loop2_session_secrets\n        target: other"
+            ),
+            "root connector": approved.replace(
+                "  cloudflared:\n", "  cloudflared:\n    user: root\n"
+            ),
         }
         for name, document in cases.items():
             with self.subTest(case=name):
@@ -570,15 +688,20 @@ class NarrowAllowances(unittest.TestCase):
             "host directory": approved.replace("accounts:/app/data", "/srv/other:/app/data"),
             "other named volume": approved.replace("accounts:/app/data", "other:/app/data"),
             "wrong destination": approved.replace("accounts:/app/data", "accounts:/app"),
-            "extra mount": approved.replace("- accounts:/app/data", "- accounts:/app/data\n"
-                                              "      - /etc:/host"),
-            "connector mount": approved.replace("  cloudflared:\n", "  cloudflared:\n"
-                                                 "    volumes:\n      - accounts:/app/data\n"),
+            "extra mount": approved.replace(
+                "- accounts:/app/data", "- accounts:/app/data\n      - /etc:/host"
+            ),
+            "connector mount": approved.replace(
+                "  cloudflared:\n", "  cloudflared:\n    volumes:\n      - accounts:/app/data\n"
+            ),
             "other volume identity": approved.replace("name: loop2_accounts", "name: other"),
-            "external volume": approved.replace("name: loop2_accounts", "name: loop2_accounts\n"
-                                                  "    external: true"),
-            "driver host bind": approved.replace("name: loop2_accounts", "name: loop2_accounts\n"
-                                                 "    driver_opts:\n      device: /srv/other"),
+            "external volume": approved.replace(
+                "name: loop2_accounts", "name: loop2_accounts\n    external: true"
+            ),
+            "driver host bind": approved.replace(
+                "name: loop2_accounts",
+                "name: loop2_accounts\n    driver_opts:\n      device: /srv/other",
+            ),
             "extra definition": approved + "  other: {}\n",
         }
         for name, document in cases.items():

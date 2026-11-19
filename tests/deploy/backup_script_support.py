@@ -55,11 +55,11 @@ STUBBED_TOOLS = STAND_INS + NEVER_CALLED
 PLAIN_MARKER = "plain-player-address-marker-5c1e"
 PLAIN_DATABASE = b"SQLite format 3\x00" + PLAIN_MARKER.encode() + b"\n"
 CIPHERTEXT = b"0123456789abcdef" * 64
-CIPHERTEXT_SIZE = "1024"       # 16 bytes times 64, by hand
+CIPHERTEXT_SIZE = "1024"  # 16 bytes times 64, by hand
 TIMESTAMP = "2026-10-31T02:17:00Z"
 WEEKDAY_FILES = tuple(f"loop2-accounts-{day}.sqlite.age" for day in "1234567")
 
-RUN_TIMEOUT = 45    # seconds for one run of the copy; a run past it fails its test
+RUN_TIMEOUT = 45  # seconds for one run of the copy; a run past it fails its test
 HANG_SECONDS = 120  # a hanging stand-in outlasts RUN_TIMEOUT, so only a time limit ends it
 READER_TRIES = 300  # tenths of a second a stand-in waits for the reader to have left
 
@@ -156,18 +156,29 @@ exit "${PIPESTATUS[0]}"
 
 
 class Result:
-    def __init__(self, code, stdout, stderr, calls, log, notice_input, age_input, sent, lock_open,
-                 log_at_send):
+    def __init__(
+        self,
+        code,
+        stdout,
+        stderr,
+        calls,
+        log,
+        notice_input,
+        age_input,
+        sent,
+        lock_open,
+        log_at_send,
+    ):
         self.code = code
         self.stdout = stdout
         self.stderr = stderr
-        self.calls = calls                # [[tool, argument, ...], ...] in the order of the calls
+        self.calls = calls  # [[tool, argument, ...], ...] in the order of the calls
         self.log = log
         self.notice_input = notice_input  # the bytes every pusher call read, as one
-        self.age_input = age_input        # the bytes age read
-        self.sent = sent                  # the bytes of the file rsync was given, or None
-        self.lock_open = lock_open        # rsync found the lock's file descriptor open
-        self.log_at_send = log_at_send    # the log as rsync found it when it started
+        self.age_input = age_input  # the bytes age read
+        self.sent = sent  # the bytes of the file rsync was given, or None
+        self.lock_open = lock_open  # rsync found the lock's file descriptor open
+        self.log_at_send = log_at_send  # the log as rsync found it when it started
 
     def of(self, tool):
         """The argument lists of a tool's calls, in order."""
@@ -177,8 +188,10 @@ class Result:
         return [call[0] for call in self.calls]
 
     def __repr__(self):
-        return (f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
-                f"\n--- log ---\n{self.log}\n--- calls ---\n{self.calls}")
+        return (
+            f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
+            f"\n--- log ---\n{self.log}\n--- calls ---\n{self.calls}"
+        )
 
 
 class BackupFixture:
@@ -200,10 +213,14 @@ class BackupFixture:
     def _build(self):
         self.stubs = self.path("stubs")
         for tool in STUBBED_TOOLS:
-            stub = STUB.format(tool=tool, stubs=deploy_support.shell_path(self.stubs),
-                               hang=HANG_SECONDS, reader_tries=READER_TRIES,
-                               before=BEFORE.get(tool, ""),
-                               default=DEFAULT.get(tool, "")).encode()
+            stub = STUB.format(
+                tool=tool,
+                stubs=deploy_support.shell_path(self.stubs),
+                hang=HANG_SECONDS,
+                reader_tries=READER_TRIES,
+                before=BEFORE.get(tool, ""),
+                default=DEFAULT.get(tool, ""),
+            ).encode()
             deploy_support.write_bytes(os.path.join(self.stubs, tool), stub)
             os.chmod(os.path.join(self.stubs, tool), 0o755)
             os.makedirs(os.path.join(self.stubs, "answers", tool), exist_ok=True)
@@ -229,7 +246,9 @@ class BackupFixture:
         deploy_support.write_bytes(self.known_hosts, b"stand-in host key line\n")
 
         if os.name == "nt":
-            self.copy_path_value = deploy_support.shell_path(self.stubs) + ":/mingw64/bin:/usr/bin:/bin"
+            self.copy_path_value = (
+                deploy_support.shell_path(self.stubs) + ":/mingw64/bin:/usr/bin:/bin"
+            )
         else:
             self.copy_path_value = self.stubs + ":/usr/bin:/bin"
         self.copy = self.path("copy", "loop2-backup")
@@ -253,10 +272,12 @@ class BackupFixture:
         os.chmod(self.copy, 0o755)
         source_head, _lines, source_tail = deploy_support.split_script(source)
         copy_head, _lines, copy_tail = deploy_support.split_script(
-            deploy_support.read_bytes(self.copy))
+            deploy_support.read_bytes(self.copy)
+        )
         if (source_head, source_tail) != (copy_head, copy_tail):
-            raise AssertionError("the copy differs from deploy/loop2-backup outside the constants "
-                                 "block")
+            raise AssertionError(
+                "the copy differs from deploy/loop2-backup outside the constants block"
+            )
 
     def remove(self):
         shutil.rmtree(self.root, ignore_errors=True)
@@ -265,8 +286,9 @@ class BackupFixture:
         """What the date stand-in answers for the day of the week, by UTC and by local time; a
         run that uses the local one gets a name of no weekday file."""
         deploy_support.write_bytes(os.path.join(self.stubs, "weekday-utc"), (utc + "\n").encode())
-        deploy_support.write_bytes(os.path.join(self.stubs, "weekday-local"),
-                                   (local + "\n").encode())
+        deploy_support.write_bytes(
+            os.path.join(self.stubs, "weekday-local"), (local + "\n").encode()
+        )
 
     def answer(self, tool, exit_code=0, stdout=b"", stderr=b"", match="*", action="", output=None):
         """Make a stand-in answer the calls whose arguments, joined by spaces, match a bash
@@ -288,17 +310,33 @@ class BackupFixture:
         """Stop the test when any stubbed tool resolves outside the stand-ins' directory on the
         copy's PATH."""
         result = subprocess.run(
-            [self.bash, deploy_support.shell_path(self.guard), self.copy_path_value,
-             *STUBBED_TOOLS], capture_output=True, timeout=RUN_TIMEOUT, check=False)
-        resolved = dict(line.split("=", 1) for line in
-                        result.stdout.decode("utf-8", "replace").splitlines() if "=" in line)
+            [
+                self.bash,
+                deploy_support.shell_path(self.guard),
+                self.copy_path_value,
+                *STUBBED_TOOLS,
+            ],
+            capture_output=True,
+            timeout=RUN_TIMEOUT,
+            check=False,
+        )
+        resolved = dict(
+            line.split("=", 1)
+            for line in result.stdout.decode("utf-8", "replace").splitlines()
+            if "=" in line
+        )
         expected_prefix = deploy_support.shell_path(self.stubs) + "/"
-        wrong = {tool: resolved.get(tool, "") for tool in STUBBED_TOOLS
-                 if not resolved.get(tool, "").startswith(expected_prefix)}
+        wrong = {
+            tool: resolved.get(tool, "")
+            for tool in STUBBED_TOOLS
+            if not resolved.get(tool, "").startswith(expected_prefix)
+        }
         if result.returncode != 0 or wrong:
-            raise AssertionError(f"guard: on the copy's PATH these tools resolve outside the "
-                                 f"stand-ins' directory {expected_prefix}: {wrong}; the run is "
-                                 "aborted")
+            raise AssertionError(
+                f"guard: on the copy's PATH these tools resolve outside the "
+                f"stand-ins' directory {expected_prefix}: {wrong}; the run is "
+                "aborted"
+            )
 
     def _read_calls(self):
         """Each stand-in writes its record in one write, so the two stages of the pipe, which run
@@ -322,11 +360,17 @@ class BackupFixture:
         shell_path = deploy_support.shell_path
         command = [self.bash, shell_path(self.launcher), shell_path(self.copy), *arguments]
         if reader_lines is not None:
-            deploy_support.write_bytes(os.path.join(self.stubs, "wait-for-reader",
-                                                    reader_awaited_by), b"")
-            command = [self.bash, shell_path(self.reader_launcher), shell_path(self.copy),
-                       str(reader_lines), shell_path(os.path.join(self.stubs, "calls",
-                                                                  "reader-left")), *arguments]
+            deploy_support.write_bytes(
+                os.path.join(self.stubs, "wait-for-reader", reader_awaited_by), b""
+            )
+            command = [
+                self.bash,
+                shell_path(self.reader_launcher),
+                shell_path(self.copy),
+                str(reader_lines),
+                shell_path(os.path.join(self.stubs, "calls", "reader-left")),
+                *arguments,
+            ]
         calls = os.path.join(self.stubs, "calls")
         shutil.rmtree(calls, ignore_errors=True)
         os.makedirs(calls)
@@ -337,18 +381,28 @@ class BackupFixture:
                 code = process.wait(timeout=RUN_TIMEOUT)
             except subprocess.TimeoutExpired:
                 process_support.kill_tree(process)
-                raise AssertionError(f"the run did not end within {RUN_TIMEOUT} s; its processes "
-                                     "were stopped") from None
-        return Result(code, deploy_support.read_bytes(out_path).decode("utf-8", "replace"),
-                      deploy_support.read_bytes(err_path).decode("utf-8", "replace"),
-                      self._read_calls(), self.log_text(),
-                      self._call_file("pusher-input") or b"", self._call_file("age-input") or b"",
-                      self._call_file("sent"), self._call_file("lock-descriptor-open") is not None,
-                      (self._call_file("log-at-send") or b"").decode("utf-8", "replace"))
+                raise AssertionError(
+                    f"the run did not end within {RUN_TIMEOUT} s; its processes were stopped"
+                ) from None
+        return Result(
+            code,
+            deploy_support.read_bytes(out_path).decode("utf-8", "replace"),
+            deploy_support.read_bytes(err_path).decode("utf-8", "replace"),
+            self._read_calls(),
+            self.log_text(),
+            self._call_file("pusher-input") or b"",
+            self._call_file("age-input") or b"",
+            self._call_file("sent"),
+            self._call_file("lock-descriptor-open") is not None,
+            (self._call_file("log-at-send") or b"").decode("utf-8", "replace"),
+        )
 
     def log_text(self):
-        return deploy_support.read_bytes(self.log_file).decode("utf-8", "replace") \
-            if os.path.exists(self.log_file) else ""
+        return (
+            deploy_support.read_bytes(self.log_file).decode("utf-8", "replace")
+            if os.path.exists(self.log_file)
+            else ""
+        )
 
     def left_in_temporary_root(self):
         return os.listdir(self.temporary_root)

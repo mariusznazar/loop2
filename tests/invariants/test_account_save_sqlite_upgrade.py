@@ -48,8 +48,7 @@ def check_positions(instructions):
         text = support.run_command(arguments) + ("\n" + heredoc if heredoc else "")
         if "account-database-check" not in text:
             continue
-        if heredoc is None and not UNSAFE_OPERATORS.search(text) \
-                and text.split() == CHECK_COMMAND:
+        if heredoc is None and not UNSAFE_OPERATORS.search(text) and text.split() == CHECK_COMMAND:
             accepted.append(index)
         else:
             refused.append(index)
@@ -60,15 +59,19 @@ def problems(dockerfile_text):
     """What keeps the last stage of a Dockerfile from running the check at the right place."""
     instructions = support.dockerfile_stages(dockerfile_text)[-1].instructions
     accepted, refused = check_positions(instructions)
-    found = [f"RUN {instructions[i][1]}: a form whose failure need not stop the build"
-             for i in refused]
+    found = [
+        f"RUN {instructions[i][1]}: a form whose failure need not stop the build" for i in refused
+    ]
     if not accepted:
         found.append("the last stage runs no `node dist/server/account-database-check.js` step")
         return found
     stages = support.dockerfile_stages(dockerfile_text)
     runtime = stages[-1]
-    copies = [i for i, (keyword, arguments, _h) in enumerate(instructions)
-              if keyword in ("COPY", "ADD") and _takes_dist(stages, runtime, arguments)]
+    copies = [
+        i
+        for i, (keyword, arguments, _h) in enumerate(instructions)
+        if keyword in ("COPY", "ADD") and _takes_dist(stages, runtime, arguments)
+    ]
     users = [i for i, (keyword, _a, _h) in enumerate(instructions) if keyword == "USER"]
     if not copies:
         found.append("the last stage takes no `dist/` from an earlier stage")
@@ -85,8 +88,11 @@ def _takes_dist(stages, runtime, arguments):
     origin = re.search(r"--from=(\S+)", arguments)
     words = [w for w in arguments.split() if not w.startswith("--")]
     pattern = re.compile(r"^(?:\./)?(?:.*/)?" + BUILT_OUTPUT + r"(?:/.*)?$")
-    return bool(origin) and any(pattern.match(w.strip("\"'[],")) for w in words[:-1]) \
+    return (
+        bool(origin)
+        and any(pattern.match(w.strip("\"'[],")) for w in words[:-1])
         and support._stage_reference(stages, origin.group(1), runtime.index) is not None
+    )
 
 
 GOOD = """FROM node:24-slim AS build
@@ -100,7 +106,6 @@ CMD ["node", "dist/server/main.js"]
 
 
 class ReleaseCheckedInTheImageBuild(unittest.TestCase):
-
     def test_dockerfile_runs_the_check_in_the_last_stage_after_dist_and_user(self):
         # invariant: account-save-sqlite-upgrade
         # decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked, and any difference or error fails the image's build"
@@ -109,24 +114,29 @@ class ReleaseCheckedInTheImageBuild(unittest.TestCase):
     def test_reader_accepts_the_step_in_either_form_and_refuses_misplaced_ones(self):
         # A check of the reader; it cites no invariant.
         self.assertEqual(problems(GOOD), [])
-        exec_form = GOOD.replace("RUN node dist/server/account-database-check.js",
-                                 'RUN ["node", "dist/server/account-database-check.js"]')
+        exec_form = GOOD.replace(
+            "RUN node dist/server/account-database-check.js",
+            'RUN ["node", "dist/server/account-database-check.js"]',
+        )
         self.assertEqual(problems(exec_form), [])
         cases = {
             "no step": GOOD.replace("RUN node dist/server/account-database-check.js\n", ""),
             "ignored failure": GOOD.replace("check.js", "check.js || true"),
             "piped": GOOD.replace("check.js", "check.js | cat"),
             "in the build stage": GOOD.replace(
-                "RUN npm run build", "RUN npm run build\nRUN node dist/server/account-database-check.js"
+                "RUN npm run build",
+                "RUN npm run build\nRUN node dist/server/account-database-check.js",
             ).replace("USER node\nRUN node dist/server/account-database-check.js", "USER node"),
             "before dist": GOOD.replace(
                 "COPY --from=build --chown=node:node /app/dist ./dist\nUSER node\n"
                 "RUN node dist/server/account-database-check.js\n",
                 "RUN node dist/server/account-database-check.js\n"
-                "COPY --from=build --chown=node:node /app/dist ./dist\nUSER node\n"),
+                "COPY --from=build --chown=node:node /app/dist ./dist\nUSER node\n",
+            ),
             "before USER": GOOD.replace(
                 "USER node\nRUN node dist/server/account-database-check.js\n",
-                "RUN node dist/server/account-database-check.js\nUSER node\n"),
+                "RUN node dist/server/account-database-check.js\nUSER node\n",
+            ),
         }
         for name, text in cases.items():
             with self.subTest(case=name):

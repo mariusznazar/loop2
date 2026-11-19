@@ -71,8 +71,22 @@ GENERATOR_CONSTANT = (
 )
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
-REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
-                     "void", "throw", "yield", "await", "instanceof")
+REGEX_AFTER_WORDS = (
+    "return",
+    "typeof",
+    "case",
+    "do",
+    "else",
+    "in",
+    "of",
+    "new",
+    "delete",
+    "void",
+    "throw",
+    "yield",
+    "await",
+    "instanceof",
+)
 
 
 def split_source(text):
@@ -94,7 +108,7 @@ def split_source(text):
         while j < n:
             c = text[j]
             if c == "\\":
-                part.append(text[j:j + 2])
+                part.append(text[j : j + 2])
                 j += 2
                 continue
             if c == "`":
@@ -123,7 +137,7 @@ def split_source(text):
             j, part = i + 1, []
             while j < n and text[j] != c and text[j] != "\n":
                 if text[j] == "\\":
-                    part.append(text[j + 1:j + 2])
+                    part.append(text[j + 1 : j + 2])
                     j += 2
                     continue
                 part.append(text[j])
@@ -151,8 +165,11 @@ def split_source(text):
         if c == "/":
             before = previous_significant()
             word = re.search(r"([A-Za-z_$][\w$]*)$", before)
-            if not before or before[-1] in REGEX_AFTER or (word and word.group(1)
-                                                            in REGEX_AFTER_WORDS):
+            if (
+                not before
+                or before[-1] in REGEX_AFTER
+                or (word and word.group(1) in REGEX_AFTER_WORDS)
+            ):
                 j, in_class = i + 1, False
                 while j < n and text[j] != "\n":
                     if text[j] == "\\":
@@ -207,7 +224,7 @@ FLAGGED_SOURCES = (
     "export const b = globalThis.crypto.getRandomValues(new Uint32Array(1));\n",
     "export const b = crypto.randomUUID();\n",
     "import { randomInt } from 'node:crypto';\n",
-    "import * as c from \"crypto\";\n",
+    'import * as c from "crypto";\n',
     "const c = await import(`node:crypto`);\n",
     CONSTANT_SOURCE,
     "export function step(s: number) { return (s + 1831565813) | 0; }\n",
@@ -218,7 +235,7 @@ CLEAN_SOURCE = (
     "// Math.random() and crypto.getRandomValues are not used here.\n"
     "/* randomUUID, 0x6D2B79F5, node:crypto */\n"
     "export const label = 'Math.random crypto getRandomValues randomUUID';\n"
-    "export const other = \"it's crypto-free\";\n"
+    'export const other = "it\'s crypto-free";\n'
     "export const text = `no Math.random() ${1 + 2} here, nor crypto`;\n"
     "export const pattern = /Math\\.random|crypto['\"]/g;\n"
     "export const half = 10 / 2 / 1;\n"
@@ -251,25 +268,27 @@ def walk_to(resource):
 
 
 # Every action of the closed list: the acceptance program of tests/sim/acceptance.test.mjs.
-MIXED = program_from_rules([
-    rule(below("satietyBelow", 35), {"kind": "eat"}),
-    rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
-    rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
-    rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
-    rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
-    rule(item_below("berry", 1), gather("berry")),
-    rule(item_below("berry", 1), walk_to("berry")),
-    rule({"kind": "hereBelow", "resource": "berry", "value": 1}, {"kind": "explore"}),
-    rule(item_below("berry", 1), {"kind": "wander"}),
-    rule(item_below("stick", 8), gather("stick")),
-    rule(item_below("stick", 8), walk_to("stick")),
-    rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
-    rule(ALWAYS, {"kind": "explore"}),
-    rule({"kind": "awayFromCampfire"}, {"kind": "walkToCampfire"}),
-    rule(ALWAYS, gather("stick")),
-    rule(ALWAYS, gather("berry")),
-    rule(ALWAYS, {"kind": "wander"}),
-])
+MIXED = program_from_rules(
+    [
+        rule(below("satietyBelow", 35), {"kind": "eat"}),
+        rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+        rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+        rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+        rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+        rule(item_below("berry", 1), gather("berry")),
+        rule(item_below("berry", 1), walk_to("berry")),
+        rule({"kind": "hereBelow", "resource": "berry", "value": 1}, {"kind": "explore"}),
+        rule(item_below("berry", 1), {"kind": "wander"}),
+        rule(item_below("stick", 8), gather("stick")),
+        rule(item_below("stick", 8), walk_to("stick")),
+        rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+        rule(ALWAYS, {"kind": "explore"}),
+        rule({"kind": "awayFromCampfire"}, {"kind": "walkToCampfire"}),
+        rule(ALWAYS, gather("stick")),
+        rule(ALWAYS, gather("berry")),
+        rule(ALWAYS, {"kind": "wander"}),
+    ]
+)
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}
@@ -281,10 +300,17 @@ PATH_MINUTES = 200
 LONG_RUN = (
     [["newGame"], CREATE, ["setProgram", WANDER_ONLY], ["send", SENT, T]]
     + [["advanceMinutes", 1]] * PATH_MINUTES
-    + [["advanceMinutes", 30], ["passRealTime", 5000],
-       ["setProgram", MIXED], ["advanceMinutes", 5],
-       ["restart"], ["advanceMinutes", 200], ["end"],
-       ["send", SENT, T_OTHER], ["advanceMinutes", 200]]
+    + [
+        ["advanceMinutes", 30],
+        ["passRealTime", 5000],
+        ["setProgram", MIXED],
+        ["advanceMinutes", 5],
+        ["restart"],
+        ["advanceMinutes", 200],
+        ["end"],
+        ["send", SENT, T_OTHER],
+        ["advanceMinutes", 200],
+    ]
 )
 LONG_RUN_MINUTES_BEFORE_RESTART = 240
 
@@ -296,14 +322,19 @@ DEEP = {"mapId": "forestDeep", "characterId": 1}
 T_WOLF = 1760000000026
 WOLF_MIXED = program_from_rules(program_rules(MIXED) + [rule(ALWAYS, {"kind": "kick"})])
 WOLF_RUN = [
-    ["newGame"], CREATE, ["setProgram", WOLF_MIXED], ["solveMaps", ["forest"]],
-    ["send", DEEP, T_WOLF], ["advanceMinutes", 250],
+    ["newGame"],
+    CREATE,
+    ["setProgram", WOLF_MIXED],
+    ["solveMaps", ["forest"]],
+    ["send", DEEP, T_WOLF],
+    ["advanceMinutes", 250],
 ]
 
 
 def path_steps(real_ms, program=WANDER_ONLY):
-    return ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
-            + [["advanceMinutes", 1]] * PATH_MINUTES)
+    return [["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]] + [
+        ["advanceMinutes", 1]
+    ] * PATH_MINUTES
 
 
 # What each replaced source must do when called directly before the simulation is imported.
@@ -321,7 +352,9 @@ PROOFS = (
     "node:crypto default randomBytes",
 )
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -407,6 +440,7 @@ try {
 result.calls = calls;
 writeFileSync(outPath, JSON.stringify(result));
 """
+)
 
 
 def node():
@@ -418,8 +452,9 @@ def node():
 
 def drive(copy, steps):
     if not os.path.isfile(copy.file(GAME_MODULE)):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-randomness-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -430,7 +465,8 @@ def drive(copy, steps):
         with open(steps_path, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(steps, handle)
         code, output = support.run(
-            [node(), script, copy.file(BUILT_DIRECTORY), steps_path, out_path], directory)
+            [node(), script, copy.file(BUILT_DIRECTORY), steps_path, out_path], directory
+        )
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -449,38 +485,55 @@ def gatherings(result):
 
 
 class SimulationRandomness(unittest.TestCase):
-
     def assert_clean_run(self, result):
         for label in PROOFS:
-            self.assertEqual(result["proofs"].get(label), "threw",
-                             f"the replacement of {label} did not fire on a direct call, so a "
-                             "call of it from the simulation would go unseen")
+            self.assertEqual(
+                result["proofs"].get(label),
+                "threw",
+                f"the replacement of {label} did not fire on a direct call, so a "
+                "call of it from the simulation would go unseen",
+            )
         self.assertIsNone(result["error"], f"driving the simulation raised:\n{result['error']}")
-        self.assertEqual(result["calls"], 0,
-                         "the simulation called a replaced source of random numbers")
+        self.assertEqual(
+            result["calls"], 0, "the simulation called a replaced source of random numbers"
+        )
 
     def test_source_names_no_other_source_of_random_numbers(self):
         # invariant: simulation-randomness
         files = [p for p in support.listed_files() if p.startswith(SOURCE_DIRECTORY)]
-        self.assertTrue(files, f"the working tree holds no file under {SOURCE_DIRECTORY}, so "
-                               "the simulation's source cannot be scanned")
+        self.assertTrue(
+            files,
+            f"the working tree holds no file under {SOURCE_DIRECTORY}, so "
+            "the simulation's source cannot be scanned",
+        )
         found = []
         for relative in files:
             found += findings(relative, support.read_text(os.path.join(support.ROOT, relative)))
-        self.assertEqual(found, [], "the simulation's source names another source of random "
-                                    "numbers or a second generator step")
+        self.assertEqual(
+            found,
+            [],
+            "the simulation's source names another source of random "
+            "numbers or a second generator step",
+        )
 
     def test_control_the_scan_flags_each_forbidden_form(self):
         # invariant: simulation-randomness
         for text in FLAGGED_SOURCES:
             with self.subTest(source=text):
-                self.assertTrue(findings("src/browser/sim/probe.ts", text),
-                                f"the scan does not flag {text!r}")
-        self.assertEqual(findings("src/browser/sim/probe.ts", CLEAN_SOURCE), [],
-                         "the scan flags names standing only in comments, strings, template "
-                         "text or a regular expression")
-        self.assertEqual(findings(GENERATOR_FILE, CONSTANT_SOURCE), [],
-                         "the scan flags the generator step constant in the generator's file")
+                self.assertTrue(
+                    findings("src/browser/sim/probe.ts", text), f"the scan does not flag {text!r}"
+                )
+        self.assertEqual(
+            findings("src/browser/sim/probe.ts", CLEAN_SOURCE),
+            [],
+            "the scan flags names standing only in comments, strings, template "
+            "text or a regular expression",
+        )
+        self.assertEqual(
+            findings(GENERATOR_FILE, CONSTANT_SOURCE),
+            [],
+            "the scan flags the generator step constant in the generator's file",
+        )
 
     def test_run_calls_no_other_source_of_random_numbers(self):
         # invariant: simulation-randomness
@@ -489,9 +542,11 @@ class SimulationRandomness(unittest.TestCase):
         self.assertIn("game.js", result["modules"])
         self.assertEqual(len(result["records"]), len(LONG_RUN))
         restart_at = [r["step"] for r in result["records"]].index("restart")
-        self.assertGreaterEqual(result["records"][restart_at - 1]["minute"],
-                                LONG_RUN_MINUTES_BEFORE_RESTART,
-                                "the run did not cover the minutes it is meant to")
+        self.assertGreaterEqual(
+            result["records"][restart_at - 1]["minute"],
+            LONG_RUN_MINUTES_BEFORE_RESTART,
+            "the run did not cover the minutes it is meant to",
+        )
 
     def test_run_with_a_wolf_attack_calls_no_other_source_of_random_numbers(self):
         # invariant: simulation-randomness
@@ -499,8 +554,11 @@ class SimulationRandomness(unittest.TestCase):
         self.assert_clean_run(result)
         self.assertEqual(len(result["records"]), len(WOLF_RUN))
         combat = result["records"][-1]["lastCombat"]
-        self.assertIsNotNone(combat, "the map run met no attack of the wolf, so the draws of the "
-                                     "attack and of the combat were not driven")
+        self.assertIsNotNone(
+            combat,
+            "the map run met no attack of the wolf, so the draws of the "
+            "attack and of the combat were not driven",
+        )
         self.assertIsNotNone(combat["result"], "the combat of the attack did not come to its end")
 
     def test_control_draws_follow_the_seed(self):
@@ -513,12 +571,17 @@ class SimulationRandomness(unittest.TestCase):
             self.assert_clean_run(result)
         path = wander_path(first)
         self.assertGreater(len(set(path)), 1, "the wandering character never moves")
-        self.assertEqual(wander_path(again), path,
-                         "two sends with the same real time give different wandering paths")
-        self.assertNotEqual(wander_path(other), path,
-                            f"sends with real times {T} and {T_OTHER} give the same wandering "
-                            "path, so the draws do not show a dependence on the seed")
-
+        self.assertEqual(
+            wander_path(again),
+            path,
+            "two sends with the same real time give different wandering paths",
+        )
+        self.assertNotEqual(
+            wander_path(other),
+            path,
+            f"sends with real times {T} and {T_OTHER} give the same wandering "
+            "path, so the draws do not show a dependence on the seed",
+        )
 
     def test_control_gathering_draws_follow_the_seed(self):
         # invariant: simulation-randomness
@@ -531,11 +594,17 @@ class SimulationRandomness(unittest.TestCase):
         states = {r["gatherRandom"] for r in first["records"][2:]}
         self.assertGreater(len(states), 3, "the gathering generator never moves on")
         self.assertGreater(len(set(gatherings(first))), 3, "the character gathers no piece")
-        self.assertEqual(gatherings(again), gatherings(first),
-                         "two sends with the same real time give different gatherings")
-        self.assertNotEqual(gatherings(other), gatherings(first),
-                            f"sends with real times {T} and {T_OTHER} give the same gatherings, "
-                            "so the draws do not show a dependence on the seed")
+        self.assertEqual(
+            gatherings(again),
+            gatherings(first),
+            "two sends with the same real time give different gatherings",
+        )
+        self.assertNotEqual(
+            gatherings(other),
+            gatherings(first),
+            f"sends with real times {T} and {T_OTHER} give the same gatherings, "
+            "so the draws do not show a dependence on the seed",
+        )
 
 
 if __name__ == "__main__":

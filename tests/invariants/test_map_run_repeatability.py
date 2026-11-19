@@ -91,33 +91,37 @@ def gather(resource):
 
 # The starting program: every condition kind and every action kind (the acceptance program of
 # tests/sim/acceptance.test.mjs).
-P1 = program_from_rules([
-    rule(below("satietyBelow", 35), {"kind": "eat"}),
-    rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
-    rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
-    rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
-    rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
-    rule(item_below("berry", 1), gather("berry")),
-    rule(item_below("berry", 1), walk_to("berry")),
-    rule(here_below("berry", 1), EXPLORE),
-    rule(item_below("berry", 1), WANDER),
-    rule(item_below("stick", 8), gather("stick")),
-    rule(item_below("stick", 8), walk_to("stick")),
-    rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
-    rule(ALWAYS, EXPLORE),
-    rule(AWAY, {"kind": "walkToCampfire"}),
-    rule(ALWAYS, gather("stick")),
-    rule(ALWAYS, gather("berry")),
-    rule(ALWAYS, WANDER),
-])
+P1 = program_from_rules(
+    [
+        rule(below("satietyBelow", 35), {"kind": "eat"}),
+        rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+        rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+        rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+        rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+        rule(item_below("berry", 1), gather("berry")),
+        rule(item_below("berry", 1), walk_to("berry")),
+        rule(here_below("berry", 1), EXPLORE),
+        rule(item_below("berry", 1), WANDER),
+        rule(item_below("stick", 8), gather("stick")),
+        rule(item_below("stick", 8), walk_to("stick")),
+        rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+        rule(ALWAYS, EXPLORE),
+        rule(AWAY, {"kind": "walkToCampfire"}),
+        rule(ALWAYS, gather("stick")),
+        rule(ALWAYS, gather("berry")),
+        rule(ALWAYS, WANDER),
+    ]
+)
 # The program set in the middle of the scenario.
-P2 = program_from_rules([
-    rule(below("satietyBelow", 50), {"kind": "eat"}),
-    rule(item_below("stick", 3), gather("stick")),
-    rule(here_below("fiber", 2), walk_to("stick")),
-    rule(ALWAYS, WANDER),
-    rule(ALWAYS, EXPLORE),
-])
+P2 = program_from_rules(
+    [
+        rule(below("satietyBelow", 50), {"kind": "eat"}),
+        rule(item_below("stick", 3), gather("stick")),
+        rule(here_below("fiber", 2), walk_to("stick")),
+        rule(ALWAYS, WANDER),
+        rule(ALWAYS, EXPLORE),
+    ]
+)
 
 SECOND = ["passRealTime", 1000]
 SCENARIO_INPUTS = (
@@ -143,7 +147,9 @@ MINIMUM_MINUTES = 230
 
 # Drives the public functions of the built game module through a list of steps and records, after
 # each step, the JSON of the whole state and the events the step gave.
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -165,6 +171,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -178,8 +185,9 @@ def drive(copy, steps):
     """Run the steps in a new Node process against the built copy; return its records."""
     game = copy.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-repeatability-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -214,7 +222,6 @@ def minute(record):
 
 
 class MapRunRepeatability(unittest.TestCase):
-
     def test_two_processes_give_the_same_run_minute_by_minute(self):
         # invariant: map-run-repeatability
         first = records("first", STEPS)
@@ -224,44 +231,60 @@ class MapRunRepeatability(unittest.TestCase):
         self.assertIsNotNone(minute(first[SEND_INDEX]), "the send started no map run")
         for index, (a, b) in enumerate(zip(first, second)):
             if a != b:
-                self.fail(f"the two processes differ at step {index} ({STEPS[index][0]}), "
-                          f"game minute {minute(a)} against {minute(b)}:\n"
-                          f"first:  {json.dumps(a)[:2000]}\nsecond: {json.dumps(b)[:2000]}")
+                self.fail(
+                    f"the two processes differ at step {index} ({STEPS[index][0]}), "
+                    f"game minute {minute(a)} against {minute(b)}:\n"
+                    f"first:  {json.dumps(a)[:2000]}\nsecond: {json.dumps(b)[:2000]}"
+                )
 
     def test_restart_with_the_same_program_replays_the_run(self):
         # invariant: map-run-repeatability
         run = records("first", STEPS)
         sent, restarted = run[SEND_INDEX], run[RESTART_INDEX]
-        self.assertEqual(restarted["state"]["run"], sent["state"]["run"],
-                         "the restarted map run at minute 0 is not the sent map run at minute 0")
-        tail = restarted["events"][-len(sent["events"]):] if sent["events"] else []
-        self.assertEqual(tail, sent["events"],
-                         "the restart does not end with the events the send gave")
+        self.assertEqual(
+            restarted["state"]["run"],
+            sent["state"]["run"],
+            "the restarted map run at minute 0 is not the sent map run at minute 0",
+        )
+        tail = restarted["events"][-len(sent["events"]) :] if sent["events"] else []
+        self.assertEqual(
+            tail, sent["events"], "the restart does not end with the events the send gave"
+        )
         for offset in range(len(SCENARIO_INPUTS)):
             a, b = run[FIRST_INPUT + offset], run[REPLAY_FIRST_INPUT + offset]
             if (a["state"]["run"], a["events"]) != (b["state"]["run"], b["events"]):
-                self.fail(f"the replay differs at input {offset} "
-                          f"({SCENARIO_INPUTS[offset][0]}), game minute {minute(a)} "
-                          f"against {minute(b)}:\nfirst:  {json.dumps(a)[:2000]}\n"
-                          f"replay: {json.dumps(b)[:2000]}")
+                self.fail(
+                    f"the replay differs at input {offset} "
+                    f"({SCENARIO_INPUTS[offset][0]}), game minute {minute(a)} "
+                    f"against {minute(b)}:\nfirst:  {json.dumps(a)[:2000]}\n"
+                    f"replay: {json.dumps(b)[:2000]}"
+                )
 
     def test_controls_the_compared_runs_can_differ(self):
         # invariant: map-run-repeatability
         run = records("first", STEPS)
-        other = records("other-seed",
-                        [["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T_OTHER]])
-        self.assertNotEqual(other[-1]["state"]["run"]["tiles"],
-                            run[SEND_INDEX]["state"]["run"]["tiles"],
-                            f"a send with real time {T_OTHER} gives the same layout as one "
-                            f"with {T}, so a difference of seeds would not show")
-        scenario = run[FIRST_INPUT:RESTART_INDEX - 1]
+        other = records(
+            "other-seed", [["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T_OTHER]]
+        )
+        self.assertNotEqual(
+            other[-1]["state"]["run"]["tiles"],
+            run[SEND_INDEX]["state"]["run"]["tiles"],
+            f"a send with real time {T_OTHER} gives the same layout as one "
+            f"with {T}, so a difference of seeds would not show",
+        )
+        scenario = run[FIRST_INPUT : RESTART_INDEX - 1]
         last = scenario[-1]["state"]["run"]
-        self.assertGreaterEqual(last["minute"], MINIMUM_MINUTES,
-                                "the scenario does not cover the minutes it is meant to")
+        self.assertGreaterEqual(
+            last["minute"],
+            MINIMUM_MINUTES,
+            "the scenario does not cover the minutes it is meant to",
+        )
         revealed = [t for t in last["tiles"] if t.get("revealed")]
         self.assertGreater(len(revealed), 1, "the scenario reveals at most one tile")
-        positions = {json.dumps(r["state"]["run"]["character"]["at"], sort_keys=True)
-                     for r in [run[SEND_INDEX]] + scenario}
+        positions = {
+            json.dumps(r["state"]["run"]["character"]["at"], sort_keys=True)
+            for r in [run[SEND_INDEX]] + scenario
+        }
         self.assertGreater(len(positions), 1, "the scenario never moves the character")
 
 

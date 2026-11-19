@@ -57,9 +57,11 @@ UNSET = "<unset>"
 # The Docker root directory the docker stub reports under `answer_passing_run`.
 DOCKER_ROOT = "/var/lib/docker"  # recorded for a call made without LOOP2_COMMIT in its environment
 RUN_TIMEOUT = 120  # seconds for one run of the copy
-GIT_TIMEOUT = 60   # seconds for one git command of the fixture
+GIT_TIMEOUT = 60  # seconds for one git command of the fixture
 
-_ASSIGNMENT = re.compile(rb"^(?P<prefix>(?:export|readonly) )(?P<name>[A-Z_][A-Z0-9_]*)=(?P<value>.*)$")
+_ASSIGNMENT = re.compile(
+    rb"^(?P<prefix>(?:export|readonly) )(?P<name>[A-Z_][A-Z0-9_]*)=(?P<value>.*)$"
+)
 
 STUB = """#!/bin/bash
 # Recording stub for {tool}, written by tests/deploy/deploy_script_support.py.
@@ -112,17 +114,22 @@ def git_bash():
     if os.name != "nt":
         path = shutil.which("bash")
         if path is None:
-            raise unittest.SkipTest("bash is not on PATH; the deployment script tests stay unchecked")
+            raise unittest.SkipTest(
+                "bash is not on PATH; the deployment script tests stay unchecked"
+            )
         return path
-    result = subprocess.run([git_executable(), "--exec-path"], capture_output=True, text=True,
-                            timeout=GIT_TIMEOUT)
+    result = subprocess.run(
+        [git_executable(), "--exec-path"], capture_output=True, text=True, timeout=GIT_TIMEOUT
+    )
     exec_path = result.stdout.strip()
     # <Git>/mingw64/libexec/git-core -> <Git>
     install = os.path.dirname(os.path.dirname(os.path.dirname(exec_path)))
     path = os.path.join(install, "bin", "bash.exe")
     if result.returncode != 0 or not os.path.isfile(path):
-        raise unittest.SkipTest("Git's own bash.exe was not found next to git; the deployment "
-                                "script tests stay unchecked")
+        raise unittest.SkipTest(
+            "Git's own bash.exe was not found next to git; the deployment "
+            "script tests stay unchecked"
+        )
     return path
 
 
@@ -153,16 +160,25 @@ def split_script(data):
     """(before the block, the block's lines, after the block) of the script's bytes; the marker
     lines belong to before and after."""
     if b"\r" in data:
-        raise AssertionError("deploy/loop2-deploy holds a carriage return; it must have LF line "
-                             "endings (.gitattributes: deploy/** text eol=lf)")
+        raise AssertionError(
+            "deploy/loop2-deploy holds a carriage return; it must have LF line "
+            "endings (.gitattributes: deploy/** text eol=lf)"
+        )
     begin = data.find(BLOCK_BEGIN + b"\n")
     end = data.find(b"\n" + BLOCK_END + b"\n")
-    if begin < 0 or end < 0 or end < begin or data.count(BLOCK_BEGIN) != 1 or \
-            data.count(BLOCK_END) != 1:
-        raise AssertionError("deploy/loop2-deploy has no single marked constants block "
-                             f"({BLOCK_BEGIN.decode()} ... {BLOCK_END.decode()})")
+    if (
+        begin < 0
+        or end < 0
+        or end < begin
+        or data.count(BLOCK_BEGIN) != 1
+        or data.count(BLOCK_END) != 1
+    ):
+        raise AssertionError(
+            "deploy/loop2-deploy has no single marked constants block "
+            f"({BLOCK_BEGIN.decode()} ... {BLOCK_END.decode()})"
+        )
     head_end = begin + len(BLOCK_BEGIN) + 1
-    return data[:head_end], data[head_end:end + 1].splitlines(), data[end + 1:]
+    return data[:head_end], data[head_end : end + 1].splitlines(), data[end + 1 :]
 
 
 def constants(data=None):
@@ -191,7 +207,9 @@ def replace_block(data, overrides):
             line = match.group("prefix") + match.group("name") + b"='" + value.encode() + b"'"
         replaced.append(line)
     if left:
-        raise AssertionError(f"the constants block of deploy/loop2-deploy assigns no {sorted(left)}")
+        raise AssertionError(
+            f"the constants block of deploy/loop2-deploy assigns no {sorted(left)}"
+        )
     return head + b"\n".join(replaced) + b"\n" + tail
 
 
@@ -200,7 +218,7 @@ class Result:
         self.code = code
         self.stdout = stdout
         self.stderr = stderr
-        self.calls = calls          # {tool: [[argument, ...], ...]}
+        self.calls = calls  # {tool: [[argument, ...], ...]}
         self.git_trace = git_trace  # the GIT_TRACE output of the run, "" when git never ran
         # {tool: [LOOP2_COMMIT of each call, or UNSET]}, in the order of `calls`
         self.commit_env = commit_env or {}
@@ -217,8 +235,10 @@ class Result:
         return {tool: calls for tool, calls in self.calls.items() if calls}
 
     def __repr__(self):
-        return (f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
-                f"\n--- stub calls ---\n{self.stub_calls()}")
+        return (
+            f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
+            f"\n--- stub calls ---\n{self.stub_calls()}"
+        )
 
 
 class DeployFixture:
@@ -270,8 +290,13 @@ class DeployFixture:
         self.dump_file = self.path("var", "log", "loop2-app.log")
         self.lock_file = self.path("run", "loop2-deploy.lock")
         self.meminfo = self.path("proc", "meminfo")
-        for directory in (self.installed, self.installed_schedule, self.installed_logrotate,
-                          self.log_file, self.lock_file):
+        for directory in (
+            self.installed,
+            self.installed_schedule,
+            self.installed_logrotate,
+            self.log_file,
+            self.lock_file,
+        ):
             os.makedirs(os.path.dirname(directory), exist_ok=True)
         write_bytes(self.meminfo, b"MemTotal:        4456448 kB\nMemAvailable:    3788800 kB\n")
 
@@ -308,8 +333,9 @@ class DeployFixture:
         source_head, _lines, source_tail = split_script(source)
         copy_head, _lines, copy_tail = split_script(read_bytes(self.copy))
         if (source_head, source_tail) != (copy_head, copy_tail):
-            raise AssertionError("the copy differs from deploy/loop2-deploy outside the constants "
-                                 "block")
+            raise AssertionError(
+                "the copy differs from deploy/loop2-deploy outside the constants block"
+            )
 
     def remove(self):
         shutil.rmtree(self.root, ignore_errors=True)
@@ -321,18 +347,29 @@ class DeployFixture:
         for name in list(env):
             if name.startswith("GIT_") or name == "SSH_ORIGINAL_COMMAND":
                 del env[name]
-        env.update(GIT_CONFIG_GLOBAL=native_path(self.gitconfig), GIT_CONFIG_NOSYSTEM="1",
-                   GIT_AUTHOR_NAME="test", GIT_AUTHOR_EMAIL="test@example.invalid",
-                   GIT_COMMITTER_NAME="test", GIT_COMMITTER_EMAIL="test@example.invalid")
+        env.update(
+            GIT_CONFIG_GLOBAL=native_path(self.gitconfig),
+            GIT_CONFIG_NOSYSTEM="1",
+            GIT_AUTHOR_NAME="test",
+            GIT_AUTHOR_EMAIL="test@example.invalid",
+            GIT_COMMITTER_NAME="test",
+            GIT_COMMITTER_EMAIL="test@example.invalid",
+        )
         return env
 
     def git(self, *arguments, cwd=None, data=None):
-        result = subprocess.run([self.git_path, *arguments], cwd=cwd or self.root,
-                                input=data, capture_output=True, env=self.git_env(),
-                                timeout=GIT_TIMEOUT)
+        result = subprocess.run(
+            [self.git_path, *arguments],
+            cwd=cwd or self.root,
+            input=data,
+            capture_output=True,
+            env=self.git_env(),
+            timeout=GIT_TIMEOUT,
+        )
         if result.returncode != 0:
-            raise AssertionError(f"git {' '.join(arguments)} failed:\n"
-                                 + result.stderr.decode("utf-8", "replace"))
+            raise AssertionError(
+                f"git {' '.join(arguments)} failed:\n" + result.stderr.decode("utf-8", "replace")
+            )
         return result.stdout.decode("utf-8", "replace").strip()
 
     def _tree(self, repository, files):
@@ -363,9 +400,13 @@ class DeployFixture:
         branch's tip or of `parent`; the branch is created when missing."""
         ref = f"refs/heads/{branch}"
         if parent is None:
-            tip = subprocess.run([self.git_path, "-C", self.github, "rev-parse", "--verify",
-                                  "--quiet", ref], capture_output=True, text=True,
-                                 env=self.git_env(), timeout=GIT_TIMEOUT)
+            tip = subprocess.run(
+                [self.git_path, "-C", self.github, "rev-parse", "--verify", "--quiet", ref],
+                capture_output=True,
+                text=True,
+                env=self.git_env(),
+                timeout=GIT_TIMEOUT,
+            )
             parent = tip.stdout.strip() or None
         sha = self.make_commit(self.github, message, parent, files)
         self.git("-C", self.github, "update-ref", ref, sha)
@@ -378,30 +419,36 @@ class DeployFixture:
         `deploy/loop2-deploy` (by default the repository's script), `deploy/loop2-backup`,
         `deploy/loop2-backup.cron` and `deploy/loop2-app.logrotate` from the repository's own
         files, and `deploy/loop2-watch` and `deploy/loop2-watch.cron` as stand-in bytes."""
-        files = {"compose.yaml": b"name: loop2\n",
-                 "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script,
-                 "deploy/loop2-backup": read_bytes(BACKUP_SCRIPT),
-                 "deploy/loop2-backup.cron": read_bytes(BACKUP_SCHEDULE),
-                 "deploy/loop2-watch": WATCH_SCRIPT_BYTES,
-                 "deploy/loop2-watch.cron": WATCH_SCHEDULE_BYTES,
-                 "deploy/loop2-app.logrotate": read_bytes(LOGROTATE_FILE)}
+        files = {
+            "compose.yaml": b"name: loop2\n",
+            "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script,
+            "deploy/loop2-backup": read_bytes(BACKUP_SCRIPT),
+            "deploy/loop2-backup.cron": read_bytes(BACKUP_SCHEDULE),
+            "deploy/loop2-watch": WATCH_SCRIPT_BYTES,
+            "deploy/loop2-watch.cron": WATCH_SCHEDULE_BYTES,
+            "deploy/loop2-app.logrotate": read_bytes(LOGROTATE_FILE),
+        }
         return self.commit("main", message, files=files)
 
-    def install(self, data=None, backup=None, schedule=None, watch=None, watch_schedule=None,
-                logrotate=None):
+    def install(
+        self, data=None, backup=None, schedule=None, watch=None, watch_schedule=None, logrotate=None
+    ):
         """Write the six installed copies: the deploy script, the backup script and its schedule,
         the watcher and its schedule, and the logrotate file (by default the bytes that
         `deployable_commit` puts in a commit)."""
         write_bytes(self.installed, read_bytes(SCRIPT) if data is None else data)
-        write_bytes(self.installed_backup,
-                    read_bytes(BACKUP_SCRIPT) if backup is None else backup)
-        write_bytes(self.installed_schedule,
-                    read_bytes(BACKUP_SCHEDULE) if schedule is None else schedule)
+        write_bytes(self.installed_backup, read_bytes(BACKUP_SCRIPT) if backup is None else backup)
+        write_bytes(
+            self.installed_schedule, read_bytes(BACKUP_SCHEDULE) if schedule is None else schedule
+        )
         write_bytes(self.installed_watch, WATCH_SCRIPT_BYTES if watch is None else watch)
-        write_bytes(self.installed_watch_schedule,
-                    WATCH_SCHEDULE_BYTES if watch_schedule is None else watch_schedule)
-        write_bytes(self.installed_logrotate,
-                    read_bytes(LOGROTATE_FILE) if logrotate is None else logrotate)
+        write_bytes(
+            self.installed_watch_schedule,
+            WATCH_SCHEDULE_BYTES if watch_schedule is None else watch_schedule,
+        )
+        write_bytes(
+            self.installed_logrotate, read_bytes(LOGROTATE_FILE) if logrotate is None else logrotate
+        )
 
     def answer_passing_run(self, running=None):
         """Answers under which a deployment gets through every stage: Docker's root directory,
@@ -411,28 +458,41 @@ class DeployFixture:
         if running is None:
             self.answer("docker", exit_code=1, match="inspect --type container --format *loop2")
         else:
-            self.answer("docker", stdout=running + "\n",
-                        match="inspect --type container --format *loop2")
+            self.answer(
+                "docker", stdout=running + "\n", match="inspect --type container --format *loop2"
+            )
         self.answer("docker", stdout=DOCKER_ROOT + "\n", match="info --format {{.DockerRootDir}}")
-        self.answer("docker", stdout="/loop running healthy\n",
-                    match="inspect --type container * loop")
+        self.answer(
+            "docker", stdout="/loop running healthy\n", match="inspect --type container * loop"
+        )
         self.answer("df", stdout=f" Avail\n{22 * 1024 * 1024}\n")
-        self.answer("docker", stdout="200 text/html; charset=utf-8\n"
-                    "404 application/json; charset=utf-8\n", match="exec loop2 node -e *")
+        self.answer(
+            "docker",
+            stdout="200 text/html; charset=utf-8\n404 application/json; charset=utf-8\n",
+            match="exec loop2 node -e *",
+        )
 
     def delete_branch(self, branch):
         self.git("-C", self.github, "update-ref", "-d", f"refs/heads/{branch}")
 
     def clone_refs(self):
         """{refname: sha} of the clone's remote-tracking refs."""
-        listing = self.git("-C", self.checkout, "for-each-ref",
-                           "--format=%(refname) %(objectname)", "refs/remotes/")
+        listing = self.git(
+            "-C",
+            self.checkout,
+            "for-each-ref",
+            "--format=%(refname) %(objectname)",
+            "refs/remotes/",
+        )
         return dict(line.split(" ", 1) for line in listing.splitlines() if line)
 
     def clone_has_object(self, sha):
-        result = subprocess.run([self.git_path, "-C", self.checkout, "cat-file", "-e",
-                                 sha + "^{commit}"], capture_output=True, env=self.git_env(),
-                                timeout=GIT_TIMEOUT)
+        result = subprocess.run(
+            [self.git_path, "-C", self.checkout, "cat-file", "-e", sha + "^{commit}"],
+            capture_output=True,
+            env=self.git_env(),
+            timeout=GIT_TIMEOUT,
+        )
         return result.returncode == 0
 
     # --- stubs ---------------------------------------------------------------------------------
@@ -456,17 +516,27 @@ class DeployFixture:
     def guard_stubs(self):
         """Stop the test when any stubbed tool resolves outside the stub directory on the copy's
         PATH."""
-        result = subprocess.run([self.bash, shell_path(self.guard), self.copy_path_value,
-                                 *STUBBED_TOOLS],
-                                capture_output=True, timeout=RUN_TIMEOUT)
-        resolved = dict(line.split("=", 1) for line in
-                        result.stdout.decode("utf-8", "replace").splitlines() if "=" in line)
+        result = subprocess.run(
+            [self.bash, shell_path(self.guard), self.copy_path_value, *STUBBED_TOOLS],
+            capture_output=True,
+            timeout=RUN_TIMEOUT,
+        )
+        resolved = dict(
+            line.split("=", 1)
+            for line in result.stdout.decode("utf-8", "replace").splitlines()
+            if "=" in line
+        )
         expected_prefix = shell_path(self.stubs) + "/"
-        wrong = {tool: resolved.get(tool, "") for tool in STUBBED_TOOLS
-                 if not resolved.get(tool, "").startswith(expected_prefix)}
+        wrong = {
+            tool: resolved.get(tool, "")
+            for tool in STUBBED_TOOLS
+            if not resolved.get(tool, "").startswith(expected_prefix)
+        }
         if result.returncode != 0 or wrong:
-            raise AssertionError(f"guard: on the copy's PATH these tools resolve outside the stub "
-                                 f"directory {expected_prefix}: {wrong}; the run is aborted")
+            raise AssertionError(
+                f"guard: on the copy's PATH these tools resolve outside the stub "
+                f"directory {expected_prefix}: {wrong}; the run is aborted"
+            )
 
     def _read_calls(self):
         calls = {}
@@ -488,9 +558,11 @@ class DeployFixture:
         found = {}
         for tool in STUBBED_TOOLS:
             path = os.path.join(self.stubs, "calls", tool + ".env")
-            found[tool] = [part.decode("utf-8", "replace")
-                           for part in read_bytes(path).split(b"\0")[:-1]] \
-                if os.path.exists(path) else []
+            found[tool] = (
+                [part.decode("utf-8", "replace") for part in read_bytes(path).split(b"\0")[:-1]]
+                if os.path.exists(path)
+                else []
+            )
         return found
 
     # --- a run ---------------------------------------------------------------------------------
@@ -512,13 +584,27 @@ class DeployFixture:
         env = self.git_env()
         env["GIT_TRACE"] = native_path(trace)
         result = subprocess.run(
-            [self.bash, shell_path(self.launcher), shell_path(self.copy),
-             shell_path(arguments_file), shell_path(ssh_file)],
-            stdin=subprocess.DEVNULL, capture_output=True, env=env, timeout=RUN_TIMEOUT)
+            [
+                self.bash,
+                shell_path(self.launcher),
+                shell_path(self.copy),
+                shell_path(arguments_file),
+                shell_path(ssh_file),
+            ],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            env=env,
+            timeout=RUN_TIMEOUT,
+        )
         git_trace = read_bytes(trace).decode("utf-8", "replace") if os.path.exists(trace) else ""
-        return Result(result.returncode, result.stdout.decode("utf-8", "replace"),
-                      result.stderr.decode("utf-8", "replace"), self._read_calls(), git_trace,
-                      self._read_commit_env())
+        return Result(
+            result.returncode,
+            result.stdout.decode("utf-8", "replace"),
+            result.stderr.decode("utf-8", "replace"),
+            self._read_calls(),
+            git_trace,
+            self._read_commit_env(),
+        )
 
     def run_script_as_probe(self, probe_text, arguments=(), ssh_original_command=None):
         """Run another script through the same launcher, for a check of the seam itself."""
@@ -530,5 +616,8 @@ class DeployFixture:
             write_bytes(self.copy, saved)
 
     def log_text(self):
-        return read_bytes(self.log_file).decode("utf-8", "replace") \
-            if os.path.exists(self.log_file) else ""
+        return (
+            read_bytes(self.log_file).decode("utf-8", "replace")
+            if os.path.exists(self.log_file)
+            else ""
+        )

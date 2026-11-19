@@ -49,10 +49,11 @@ MARKER = "attacker-marker-8d3f@example.invalid"
 SUBJECT_CHARACTERS = re.compile(r"^[a-z0-9_]+$")
 BACKUP_SUBJECT = "kopia_bazy_loop2_nieudana"
 
-BROWSER_LINE = (f'{{"failure":"browser","kind":"{MARKER}","code":"{MARKER}",'
-                f'"place":"{MARKER}"}}\n')
-FAILURE_LINE = (f'{{"failure":"database","kind":"SqliteError","code":"{MARKER}","place":"open",'
-                f'"accountId":"{MARKER}"}}\n')
+BROWSER_LINE = f'{{"failure":"browser","kind":"{MARKER}","code":"{MARKER}","place":"{MARKER}"}}\n'
+FAILURE_LINE = (
+    f'{{"failure":"database","kind":"SqliteError","code":"{MARKER}","place":"open",'
+    f'"accountId":"{MARKER}"}}\n'
+)
 UNCOUNTED_LINE = f"{MARKER} wrote a line that begins with no failure object\n"
 SENT_AGO = LATER - 3600
 # Lines of the log of the backup that hold the marker where a line of the real log never does (the
@@ -74,19 +75,31 @@ def healthy_line(container_id, health="none", status="running", started=support.
 
 
 def arrange_down(fixture):
-    fixture.answer("docker", exit_code=1, stdout=(MARKER + "\n").encode(),
-                   stderr=(MARKER + "\n").encode(), match="inspect * loop2-cloudflared")
+    fixture.answer(
+        "docker",
+        exit_code=1,
+        stdout=(MARKER + "\n").encode(),
+        stderr=(MARKER + "\n").encode(),
+        match="inspect * loop2-cloudflared",
+    )
 
 
 def arrange_unhealthy(fixture):
-    fixture.answer("docker", stdout=healthy_line(support.GAME_ID, health="unhealthy").encode(),
-                   stderr=(MARKER + "\n").encode(), match="inspect * loop2")
+    fixture.answer(
+        "docker",
+        stdout=healthy_line(support.GAME_ID, health="unhealthy").encode(),
+        stderr=(MARKER + "\n").encode(),
+        match="inspect * loop2",
+    )
 
 
 def arrange_restarted(fixture):
-    fixture.answer("docker", stdout=healthy_line(support.TUNNEL_ID,
-                                                 started=support.RESTARTED).encode(),
-                   stderr=(MARKER + "\n").encode(), match="inspect * loop2-cloudflared")
+    fixture.answer(
+        "docker",
+        stdout=healthy_line(support.TUNNEL_ID, started=support.RESTARTED).encode(),
+        stderr=(MARKER + "\n").encode(),
+        match="inspect * loop2-cloudflared",
+    )
 
 
 def arrange_failures(fixture):
@@ -101,22 +114,34 @@ def arrange_browser(fixture):
     fixture.set_log(BROWSER_LINE * 3 + UNCOUNTED_LINE, errors=MARKER + "\n")
 
 
-ARRANGEMENTS = {"down": arrange_down, "unhealthy": arrange_unhealthy,
-                "restarted": arrange_restarted, "failures": arrange_failures,
-                "backup": arrange_backup, "browser": arrange_browser}
+ARRANGEMENTS = {
+    "down": arrange_down,
+    "unhealthy": arrange_unhealthy,
+    "restarted": arrange_restarted,
+    "failures": arrange_failures,
+    "backup": arrange_backup,
+    "browser": arrange_browser,
+}
 
 
 def noise(fixture):
     """The marker on the standard error of every healthy reading and of `logs`, put after any
     arrangement so the arrangement's answer, which comes first, wins where it applies."""
-    fixture.answer("docker", stdout=healthy_line(support.GAME_ID, health="healthy").encode(),
-                   stderr=(MARKER + "\n").encode(), match="inspect * loop2")
-    fixture.answer("docker", stdout=healthy_line(support.TUNNEL_ID).encode(),
-                   stderr=(MARKER + "\n").encode(), match="inspect * loop2-cloudflared")
+    fixture.answer(
+        "docker",
+        stdout=healthy_line(support.GAME_ID, health="healthy").encode(),
+        stderr=(MARKER + "\n").encode(),
+        match="inspect * loop2",
+    )
+    fixture.answer(
+        "docker",
+        stdout=healthy_line(support.TUNNEL_ID).encode(),
+        stderr=(MARKER + "\n").encode(),
+        match="inspect * loop2-cloudflared",
+    )
 
 
 class FixedMessages(unittest.TestCase):
-
     def fixture(self):
         fixture = support.WatchFixture()
         self.addCleanup(fixture.remove)
@@ -127,8 +152,14 @@ class FixedMessages(unittest.TestCase):
         """Every text and every file the run could have put the marker in, but the stand-ins' own
         directory and the one of the backup log, whose files hold what the test put there."""
         files = fixture.every_file(outside=(fixture.stubs, os.path.dirname(fixture.backup_log)))
-        texts = [result.stdout, result.stderr, result.log, str(result.calls),
-                 str(result.pusher_inputs), str(result.messages())]
+        texts = [
+            result.stdout,
+            result.stderr,
+            result.log,
+            str(result.calls),
+            str(result.pusher_inputs),
+            str(result.messages()),
+        ]
         texts += [data.decode("utf-8", "replace") for data in files.values()]
         return texts, files
 
@@ -154,8 +185,11 @@ class FixedMessages(unittest.TestCase):
                 backup_log = support.deploy_support.read_bytes(fixture.backup_log)
                 result = fixture.run()
                 self.assert_one_fixed_notice(result, kind)
-                self.assertEqual(support.deploy_support.read_bytes(fixture.backup_log),
-                                 backup_log, "the watcher wrote into the log of the backup")
+                self.assertEqual(
+                    support.deploy_support.read_bytes(fixture.backup_log),
+                    backup_log,
+                    "the watcher wrote into the log of the backup",
+                )
                 texts, files = self.everywhere(fixture, result)
                 for text in texts:
                     self.assertNotIn(MARKER, text)
@@ -172,11 +206,14 @@ class FixedMessages(unittest.TestCase):
                 ARRANGEMENTS[kind](fixture)
                 result = fixture.run_at(LATER)
                 stand_in_output = support.deploy_support.read_bytes(
-                    os.path.join(fixture.stubs, "log-output")).decode()
+                    os.path.join(fixture.stubs, "log-output")
+                ).decode()
                 self.assertIn(MARKER, stand_in_output)
-                self.assertEqual([c for c in result.of("docker") if c[:1] == ["logs"]],
-                                 [["logs", "--since", str(T0), "--until", str(LATER), "loop2"]],
-                                 result)
+                self.assertEqual(
+                    [c for c in result.of("docker") if c[:1] == ["logs"]],
+                    [["logs", "--since", str(T0), "--until", str(LATER), "loop2"]],
+                    result,
+                )
         fixture = self.fixture()
         arrange_down(fixture)
         result = fixture.run_at(LATER)
@@ -208,17 +245,26 @@ class FixedMessages(unittest.TestCase):
         fixture = self.fixture()
         arrange_down(fixture)
         arrange_backup(fixture)
-        fixture.answer("docker", stdout=healthy_line(support.GAME_ID, health="unhealthy").encode(),
-                       stderr=(MARKER + "\n").encode(), match="inspect * loop2")
+        fixture.answer(
+            "docker",
+            stdout=healthy_line(support.GAME_ID, health="unhealthy").encode(),
+            stderr=(MARKER + "\n").encode(),
+            match="inspect * loop2",
+        )
         fixture.set_log(FAILURE_LINE + BROWSER_LINE + UNCOUNTED_LINE, errors=MARKER + "\n")
         # The tunnel is down in this run, so `restarted` rides on the game container, whose
         # start time the state remembers: the state is rewritten with it first.
-        fixture.write_state(f"window_end {T0}\ncontainer loop2 {support.GAME_ID} "
-                            f"{support.STARTED.replace('22:00', '21:00')}\n"
-                            f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n")
+        fixture.write_state(
+            f"window_end {T0}\ncontainer loop2 {support.GAME_ID} "
+            f"{support.STARTED.replace('22:00', '21:00')}\n"
+            f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n"
+        )
         result = fixture.run_at(LATER)
-        self.assertEqual(result.messages(), [(support.NOTICES[kind][0], support.NOTICES[kind][1]
-                                              + "\n") for kind in support.KINDS], result)
+        self.assertEqual(
+            result.messages(),
+            [(support.NOTICES[kind][0], support.NOTICES[kind][1] + "\n") for kind in support.KINDS],
+            result,
+        )
         texts, _files = self.everywhere(fixture, result)
         for text in texts:
             self.assertNotIn(MARKER, text)
@@ -259,8 +305,9 @@ class FixedMessages(unittest.TestCase):
         # invariant: failure-watcher-message
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         fixture = self.fixture()
-        fixture.answer("docker", exit_code=1, stdout=(MARKER + "\n").encode(),
-                       stderr=(MARKER + "\n").encode())
+        fixture.answer(
+            "docker", exit_code=1, stdout=(MARKER + "\n").encode(), stderr=(MARKER + "\n").encode()
+        )
         result = fixture.run_at(LATER)
         self.assert_one_fixed_notice(result, "down")
         texts, _files = self.everywhere(fixture, result)
@@ -280,22 +327,35 @@ class FixedMessages(unittest.TestCase):
             "the marker for the start": healthy_line(support.GAME_ID, started=MARKER),
             "a good line and the marker after it": healthy_line(support.GAME_ID) + MARKER + "\n",
             "a good line with the marker appended": healthy_line(support.GAME_ID).rstrip("\n")
-                                                    + " " + MARKER + "\n",
+            + " "
+            + MARKER
+            + "\n",
         }
         for name, answer in shapes.items():
             with self.subTest(name):
                 fixture = self.fixture()
-                fixture.answer("docker", stdout=answer.encode(), stderr=(MARKER + "\n").encode(),
-                               match="inspect * loop2-cloudflared")
+                fixture.answer(
+                    "docker",
+                    stdout=answer.encode(),
+                    stderr=(MARKER + "\n").encode(),
+                    match="inspect * loop2-cloudflared",
+                )
                 noise(fixture)
                 result = fixture.run_at(LATER)
                 self.assert_one_fixed_notice(result, "down")
                 rule = os.path.join(fixture.stubs, "answers", "docker", "000", "stdout")
-                self.assertIn(MARKER, support.deploy_support.read_bytes(rule).decode(),
-                              "precondition: the marker stands in the answer")
+                self.assertIn(
+                    MARKER,
+                    support.deploy_support.read_bytes(rule).decode(),
+                    "precondition: the marker stands in the answer",
+                )
                 self.assertTrue(
-                    any(c[:1] == ["inspect"] and c[-1] == "loop2-cloudflared"
-                        for c in result.of("docker")), "precondition: the answer was asked for")
+                    any(
+                        c[:1] == ["inspect"] and c[-1] == "loop2-cloudflared"
+                        for c in result.of("docker")
+                    ),
+                    "precondition: the answer was asked for",
+                )
                 texts, _files = self.everywhere(fixture, result)
                 for text in texts:
                     self.assertNotIn(MARKER, text)

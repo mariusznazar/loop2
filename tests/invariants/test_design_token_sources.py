@@ -119,17 +119,17 @@ def skip_block(text, index):
 
 def source_finding(text, semicolon, name):
     line_end = text.find("\n", semicolon)
-    rest = text[semicolon + 1:len(text) if line_end < 0 else line_end]
+    rest = text[semicolon + 1 : len(text) if line_end < 0 else line_end]
     opening = re.match(r"[ \t]*/\*", rest)
     where = f"line {line_at(text, semicolon)}: the declaration {name!r}"
     if not opening:
         return f"{where} has no comment after its `;` on that line"
     start = semicolon + 1 + opening.end()
     end = comment_end(text, start - 2)
-    body = text[start:len(text) if end is None else end - 2].lstrip()
+    body = text[start : len(text) if end is None else end - 2].lstrip()
     if not body.startswith(SOURCE):
         return f"{where} has a comment after its `;` that does not open with {SOURCE!r}"
-    if not body[len(SOURCE):].strip():
+    if not body[len(SOURCE) :].strip():
         return f"{where} has a {SOURCE!r} comment with no further text"
     return None
 
@@ -181,8 +181,9 @@ def findings(text):
             prelude = re.sub(r"/\*.*?\*/", " ", text[index:end], flags=re.S).strip()
             where = f"line {line_at(text, index)}"
             if end >= len(text) or text[end] != "{":
-                found.append(f"{where}: {prelude!r} is neither the :root rule nor an "
-                             "@font-face rule")
+                found.append(
+                    f"{where}: {prelude!r} is neither the :root rule nor an @font-face rule"
+                )
                 index = end + 1
                 continue
             if prelude == ":root":
@@ -193,8 +194,10 @@ def findings(text):
                 block, index = block_findings(text, end + 1, custom_properties=False)
                 found += block
             else:
-                found.append(f"{where}: the rule {prelude!r} is neither the :root rule nor an "
-                             "@font-face rule")
+                found.append(
+                    f"{where}: the rule {prelude!r} is neither the :root rule nor an "
+                    "@font-face rule"
+                )
                 index = skip_block(text, end)
     except Unread as unread:
         return [*found, f"the text cannot be read: {unread}"]
@@ -203,8 +206,10 @@ def findings(text):
     return found
 
 
-FONT_FACE = ('@font-face {\n  font-family: "Geist"; /* Source: made up */\n'
-             '  src: url("/fonts/a.woff2") format("woff2"); /* Source: made up */\n}\n')
+FONT_FACE = (
+    '@font-face {\n  font-family: "Geist"; /* Source: made up */\n'
+    '  src: url("/fonts/a.woff2") format("woff2"); /* Source: made up */\n}\n'
+)
 ROOT = ":root {\n  --page: #09090b; /* Source: made up */\n}\n"
 
 FLAGGED = {
@@ -216,19 +221,16 @@ FLAGGED = {
     "Source: with nothing after it": ":root {\n  --page: #09090b; /* Source: */\n}\n",
     "Source: with white space only": ":root {\n  --page: #09090b; /* Source:  \n  */\n}\n",
     "text between the `;` and the comment": ":root {\n  --page: #09090b; x /* Source: a */\n}\n",
-    "the comment of a long declaration on its first line":
-        ':root {\n  --font: /* Source: made up */\n    "Geist",\n    sans-serif;\n}\n',
+    "the comment of a long declaration on its first line": ':root {\n  --font: /* Source: made up */\n    "Geist",\n    sans-serif;\n}\n',
     "a last declaration without `;`": ":root {\n  --page: #09090b /* Source: made up */\n}\n",
-    "an @font-face descriptor without a comment":
-        ROOT + '@font-face {\n  font-family: "Geist";\n}\n',
-    "a property of the :root rule that is no custom property":
-        ":root {\n  color: #f4f4f5; /* Source: made up */\n}\n",
+    "an @font-face descriptor without a comment": ROOT
+    + '@font-face {\n  font-family: "Geist";\n}\n',
+    "a property of the :root rule that is no custom property": ":root {\n  color: #f4f4f5; /* Source: made up */\n}\n",
     "a second :root rule": ROOT + ROOT,
     "no :root rule": FONT_FACE,
     "another rule": ROOT + "body {\n  color: #f4f4f5; /* Source: made up */\n}\n",
     "an @media rule": ROOT + "@media (max-width: 720px) {\n" + ROOT + "}\n",
-    "a rule inside the :root rule":
-        ":root {\n  .a {\n    --b: 1px; /* Source: made up */\n  }\n}\n",
+    "a rule inside the :root rule": ":root {\n  .a {\n    --b: 1px; /* Source: made up */\n  }\n}\n",
     "an @import": '@import "other.css";\n' + ROOT,
     "a block never closed": ":root {\n  --page: #09090b; /* Source: made up */\n",
     "a comment never closed": ROOT + "/* the end",
@@ -255,7 +257,6 @@ CLEAN = (
 
 
 class DesignTokenSources(unittest.TestCase):
-
     def test_every_token_has_a_source_entry(self):
         # invariant: design-token-sources
         path = os.path.join(support.ROOT, *TOKEN_FILE.split("/"))

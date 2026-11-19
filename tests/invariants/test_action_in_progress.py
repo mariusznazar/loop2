@@ -105,7 +105,9 @@ def scenario(changes, last_minute):
 
 MAIN = {0: PA, 5: PA_HOLDS, 22: PC}
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -120,6 +122,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -133,8 +136,9 @@ def drive(steps):
     copy = support.built_copy()
     game = copy.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-action-in-progress-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -160,12 +164,10 @@ def drive(steps):
 
 
 def entrance_tile(run):
-    return next(t for t in run["tiles"]
-                if t["col"] == ENTRANCE_COLUMN and t["row"] == ENTRANCE_ROW)
+    return next(t for t in run["tiles"] if t["col"] == ENTRANCE_COLUMN and t["row"] == ENTRANCE_ROW)
 
 
 class ActionInProgress(unittest.TestCase):
-
     def assert_action_until(self, run, kind, end_minute, message):
         current = run["current"]
         activity = current["activity"]
@@ -183,50 +185,76 @@ class ActionInProgress(unittest.TestCase):
         self.assertEqual(runs[0]["character"]["at"], ENTRANCE)
         for minute in range(1, 20):
             run = runs[minute]
-            self.assert_action_until(run, "explore", 20,
-                                     f"at minute {minute} the exploration started at minute 0 was "
-                                     f"replaced, after the program changed at minute 5")
-            self.assertFalse(entrance_tile(run)["revealed"],
-                             f"the entrance tile is revealed at minute {minute}, before the "
-                             "exploration's 20 minutes")
-            self.assertEqual(run["character"]["at"], ENTRANCE,
-                             f"the character left the entrance at minute {minute}")
+            self.assert_action_until(
+                run,
+                "explore",
+                20,
+                f"at minute {minute} the exploration started at minute 0 was "
+                f"replaced, after the program changed at minute 5",
+            )
+            self.assertFalse(
+                entrance_tile(run)["revealed"],
+                f"the entrance tile is revealed at minute {minute}, before the "
+                "exploration's 20 minutes",
+            )
+            self.assertEqual(
+                run["character"]["at"],
+                ENTRANCE,
+                f"the character left the entrance at minute {minute}",
+            )
 
         at_20 = runs[20]
-        self.assertTrue(entrance_tile(at_20)["revealed"],
-                        "the exploration did not end at minute 20")
-        self.assert_action_until(at_20, "wander", 25,
-                                 "the activity chosen at minute 20 by the changed program")
+        self.assertTrue(
+            entrance_tile(at_20)["revealed"], "the exploration did not end at minute 20"
+        )
+        self.assert_action_until(
+            at_20, "wander", 25, "the activity chosen at minute 20 by the changed program"
+        )
         target = at_20["current"]["stepTo"]
         self.assertIsNotNone(target, "the wandering started at minute 20 has no target tile")
         self.assertNotEqual(target, ENTRANCE)
         for minute in range(21, 25):
             run = runs[minute]
-            self.assert_action_until(run, "wander", 25,
-                                     f"at minute {minute} the step started at minute 20 was replaced, "
-                                     "after the program changed at minute 22")
-            self.assertEqual(run["character"]["at"], ENTRANCE,
-                             f"the character reached its target before minute 25, at {minute}")
+            self.assert_action_until(
+                run,
+                "wander",
+                25,
+                f"at minute {minute} the step started at minute 20 was replaced, "
+                "after the program changed at minute 22",
+            )
+            self.assertEqual(
+                run["character"]["at"],
+                ENTRANCE,
+                f"the character reached its target before minute 25, at {minute}",
+            )
 
         at_25 = runs[25]
-        self.assertEqual(at_25["character"]["at"], target,
-                         "the character is not on the step's target at minute 25")
-        self.assert_action_until(at_25, "explore", 45,
-                                 "the activity chosen at minute 25 by the changed program")
+        self.assertEqual(
+            at_25["character"]["at"],
+            target,
+            "the character is not on the step's target at minute 25",
+        )
+        self.assert_action_until(
+            at_25, "explore", 45, "the activity chosen at minute 25 by the changed program"
+        )
 
     def test_control_the_changed_programs_choose_otherwise(self):
         # invariant: action-in-progress
         holds_from_start = drive(scenario({0: PA_HOLDS}, 0))
-        self.assert_action_until(holds_from_start[0], "wander", 5,
-                                 "PA_HOLDS at minute 0 (a change taking effect at once would show)")
+        self.assert_action_until(
+            holds_from_start[0],
+            "wander",
+            5,
+            "PA_HOLDS at minute 0 (a change taking effect at once would show)",
+        )
 
         kept = drive(scenario({0: PA}, 20))
-        self.assert_action_until(kept[20], "wait", 21,
-                                 "PA kept through minute 20 (no rule applies on the revealed tile)")
+        self.assert_action_until(
+            kept[20], "wait", 21, "PA kept through minute 20 (no rule applies on the revealed tile)"
+        )
 
         holds_kept = drive(scenario({0: PA, 5: PA_HOLDS}, 25))
-        self.assert_action_until(holds_kept[25], "wander", 30,
-                                 "PA_HOLDS kept through minute 25")
+        self.assert_action_until(holds_kept[25], "wander", 30, "PA_HOLDS kept through minute 25")
 
 
 if __name__ == "__main__":

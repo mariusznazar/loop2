@@ -76,8 +76,17 @@ SENT = {"mapId": "forest", "characterId": 1}
 CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
-MORE = (1760000200000, 1760000300000, 1760000400000, 1760000500000, 1760000600000,
-        1760000700000, 1760000800000, 1760000900000, 1760001000000)
+MORE = (
+    1760000200000,
+    1760000300000,
+    1760000400000,
+    1760000500000,
+    1760000600000,
+    1760000700000,
+    1760000800000,
+    1760000900000,
+    1760001000000,
+)
 RESOURCES = ("stick", "berry", "moss", "fiber")
 # Game minutes in which a tile of Las below its stock gains a piece of each resource, as the map's
 # data gives them: renewal falls in every game minute that is a whole multiple of these.
@@ -92,14 +101,23 @@ def rule(condition, action):
 
 
 def going_first(resource):
-    return program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
-                              rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+    return program_from_rules(
+        [
+            rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
+            rule(ALWAYS, {"kind": "explore"}),
+            rule(ALWAYS, {"kind": "wander"}),
+        ]
+    )
 
 
 def going_second(resource):
-    return program_from_rules([rule(NEVER, {"kind": "explore"}),
-                              rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
-                              rule(ALWAYS, {"kind": "wander"})])
+    return program_from_rules(
+        [
+            rule(NEVER, {"kind": "explore"}),
+            rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
+            rule(ALWAYS, {"kind": "wander"}),
+        ]
+    )
 
 
 # (program, whether its fallback may explore an unrevealed tile)
@@ -109,7 +127,9 @@ ROAM = program_from_rules([rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kin
 LONG_MINUTES = 240
 SPELL_MINUTES = 40
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -136,6 +156,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -147,8 +168,12 @@ def node():
 
 def steps_for(prog, minutes, real_ms, roam_spells):
     """(steps, for each game minute whether `prog` was in force when it began)."""
-    steps = [["newGame"], CREATE, ["setProgram", ROAM if roam_spells else prog],
-             ["send", SENT, real_ms]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", ROAM if roam_spells else prog],
+        ["send", SENT, real_ms],
+    ]
     in_force = [not roam_spells]
     for minute in range(1, minutes + 1):
         if roam_spells and minute % SPELL_MINUTES == 0:
@@ -198,7 +223,9 @@ def holds_some(tile, resource):
 
 def is_going(activity, resource):
     return activity.get("kind") == "rule" and activity.get("action") == {
-        "kind": "walkTo", "resource": resource}
+        "kind": "walkTo",
+        "resource": resource,
+    }
 
 
 def findings(runs, resource, explore_fallback, in_force=None):
@@ -224,8 +251,10 @@ def findings(runs, resource, explore_fallback, in_force=None):
         standing = here in holding
         if holding and not standing:
             if not going:
-                found.append(f"minute {minute}: going to {resource} was possible and first, and "
-                             f"not started: {json.dumps(activity)}")
+                found.append(
+                    f"minute {minute}: going to {resource} was possible and first, and "
+                    f"not started: {json.dumps(activity)}"
+                )
                 continue
             counts["went"] += 1
             if any(key(t["at"]) == here for t in zeros):
@@ -238,8 +267,10 @@ def findings(runs, resource, explore_fallback, in_force=None):
         can_explore = explore_fallback and not tile_at(run, here)["revealed"]
         fallback = {"kind": "explore" if can_explore else "wander"}
         if activity.get("kind") != "rule" or activity.get("action") != fallback:
-            found.append(f"minute {minute}: going to {resource} not passed over where {why}: "
-                         f"{json.dumps(activity)}")
+            found.append(
+                f"minute {minute}: going to {resource} not passed over where {why}: "
+                f"{json.dumps(activity)}"
+            )
             continue
         counts["standing" if standing else "none"] += 1
         if not holding and zeros:
@@ -277,8 +308,11 @@ def zero_cases(runs, resource, in_force):
         holding = [key(t["at"]) for t in run["tiles"] if holds_some(t, resource)]
         if is_going(run["current"]["activity"], resource):
             if not any(name == "zero none" for name, _ in found):
-                found[("zero none", minute)] = [[t["col"], t["row"], resource, 0]
-                                                for t in before["tiles"] if resource in t["stock"]]
+                found[("zero none", minute)] = [
+                    [t["col"], t["row"], resource, 0]
+                    for t in before["tiles"]
+                    if resource in t["stock"]
+                ]
         elif here in holding and len(holding) > 1:
             if not any(name == "zero here" for name, _ in found):
                 tile = tile_at(run, here)
@@ -291,7 +325,6 @@ def tile_at(run, at):
 
 
 class WalkFeasibility(unittest.TestCase):
-
     def test_going_is_started_where_possible_and_nowhere_else(self):
         # invariant: walk-feasibility
         totals = {"went": 0, "none": 0, "standing": 0}
@@ -306,8 +339,9 @@ class WalkFeasibility(unittest.TestCase):
                             totals[name] += counts[name]
         self.assertGreater(totals["went"], 100, f"too few goings to mean much: {totals}")
         self.assertGreater(totals["none"], 5, f"too few pass-overs for no tile: {totals}")
-        self.assertGreater(totals["standing"], 100, f"too few pass-overs while standing on such a "
-                                                    f"tile: {totals}")
+        self.assertGreater(
+            totals["standing"], 100, f"too few pass-overs while standing on such a tile: {totals}"
+        )
 
     def test_a_stock_of_zero_is_no_stock(self):
         # invariant: walk-feasibility
@@ -322,15 +356,21 @@ class WalkFeasibility(unittest.TestCase):
                         cases.setdefault(minute[0], (steps, minute[1], change))
                     if len(cases) == 2:
                         break
-                self.assertEqual(sorted(cases), ["zero here", "zero none"],
-                                 f"the runs on {resource} hold no minute for each ZERO case")
+                self.assertEqual(
+                    sorted(cases),
+                    ["zero here", "zero none"],
+                    f"the runs on {resource} hold no minute for each ZERO case",
+                )
                 for name, (steps, minute, change) in sorted(cases.items()):
-                    changed = drive(steps[:advance_index(steps)[minute]]
-                                    + [["setStock", change], ["advanceMinutes", 1]])
+                    changed = drive(
+                        steps[: advance_index(steps)[minute]]
+                        + [["setStock", change], ["advanceMinutes", 1]]
+                    )
                     found, counts = findings(changed[-1:], resource, True)
                     self.assertEqual(found, [], f"{name} at minute {minute}")
-                    self.assertEqual(counts[name], 1,
-                                     f"{name} did not come about at minute {minute}: {counts}")
+                    self.assertEqual(
+                        counts[name], 1, f"{name} did not come about at minute {minute}: {counts}"
+                    )
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: walk-feasibility
@@ -341,51 +381,66 @@ class WalkFeasibility(unittest.TestCase):
         free = [i for i, r in enumerate(runs) if r["current"]["startMinute"] == i and in_force[i]]
         went = next(i for i in free if is_going(runs[i]["current"]["activity"], resource))
         passed = [i for i in free if not is_going(runs[i]["current"]["activity"], resource)]
-        none = next(i for i in passed
-                    if not any(holds_some(t, resource) for t in runs[i]["tiles"]))
+        none = next(i for i in passed if not any(holds_some(t, resource) for t in runs[i]["tiles"]))
         stood = next(i for i in passed if any(holds_some(t, resource) for t in runs[i]["tiles"]))
-        going = {"kind": "rule",
-                 "action": {"kind": "walkTo", "resource": resource}}
+        going = {"kind": "rule", "action": {"kind": "walkTo", "resource": resource}}
 
         not_started = copying.deepcopy(runs)
-        not_started[went]["current"]["activity"] = {"kind": "rule",
-                                                    "action": {"kind": "wander"}}
-        self.assertTrue(findings(not_started, resource, True, in_force)[0],
-                        "a going not started where possible goes unseen")
+        not_started[went]["current"]["activity"] = {"kind": "rule", "action": {"kind": "wander"}}
+        self.assertTrue(
+            findings(not_started, resource, True, in_force)[0],
+            "a going not started where possible goes unseen",
+        )
         wrong_resource = copying.deepcopy(runs)
         wrong_resource[went]["current"]["activity"] = {
-            "kind": "rule", "action": {"kind": "walkTo", "resource": "moss"}}
-        self.assertTrue(findings(wrong_resource, resource, True, in_force)[0],
-                        "going to the wrong resource goes unseen")
+            "kind": "rule",
+            "action": {"kind": "walkTo", "resource": "moss"},
+        }
+        self.assertTrue(
+            findings(wrong_resource, resource, True, in_force)[0],
+            "going to the wrong resource goes unseen",
+        )
         for label, index in (("where no tile holds some", none), ("while standing", stood)):
             started = copying.deepcopy(runs)
             started[index]["current"]["activity"] = copying.deepcopy(going)
-            self.assertTrue(findings(started, resource, True, in_force)[0],
-                            f"a going started {label} goes unseen")
+            self.assertTrue(
+                findings(started, resource, True, in_force)[0],
+                f"a going started {label} goes unseen",
+            )
         zeroed = copying.deepcopy(runs)
         for t in zeroed[went]["tiles"]:
             if resource in t["stock"]:
                 t["stock"][resource] = 0
-        self.assertTrue(findings(zeroed, resource, True, in_force)[0],
-                        "a going started where every such tile holds 0 goes unseen")
+        self.assertTrue(
+            findings(zeroed, resource, True, in_force)[0],
+            "a going started where every such tile holds 0 goes unseen",
+        )
         wrong_fallback = copying.deepcopy(runs)
         wrong_fallback[stood]["current"]["activity"] = {
-            "kind": "rule", "action": {"kind": "explore"}}
-        self.assertTrue(findings(wrong_fallback, resource, True, in_force)[0],
-                        "exploring a revealed tile instead of the feasible fallback goes unseen")
+            "kind": "rule",
+            "action": {"kind": "explore"},
+        }
+        self.assertTrue(
+            findings(wrong_fallback, resource, True, in_force)[0],
+            "exploring a revealed tile instead of the feasible fallback goes unseen",
+        )
         # GOING_SECOND's exploration condition never holds, even on an unrevealed tile.
         second = copying.deepcopy(runs[none])
-        self.assertFalse(tile_at(second, key(second["character"]["at"]))["revealed"],
-                         "precondition: the fallback example is on an unrevealed tile")
+        self.assertFalse(
+            tile_at(second, key(second["character"]["at"]))["revealed"],
+            "precondition: the fallback example is on an unrevealed tile",
+        )
         second["current"]["activity"] = {"kind": "rule", "action": {"kind": "wander"}}
         self.assertEqual(findings([second], resource, False)[0], [])
         second["current"]["activity"] = {"kind": "rule", "action": {"kind": "explore"}}
-        self.assertTrue(findings([second], resource, False)[0],
-                        "exploration with a false condition goes unseen")
+        self.assertTrue(
+            findings([second], resource, False)[0], "exploration with a false condition goes unseen"
+        )
         waited = copying.deepcopy(runs)
         waited[none]["current"]["activity"] = {"kind": "wait"}
-        self.assertTrue(findings(waited, resource, True, in_force)[0],
-                        "a going not passed over goes unseen")
+        self.assertTrue(
+            findings(waited, resource, True, in_force)[0], "a going not passed over goes unseen"
+        )
 
 
 if __name__ == "__main__":

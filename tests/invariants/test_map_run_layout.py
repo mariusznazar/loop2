@@ -73,13 +73,23 @@ def rule(condition, action):
 
 EXPLORE = program_from_rules([rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
 WANDER = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
-GOING = program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                            rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+GOING = program_from_rules(
+    [
+        rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+        rule(ALWAYS, {"kind": "explore"}),
+        rule(ALWAYS, {"kind": "wander"}),
+    ]
+)
 EMPTY = program_from_rules([])
-PAIRS = (("EXPLORE", EXPLORE, "WANDER", WANDER), ("GOING", GOING, "EXPLORE", EXPLORE),
-         ("EMPTY", EMPTY, "GOING", GOING))
+PAIRS = (
+    ("EXPLORE", EXPLORE, "WANDER", WANDER),
+    ("GOING", GOING, "EXPLORE", EXPLORE),
+    ("EMPTY", EMPTY, "GOING", GOING),
+)
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -94,6 +104,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -151,19 +162,26 @@ def drive(steps):
 def two_sends(first, second, real_ms):
     """Two games, each sent at `real_ms`: one under `first`, one under `second` (replaced by
     `first` at CHANGE_AT)."""
-    one = drive([["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
-                + minutes(first, first))
-    two = drive([["newGame"], CREATE, ["setProgram", second], ["send", SENT, real_ms]]
-                + minutes(second, first))
+    one = drive(
+        [["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
+        + minutes(first, first)
+    )
+    two = drive(
+        [["newGame"], CREATE, ["setProgram", second], ["send", SENT, real_ms]]
+        + minutes(second, first)
+    )
     return one[0], two[0]
 
 
 def restarted(first, second, real_ms):
     """One game: a map run under `first`, then a restart under `second` (replaced by `first` at
     CHANGE_AT)."""
-    runs = drive([["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
-                 + minutes(first, first)
-                 + [["setProgram", second], ["restart"]] + minutes(second, first))
+    runs = drive(
+        [["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
+        + minutes(first, first)
+        + [["setProgram", second], ["restart"]]
+        + minutes(second, first)
+    )
     if len(runs) != 2:
         raise AssertionError(f"the steps brought about {len(runs)} map runs, not 2")
     return runs[0], runs[1]
@@ -178,8 +196,7 @@ def differences(one, two):
     """Where two map runs, minute by minute, differ in the resources on a tile."""
     found = []
     if one[0]["seed"] != two[0]["seed"]:
-        found.append(f"the two map runs are on different seeds: {one[0]['seed']}, "
-                     f"{two[0]['seed']}")
+        found.append(f"the two map runs are on different seeds: {one[0]['seed']}, {two[0]['seed']}")
         return found
     if len(one) != len(two):
         found.append(f"the map runs last {len(one)} and {len(two)} minutes")
@@ -190,26 +207,32 @@ def differences(one, two):
             continue
         for tile in sorted(first):
             if first[tile] != second[tile]:
-                found.append(f"minute {a['minute']}: tile {tile} holds {first[tile]} in one map "
-                             f"run and {second[tile]} in the other")
+                found.append(
+                    f"minute {a['minute']}: tile {tile} holds {first[tile]} in one map "
+                    f"run and {second[tile]} in the other"
+                )
     return found
 
 
 def made_a_difference(one, two):
-    return any(a["character"]["at"] != b["character"]["at"]
-               or [t["revealed"] for t in a["tiles"]] != [t["revealed"] for t in b["tiles"]]
-               for a, b in zip(one, two))
+    return any(
+        a["character"]["at"] != b["character"]["at"]
+        or [t["revealed"] for t in a["tiles"]] != [t["revealed"] for t in b["tiles"]]
+        for a, b in zip(one, two)
+    )
 
 
 class MapRunLayout(unittest.TestCase):
-
     def check_pair(self, one, two, label):
         self.assertEqual(differences(one, two), [], label)
-        self.assertTrue(made_a_difference(one, two),
-                        f"{label}: the two programs made no difference, so the pair shows nothing")
+        self.assertTrue(
+            made_a_difference(one, two),
+            f"{label}: the two programs made no difference, so the pair shows nothing",
+        )
         for run in (one, two):
-            self.assertTrue(any(t["stock"] for t in run[0]["tiles"]),
-                            f"{label}: no tile holds any resource")
+            self.assertTrue(
+                any(t["stock"] for t in run[0]["tiles"]), f"{label}: no tile holds any resource"
+            )
 
     def test_two_sends_on_one_seed_have_one_layout(self):
         # invariant: map-run-layout
@@ -225,8 +248,9 @@ class MapRunLayout(unittest.TestCase):
             for real_ms in (T, T_OTHER) + MORE:
                 with self.subTest(pair=(name_one, name_two), real_ms=real_ms):
                     one, two = restarted(first, second, real_ms)
-                    self.check_pair(one, two, f"{name_one}, restarted under {name_two}, "
-                                              f"sent at {real_ms}")
+                    self.check_pair(
+                        one, two, f"{name_one}, restarted under {name_two}, sent at {real_ms}"
+                    )
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: map-run-layout
@@ -234,24 +258,37 @@ class MapRunLayout(unittest.TestCase):
         self.assertEqual(differences(one, two), [])
         other = two_sends(EXPLORE, EXPLORE, T_OTHER)[0]
         other_seed = [dict(state, seed=one[0]["seed"]) for state in other]
-        self.assertTrue(differences(one, other_seed),
-                        "map runs sent at different real times have one layout, so the "
-                        "comparison shows nothing")
+        self.assertTrue(
+            differences(one, other_seed),
+            "map runs sent at different real times have one layout, so the "
+            "comparison shows nothing",
+        )
         holding = next(t for t in one[0]["tiles"] if t["stock"])
         resource = sorted(holding["stock"])[0]
         taken = copying.deepcopy(two)
-        tile = next(t for t in taken[100]["tiles"]
-                    if (t["col"], t["row"]) == (holding["col"], holding["row"]))
+        tile = next(
+            t
+            for t in taken[100]["tiles"]
+            if (t["col"], t["row"]) == (holding["col"], holding["row"])
+        )
         del tile["stock"][resource]
         self.assertTrue(differences(one, taken), "a resource taken off a tile goes unseen")
-        absent = next((t, r) for t in one[0]["tiles"] for r in ("stick", "berry", "moss", "fiber")
-                      if r not in t["stock"])
+        absent = next(
+            (t, r)
+            for t in one[0]["tiles"]
+            for r in ("stick", "berry", "moss", "fiber")
+            if r not in t["stock"]
+        )
         put = copying.deepcopy(two)
-        tile = next(t for t in put[MINUTES]["tiles"]
-                    if (t["col"], t["row"]) == (absent[0]["col"], absent[0]["row"]))
+        tile = next(
+            t
+            for t in put[MINUTES]["tiles"]
+            if (t["col"], t["row"]) == (absent[0]["col"], absent[0]["row"])
+        )
         tile["stock"][absent[1]] = 0
-        self.assertTrue(differences(one, put),
-                        "a resource put on a tile with a stock of 0 goes unseen")
+        self.assertTrue(
+            differences(one, put), "a resource put on a tile with a stock of 0 goes unseen"
+        )
 
 
 if __name__ == "__main__":

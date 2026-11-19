@@ -15,9 +15,15 @@ WEB = "{ts,tsx,mts,cts,js,jsx,mjs,cjs,html,css}"
 # The D-32 scope, each pattern within one .gitattributes keeps at LF. A pattern matching no file
 # fails the check, but a brace alternative may: the HTML and CSS of tests/sim and tests/view stand
 # beside their scripts. test_source_tool_scope.py keeps the patterns to the scope.
-PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
-                     f"scripts/**/*.{SCRIPT}", f"tests/**/*.{SCRIPT}", f"balance/**/*.{SCRIPT}",
-                     f"tests/{{sim,view}}/**/*.{WEB}", "{eslint,prettier}.config.mjs"]
+PRETTIER_PATTERNS = [
+    f"src/browser/**/*.{WEB}",
+    f"src/server/**/*.{SCRIPT}",
+    f"scripts/**/*.{SCRIPT}",
+    f"tests/**/*.{SCRIPT}",
+    f"balance/**/*.{SCRIPT}",
+    f"tests/{{sim,view}}/**/*.{WEB}",
+    "{eslint,prettier}.config.mjs",
+]
 # The flags of the Prettier check; the scope test runs the same check on made-up files (D-32).
 PRETTIER_FLAGS = ["--check", "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore"]
 # Named one by one: review keeps a new standalone Bash script from going unnamed (D-31).
@@ -50,9 +56,16 @@ class QualityInvariants(unittest.TestCase):
             raise AssertionError(str(error)) from None
 
     def assert_passes(self, *command, hint=""):
-        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
-                                encoding="utf-8", errors="backslashreplace", timeout=900,
-                                check=False)
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            timeout=900,
+            check=False,
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr + hint)
 
     def test_eslint_source_rules(self):
@@ -64,21 +77,41 @@ class QualityInvariants(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             suppressions = Path(temp) / "eslint-suppressions.json"
             suppressions.write_text("{}\n", encoding="utf-8")
-            self.assert_passes("node", "node_modules/eslint/bin/eslint.js", "--max-warnings",
-                               "0", "--suppressions-location", str(suppressions), ".")
+            self.assert_passes(
+                "node",
+                "node_modules/eslint/bin/eslint.js",
+                "--max-warnings",
+                "0",
+                "--suppressions-location",
+                str(suppressions),
+                ".",
+            )
 
     def test_ruff_source_rules(self):
         # invariant: ruff-source-rules
         # decision: D-28 "For the adopted linters, full-compliance source invariants apply"
         # data: ruff.toml
-        self.assert_passes(venv_tool("ruff"), "check", "--config", "ruff.toml", "--ignore-noqa",
-                           "--no-fix", "--no-cache", ".")
+        self.assert_passes(
+            venv_tool("ruff"),
+            "check",
+            "--config",
+            "ruff.toml",
+            "--ignore-noqa",
+            "--no-fix",
+            "--no-cache",
+            ".",
+        )
 
     def test_shellcheck_source_rules(self):
         # invariant: shellcheck-source-rules
         # decision: D-28 "For the adopted linters, full-compliance source invariants apply"
-        self.assert_passes(venv_tool("shellcheck"), "--norc", "--shell=bash",
-                           "--extended-analysis=true", *BASH_SCRIPTS)
+        self.assert_passes(
+            venv_tool("shellcheck"),
+            "--norc",
+            "--shell=bash",
+            "--extended-analysis=true",
+            *BASH_SCRIPTS,
+        )
 
     def test_ruff_source_format(self):
         # invariant: ruff-source-format
@@ -86,9 +119,18 @@ class QualityInvariants(unittest.TestCase):
         # data: ruff.toml
         ruff = venv_tool("ruff")
         fix = [quality_environment.shown(ruff, ROOT), "format", "--config", "ruff.toml", "."]
-        self.assert_passes(ruff, "format", "--check", "--output-format", "concise", "--config", "ruff.toml",
-                           "--no-cache", ".",
-                           hint=format_hint(fix))
+        self.assert_passes(
+            ruff,
+            "format",
+            "--check",
+            "--output-format",
+            "concise",
+            "--config",
+            "ruff.toml",
+            "--no-cache",
+            ".",
+            hint=format_hint(fix),
+        )
 
     def test_no_python_file_carries_a_comment_that_switches_the_formatter(self):
         # invariant: ruff-source-format
@@ -97,7 +139,8 @@ class QualityInvariants(unittest.TestCase):
         found = []
         for path in format_support.python_sources(ROOT, venv_tool("ruff")):
             for line, text in format_support.switching_comments(
-                    format_support.read_source(ROOT / path)):
+                format_support.read_source(ROOT / path)
+            ):
                 found.append("%s:%d: %s" % (path, line, text))
         self.assertEqual(found, [], "a comment that switches the formatter off or on")
 
@@ -105,15 +148,22 @@ class QualityInvariants(unittest.TestCase):
         # invariant: shfmt-source-format
         # decision: D-434 "Every standalone Bash script the test of D-31 names stands as local pinned shfmt 3.14.1 leaves it, run on it by name with `-i 2 -bn -ci -ln bash`: two spaces of indent, `&&` and `||` at the start of a continued line, indented `case` branches and Bash as the language, with those flags in place of any `.editorconfig`."
         shfmt = venv_tool("shfmt")
-        fix = [quality_environment.shown(shfmt, ROOT), *format_support.SHFMT_FLAGS, "-w", *BASH_SCRIPTS]
-        self.assert_passes(shfmt, *format_support.SHFMT_FLAGS, "-l", *BASH_SCRIPTS,
-                           hint=format_hint(fix))
+        fix = [
+            quality_environment.shown(shfmt, ROOT),
+            *format_support.SHFMT_FLAGS,
+            "-w",
+            *BASH_SCRIPTS,
+        ]
+        self.assert_passes(
+            shfmt, *format_support.SHFMT_FLAGS, "-l", *BASH_SCRIPTS, hint=format_hint(fix)
+        )
 
     def test_prettier_source_format(self):
         # invariant: prettier-source-format
         # decision: D-32 "All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools, balance-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`"
-        self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS,
-                           *PRETTIER_PATTERNS)
+        self.assert_passes(
+            "node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS, *PRETTIER_PATTERNS
+        )
 
     def test_introduced_npm_vulnerabilities(self):
         # invariant: introduced-npm-vulnerabilities

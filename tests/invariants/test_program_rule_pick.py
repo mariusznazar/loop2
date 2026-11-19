@@ -99,7 +99,7 @@ T = 1760000000000
 T_OTHER = 1760000123456
 
 EXPLORE_MINUTES = 20  # actions.js: explore
-WAIT_MINUTES = 1      # balance.js: waitMinutes
+WAIT_MINUTES = 1  # balance.js: waitMinutes
 
 ALWAYS = {"kind": "always"}
 NEVER = {"kind": "hereBelow", "resource": "stick", "value": 0}
@@ -116,9 +116,13 @@ def rule(condition, action):
     return {"condition": condition, "action": action}
 
 
-P_NONE_AT_20 = program_from_rules([
-    rule(NEVER, EXPLORE), rule(ALWAYS, walk_to("berry")), rule(ALWAYS, EXPLORE),
-])
+P_NONE_AT_20 = program_from_rules(
+    [
+        rule(NEVER, EXPLORE),
+        rule(ALWAYS, walk_to("berry")),
+        rule(ALWAYS, EXPLORE),
+    ]
+)
 P_NEVER = program_from_rules([rule(NEVER, EXPLORE)])
 P_WANDER_FIRST = program_from_rules([rule(ALWAYS, WANDER), rule(ALWAYS, EXPLORE)])
 P_EXPLORE_FIRST = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)])
@@ -126,24 +130,39 @@ P_FIRST_FAILS = program_from_rules([rule(NEVER, WANDER), rule(ALWAYS, EXPLORE)])
 
 
 def p_long(resource):
-    return program_from_rules([
-        rule(NEVER, WANDER), rule(ALWAYS, walk_to(resource)),
-        rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER),
-    ])
+    return program_from_rules(
+        [
+            rule(NEVER, WANDER),
+            rule(ALWAYS, walk_to(resource)),
+            rule(ALWAYS, EXPLORE),
+            rule(ALWAYS, WANDER),
+        ]
+    )
 
 
 LONG_MINUTES = 240
 
-EXPLORING_FROM_0_BY_3 = {"activity": {"kind": "rule", "ruleId": 3, "action": EXPLORE},
-                         "startMinute": 0, "endMinute": EXPLORE_MINUTES, "stepTo": None}
+EXPLORING_FROM_0_BY_3 = {
+    "activity": {"kind": "rule", "ruleId": 3, "action": EXPLORE},
+    "startMinute": 0,
+    "endMinute": EXPLORE_MINUTES,
+    "stepTo": None,
+}
 
 
 def waiting(minute):
-    return {"activity": {"kind": "wait"}, "startMinute": minute,
-            "endMinute": minute + WAIT_MINUTES, "stepTo": None}
+    return {
+        "activity": {"kind": "wait"},
+        "startMinute": minute,
+        "endMinute": minute + WAIT_MINUTES,
+        "stepTo": None,
+    }
 
 
-DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + HELD_PROGRAMS_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -171,6 +190,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -184,8 +204,12 @@ def records(program, minutes, real_ms=T, lacking=None):
     """The map run and the program after the send and after each of `minutes` game minutes, by
     minute. The game starts knowing everything the data lists except what `lacking` names, a
     dict of lists under "actions", "conditions" and "items"."""
-    steps = ([["newGame", lacking or {}], CREATE, ["setProgram", program],
-              ["send", SENT, real_ms]] + [["advanceMinutes", 1]] * minutes)
+    steps = [
+        ["newGame", lacking or {}],
+        CREATE,
+        ["setProgram", program],
+        ["send", SENT, real_ms],
+    ] + [["advanceMinutes", 1]] * minutes
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
         raise AssertionError(f"`npm run build` placed no {GAME_MODULE}")
@@ -246,33 +270,57 @@ def long_violations(runs, resource):
         here = tile_at(run, run["character"]["at"])
         expected = 2 if can_go(run, resource) else 3 if not here["revealed"] else 4
         activity = current["activity"]
-        expected_action = walk_to(resource) if expected == 2 else EXPLORE if expected == 3 else WANDER
-        if (activity.get("kind") != "rule" or activity.get("ruleId") != expected
-                or activity.get("action") != expected_action):
-            found.append(f"minute {minute}: expected rule {expected}, started "
-                         f"{json.dumps(activity)}")
+        expected_action = (
+            walk_to(resource) if expected == 2 else EXPLORE if expected == 3 else WANDER
+        )
+        if (
+            activity.get("kind") != "rule"
+            or activity.get("ruleId") != expected
+            or activity.get("action") != expected_action
+        ):
+            found.append(
+                f"minute {minute}: expected rule {expected}, started {json.dumps(activity)}"
+            )
     return found
 
 
 class ProgramRulePick(unittest.TestCase):
-
     def test_groups_skip_false_empty_and_infeasible_before_first_feasible_rule(self):
         # invariant: program-rule-pick
         program = {
             "tripPlan": {"take": [], "bring": []},
-            "nextGroupId": 6, "nextRuleId": 90,
+            "nextGroupId": 6,
+            "nextRuleId": 90,
             "groups": [
-                {"id": 1, "name": "False", "condition": NEVER,
-                 "rules": [{"id": 41, **rule(ALWAYS, WANDER)}]},
+                {
+                    "id": 1,
+                    "name": "False",
+                    "condition": NEVER,
+                    "rules": [{"id": 41, **rule(ALWAYS, WANDER)}],
+                },
                 {"id": 2, "name": "Empty", "condition": ALWAYS, "rules": []},
-                {"id": 3, "name": "Infeasible", "condition": ALWAYS,
-                 "rules": [{"id": 52, **rule(ALWAYS, walk_to("berry"))}]},
-                {"id": 4, "name": "First", "condition": ALWAYS,
-                 "rules": [{"id": 63, **rule(NEVER, WANDER)},
-                           {"id": 74, **rule(ALWAYS, EXPLORE)},
-                           {"id": 85, **rule(ALWAYS, WANDER)}]},
-                {"id": 5, "name": "Later", "condition": ALWAYS,
-                 "rules": [{"id": 89, **rule(ALWAYS, WANDER)}]},
+                {
+                    "id": 3,
+                    "name": "Infeasible",
+                    "condition": ALWAYS,
+                    "rules": [{"id": 52, **rule(ALWAYS, walk_to("berry"))}],
+                },
+                {
+                    "id": 4,
+                    "name": "First",
+                    "condition": ALWAYS,
+                    "rules": [
+                        {"id": 63, **rule(NEVER, WANDER)},
+                        {"id": 74, **rule(ALWAYS, EXPLORE)},
+                        {"id": 85, **rule(ALWAYS, WANDER)},
+                    ],
+                },
+                {
+                    "id": 5,
+                    "name": "Later",
+                    "condition": ALWAYS,
+                    "rules": [{"id": 89, **rule(ALWAYS, WANDER)}],
+                },
             ],
         }
         activity = drive(program, 0)[0]["current"]["activity"]
@@ -281,15 +329,24 @@ class ProgramRulePick(unittest.TestCase):
     def test_no_rule_when_none_holds_and_can_be_carried_out(self):
         # invariant: program-rule-pick
         runs = drive(P_NONE_AT_20, 22)
-        self.assertEqual(runs[0]["current"], EXPLORING_FROM_0_BY_3,
-                         "minute 0: rules 1 and 2 lack one of the two, rule 3 has both")
+        self.assertEqual(
+            runs[0]["current"],
+            EXPLORING_FROM_0_BY_3,
+            "minute 0: rules 1 and 2 lack one of the two, rule 3 has both",
+        )
         for minute in (20, 21, 22):
-            self.assertEqual(runs[minute]["current"], waiting(minute),
-                             f"minute {minute}: no rule has both, yet one was started")
+            self.assertEqual(
+                runs[minute]["current"],
+                waiting(minute),
+                f"minute {minute}: no rule has both, yet one was started",
+            )
         never = drive(P_NEVER, 30)
         for minute in range(31):
-            self.assertEqual(never[minute]["current"], waiting(minute),
-                             f"minute {minute}: the only rule's condition fails")
+            self.assertEqual(
+                never[minute]["current"],
+                waiting(minute),
+                f"minute {minute}: the only rule's condition fails",
+            )
 
     def test_the_first_rule_with_both_is_started(self):
         # invariant: program-rule-pick
@@ -303,48 +360,71 @@ class ProgramRulePick(unittest.TestCase):
     def test_a_rule_outside_the_repertoire_is_passed_over(self):
         # invariant: program-rule-pick
         known = drive(P_EXPLORE_FIRST, 0)[0]["current"]["activity"]
-        self.assertEqual(known, {"kind": "rule", "ruleId": 1, "action": EXPLORE},
-                         "control: with the action known, rule 1 is started")
-        lacking = drive(P_EXPLORE_FIRST, 0,
-                        lacking={"actions": ["explore"]})[0]["current"]["activity"]
-        self.assertEqual(lacking, {"kind": "rule", "ruleId": 2, "action": WANDER},
-                         "the action of rule 1 is outside the repertoire, so rule 2 is started")
+        self.assertEqual(
+            known,
+            {"kind": "rule", "ruleId": 1, "action": EXPLORE},
+            "control: with the action known, rule 1 is started",
+        )
+        lacking = drive(P_EXPLORE_FIRST, 0, lacking={"actions": ["explore"]})[0]["current"][
+            "activity"
+        ]
+        self.assertEqual(
+            lacking,
+            {"kind": "rule", "ruleId": 2, "action": WANDER},
+            "the action of rule 1 is outside the repertoire, so rule 2 is started",
+        )
 
     def test_a_rule_whose_condition_names_a_target_outside_the_repertoire_is_passed_over(self):
         # invariant: program-rule-pick
         program = program_from_rules([rule(STOCK, WANDER), rule(ALWAYS, EXPLORE)])
         known = records(program, 0)[0]
-        self.assertEqual(known["run"]["current"]["activity"],
-                         {"kind": "rule", "ruleId": 1, "action": WANDER},
-                         "control: with the stick known, rule 1's condition holds and it is started")
+        self.assertEqual(
+            known["run"]["current"]["activity"],
+            {"kind": "rule", "ruleId": 1, "action": WANDER},
+            "control: with the stick known, rule 1's condition holds and it is started",
+        )
         lacking = records(program, 0, lacking={"items": ["stick"]})[0]
-        self.assertEqual(lacking["run"]["current"]["activity"],
-                         {"kind": "rule", "ruleId": 2, "action": EXPLORE},
-                         "the stick rule 1's condition names is outside the repertoire, so rule 2 "
-                         "is started")
+        self.assertEqual(
+            lacking["run"]["current"]["activity"],
+            {"kind": "rule", "ruleId": 2, "action": EXPLORE},
+            "the stick rule 1's condition names is outside the repertoire, so rule 2 is started",
+        )
         self.assertEqual(lacking["program"], program, "the passed-over rule left the program")
 
     def test_a_group_whose_condition_lies_outside_the_repertoire_is_passed_over(self):
         # invariant: program-rule-pick
         program = {
             "tripPlan": {"take": [], "bring": []},
-            "nextGroupId": 3, "nextRuleId": 30,
+            "nextGroupId": 3,
+            "nextRuleId": 30,
             "groups": [
-                {"id": 1, "name": "Stock", "condition": STOCK,
-                 "rules": [{"id": 11, **rule(ALWAYS, WANDER)}]},
-                {"id": 2, "name": "Rest", "condition": ALWAYS,
-                 "rules": [{"id": 22, **rule(ALWAYS, EXPLORE)}]},
+                {
+                    "id": 1,
+                    "name": "Stock",
+                    "condition": STOCK,
+                    "rules": [{"id": 11, **rule(ALWAYS, WANDER)}],
+                },
+                {
+                    "id": 2,
+                    "name": "Rest",
+                    "condition": ALWAYS,
+                    "rules": [{"id": 22, **rule(ALWAYS, EXPLORE)}],
+                },
             ],
         }
         known = records(program, 0)[0]
-        self.assertEqual(known["run"]["current"]["activity"],
-                         {"kind": "rule", "ruleId": 11, "action": WANDER},
-                         "control: with the condition known, the first group holds and is taken")
+        self.assertEqual(
+            known["run"]["current"]["activity"],
+            {"kind": "rule", "ruleId": 11, "action": WANDER},
+            "control: with the condition known, the first group holds and is taken",
+        )
         lacking = records(program, 0, lacking={"conditions": ["itemBelow"]})[0]
-        self.assertEqual(lacking["run"]["current"]["activity"],
-                         {"kind": "rule", "ruleId": 22, "action": EXPLORE},
-                         "the first group's condition is outside the repertoire, so the second "
-                         "group's rule is started")
+        self.assertEqual(
+            lacking["run"]["current"]["activity"],
+            {"kind": "rule", "ruleId": 22, "action": EXPLORE},
+            "the first group's condition is outside the repertoire, so the second "
+            "group's rule is started",
+        )
         self.assertEqual(lacking["program"], program, "the passed-over group left the program")
 
     def test_every_free_minute_of_long_runs(self):
@@ -354,11 +434,16 @@ class ProgramRulePick(unittest.TestCase):
                 with self.subTest(real_ms=real_ms, resource=resource):
                     runs = drive(p_long(resource), LONG_MINUTES, real_ms)
                     self.assertEqual(long_violations(runs, resource), [])
-                    started = {r["current"]["activity"].get("ruleId") for i, r in
-                               enumerate(runs) if r["current"]["startMinute"] == r["minute"]}
-                    self.assertTrue({2, 3, 4} <= started,
-                                    f"the run starts only rules {sorted(started, key=str)}, so "
-                                    "a wrong pick among rules 2 to 4 could go unseen")
+                    started = {
+                        r["current"]["activity"].get("ruleId")
+                        for i, r in enumerate(runs)
+                        if r["current"]["startMinute"] == r["minute"]
+                    }
+                    self.assertTrue(
+                        {2, 3, 4} <= started,
+                        f"the run starts only rules {sorted(started, key=str)}, so "
+                        "a wrong pick among rules 2 to 4 could go unseen",
+                    )
 
     def test_control_the_comparison_flags_wrong_picks(self):
         # invariant: program-rule-pick
@@ -372,17 +457,22 @@ class ProgramRulePick(unittest.TestCase):
         self.assertTrue(long_violations(other, "berry"), "another rule started goes unseen")
         wrong_action = copying.deepcopy(runs)
         wrong_action[index]["current"]["activity"]["action"] = {"kind": "eat"}
-        self.assertTrue(long_violations(wrong_action, "berry"),
-                        "a matching identity with the wrong action goes unseen")
+        self.assertTrue(
+            long_violations(wrong_action, "berry"),
+            "a matching identity with the wrong action goes unseen",
+        )
         middle = copying.deepcopy(runs)
         inside = next(i for i in range(1, len(runs)) if i not in free)
         middle[inside]["current"] = dict(middle[inside]["current"], startMinute=inside)
-        self.assertTrue(long_violations(middle, "berry"),
-                        "an activity starting in the middle of another goes unseen")
+        self.assertTrue(
+            long_violations(middle, "berry"),
+            "an activity starting in the middle of another goes unseen",
+        )
         nothing = copying.deepcopy(runs)
         nothing[free[2]]["current"] = nothing[free[2] - 1]["current"]
-        self.assertTrue(long_violations(nothing, "berry"), "a free minute starting nothing "
-                                                           "goes unseen")
+        self.assertTrue(
+            long_violations(nothing, "berry"), "a free minute starting nothing goes unseen"
+        )
 
 
 if __name__ == "__main__":

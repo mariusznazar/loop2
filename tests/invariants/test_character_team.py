@@ -64,8 +64,12 @@ GAME_MODULE = "dist/browser/sim/game.js"
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}
-PROGRAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
-                              {"condition": ALWAYS, "action": {"kind": "wander"}}])
+PROGRAM = program_from_rules(
+    [
+        {"condition": ALWAYS, "action": {"kind": "explore"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
 
 
 def sent(character_id):
@@ -75,15 +79,29 @@ def sent(character_id):
 
 # Characters take the ids 1, 2, 3 … in the order they are created.
 STEPS = [
-    ["newGame"], ["setProgram", PROGRAM],
-    ["createCharacter", "Ala"], ["createCharacter", "  Ola "], ["createCharacter", "Ala"],
-    ["send", sent(2), T], ["advanceMinutes", 30], ["restart"], ["end"],
-    ["send", sent(3), T_OTHER], ["createCharacter", "Ela"], ["advanceMinutes", 5], ["end"],
+    ["newGame"],
+    ["setProgram", PROGRAM],
+    ["createCharacter", "Ala"],
+    ["createCharacter", "  Ola "],
+    ["createCharacter", "Ala"],
+    ["send", sent(2), T],
+    ["advanceMinutes", 30],
+    ["restart"],
+    ["end"],
+    ["send", sent(3), T_OTHER],
+    ["createCharacter", "Ela"],
+    ["advanceMinutes", 5],
+    ["end"],
 ]
 REFUSED_SENDS = [sent(0), sent(4), sent("1"), {"mapId": "forest"}]
 CONTROL_STEPS = (
-    [["newGame"], ["setProgram", PROGRAM], ["createCharacter", "Ala"],
-     ["createCharacter", "Ola"], ["createCharacter", "Ela"]]
+    [
+        ["newGame"],
+        ["setProgram", PROGRAM],
+        ["createCharacter", "Ala"],
+        ["createCharacter", "Ola"],
+        ["createCharacter", "Ela"],
+    ]
     + [["send", ids, T] for ids in REFUSED_SENDS]
     + [["send", sent(1), T]]
 )
@@ -102,21 +120,35 @@ def looped(character_id):
 # Characters take the ids 1, 2, 3, 4 in the order they are created.
 LOAD_AT = T + 5000
 LOOP_STEPS = [
-    ["newGame"], ["setProgram", PROGRAM],
-    ["createCharacter", "Ala"], ["createCharacter", "  Ola "], ["createCharacter", "Ala"],
-    ["startLoop", looped(1), T], ["reload", T + 1000],
-    ["send", sent(2), T_OTHER], ["advanceLoopRun", 1, 5000], ["endLoopRun", 1, T + 2000],
+    ["newGame"],
+    ["setProgram", PROGRAM],
+    ["createCharacter", "Ala"],
+    ["createCharacter", "  Ola "],
+    ["createCharacter", "Ala"],
+    ["startLoop", looped(1), T],
+    ["reload", T + 1000],
+    ["send", sent(2), T_OTHER],
+    ["advanceLoopRun", 1, 5000],
+    ["endLoopRun", 1, T + 2000],
     ["reload", T + 3000],
-    ["createCharacter", "Ela"], ["startLoop", looped(4), T + 4000], ["reload", LOAD_AT],
+    ["createCharacter", "Ela"],
+    ["startLoop", looped(4), T + 4000],
+    ["reload", LOAD_AT],
     ["catchUp", LOAD_AT + CATCH_UP_MINUTES * LOOP_MINUTE_MS],
-    ["reload", LOAD_AT + CATCH_UP_MINUTES * LOOP_MINUTE_MS], ["end"],
+    ["reload", LOAD_AT + CATCH_UP_MINUTES * LOOP_MINUTE_MS],
+    ["end"],
     ["reload", LOAD_AT + CATCH_UP_MINUTES * LOOP_MINUTE_MS + 1000],
 ]
 
 REFUSED_LOOP_STARTS = [looped(0), looped(4), looped("1"), {"mapId": "forestEdge"}]
 LOOP_CONTROL_STEPS = (
-    [["newGame"], ["setProgram", PROGRAM], ["createCharacter", "Ala"],
-     ["createCharacter", "Ola"], ["createCharacter", "Ela"]]
+    [
+        ["newGame"],
+        ["setProgram", PROGRAM],
+        ["createCharacter", "Ala"],
+        ["createCharacter", "Ola"],
+        ["createCharacter", "Ela"],
+    ]
     + [["startLoop", ids, T] for ids in REFUSED_LOOP_STARTS]
     + [["startLoop", looped(1), T]]
 )
@@ -130,29 +162,53 @@ def change(path, **how):
 # A game with the earning loop of character 1 and the map run of character 2, saved and altered at
 # one place each, so that the document names a character no team holds or one twice.
 ALTERED_DOCUMENTS = [
-    ("an earning loop under a character no team holds", [change(["game", "loops", "1"], rename="9")]),
-    ("an earning loop's map run carrying a character no team holds",
-     [change(["game", "loops", "1", "run", "character", "id"], set=9)]),
-    ("an earning loop's map run carrying a character id written as a string",
-     [change(["game", "loops", "1", "run", "character", "id"], set="1")]),
-    ("an earning loop's map run carrying no character id",
-     [change(["game", "loops", "1", "run", "character", "id"], remove=True)]),
-    ("a map run carrying a character no team holds",
-     [change(["game", "run", "character", "id"], set=9)]),
-    ("a map run carrying a character id written as a string",
-     [change(["game", "run", "character", "id"], set="2")]),
-    ("two entries of the team's list under one id",
-     [change(["game", "team", "characters", 2, "id"], set=1)]),
+    (
+        "an earning loop under a character no team holds",
+        [change(["game", "loops", "1"], rename="9")],
+    ),
+    (
+        "an earning loop's map run carrying a character no team holds",
+        [change(["game", "loops", "1", "run", "character", "id"], set=9)],
+    ),
+    (
+        "an earning loop's map run carrying a character id written as a string",
+        [change(["game", "loops", "1", "run", "character", "id"], set="1")],
+    ),
+    (
+        "an earning loop's map run carrying no character id",
+        [change(["game", "loops", "1", "run", "character", "id"], remove=True)],
+    ),
+    (
+        "a map run carrying a character no team holds",
+        [change(["game", "run", "character", "id"], set=9)],
+    ),
+    (
+        "a map run carrying a character id written as a string",
+        [change(["game", "run", "character", "id"], set="2")],
+    ),
+    (
+        "two entries of the team's list under one id",
+        [change(["game", "team", "characters", 2, "id"], set=1)],
+    ),
 ]
 LOAD_CONTROL_STEPS = (
-    [["newGame"], ["setProgram", PROGRAM], ["createCharacter", "Ala"],
-     ["createCharacter", "Ola"], ["createCharacter", "Ela"],
-     ["startLoop", looped(1), T], ["send", sent(2), T_OTHER]]
+    [
+        ["newGame"],
+        ["setProgram", PROGRAM],
+        ["createCharacter", "Ala"],
+        ["createCharacter", "Ola"],
+        ["createCharacter", "Ela"],
+        ["startLoop", looped(1), T],
+        ["send", sent(2), T_OTHER],
+    ]
     + [["reloadAltered", T + 1000, changes] for _label, changes in ALTERED_DOCUMENTS]
     + [["reload", T + 1000]]
 )
 
-DRIVER = KNOWING_GAME_JS + SAVED_DOCUMENT_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + SAVED_DOCUMENT_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -205,6 +261,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -250,30 +307,39 @@ def membership_errors(index, record):
     """What breaks the sentence in one recorded state, as messages."""
     state = record["state"]
     ids = team_ids(state)
-    found = [f"step {index} ({record['step']}): the character {i!r} stands {ids.count(i)} times "
-             "in the lists of the teams" for i in sorted(set(ids), key=str) if ids.count(i) != 1]
+    found = [
+        f"step {index} ({record['step']}): the character {i!r} stands {ids.count(i)} times "
+        "in the lists of the teams"
+        for i in sorted(set(ids), key=str)
+        if ids.count(i) != 1
+    ]
     run = state.get("run")
     if run is not None:
         carried = run["character"].get("id")
         if ids.count(carried) != 1:
-            found.append(f"step {index} ({record['step']}): the map run's character {carried!r} "
-                         f"stands {ids.count(carried)} times in the lists of the teams")
+            found.append(
+                f"step {index} ({record['step']}): the map run's character {carried!r} "
+                f"stands {ids.count(carried)} times in the lists of the teams"
+            )
     for key, loop in state.get("loops", {}).items():
         carried = loop["run"]["character"].get("id")
         if ids.count(carried) != 1:
-            found.append(f"step {index} ({record['step']}): the character {carried!r} of the map "
-                         f"run of the earning loop {key} stands {ids.count(carried)} times in the "
-                         "lists of the teams")
+            found.append(
+                f"step {index} ({record['step']}): the character {carried!r} of the map "
+                f"run of the earning loop {key} stands {ids.count(carried)} times in the "
+                "lists of the teams"
+            )
         numbers = [str(i) for i in ids]
         if numbers.count(key) != 1:
-            found.append(f"step {index} ({record['step']}): the earning loop stands under the "
-                         f"character {key}, which stands {numbers.count(key)} times in the lists "
-                         "of the teams")
+            found.append(
+                f"step {index} ({record['step']}): the earning loop stands under the "
+                f"character {key}, which stands {numbers.count(key)} times in the lists "
+                "of the teams"
+            )
     return found
 
 
 class CharacterTeam(unittest.TestCase):
-
     def test_every_character_of_every_state_belongs_to_one_team(self):
         # invariant: character-team
         # decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
@@ -286,8 +352,11 @@ class CharacterTeam(unittest.TestCase):
         self.assertEqual(found, [])
         last = records[-1]["state"]
         names = [c["name"] for c in last["team"]["characters"]]
-        self.assertEqual(names, ["Ala", "Ola", "Ala", "Ela"],
-                         "the scenario does not hold the characters it is meant to")
+        self.assertEqual(
+            names,
+            ["Ala", "Ola", "Ala", "Ela"],
+            "the scenario does not hold the characters it is meant to",
+        )
         carried = {r["state"]["run"]["character"]["id"] for r in records if r["state"]["run"]}
         self.assertEqual(carried, {2, 3}, "the scenario does not send two different characters")
 
@@ -316,22 +385,35 @@ class CharacterTeam(unittest.TestCase):
         found = [m for i, r in enumerate(records) for m in membership_errors(i, r)]
         self.assertEqual(found, [])
         names = [c["name"] for c in records[-1]["state"]["team"]["characters"]]
-        self.assertEqual(names, ["Ala", "Ola", "Ala", "Ela"],
-                         "the scenario does not hold the characters it is meant to")
+        self.assertEqual(
+            names,
+            ["Ala", "Ola", "Ala", "Ela"],
+            "the scenario does not hold the characters it is meant to",
+        )
         looping = {int(key) for r in records for key in r["state"]["loops"]}
-        self.assertEqual(looping, {1, 4}, "the scenario does not put two characters into earning loops")
+        self.assertEqual(
+            looping, {1, 4}, "the scenario does not put two characters into earning loops"
+        )
         beside = [i for i, r in enumerate(records) if r["state"]["run"] and r["state"]["loops"]]
-        self.assertTrue(beside, "no state of the scenario holds a map run and an earning loop at once")
+        self.assertTrue(
+            beside, "no state of the scenario holds a map run and an earning loop at once"
+        )
         loaded = [i for i, r in enumerate(records) if r["step"] == "reload"]
-        self.assertTrue(any(i in beside for i in loaded),
-                        "no load of the scenario brings back a map run and an earning loop at once")
-        self.assertTrue(any(records[i]["state"]["loops"] for i in loaded[:3]),
-                        "no load of the scenario brings back an earning loop")
+        self.assertTrue(
+            any(i in beside for i in loaded),
+            "no load of the scenario brings back a map run and an earning loop at once",
+        )
+        self.assertTrue(
+            any(records[i]["state"]["loops"] for i in loaded[:3]),
+            "no load of the scenario brings back an earning loop",
+        )
         caught = next(i for i, r in enumerate(records) if r["step"] == "catchUp")
         for key in ("1", "4"):
-            self.assertGreater(records[caught]["state"]["loops"][key]["runNumber"],
-                               records[caught - 1]["state"]["loops"][key]["runNumber"],
-                               "the catch-up carries an earning loop through no end of a map run")
+            self.assertGreater(
+                records[caught]["state"]["loops"][key]["runNumber"],
+                records[caught - 1]["state"]["loops"][key]["runNumber"],
+                "the catch-up carries an earning loop through no end of a map run",
+            )
 
     def test_a_start_of_an_earning_loop_for_a_character_no_team_holds_is_refused(self):
         # invariant: character-team
@@ -343,11 +425,16 @@ class CharacterTeam(unittest.TestCase):
         for offset, ids in enumerate(REFUSED_LOOP_STARTS):
             record = records[first + offset]
             self.assertIsNone(record["error"], f"the start for {ids} threw")
-            self.assertEqual(record["state"], before, f"the refused start for {ids} changed the game")
+            self.assertEqual(
+                record["state"], before, f"the refused start for {ids} changed the game"
+            )
         taken = records[-1]
         self.assertIsNone(taken["error"], "the start for a character of the team threw")
-        self.assertEqual(sorted(taken["state"]["loops"]), ["1"],
-                         "the start for a character of the team was refused")
+        self.assertEqual(
+            sorted(taken["state"]["loops"]),
+            ["1"],
+            "the start for a character of the team was refused",
+        )
         self.assertEqual(taken["state"]["loops"]["1"]["run"]["character"]["id"], 1)
 
     def test_a_load_naming_a_character_no_team_holds_or_one_twice_is_refused(self):
@@ -357,36 +444,63 @@ class CharacterTeam(unittest.TestCase):
         self.assertEqual(found, [])
         first = len(LOAD_CONTROL_STEPS) - len(ALTERED_DOCUMENTS) - 1
         before = records[first - 1]["state"]
-        self.assertEqual(sorted(before["loops"]), ["1"], "the game saved holds no earning loop of 1")
-        self.assertEqual(before["run"]["character"]["id"], 2, "the game saved holds no map run of 2")
+        self.assertEqual(
+            sorted(before["loops"]), ["1"], "the game saved holds no earning loop of 1"
+        )
+        self.assertEqual(
+            before["run"]["character"]["id"], 2, "the game saved holds no map run of 2"
+        )
         for offset, (label, _changes) in enumerate(ALTERED_DOCUMENTS):
             record = records[first + offset]
-            self.assertIn("the load refused the document", record["error"] or "",
-                          f"the load of a document with {label} was taken")
-            self.assertEqual(record["state"], before, f"the refused load of {label} changed the game")
+            self.assertIn(
+                "the load refused the document",
+                record["error"] or "",
+                f"the load of a document with {label} was taken",
+            )
+            self.assertEqual(
+                record["state"], before, f"the refused load of {label} changed the game"
+            )
         taken = records[-1]
         self.assertIsNone(taken["error"], "the load of the document unaltered was refused")
         self.assertEqual(sorted(taken["state"]["loops"]), ["1"])
         self.assertEqual(taken["state"]["run"]["character"]["id"], 2)
 
-    def test_control_the_reading_flags_an_earning_loop_or_a_map_run_of_no_character_of_the_team(self):
+    def test_control_the_reading_flags_an_earning_loop_or_a_map_run_of_no_character_of_the_team(
+        self,
+    ):
         # invariant: character-team
         def record(characters, run, loops):
-            return {"step": "made up", "state": {
-                "team": {"characters": [{"id": i} for i in characters]}, "run": run, "loops": loops}}
+            return {
+                "step": "made up",
+                "state": {
+                    "team": {"characters": [{"id": i} for i in characters]},
+                    "run": run,
+                    "loops": loops,
+                },
+            }
 
         def loop(character):
             return {"run": {"character": {"id": character}}}
 
-        self.assertEqual(membership_errors(0, record([1, 2], {"character": {"id": 2}}, {"1": loop(1)})), [])
-        self.assertTrue(membership_errors(0, record([1, 2], None, {"1": loop(9)})),
-                        "an earning loop whose map run carries no character of the team goes unseen")
-        self.assertTrue(membership_errors(0, record([1, 2], None, {"9": loop(1)})),
-                        "an earning loop under a character no team holds goes unseen")
-        self.assertTrue(membership_errors(0, record([1, 2], None, {"1": loop("1")})),
-                        "an earning loop whose map run carries the id as a string goes unseen")
-        self.assertTrue(membership_errors(0, record([1, 1], None, {"1": loop(1)})),
-                        "a character of the team listed twice goes unseen")
+        self.assertEqual(
+            membership_errors(0, record([1, 2], {"character": {"id": 2}}, {"1": loop(1)})), []
+        )
+        self.assertTrue(
+            membership_errors(0, record([1, 2], None, {"1": loop(9)})),
+            "an earning loop whose map run carries no character of the team goes unseen",
+        )
+        self.assertTrue(
+            membership_errors(0, record([1, 2], None, {"9": loop(1)})),
+            "an earning loop under a character no team holds goes unseen",
+        )
+        self.assertTrue(
+            membership_errors(0, record([1, 2], None, {"1": loop("1")})),
+            "an earning loop whose map run carries the id as a string goes unseen",
+        )
+        self.assertTrue(
+            membership_errors(0, record([1, 1], None, {"1": loop(1)})),
+            "a character of the team listed twice goes unseen",
+        )
 
 
 if __name__ == "__main__":

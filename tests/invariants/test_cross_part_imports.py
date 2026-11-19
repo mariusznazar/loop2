@@ -51,16 +51,37 @@ UNSPECIFIED = "unspecified"
 SCRIPT_SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 CODE_SUFFIXES = SCRIPT_SUFFIXES + (".py",)
 # The source a built file of this extension comes from, by the extension the compiler gives it.
-SOURCE_EXTENSIONS = {".js": (".ts", ".tsx"), ".jsx": (".tsx",), ".mjs": (".mts",),
-                     ".cjs": (".cts",)}
+SOURCE_EXTENSIONS = {
+    ".js": (".ts", ".tsx"),
+    ".jsx": (".tsx",),
+    ".mjs": (".mts",),
+    ".cjs": (".cts",),
+}
 TRIED_EXTENSIONS = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".json")
 # Built files are not listed by git; each folder of the build comes from the source folder in
 # tsconfig.browser.json, tsconfig.server.json and tsconfig.kitchen-sink.json (rootDir src/browser).
-BUILT_FROM = (("dist/browser/", "src/browser/"), ("dist/server/", "src/server/"),
-              ("dist/kitchen-sink/", "src/browser/"))
+BUILT_FROM = (
+    ("dist/browser/", "src/browser/"),
+    ("dist/server/", "src/server/"),
+    ("dist/kitchen-sink/", "src/browser/"),
+)
 # A word after which a `/` starts a regular expression and not a division.
-REGEX_AFTER_WORDS = {"return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
-                     "void", "throw", "yield", "await", "instanceof"}
+REGEX_AFTER_WORDS = {
+    "return",
+    "typeof",
+    "case",
+    "do",
+    "else",
+    "in",
+    "of",
+    "new",
+    "delete",
+    "void",
+    "throw",
+    "yield",
+    "await",
+    "instanceof",
+}
 
 
 # --- TypeScript and JavaScript ---------------------------------------------------------------
@@ -125,7 +146,7 @@ def script_tokens(text):
             j = i + 1
             while j < n and text[j] != c and text[j] != "\n":
                 j += 2 if text[j] == "\\" else 1
-            tokens.append(("string", text[i + 1:j], line))
+            tokens.append(("string", text[i + 1 : j], line))
             i = j + 1
         elif c == "`":
             j = skip_template(text, i)
@@ -208,8 +229,12 @@ def script_specifiers(text):
         elif value == "import" and following[0] == "string":
             found.append((line, following[1]))
         elif (value == "import" and following[:2] != ("punct", ".")) or (
-                value == "export" and (following[:2] in (("punct", "*"), ("punct", "{"))
-                                       or following[:2] == ("word", "type"))):
+            value == "export"
+            and (
+                following[:2] in (("punct", "*"), ("punct", "{"))
+                or following[:2] == ("word", "type")
+            )
+        ):
             specifier = clause_specifier(k + 1)
             if specifier:
                 found.append((line, specifier[1]))
@@ -224,7 +249,7 @@ def script_candidates(path):
         yield stem + swapped
     for built, source in BUILT_FROM:
         if path.startswith(built):
-            base = source + path[len(built):]
+            base = source + path[len(built) :]
             base_stem, base_extension = posixpath.splitext(base)
             yield base
             for swapped in SOURCE_EXTENSIONS.get(base_extension, ()):
@@ -295,27 +320,48 @@ def evaluate(node, importer, names):
             return names[node.id]
         raise Unevaluable
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
-        return join_path(evaluate(node.left, importer, names),
-                         evaluate(node.right, importer, names))
+        return join_path(
+            evaluate(node.left, importer, names), evaluate(node.right, importer, names)
+        )
     if isinstance(node, ast.Attribute) and node.attr == "parent":
         return up(evaluate(node.value, importer, names), 1)
-    if (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute)
-            and node.value.attr == "parents" and isinstance(node.slice, ast.Constant)
-            and isinstance(node.slice.value, int) and node.slice.value >= 0):
+    if (
+        isinstance(node, ast.Subscript)
+        and isinstance(node.value, ast.Attribute)
+        and node.value.attr == "parents"
+        and isinstance(node.slice, ast.Constant)
+        and isinstance(node.slice.value, int)
+        and node.slice.value >= 0
+    ):
         return up(evaluate(node.value.value, importer, names), node.slice.value + 1)
     if isinstance(node, ast.Call):
         name = dotted(node.func)
         arguments = [evaluate(argument, importer, names) for argument in node.args]
-        if name in ("Path", "pathlib.Path", "PurePath", "pathlib.PurePath", "os.path.join",
-                    "posixpath.join") and arguments:
+        if (
+            name
+            in (
+                "Path",
+                "pathlib.Path",
+                "PurePath",
+                "pathlib.PurePath",
+                "os.path.join",
+                "posixpath.join",
+            )
+            and arguments
+        ):
             return join_path(*arguments)
-        if name in ("str", "os.fspath", "os.path.abspath", "os.path.realpath",
-                    "os.path.normpath") and len(arguments) == 1:
+        if (
+            name in ("str", "os.fspath", "os.path.abspath", "os.path.realpath", "os.path.normpath")
+            and len(arguments) == 1
+        ):
             return join_path(arguments[0])
         if name == "os.path.dirname" and len(arguments) == 1:
             return up(arguments[0], 1)
-        if (isinstance(node.func, ast.Attribute) and not node.args
-                and node.func.attr in ("resolve", "absolute", "as_posix")):
+        if (
+            isinstance(node.func, ast.Attribute)
+            and not node.args
+            and node.func.attr in ("resolve", "absolute", "as_posix")
+        ):
             return join_path(evaluate(node.func.value, importer, names))
     raise Unevaluable
 
@@ -325,27 +371,39 @@ def path_additions(tree, importer):
     their value follows from the file alone."""
     names = {}
     for statement in tree.body:
-        if isinstance(statement, ast.Assign) and len(statement.targets) == 1 \
-                and isinstance(statement.targets[0], ast.Name):
+        if (
+            isinstance(statement, ast.Assign)
+            and len(statement.targets) == 1
+            and isinstance(statement.targets[0], ast.Name)
+        ):
             try:
                 names[statement.targets[0].id] = evaluate(statement.value, importer, names)
             except Unevaluable:
                 pass
     expressions = []
     for node in ast.walk(tree):
-        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-                and dotted(node.func.value) == "sys.path"):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and dotted(node.func.value) == "sys.path"
+        ):
             if node.func.attr == "insert" and len(node.args) == 2:
                 expressions.append(node.args[1])
             elif node.func.attr == "append" and len(node.args) == 1:
                 expressions.append(node.args[0])
         elif isinstance(node, ast.Assign):
             for target in node.targets:
-                if isinstance(target, ast.Subscript) and dotted(target.value) == "sys.path" \
-                        and isinstance(node.value, ast.List):
+                if (
+                    isinstance(target, ast.Subscript)
+                    and dotted(target.value) == "sys.path"
+                    and isinstance(node.value, ast.List)
+                ):
                     expressions.extend(node.value.elts)
-        elif isinstance(node, ast.AugAssign) and dotted(node.target) == "sys.path" \
-                and isinstance(node.value, ast.List):
+        elif (
+            isinstance(node, ast.AugAssign)
+            and dotted(node.target) == "sys.path"
+            and isinstance(node.value, ast.List)
+        ):
             expressions.extend(node.value.elts)
     directories = []
     for expression in expressions:
@@ -426,8 +484,10 @@ def python_specifiers(importer, text, tracked, directories):
             files, missing = imported_files(named, names, tracked, directories)
             found.append((node.lineno, written, files))
             if level:
-                found.extend((node.lineno, written + ("." if module else "") + name, None)
-                             for name in missing)
+                found.extend(
+                    (node.lineno, written + ("." if module else "") + name, None)
+                    for name in missing
+                )
     return sorted(found, key=lambda item: (item[0], item[1]))
 
 
@@ -442,8 +502,9 @@ def part_dependencies(part_map):
         field = re.search(r"(?m)^- \*\*Depends on:\*\* (.*)$", body)
         if field:
             value = field.group(1).strip()
-            dependencies[name.strip()] = (set() if value == "none"
-                                          else {item.strip() for item in value.split("·")})
+            dependencies[name.strip()] = (
+                set() if value == "none" else {item.strip() for item in value.split("·")}
+            )
     return dependencies
 
 
@@ -454,8 +515,12 @@ def accepted_pairs(invariants):
     for section in re.split(r"(?m)^## ", invariants)[1:]:
         _, _, body = section.partition("\n")
         sentence = " ".join(body.split("\n- **")[0].split())
-        stated = re.fullmatch(r"the part `([a-z][a-z0-9-]*)` does not depend on "
-                              r"`([a-z][a-z0-9-]*)`\.?", sentence, re.IGNORECASE)
+        stated = re.fullmatch(
+            r"the part `([a-z][a-z0-9-]*)` does not depend on "
+            r"`([a-z][a-z0-9-]*)`\.?",
+            sentence,
+            re.IGNORECASE,
+        )
         if stated and re.search(r"(?m)^- \*\*Violated:\*\* yes$", body):
             pairs.add(stated.groups())
     return pairs
@@ -478,12 +543,15 @@ def import_failures(texts, tracked, owners, dependencies, accepted):
         if path.endswith(".py"):
             imports = python_specifiers(path, texts[path], tracked, directories)
         else:
-            imports = [(line, specifier, script_targets(path, specifier, tracked))
-                       for line, specifier in script_specifiers(texts[path])]
+            imports = [
+                (line, specifier, script_targets(path, specifier, tracked))
+                for line, specifier in script_specifiers(texts[path])
+            ]
         for line, specifier, targets in imports:
             if targets is None:
-                failures.append(f"{path}:{line} imports {specifier!r}, which matches no file "
-                                "git lists")
+                failures.append(
+                    f"{path}:{line} imports {specifier!r}, which matches no file git lists"
+                )
                 continue
             for target in sorted(set(targets)):
                 reason = refusal(path, target, owners, dependencies, accepted)
@@ -508,7 +576,6 @@ def refusal(importer, imported, owners, dependencies, accepted):
 
 
 class CrossPartImports(unittest.TestCase):
-
     def test_every_import_of_the_repository_stays_within_the_part_map(self):
         # invariant: cross-part-imports
         root = support.ROOT
@@ -516,11 +583,16 @@ class CrossPartImports(unittest.TestCase):
         tracked = set(listed)
         owners = support.file_owners(root, tracked)
         dependencies = part_dependencies(
-            support.read_text(os.path.join(root, "foundations", "part_map.md")))
+            support.read_text(os.path.join(root, "foundations", "part_map.md"))
+        )
         accepted = accepted_pairs(
-            support.read_text(os.path.join(root, "foundations", "invariants.md")))
-        texts = {path: support.read_text(os.path.join(root, path))
-                 for path in listed if path.endswith(CODE_SUFFIXES)}
+            support.read_text(os.path.join(root, "foundations", "invariants.md"))
+        )
+        texts = {
+            path: support.read_text(os.path.join(root, path))
+            for path in listed
+            if path.endswith(CODE_SUFFIXES)
+        }
         self.assertIn("src/browser/sim/game.ts", texts, "the check reads no code of the game")
         self.assertIn("tests/sim/encounters.test.mjs", texts)
         self.assertEqual(import_failures(texts, tracked, owners, dependencies, accepted), [])
@@ -532,15 +604,29 @@ class CrossPartImports(unittest.TestCase):
 # nothing, and `test-helpers` is the part of test helpers.
 CONTROL_DEPENDENCIES = {"core": set(), "view": {"core"}, "tools": set(), HELPER_PART: set()}
 CONTROL_FILES = (
-    "src/core/rules.ts", "src/core/data.json", "src/view/screen.tsx", "src/view/more.tsx",
-    "src/browser/core/rules.ts", "src/browser/view/stage.tsx", "src/server/app.ts",
-    "scripts/build.mjs", "tests/support/shared.py", "tests/support/tool.mjs",
-    "tests/core/test_rules.py", "tests/tools/test_build.py",
+    "src/core/rules.ts",
+    "src/core/data.json",
+    "src/view/screen.tsx",
+    "src/view/more.tsx",
+    "src/browser/core/rules.ts",
+    "src/browser/view/stage.tsx",
+    "src/server/app.ts",
+    "scripts/build.mjs",
+    "tests/support/shared.py",
+    "tests/support/tool.mjs",
+    "tests/core/test_rules.py",
+    "tests/tools/test_build.py",
 )
 CONTROL_PARTS = (
-    ("src/browser/core/", "core"), ("src/core/", "core"), ("tests/core/", "core"),
-    ("src/browser/view/", "view"), ("src/view/", "view"), ("tests/view/", "view"),
-    ("src/server/", "tools"), ("scripts/", "tools"), ("tests/tools/", "tools"),
+    ("src/browser/core/", "core"),
+    ("src/core/", "core"),
+    ("tests/core/", "core"),
+    ("src/browser/view/", "view"),
+    ("src/view/", "view"),
+    ("tests/view/", "view"),
+    ("src/server/", "tools"),
+    ("scripts/", "tools"),
+    ("tests/tools/", "tools"),
     ("tests/support/", HELPER_PART),
 )
 
@@ -548,93 +634,117 @@ CONTROL_PARTS = (
 def control_failures(sources, accepted=(), owners=None):
     """The failures for made-up files `sources` (path -> text) added to the made-up repository."""
     tracked = set(CONTROL_FILES) | set(sources)
-    given = {path: next(part for prefix, part in CONTROL_PARTS if path.startswith(prefix))
-             for path in tracked}
+    given = {
+        path: next(part for prefix, part in CONTROL_PARTS if path.startswith(prefix))
+        for path in tracked
+    }
     given.update(owners or {})
     return import_failures(sources, tracked, given, CONTROL_DEPENDENCIES, set(accepted))
 
 
 class ReadingOfImports(unittest.TestCase):
-
     def test_control_each_form_of_a_script_import_is_read_with_its_line(self):
         # invariant: cross-part-imports
         # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
-        text = ("import a from '../../src/view/screen.js';\n"
-                "import { b, c as d } from \"../../src/view/more.js\";\n"
-                "import type { T } from '../../src/view/screen.js';\n"
-                "import * as e from '../../src/view/screen.js';\n"
-                "import '../../src/view/more.js';\n"
-                "export * from '../../src/view/screen.js';\n"
-                "export { f } from '../../src/view/more.js';\n"
-                "const g = await import('../../src/view/screen.js');\n"
-                "import(\n  '../../src/view/more.js'\n);\n")
+        text = (
+            "import a from '../../src/view/screen.js';\n"
+            'import { b, c as d } from "../../src/view/more.js";\n'
+            "import type { T } from '../../src/view/screen.js';\n"
+            "import * as e from '../../src/view/screen.js';\n"
+            "import '../../src/view/more.js';\n"
+            "export * from '../../src/view/screen.js';\n"
+            "export { f } from '../../src/view/more.js';\n"
+            "const g = await import('../../src/view/screen.js');\n"
+            "import(\n  '../../src/view/more.js'\n);\n"
+        )
         failures = control_failures({"tests/core/forms.test.mjs": text})
-        self.assertEqual([failure.split(" imports ")[0] for failure in failures],
-                         [f"tests/core/forms.test.mjs:{line}" for line in range(1, 10)])
-        self.assertEqual(failures[0], "tests/core/forms.test.mjs:1 imports "
-                         "'../../src/view/screen.js' (src/view/screen.tsx): the part core does "
-                         "not list the part view in Depends on")
+        self.assertEqual(
+            [failure.split(" imports ")[0] for failure in failures],
+            [f"tests/core/forms.test.mjs:{line}" for line in range(1, 10)],
+        )
+        self.assertEqual(
+            failures[0],
+            "tests/core/forms.test.mjs:1 imports "
+            "'../../src/view/screen.js' (src/view/screen.tsx): the part core does "
+            "not list the part view in Depends on",
+        )
 
     def test_control_comments_strings_templates_and_expressions_give_no_import(self):
         # invariant: cross-part-imports
         # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
-        text = ("// import a from '../../src/view/screen.js';\n"
-                "/* import('../../src/view/screen.js');\n"
-                "   import b from '../../src/view/more.js'; */\n"
-                "const text = \"import c from '../../src/view/screen.js'\";\n"
-                "const other = 'export * from \"../../src/view/screen.js\"';\n"
-                "const code = `import d from '../../src/view/screen.js'\n"
-                "${\"}\" + `import('../../src/view/more.js')`}`;\n"
-                "const pattern = /import e from '..\\/view'/;\n"
-                "const half = a / 2 / b; const call = load(import_value);\n"
-                "const dynamic = await import(name);\n"
-                "const member = module.import('../../src/view/screen.js');\n"
-                "export const value = 1;\nexport function run() {}\n")
+        text = (
+            "// import a from '../../src/view/screen.js';\n"
+            "/* import('../../src/view/screen.js');\n"
+            "   import b from '../../src/view/more.js'; */\n"
+            "const text = \"import c from '../../src/view/screen.js'\";\n"
+            "const other = 'export * from \"../../src/view/screen.js\"';\n"
+            "const code = `import d from '../../src/view/screen.js'\n"
+            "${\"}\" + `import('../../src/view/more.js')`}`;\n"
+            "const pattern = /import e from '..\\/view'/;\n"
+            "const half = a / 2 / b; const call = load(import_value);\n"
+            "const dynamic = await import(name);\n"
+            "const member = module.import('../../src/view/screen.js');\n"
+            "export const value = 1;\nexport function run() {}\n"
+        )
         self.assertEqual(control_failures({"tests/core/quiet.test.mjs": text}), [])
 
     def test_control_a_package_or_a_node_module_is_no_file_of_any_part(self):
         # invariant: cross-part-imports
         # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
-        text = ("import fs from 'node:fs';\nimport react from 'react';\n"
-                "import assert from \"node:assert/strict\";\n"
-                "import x from 'https://example.org/x.js';\n")
+        text = (
+            "import fs from 'node:fs';\nimport react from 'react';\n"
+            'import assert from "node:assert/strict";\n'
+            "import x from 'https://example.org/x.js';\n"
+        )
         self.assertEqual(control_failures({"src/core/external.ts": text}), [])
 
     def test_control_a_built_file_is_matched_to_its_source_and_its_part(self):
         # invariant: cross-part-imports
         # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`"
         sources = {
-            "tests/core/built.test.mjs":
-                "import { stage } from '../../dist/browser/view/stage.js';\n"
-                "import { app } from '../../dist/server/app.js';\n",
-            "tests/view/built.test.mjs":
-                "import { rules } from '../../dist/browser/core/rules.js';\n",
+            "tests/core/built.test.mjs": "import { stage } from '../../dist/browser/view/stage.js';\n"
+            "import { app } from '../../dist/server/app.js';\n",
+            "tests/view/built.test.mjs": "import { rules } from '../../dist/browser/core/rules.js';\n",
         }
-        self.assertEqual(control_failures(sources), [
-            "tests/core/built.test.mjs:1 imports '../../dist/browser/view/stage.js' "
-            "(src/browser/view/stage.tsx): the part core does not list the part view in "
-            "Depends on",
-            "tests/core/built.test.mjs:2 imports '../../dist/server/app.js' (src/server/app.ts): "
-            "the part core does not list the part tools in Depends on"])
+        self.assertEqual(
+            control_failures(sources),
+            [
+                "tests/core/built.test.mjs:1 imports '../../dist/browser/view/stage.js' "
+                "(src/browser/view/stage.tsx): the part core does not list the part view in "
+                "Depends on",
+                "tests/core/built.test.mjs:2 imports '../../dist/server/app.js' (src/server/app.ts): "
+                "the part core does not list the part tools in Depends on",
+            ],
+        )
 
     def test_control_a_relative_import_matching_no_file_fails_with_file_and_line(self):
         # invariant: cross-part-imports
         # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
-        script = {"tests/core/lost.test.mjs":
-                  "import a from 'react';\n\nimport b from './missing.js';\n"
-                  "import c from '../../dist/browser/nothing.js';\n"
-                  "import d from '/absolute.js';\n"}
-        self.assertEqual(control_failures(script), [
-            "tests/core/lost.test.mjs:3 imports './missing.js', which matches no file git lists",
-            "tests/core/lost.test.mjs:4 imports '../../dist/browser/nothing.js', which matches "
-            "no file git lists",
-            "tests/core/lost.test.mjs:5 imports '/absolute.js', which matches no file git lists"])
-        python = {"tests/core/test_lost.py":
-                  "import os\nfrom . import missing\nfrom .test_rules import thing\n"
-                  "from .. import nothing\n"}
-        self.assertEqual(control_failures(python), [
-            "tests/core/test_lost.py:2 imports '.missing', which matches no file git lists",
-            "tests/core/test_lost.py:4 imports '..nothing', which matches no file git lists"])
+        script = {
+            "tests/core/lost.test.mjs": "import a from 'react';\n\nimport b from './missing.js';\n"
+            "import c from '../../dist/browser/nothing.js';\n"
+            "import d from '/absolute.js';\n"
+        }
+        self.assertEqual(
+            control_failures(script),
+            [
+                "tests/core/lost.test.mjs:3 imports './missing.js', which matches no file git lists",
+                "tests/core/lost.test.mjs:4 imports '../../dist/browser/nothing.js', which matches "
+                "no file git lists",
+                "tests/core/lost.test.mjs:5 imports '/absolute.js', which matches no file git lists",
+            ],
+        )
+        python = {
+            "tests/core/test_lost.py": "import os\nfrom . import missing\nfrom .test_rules import thing\n"
+            "from .. import nothing\n"
+        }
+        self.assertEqual(
+            control_failures(python),
+            [
+                "tests/core/test_lost.py:2 imports '.missing', which matches no file git lists",
+                "tests/core/test_lost.py:4 imports '..nothing', which matches no file git lists",
+            ],
+        )
 
     def test_control_the_map_the_helpers_and_the_accepted_invariants_decide_what_passes(self):
         # invariant: cross-part-imports
@@ -646,20 +756,28 @@ class ReadingOfImports(unittest.TestCase):
         }
         for sources in (same_part, listed_part, helpers_from_tests):
             self.assertEqual(control_failures(sources), [], sources)
-        code_importing_helpers = {"scripts/build.mjs":
-                                  "import { tool } from '../tests/support/tool.mjs';\n"}
-        self.assertEqual(control_failures(code_importing_helpers), [
-            "scripts/build.mjs:1 imports '../tests/support/tool.mjs' (tests/support/tool.mjs): "
-            "the part tools does not list the part test-helpers in Depends on"])
+        code_importing_helpers = {
+            "scripts/build.mjs": "import { tool } from '../tests/support/tool.mjs';\n"
+        }
+        self.assertEqual(
+            control_failures(code_importing_helpers),
+            [
+                "scripts/build.mjs:1 imports '../tests/support/tool.mjs' (tests/support/tool.mjs): "
+                "the part tools does not list the part test-helpers in Depends on"
+            ],
+        )
         backward = {"src/core/rules.ts": "import s from '../view/screen.js';\n"}
         self.assertEqual(len(control_failures(backward)), 1)
         self.assertEqual(control_failures(backward, accepted={("core", "view")}), [])
         self.assertEqual(len(control_failures(backward, accepted={("view", "core")})), 1)
         unclaimed = {"tests/core/new.test.mjs": "import a from '../../src/core/rules.js';\n"}
         self.assertEqual(
-            control_failures(unclaimed, owners={"tests/core/new.test.mjs": UNSPECIFIED}), [
+            control_failures(unclaimed, owners={"tests/core/new.test.mjs": UNSPECIFIED}),
+            [
                 "tests/core/new.test.mjs:1 imports '../../src/core/rules.js' (src/core/rules.ts): "
-                "tests/core/new.test.mjs belongs to no part of the part map"])
+                "tests/core/new.test.mjs belongs to no part of the part map"
+            ],
+        )
 
     def test_control_the_map_and_the_invariants_give_the_dependencies_and_the_accepted(self):
         # invariant: cross-part-imports
@@ -669,12 +787,15 @@ class ReadingOfImports(unittest.TestCase):
             "## view-leans-on-core\n\nThe part `view` does not depend on `core`.\n\n"
             "- **Method:** test\n- **Violated:** no\n\n"
             "## other\n\nNo file of the part `view` imports a file of `core`.\n\n"
-            "- **Violated:** yes\n\n## Withdrawn identifiers\n\n| Identifier | Why |\n")
+            "- **Violated:** yes\n\n## Withdrawn identifiers\n\n| Identifier | Why |\n"
+        )
         self.assertEqual(accepted_pairs(invariants), {("core", "view")})
-        part_map = ("# Part map\n\n## core\n\nSentence.\n\n- **Files:** src/core/**\n"
-                    "- **Depends on:** none\n- **Trust boundary:** none\n\n## view\n\n"
-                    "Sentence.\n\n- **Files:** src/view/**\n- **Depends on:** core · tools\n"
-                    "- **Trust boundary:** none\n\n## External context\n\n| Partner |\n")
+        part_map = (
+            "# Part map\n\n## core\n\nSentence.\n\n- **Files:** src/core/**\n"
+            "- **Depends on:** none\n- **Trust boundary:** none\n\n## view\n\n"
+            "Sentence.\n\n- **Files:** src/view/**\n- **Depends on:** core · tools\n"
+            "- **Trust boundary:** none\n\n## External context\n\n| Partner |\n"
+        )
         self.assertEqual(part_dependencies(part_map), {"core": set(), "view": {"core", "tools"}})
 
     def test_control_a_python_import_is_read_from_the_code_and_the_directories_it_adds(self):
@@ -682,26 +803,27 @@ class ReadingOfImports(unittest.TestCase):
         # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
         # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
         sources = {
-            "tests/core/test_ok.py":
-                "import os\nimport json, unittest\nfrom tests.support import shared\n"
-                "from tests.tools import test_build\nimport tests.tools.test_build\n"
-                "from tests.tools.test_build import *\n",
-            "tests/tools/test_build.py":
-                "import sys\nimport os\nsys.path.insert(\n    0, os.path.join(os.path.dirname("
-                "os.path.abspath(__file__)), '..', 'core'))\nimport test_rules\n",
-            "tests/core/test_text.py":
-                "TEXT = '''\nimport tests.tools.test_build\n'''\n"
-                "# import tests.tools.test_build\nNAME = 'from tests.tools import test_build'\n",
+            "tests/core/test_ok.py": "import os\nimport json, unittest\nfrom tests.support import shared\n"
+            "from tests.tools import test_build\nimport tests.tools.test_build\n"
+            "from tests.tools.test_build import *\n",
+            "tests/tools/test_build.py": "import sys\nimport os\nsys.path.insert(\n    0, os.path.join(os.path.dirname("
+            "os.path.abspath(__file__)), '..', 'core'))\nimport test_rules\n",
+            "tests/core/test_text.py": "TEXT = '''\nimport tests.tools.test_build\n'''\n"
+            "# import tests.tools.test_build\nNAME = 'from tests.tools import test_build'\n",
         }
-        self.assertEqual(control_failures(sources), [
-            "tests/core/test_ok.py:4 imports 'tests.tools' (tests/tools/test_build.py): the part "
-            "core does not list the part tools in Depends on",
-            "tests/core/test_ok.py:5 imports 'tests.tools.test_build' (tests/tools/test_build.py)"
-            ": the part core does not list the part tools in Depends on",
-            "tests/core/test_ok.py:6 imports 'tests.tools.test_build' (tests/tools/test_build.py)"
-            ": the part core does not list the part tools in Depends on",
-            "tests/tools/test_build.py:5 imports 'test_rules' (tests/core/test_rules.py): the "
-            "part tools does not list the part core in Depends on"])
+        self.assertEqual(
+            control_failures(sources),
+            [
+                "tests/core/test_ok.py:4 imports 'tests.tools' (tests/tools/test_build.py): the part "
+                "core does not list the part tools in Depends on",
+                "tests/core/test_ok.py:5 imports 'tests.tools.test_build' (tests/tools/test_build.py)"
+                ": the part core does not list the part tools in Depends on",
+                "tests/core/test_ok.py:6 imports 'tests.tools.test_build' (tests/tools/test_build.py)"
+                ": the part core does not list the part tools in Depends on",
+                "tests/tools/test_build.py:5 imports 'test_rules' (tests/core/test_rules.py): the "
+                "part tools does not list the part core in Depends on",
+            ],
+        )
 
     def test_control_a_directory_added_to_sys_path_is_written_out_of_the_file(self):
         # invariant: cross-part-imports
@@ -713,14 +835,17 @@ class ReadingOfImports(unittest.TestCase):
             "os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'core')",
         ]
         for expression in expressions:
-            text = ("import sys\nfrom pathlib import Path\nimport os\n"
-                    "ROOT = Path(__file__).resolve().parents[2]\n"
-                    f"sys.path.append({expression})\nimport test_rules\n")
+            text = (
+                "import sys\nfrom pathlib import Path\nimport os\n"
+                "ROOT = Path(__file__).resolve().parents[2]\n"
+                f"sys.path.append({expression})\nimport test_rules\n"
+            )
             failures = control_failures({"tests/tools/test_path.py": text})
             self.assertEqual(len(failures), 1, expression)
             self.assertIn("tests/tools/test_path.py:6 imports 'test_rules'", failures[0])
-        runtime = ("import sys\ndef add(path):\n    sys.path[:0] = [str(path.parent)]\n"
-                   "import test_rules\n")
+        runtime = (
+            "import sys\ndef add(path):\n    sys.path[:0] = [str(path.parent)]\nimport test_rules\n"
+        )
         self.assertEqual(control_failures({"tests/tools/test_runtime.py": runtime}), [])
 
 

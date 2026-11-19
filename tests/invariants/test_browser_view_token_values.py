@@ -82,64 +82,277 @@ TYPESCRIPT = (".ts", ".mts", ".cts", ".tsx")
 
 # CSS Color 4, https://www.w3.org/TR/2026/CRD-css-color-4-20261022/, read 2026-10-23.
 NAMED_COLOURS = (
-    "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black",
-    "blanchedalmond", "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse",
-    "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan",
-    "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta",
-    "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen",
-    "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink",
-    "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen",
-    "fuchsia", "gainsboro", "ghostwhite", "gold", "goldenrod", "gray", "green", "greenyellow",
-    "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender",
-    "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan",
-    "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon",
-    "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue",
-    "lightyellow", "lime", "limegreen", "linen", "magenta", "maroon", "mediumaquamarine",
-    "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue",
-    "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream",
-    "mistyrose", "moccasin", "navajowhite", "navy", "oldlace", "olive", "olivedrab", "orange",
-    "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred",
-    "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "purple", "rebeccapurple",
-    "red", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell",
-    "sienna", "silver", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen",
-    "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white",
-    "whitesmoke", "yellow", "yellowgreen",
+    "aliceblue",
+    "antiquewhite",
+    "aqua",
+    "aquamarine",
+    "azure",
+    "beige",
+    "bisque",
+    "black",
+    "blanchedalmond",
+    "blue",
+    "blueviolet",
+    "brown",
+    "burlywood",
+    "cadetblue",
+    "chartreuse",
+    "chocolate",
+    "coral",
+    "cornflowerblue",
+    "cornsilk",
+    "crimson",
+    "cyan",
+    "darkblue",
+    "darkcyan",
+    "darkgoldenrod",
+    "darkgray",
+    "darkgreen",
+    "darkgrey",
+    "darkkhaki",
+    "darkmagenta",
+    "darkolivegreen",
+    "darkorange",
+    "darkorchid",
+    "darkred",
+    "darksalmon",
+    "darkseagreen",
+    "darkslateblue",
+    "darkslategray",
+    "darkslategrey",
+    "darkturquoise",
+    "darkviolet",
+    "deeppink",
+    "deepskyblue",
+    "dimgray",
+    "dimgrey",
+    "dodgerblue",
+    "firebrick",
+    "floralwhite",
+    "forestgreen",
+    "fuchsia",
+    "gainsboro",
+    "ghostwhite",
+    "gold",
+    "goldenrod",
+    "gray",
+    "green",
+    "greenyellow",
+    "grey",
+    "honeydew",
+    "hotpink",
+    "indianred",
+    "indigo",
+    "ivory",
+    "khaki",
+    "lavender",
+    "lavenderblush",
+    "lawngreen",
+    "lemonchiffon",
+    "lightblue",
+    "lightcoral",
+    "lightcyan",
+    "lightgoldenrodyellow",
+    "lightgray",
+    "lightgreen",
+    "lightgrey",
+    "lightpink",
+    "lightsalmon",
+    "lightseagreen",
+    "lightskyblue",
+    "lightslategray",
+    "lightslategrey",
+    "lightsteelblue",
+    "lightyellow",
+    "lime",
+    "limegreen",
+    "linen",
+    "magenta",
+    "maroon",
+    "mediumaquamarine",
+    "mediumblue",
+    "mediumorchid",
+    "mediumpurple",
+    "mediumseagreen",
+    "mediumslateblue",
+    "mediumspringgreen",
+    "mediumturquoise",
+    "mediumvioletred",
+    "midnightblue",
+    "mintcream",
+    "mistyrose",
+    "moccasin",
+    "navajowhite",
+    "navy",
+    "oldlace",
+    "olive",
+    "olivedrab",
+    "orange",
+    "orangered",
+    "orchid",
+    "palegoldenrod",
+    "palegreen",
+    "paleturquoise",
+    "palevioletred",
+    "papayawhip",
+    "peachpuff",
+    "peru",
+    "pink",
+    "plum",
+    "powderblue",
+    "purple",
+    "rebeccapurple",
+    "red",
+    "rosybrown",
+    "royalblue",
+    "saddlebrown",
+    "salmon",
+    "sandybrown",
+    "seagreen",
+    "seashell",
+    "sienna",
+    "silver",
+    "skyblue",
+    "slateblue",
+    "slategray",
+    "slategrey",
+    "snow",
+    "springgreen",
+    "steelblue",
+    "tan",
+    "teal",
+    "thistle",
+    "tomato",
+    "turquoise",
+    "violet",
+    "wheat",
+    "white",
+    "whitesmoke",
+    "yellow",
+    "yellowgreen",
 )
 SYSTEM_COLOURS = (
-    "AccentColor", "AccentColorText", "ActiveText", "ButtonBorder", "ButtonFace", "ButtonText",
-    "Canvas", "CanvasText", "Field", "FieldText", "GrayText", "Highlight", "HighlightText",
-    "LinkText", "Mark", "MarkText", "SelectedItem", "SelectedItemText", "VisitedText",
+    "AccentColor",
+    "AccentColorText",
+    "ActiveText",
+    "ButtonBorder",
+    "ButtonFace",
+    "ButtonText",
+    "Canvas",
+    "CanvasText",
+    "Field",
+    "FieldText",
+    "GrayText",
+    "Highlight",
+    "HighlightText",
+    "LinkText",
+    "Mark",
+    "MarkText",
+    "SelectedItem",
+    "SelectedItemText",
+    "VisitedText",
 )
 DEPRECATED_SYSTEM_COLOURS = (
-    "ActiveBorder", "ActiveCaption", "AppWorkspace", "Background", "ButtonHighlight",
-    "ButtonShadow", "CaptionText", "InactiveBorder", "InactiveCaption", "InactiveCaptionText",
-    "InfoBackground", "InfoText", "Menu", "MenuText", "Scrollbar", "ThreeDDarkShadow",
-    "ThreeDFace", "ThreeDHighlight", "ThreeDLightShadow", "ThreeDShadow", "Window", "WindowFrame",
+    "ActiveBorder",
+    "ActiveCaption",
+    "AppWorkspace",
+    "Background",
+    "ButtonHighlight",
+    "ButtonShadow",
+    "CaptionText",
+    "InactiveBorder",
+    "InactiveCaption",
+    "InactiveCaptionText",
+    "InfoBackground",
+    "InfoText",
+    "Menu",
+    "MenuText",
+    "Scrollbar",
+    "ThreeDDarkShadow",
+    "ThreeDFace",
+    "ThreeDHighlight",
+    "ThreeDLightShadow",
+    "ThreeDShadow",
+    "Window",
+    "WindowFrame",
     "WindowText",
 )
 COLOUR_WORDS = frozenset(
-    word.lower() for word in NAMED_COLOURS + SYSTEM_COLOURS + DEPRECATED_SYSTEM_COLOURS)
+    word.lower() for word in NAMED_COLOURS + SYSTEM_COLOURS + DEPRECATED_SYSTEM_COLOURS
+)
 COLOUR_FUNCTIONS = ("rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color")
 
 # CSS Fonts 4 § 2.1.5, https://www.w3.org/TR/2026/WD-css-fonts-4-20261022/, read 2026-10-23.
-GENERIC_FAMILIES = ("serif", "sans-serif", "cursive", "fantasy", "monospace", "system-ui", "math",
-                    "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded")
+GENERIC_FAMILIES = (
+    "serif",
+    "sans-serif",
+    "cursive",
+    "fantasy",
+    "monospace",
+    "system-ui",
+    "math",
+    "ui-serif",
+    "ui-sans-serif",
+    "ui-monospace",
+    "ui-rounded",
+)
 # CSS Cascade 5 § 7.3, https://www.w3.org/TR/2022/CR-css-cascade-5-20220113/, read 2026-10-23.
 CSS_WIDE_KEYWORDS = ("initial", "inherit", "unset", "revert", "revert-layer")
 
 # Role names, as the styleguide's table Roles names them (D-39, D-40, D-41).
-ROLE_NAMES = frozenset((
-    "page", "panel", "highlight", "divider", "control-border", "selected", "text-strong", "text",
-    "text-secondary", "text-label", "text-disabled", "positive", "warning", "danger", "discovery",
-    "player-change", "character", "tile-hidden", "tile-revealed", "tile-edge", "link-highlight",
-    "depleted", "focus"))
+ROLE_NAMES = frozenset(
+    (
+        "page",
+        "panel",
+        "highlight",
+        "divider",
+        "control-border",
+        "selected",
+        "text-strong",
+        "text",
+        "text-secondary",
+        "text-label",
+        "text-disabled",
+        "positive",
+        "warning",
+        "danger",
+        "discovery",
+        "player-change",
+        "character",
+        "tile-hidden",
+        "tile-revealed",
+        "tile-edge",
+        "link-highlight",
+        "depleted",
+        "focus",
+    )
+)
 
-LAYOUT_PROPERTIES = frozenset((
-    "width", "height", "min-width", "min-height", "max-width", "max-height",
-    "grid-template-columns", "grid-template-rows", "grid-template"))
-UNITLESS_PROPERTIES = frozenset((
-    "stroke-width", "stroke-dasharray", "opacity", "fill-opacity", "stroke-opacity",
-    "flood-opacity", "stop-opacity", "font-weight"))
+LAYOUT_PROPERTIES = frozenset(
+    (
+        "width",
+        "height",
+        "min-width",
+        "min-height",
+        "max-width",
+        "max-height",
+        "grid-template-columns",
+        "grid-template-rows",
+        "grid-template",
+    )
+)
+UNITLESS_PROPERTIES = frozenset(
+    (
+        "stroke-width",
+        "stroke-dasharray",
+        "opacity",
+        "fill-opacity",
+        "stroke-opacity",
+        "flood-opacity",
+        "stop-opacity",
+        "font-weight",
+    )
+)
 
 WORD = re.compile(r"[\w-]+")
 HEX = re.compile(r"#([0-9a-fA-F]+)(?![\w-])")
@@ -155,6 +368,7 @@ def line_at(text, index):
 
 
 # --- reading CSS ----------------------------------------------------------------------------
+
 
 def without_comments(css):
     """CSS text with each comment outside strings blanked, its line breaks kept."""
@@ -203,8 +417,13 @@ def blocks(css):
             depth = max(0, depth - 1)
         elif depth == 0 and c == "{":
             prelude = css[start:i]
-            stack.append((" ".join(prelude.split()), [],
-                          line_at(css, start + len(prelude) - len(prelude.lstrip()))))
+            stack.append(
+                (
+                    " ".join(prelude.split()),
+                    [],
+                    line_at(css, start + len(prelude) - len(prelude.lstrip())),
+                )
+            )
             start = i + 1
         elif depth == 0 and c == ";":
             declaration(i)
@@ -225,11 +444,13 @@ def blocks(css):
 def colour_findings(text, not_colours=frozenset()):
     """The colours in a text of a value or of a literal, as the reading gives them; a whole word
     of `not_colours` is none."""
-    found = [f"the colour #{digits}" for digits in HEX.findall(text)
-             if len(digits) in (3, 4, 6, 8)]
+    found = [f"the colour #{digits}" for digits in HEX.findall(text) if len(digits) in (3, 4, 6, 8)]
     found += [f"the colour function {name}()" for name in FUNCTION.findall(text)]
-    found += [f"the colour {word}" for word in WORD.findall(text)
-              if word.lower() in COLOUR_WORDS and word.lower() not in not_colours]
+    found += [
+        f"the colour {word}"
+        for word in WORD.findall(text)
+        if word.lower() in COLOUR_WORDS and word.lower() not in not_colours
+    ]
     return found
 
 
@@ -242,8 +463,11 @@ def font_name_findings(prop, value):
         rest = re.sub(r"generic\([^)]*\)", " ", rest, flags=re.IGNORECASE)
         rest = re.sub(r"!\s*important", " ", rest, flags=re.IGNORECASE)
         allowed = {*GENERIC_FAMILIES, *CSS_WIDE_KEYWORDS, "var"}
-        found += [f"the font name {word}" for word in re.findall(r"-?[A-Za-z_][\w-]*", rest)
-                  if word.lower() not in allowed]
+        found += [
+            f"the font name {word}"
+            for word in re.findall(r"-?[A-Za-z_][\w-]*", rest)
+            if word.lower() not in allowed
+        ]
     return found
 
 
@@ -257,13 +481,16 @@ def value_findings(prop, value):
     rest = re.sub(r"var\(\s*--[\w-]*", "var(", rest)
     found += colour_findings(rest)
     if prop not in LAYOUT_PROPERTIES:
-        found += [f"the length {number}{unit}" for number, unit in LENGTH.findall(rest)
-                  if float(number) != 0]
+        found += [
+            f"the length {number}{unit}"
+            for number, unit in LENGTH.findall(rest)
+            if float(number) != 0
+        ]
     if prop in UNITLESS_PROPERTIES or prop == "font":
         for match in UNITLESS.finditer(rest):
             if float(match.group(1)) == 0:
                 continue
-            if prop == "font" and re.search(r"/\s*$", rest[:match.start()]):
+            if prop == "font" and re.search(r"/\s*$", rest[: match.start()]):
                 continue
             found.append(f"the unitless {prop} value {match.group(1)}")
     return found
@@ -273,8 +500,10 @@ def css_findings(css, first_line=1):
     found = []
     for _prelude, declarations, _line in blocks(css):
         for prop, value, line in declarations:
-            found += [f"line {first_line + line - 1}: {prop}: {finding}"
-                      for finding in value_findings(prop, value)]
+            found += [
+                f"line {first_line + line - 1}: {prop}: {finding}"
+                for finding in value_findings(prop, value)
+            ]
     return found
 
 
@@ -283,7 +512,8 @@ def css_findings(css, first_line=1):
 STYLE_ELEMENT = re.compile(r"(<style\b[^>]*>)(.*?)</style\s*>", re.IGNORECASE | re.DOTALL)
 TAG = re.compile(r"<[A-Za-z][^>]*>")
 STYLE_ATTRIBUTE = re.compile(
-    r"""\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))""", re.IGNORECASE)
+    r"""\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))""", re.IGNORECASE
+)
 
 
 def html_findings(text):
@@ -296,14 +526,17 @@ def html_findings(text):
         for attribute in STYLE_ATTRIBUTE.finditer(tag.group(0)):
             value = html.unescape(next(v for v in attribute.groups() if v is not None))
             line = line_at(outside, tag.start())
-            found += [f"line {line}: style attribute: {finding.split(': ', 1)[1]}"
-                      for finding in css_findings("x{" + value + "}")]
+            found += [
+                f"line {line}: style attribute: {finding.split(': ', 1)[1]}"
+                for finding in css_findings("x{" + value + "}")
+            ]
     return found
 
 
 REGEX_AFTER = "(,=:[!&|?{};+-*%<>~^"
 REGEX_AFTER_WORD = re.compile(
-    r"(?<![\w$])(?:return|typeof|case|do|else|in|of|void|yield|await|delete|new|throw)\s*$")
+    r"(?<![\w$])(?:return|typeof|case|do|else|in|of|void|yield|await|delete|new|throw)\s*$"
+)
 
 
 def literal_texts(text):
@@ -317,7 +550,7 @@ def literal_texts(text):
         c = text[i]
         if c.isspace():
             i += 1
-        elif text.startswith("//", i) and text[i - 1:i] != ":":
+        elif text.startswith("//", i) and text[i - 1 : i] != ":":
             # A `//` right after `:` is the address in JSX text such as `<p>https://x</p>`.
             end = text.find("\n", i)
             i = n if end < 0 else end
@@ -328,7 +561,7 @@ def literal_texts(text):
             j = i + 1
             while j < n and text[j] not in (c, "\n"):
                 j += 2 if text[j] == "\\" else 1
-            found.append((line_at(text, i), text[i + 1:j]))
+            found.append((line_at(text, i), text[i + 1 : j]))
             i, last = j + 1, c
         elif c == "`" or (c == "}" and holes and depth == holes[-1]):
             if c == "}":
@@ -351,10 +584,10 @@ def literal_texts(text):
             else:
                 found.append((line_at(text, start), text[start:]))
             i, last = j, "`"
-        elif c == "/" and text[i - 1:i] == "<":
+        elif c == "/" and text[i - 1 : i] == "<":
             # The `/` of a JSX closing tag such as `</p>` or `</>`: no regex starts here.
             i, last = i + 1, c
-        elif c == "/" and last == "}" and text[i + 1:i + 2] == ">":
+        elif c == "/" and last == "}" and text[i + 1 : i + 2] == ">":
             # The `/>` closing a JSX tag whose last attribute stands in braces: no regex starts here.
             i, last = i + 1, c
         elif c == "/" and (last == "" or last in REGEX_AFTER or REGEX_AFTER_WORD.search(text[:i])):
@@ -383,8 +616,10 @@ def literal_texts(text):
 def typescript_findings(text):
     found = []
     for line, literal in literal_texts(text):
-        found += [f"line {line}: in a literal: {finding}"
-                  for finding in colour_findings(literal, ROLE_NAMES)]
+        found += [
+            f"line {line}: in a literal: {finding}"
+            for finding in colour_findings(literal, ROLE_NAMES)
+        ]
     return found
 
 
@@ -403,8 +638,9 @@ def part_files():
     extensions read here."""
     tracked = set(support.listed_files())
     owners = support.file_owners(Path(support.ROOT), tracked)
-    return sorted(path for path, owner in owners.items()
-                  if owner == PART and path.endswith(EXTENSIONS))
+    return sorted(
+        path for path, owner in owners.items() if owner == PART and path.endswith(EXTENSIONS)
+    )
 
 
 def population():
@@ -449,8 +685,7 @@ FLAGGED = {
         "a stroke width": "polygon { stroke-width: 1; }",
         "a dash pattern": "polygon { stroke-dasharray: 5 4; }",
         "a custom property holding a length": ":root { --gap: 4px; }",
-        "a length in a rule inside @media":
-            "@media (max-width: 720px) { a { gap: 8px; } }",
+        "a length in a rule inside @media": "@media (max-width: 720px) { a { gap: 8px; } }",
         "a length in a nested rule": "a { color: var(--text); &:hover { gap: 8px; } }",
         "a last declaration without `;`": "a { color: var(--text); margin: 4px }",
         "an @font-face of a stylesheet": '@font-face { font-family: "Geist"; }',
@@ -471,28 +706,18 @@ FLAGGED = {
         "a colour in a template inside ${}": 'const s = `a ${`b ${"#000"}`} c`;',
         "a colour after a regex literal": 'const r = /a"b/; const c = "#fff";',
         "a colour after a division": 'const x = a / b; const s = "red"; const y = c / d;',
-        "a colour in a string after a ${} closing a block":
-            "const s = `${(() => { return 1; })()}`; const c = 'navy';",
+        "a colour in a string after a ${} closing a block": "const s = `${(() => { return 1; })()}`; const c = 'navy';",
     },
     "a.tsx": {
-        "a named colour in a style attribute":
-            'const a = <p style={{ color: "red" }}>x</p>;',
-        "a hexadecimal colour in a style attribute":
-            "const a = <p style={{ background: '#fff' }}>x</p>;",
-        "a colour function in a literal on the line after a JSX element":
-            'const a = <p>x</p>;\nconst c = "rgb(1, 2, 3)";',
-        "a colour in a literal later on the line of a JSX closing tag":
-            'const a = <p>x</p>; const c = "rgb(1, 2, 3)";',
-        "a colour in a literal after the closing tag of a fragment on its line":
-            'const a = <>x</>; const c = "#fff";',
-        "a colour after a self-closing tag with an attribute in braces, in a ternary":
-            'const a = b ? <X y={1} /> : <X style={{ color: "red" }} />;',
-        "a colour after a self-closing tag with an attribute in braces, in an array":
-            'const b = [<X y={1} />, <X style={{ color: "#fff" }} />];',
-        "a colour in an assignment after a self-closing tag with an attribute in braces":
-            'const a = <input value={x} />; const c = "#fff";',
-        "a colour in an assignment after `//` in JSX text":
-            'const a = <p>https://x</p>; const c = "#fff";',
+        "a named colour in a style attribute": 'const a = <p style={{ color: "red" }}>x</p>;',
+        "a hexadecimal colour in a style attribute": "const a = <p style={{ background: '#fff' }}>x</p>;",
+        "a colour function in a literal on the line after a JSX element": 'const a = <p>x</p>;\nconst c = "rgb(1, 2, 3)";',
+        "a colour in a literal later on the line of a JSX closing tag": 'const a = <p>x</p>; const c = "rgb(1, 2, 3)";',
+        "a colour in a literal after the closing tag of a fragment on its line": 'const a = <>x</>; const c = "#fff";',
+        "a colour after a self-closing tag with an attribute in braces, in a ternary": 'const a = b ? <X y={1} /> : <X style={{ color: "red" }} />;',
+        "a colour after a self-closing tag with an attribute in braces, in an array": 'const b = [<X y={1} />, <X style={{ color: "#fff" }} />];',
+        "a colour in an assignment after a self-closing tag with an attribute in braces": 'const a = <input value={x} />; const c = "#fff";',
+        "a colour in an assignment after `//` in JSX text": 'const a = <p>https://x</p>; const c = "#fff";',
     },
 }
 CLEAN = {
@@ -525,7 +750,7 @@ CLEAN = {
         "  stroke-width: var(--frame-width);\n"
         "  stroke-dasharray: var(--step-target-dash);\n"
         "  background: url(red.svg);\n"
-        "  content: \"red; #fff 4px\";\n"
+        '  content: "red; #fff 4px";\n'
         "  gap: var(--space-s);\n"
         "  color-scheme: dark;\n"
         "  outline-color: var(--panel-background);\n"
@@ -546,7 +771,7 @@ CLEAN = {
         'const a = "panel-background";\n'
         "const b = 'highlight';\n"
         'const c = "transparent currentColor";\n'
-        "const d = `tile ${red ? \"revealed\" : \"hidden\"} --highlight`;\n"
+        'const d = `tile ${red ? "revealed" : "hidden"} --highlight`;\n'
         'const e = /"#fff"/g;\n'
         "const f = a / b;\n"
         'const g = "var(--page)";\n'
@@ -556,8 +781,8 @@ CLEAN = {
         "const red = field;\n"
         'const a = <p style={{ color: "var(--text)" }} className="highlight">red #fff</p>;\n'
         'const b = <p>{red ? "revealed" : "hidden"}</p>;\n'
-        'const c = <X y={1} />;\n'
-        'function f() {}\n'
+        "const c = <X y={1} />;\n"
+        "function f() {}\n"
         '/"#fff"/.test(c);\n'
         'const t = a < /"#fff"/.lastIndex;\n'
         'const u = b ? c : d; // "#fff"\n'
@@ -567,7 +792,6 @@ CLEAN = {
 
 
 class BrowserViewTokenValues(unittest.TestCase):
-
     def test_no_file_of_the_part_holds_a_value_in_place_of_a_token(self):
         # invariant: browser-view-token-values
         found = []
@@ -579,8 +803,12 @@ class BrowserViewTokenValues(unittest.TestCase):
     def test_control_the_population_is_the_part_less_the_token_file(self):
         # invariant: browser-view-token-values
         files = population()
-        for expected in ("src/browser/index.html", "src/browser/main.ts",
-                         "src/browser/view/app.ts", "src/browser/view/terrain-drawing.tsx"):
+        for expected in (
+            "src/browser/index.html",
+            "src/browser/main.ts",
+            "src/browser/view/app.ts",
+            "src/browser/view/terrain-drawing.tsx",
+        ):
             self.assertIn(expected, files)
         self.assertNotIn(TOKEN_FILE, files)
         self.assertEqual([path for path in files if path.startswith("src/browser/sim/")], [])

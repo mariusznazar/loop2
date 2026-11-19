@@ -58,8 +58,11 @@ ENTRIES = (
 
 # The data modules and collections the tripwire reads, as `npm run build` compiles them.
 BUILT_DATA = "dist/browser/sim/data"
-COLLECTIONS = (("maps.js", "MAPS", "map"), ("resources.js", "RESOURCES", "resource"),
-               ("archetypes.js", "ARCHETYPES", "archetype"))
+COLLECTIONS = (
+    ("maps.js", "MAPS", "map"),
+    ("resources.js", "RESOURCES", "resource"),
+    ("archetypes.js", "ARCHETYPES", "archetype"),
+)
 READER = r"""
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -94,8 +97,7 @@ def data_entries():
         out_path = os.path.join(work, "entries.json")
         with open(script, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(READER)
-        code, output = support.run([node(), script, data, json.dumps(COLLECTIONS), out_path],
-                                   work)
+        code, output = support.run([node(), script, data, json.dumps(COLLECTIONS), out_path], work)
         if code != 0:
             raise AssertionError(f"the reader exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -107,14 +109,32 @@ def data_entries():
 def not_written_out(read, written):
     """The entries of `read` that `written` lacks, as messages for the maintainer."""
     known = {(e["kind"], e["id"], e["name"]) for e in written}
-    return [f"the data gives the {e['kind']} {e['id']!r} named {e['name']!r}, which ENTRIES in "
-            f"tests/invariants/test_content_identifiers.py does not hold; add it there so that "
-            f"the check scans for it" for e in read if (e["kind"], e["id"], e["name"]) not in known]
+    return [
+        f"the data gives the {e['kind']} {e['id']!r} named {e['name']!r}, which ENTRIES in "
+        f"tests/invariants/test_content_identifiers.py does not hold; add it there so that "
+        f"the check scans for it"
+        for e in read
+        if (e["kind"], e["id"], e["name"]) not in known
+    ]
 
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
-REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
-                     "void", "throw", "yield", "await", "instanceof")
+REGEX_AFTER_WORDS = (
+    "return",
+    "typeof",
+    "case",
+    "do",
+    "else",
+    "in",
+    "of",
+    "new",
+    "delete",
+    "void",
+    "throw",
+    "yield",
+    "await",
+    "instanceof",
+)
 
 
 def without_comments(text):
@@ -135,10 +155,10 @@ def without_comments(text):
                 j += 2
                 continue
             if text[j] == "`":
-                out.append(text[start:j + 1])
+                out.append(text[start : j + 1])
                 return j + 1
             if text.startswith("${", j):
-                out.append(text[start:j + 2])
+                out.append(text[start : j + 2])
                 braces.append(0)
                 return j + 2
             j += 1
@@ -161,7 +181,7 @@ def without_comments(text):
             j = i + 1
             while j < n and text[j] != c and text[j] != "\n":
                 j += 2 if text[j] == "\\" else 1
-            out.append(text[i:j + 1])
+            out.append(text[i : j + 1])
             i = j + 1
             continue
         if c == "`":
@@ -178,8 +198,11 @@ def without_comments(text):
         if c == "/":
             before = last_significant()
             word = re.search(r"([A-Za-z_$][\w$]*)$", before)
-            if not before or before[-1] in REGEX_AFTER or (
-                    word and word.group(1) in REGEX_AFTER_WORDS):
+            if (
+                not before
+                or before[-1] in REGEX_AFTER
+                or (word and word.group(1) in REGEX_AFTER_WORDS)
+            ):
                 j, in_class = i + 1, False
                 while j < n and text[j] != "\n":
                     if text[j] == "\\":
@@ -208,8 +231,11 @@ def token_pattern(word):
 
 
 def scanned(relative):
-    return (relative.startswith(BROWSER_DIRECTORY) and not relative.startswith(DATA_DIRECTORY)
-            and relative.endswith(TYPESCRIPT_EXTENSIONS))
+    return (
+        relative.startswith(BROWSER_DIRECTORY)
+        and not relative.startswith(DATA_DIRECTORY)
+        and relative.endswith(TYPESCRIPT_EXTENSIONS)
+    )
 
 
 def findings(relative, text, entries):
@@ -220,13 +246,13 @@ def findings(relative, text, entries):
     for entry in entries:
         for label, word in (("identifier", entry["id"]), ("name", entry["name"])):
             if word and token_pattern(word).search(code):
-                found.append(f"{relative} names the {entry['kind']} {entry['id']} by its "
-                             f"{label} {word!r}")
+                found.append(
+                    f"{relative} names the {entry['kind']} {entry['id']} by its {label} {word!r}"
+                )
     return found
 
 
 class ContentIdentifiers(unittest.TestCase):
-
     def test_browser_files_outside_the_data_name_no_content(self):
         # invariant: content-identifiers
         # decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
@@ -235,10 +261,12 @@ class ContentIdentifiers(unittest.TestCase):
         self.assertTrue(files, "no TypeScript file under src/browser/ outside the data")
         found = []
         for relative in files:
-            found += findings(relative, support.read_text(os.path.join(support.ROOT, relative)),
-                              entries)
-        self.assertEqual(found, [], "a file outside the data names content by its identifier "
-                                    "or name")
+            found += findings(
+                relative, support.read_text(os.path.join(support.ROOT, relative)), entries
+            )
+        self.assertEqual(
+            found, [], "a file outside the data names content by its identifier or name"
+        )
 
     def test_tripwire_every_data_entry_is_written_out(self):
         # invariant: content-identifiers
@@ -250,8 +278,10 @@ class ContentIdentifiers(unittest.TestCase):
         # invariant: content-identifiers
         self.assertEqual(not_written_out(list(ENTRIES), ENTRIES), [])
         stone = {"kind": "resource", "id": "stone", "name": "kamień"}
-        self.assertTrue(not_written_out(list(ENTRIES) + [stone], ENTRIES),
-                        "a resource added to the data goes unseen")
+        self.assertTrue(
+            not_written_out(list(ENTRIES) + [stone], ENTRIES),
+            "a resource added to the data goes unseen",
+        )
         renamed = [dict(e, name="Puszcza") if e["kind"] == "map" else e for e in ENTRIES]
         self.assertTrue(not_written_out(renamed, ENTRIES), "a renamed map goes unseen")
 
@@ -261,20 +291,29 @@ class ContentIdentifiers(unittest.TestCase):
         probe = "src/browser/view/probe.ts"
         for entry in entries:
             for word in (entry["id"], entry["name"]):
-                for text in (f"const x = {json.dumps(word, ensure_ascii=False)};\n",
-                             f"const x = `<b>${{n}} {word}</b>`;\n",
-                             f"const p = '/icons/{word}.svg';\n",
-                             f"const s = {{ {json.dumps(word, ensure_ascii=False)}: 1 }};\n"):
+                for text in (
+                    f"const x = {json.dumps(word, ensure_ascii=False)};\n",
+                    f"const x = `<b>${{n}} {word}</b>`;\n",
+                    f"const p = '/icons/{word}.svg';\n",
+                    f"const s = {{ {json.dumps(word, ensure_ascii=False)}: 1 }};\n",
+                ):
                     with self.subTest(text=text):
-                        self.assertTrue(findings(probe, text, entries),
-                                        f"the scan does not flag {text!r}")
+                        self.assertTrue(
+                            findings(probe, text, entries), f"the scan does not flag {text!r}"
+                        )
                 with self.subTest(comment=word):
                     text = f"// {word}\n/* {word} */\nconst y = 1;\n"
-                    self.assertEqual(findings(probe, text, entries), [],
-                                     f"the scan flags {word!r} standing in comments only")
+                    self.assertEqual(
+                        findings(probe, text, entries),
+                        [],
+                        f"the scan flags {word!r} standing in comments only",
+                    )
                     compound = f"const z = 'wood-{word}-bush'; const w{word}Count = 2;\n"
-                    self.assertEqual(findings(probe, compound, entries), [],
-                                     f"the scan flags {word!r} inside a compound token")
+                    self.assertEqual(
+                        findings(probe, compound, entries),
+                        [],
+                        f"the scan flags {word!r} inside a compound token",
+                    )
             self.assertTrue(findings(probe, f"RESOURCES.{entry['id']};\n", entries))
         named = f"export const a = {json.dumps(entries[0]['id'], ensure_ascii=False)};\n"
         self.assertEqual(findings("src/browser/sim/data/probe.ts", named, entries), [])

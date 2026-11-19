@@ -31,8 +31,16 @@ def run_command(command, cwd):
     """The result of one command with its output kept, or a result with exit code 127 and the
     reason as its output where the program cannot be started or does not end in time."""
     try:
-        return subprocess.run(command, cwd=cwd, capture_output=True, text=True, encoding="utf-8",
-                              errors="backslashreplace", timeout=900, check=False)
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            timeout=900,
+            check=False,
+        )
     except (OSError, subprocess.TimeoutExpired) as error:
         return subprocess.CompletedProcess(command, 127, "", str(error))
 
@@ -91,8 +99,11 @@ def problem(root, run=run_command):
         return "its pip does not list the packages"
     for name, version in pinned(root).items():
         if installed.get(name) != version:
-            return "%s is %s, not the pinned %s" % (name, installed.get(name) or "not installed",
-                                                    version)
+            return "%s is %s, not the pinned %s" % (
+                name,
+                installed.get(name) or "not installed",
+                version,
+            )
     for name in TOOLS:
         if run([str(venv_tool(root, name)), "--version"], root).returncode != 0:
             return "%s does not run" % name
@@ -106,8 +117,10 @@ def refusal(root, why, command=None, result=None):
         shown = (result.stdout or "") + (result.stderr or "")
         lines.append("`%s` ended with code %s:" % (" ".join(map(str, command)), result.returncode))
         lines.extend(shown.strip().splitlines()[-KEPT_LINES:])
-    lines.append("Make it by hand with the commands of README.md, section \"Code check tools\": "
-                 "`python -m venv %s`, then `%s`." % (DIRECTORY, install_command(root)))
+    lines.append(
+        'Make it by hand with the commands of README.md, section "Code check tools": '
+        "`python -m venv %s`, then `%s`." % (DIRECTORY, install_command(root))
+    )
     return "\n".join(lines)
 
 
@@ -120,17 +133,20 @@ def ensure_quality_environment(root, run=run_command, python=None):
     root = Path(root)
     python = python or sys.executable
     if tuple(sys.version_info[:2]) < MINIMUM_PYTHON:
-        raise EnvironmentNotMade(refusal(
-            root, "Python %d.%d or newer is needed to make it" % MINIMUM_PYTHON))
+        raise EnvironmentNotMade(
+            refusal(root, "Python %d.%d or newer is needed to make it" % MINIMUM_PYTHON)
+        )
     if problem(root, run) is None:
         return
-    for command in ([python, "-m", "venv", "--clear", str(folder(root))],
-                    [str(venv_python(root)), "-m", "pip", "install", "--require-hashes", "-r",
-                     REQUIREMENTS]):
+    for command in (
+        [python, "-m", "venv", "--clear", str(folder(root))],
+        [str(venv_python(root)), "-m", "pip", "install", "--require-hashes", "-r", REQUIREMENTS],
+    ):
         result = run(command, root)
         if result.returncode != 0:
-            raise EnvironmentNotMade(refusal(root, "a command of the install failed",
-                                             command, result))
+            raise EnvironmentNotMade(
+                refusal(root, "a command of the install failed", command, result)
+            )
     why = problem(root, run)
     if why is not None:
         raise EnvironmentNotMade(refusal(root, "after the install " + why))

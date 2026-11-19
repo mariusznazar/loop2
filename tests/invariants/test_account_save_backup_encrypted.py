@@ -58,8 +58,7 @@ def age_missing(fixture):
 
 
 def age_fails_leaving_part(fixture):
-    fixture.answer("age", exit_code=1, stderr=b"age: error: stand-in\n",
-                   output=PARTIAL_CIPHERTEXT)
+    fixture.answer("age", exit_code=1, stderr=b"age: error: stand-in\n", output=PARTIAL_CIPHERTEXT)
 
 
 def age_ends_well_on_an_empty_file(fixture):
@@ -84,8 +83,9 @@ def command_fails_after_part_of_the_database(fixture):
 
 
 def container_stopped(fixture):
-    fixture.answer("docker", exit_code=1,
-                   stderr=b"Error response from daemon: container is not running\n")
+    fixture.answer(
+        "docker", exit_code=1, stderr=b"Error response from daemon: container is not running\n"
+    )
 
 
 def command_killed_after_part_of_the_database(fixture):
@@ -97,15 +97,24 @@ def command_hangs_after_part_of_the_database(fixture):
     fixture.answer("docker", action="hang", stdout=PARTIAL_PLAIN)
 
 
-NOTHING_LEAVES = (key_absent, key_empty, key_no_file, age_missing, age_fails_leaving_part,
-                  age_ends_well_on_an_empty_file, age_ends_well_on_no_file, age_killed, age_hangs,
-                  command_fails_after_part_of_the_database, container_stopped,
-                  command_killed_after_part_of_the_database,
-                  command_hangs_after_part_of_the_database)
+NOTHING_LEAVES = (
+    key_absent,
+    key_empty,
+    key_no_file,
+    age_missing,
+    age_fails_leaving_part,
+    age_ends_well_on_an_empty_file,
+    age_ends_well_on_no_file,
+    age_killed,
+    age_hangs,
+    command_fails_after_part_of_the_database,
+    container_stopped,
+    command_killed_after_part_of_the_database,
+    command_hangs_after_part_of_the_database,
+)
 
 
 class NoBackupLeavesUnencrypted(unittest.TestCase):
-
     def fixture(self):
         fixture = support.BackupFixture()
         self.addCleanup(fixture.remove)
@@ -134,10 +143,16 @@ class NoBackupLeavesUnencrypted(unittest.TestCase):
         self.assertEqual(result.age_input, support.PLAIN_DATABASE, result)
         self.assertEqual(len(result.of("age")), 1, result)
         age = result.of("age")[0]
-        self.assertIn("--encrypt", age, "an identity file is a key only with an explicit -e "
-                                        "(age-file-encryption)")
-        self.assertEqual(age[age.index("--identity") + 1],
-                         support.deploy_support.shell_path(fixture.key_file), result)
+        self.assertIn(
+            "--encrypt",
+            age,
+            "an identity file is a key only with an explicit -e (age-file-encryption)",
+        )
+        self.assertEqual(
+            age[age.index("--identity") + 1],
+            support.deploy_support.shell_path(fixture.key_file),
+            result,
+        )
         self.assertEqual(len(result.of("rsync")), 1, result)
         rsync = result.of("rsync")[0]
         output = age[age.index("--output") + 1]

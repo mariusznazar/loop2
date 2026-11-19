@@ -11,24 +11,36 @@ GREY, LIGHT, BROWN, RED = (10, 10, 10), (20, 20, 20), (90, 60, 30), (255, 0, 0)
 
 
 def picture_rows():
-    return [[GREY + (255,), LIGHT + (255,), GREY + (128,), GREY + (0,)],
-            [BROWN + (255,), GREY + (255,), LIGHT + (255,), BROWN + (255,)]]
+    return [
+        [GREY + (255,), LIGHT + (255,), GREY + (128,), GREY + (0,)],
+        [BROWN + (255,), GREY + (255,), LIGHT + (255,), BROWN + (255,)],
+    ]
 
 
 class Recolor(unittest.TestCase):
-
     def run_in(self, directory, *arguments):
         support.write_png(directory, "in.png", picture_rows())
-        return support.run_script("recolor.mjs", os.path.join(directory, "in.png"), os.path.join(directory, "out.png"),
-                                  *arguments)
+        return support.run_script(
+            "recolor.mjs",
+            os.path.join(directory, "in.png"),
+            os.path.join(directory, "out.png"),
+            *arguments,
+        )
 
-    def test_each_pixel_of_the_colour_takes_the_new_one_with_its_alpha_and_a_wholly_transparent_pixel_stays(self):
+    def test_each_pixel_of_the_colour_takes_the_new_one_with_its_alpha_and_a_wholly_transparent_pixel_stays(
+        self,
+    ):
         with tempfile.TemporaryDirectory() as directory:
             result = self.run_in(directory, "--map", "#0a0a0a=#141414")
             self.assertEqual(result.returncode, 0, result.stderr)
             rows, chunks = support.read_png(os.path.join(directory, "out.png"))
-            self.assertEqual(rows, [[LIGHT + (255,), LIGHT + (255,), LIGHT + (128,), GREY + (0,)],
-                                    [BROWN + (255,), LIGHT + (255,), LIGHT + (255,), BROWN + (255,)]])
+            self.assertEqual(
+                rows,
+                [
+                    [LIGHT + (255,), LIGHT + (255,), LIGHT + (128,), GREY + (0,)],
+                    [BROWN + (255,), LIGHT + (255,), LIGHT + (255,), BROWN + (255,)],
+                ],
+            )
             self.assertEqual(chunks, ["IHDR", "IDAT", "IEND"])
             self.assertIn("#0a0a0a -> #141414: 3 pixels", result.stdout)
 
@@ -37,7 +49,9 @@ class Recolor(unittest.TestCase):
             result = self.run_in(directory, "--map", "#0a0a0a=#141414", "--map", "#141414=#5a3c1e")
             self.assertEqual(result.returncode, 0, result.stderr)
             rows, _ = support.read_png(os.path.join(directory, "out.png"))
-            self.assertEqual(rows[0][0], LIGHT + (255,), "the grey became the light one and stopped there")
+            self.assertEqual(
+                rows[0][0], LIGHT + (255,), "the grey became the light one and stopped there"
+            )
             self.assertEqual(rows[0][1], BROWN + (255,))
 
     def test_a_colour_the_palette_lacks_is_refused_and_nothing_is_written(self):

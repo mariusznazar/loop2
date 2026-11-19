@@ -45,23 +45,54 @@ CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}
-P1 = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
-                        {"condition": ALWAYS, "action": {"kind": "wander"}}])
-P2 = program_from_rules([{"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
-                        {"condition": ALWAYS, "action": {"kind": "wander"}}])
+P1 = program_from_rules(
+    [
+        {"condition": ALWAYS, "action": {"kind": "explore"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
+P2 = program_from_rules(
+    [
+        {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
 
 STEPS = [
-    ["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T],
-    ["advanceMinutes", 30], ["restart"],
-    ["advanceMinutes", 20], ["passRealTime", 15000], ["setPaused", True],
-    ["passRealTime", 9000], ["setPaused", False], ["advanceMinutes", 10],
-    ["setProgram", P2], ["restart"], ["restart"],
-    ["end"], ["send", SENT, T_OTHER], ["advanceMinutes", 20], ["restart"],
+    ["newGame"],
+    CREATE,
+    ["setProgram", P1],
+    ["send", SENT, T],
+    ["advanceMinutes", 30],
+    ["restart"],
+    ["advanceMinutes", 20],
+    ["passRealTime", 15000],
+    ["setPaused", True],
+    ["passRealTime", 9000],
+    ["setPaused", False],
+    ["advanceMinutes", 10],
+    ["setProgram", P2],
+    ["restart"],
+    ["restart"],
+    ["end"],
+    ["send", SENT, T_OTHER],
+    ["advanceMinutes", 20],
+    ["restart"],
 ]
-CONTROL_STEPS = [["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T], ["end"],
-                 ["send", SENT, T], ["end"], ["send", SENT, T_OTHER]]
+CONTROL_STEPS = [
+    ["newGame"],
+    CREATE,
+    ["setProgram", P1],
+    ["send", SENT, T],
+    ["end"],
+    ["send", SENT, T],
+    ["end"],
+    ["send", SENT, T_OTHER],
+]
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -76,6 +107,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -108,7 +140,6 @@ def drive(steps):
 
 
 class RestartSeed(unittest.TestCase):
-
     def test_each_restart_keeps_the_seed_of_the_run_it_replaces(self):
         # invariant: restart-seed
         records = drive(STEPS)
@@ -120,19 +151,29 @@ class RestartSeed(unittest.TestCase):
             self.assertIsNotNone(after, f"step {index}: the restart left no map run")
             self.assertEqual(after["minute"], 0, f"step {index}: the restart did not start anew")
             if STEPS[index - 1][0] != "restart":
-                self.assertGreater(before["minute"], 0, f"step {index}: the run before the "
-                                                        "restart had not moved on")
-            self.assertEqual(after["seed"], before["seed"],
-                             f"step {index}: the restart's seed differs from the seed of the "
-                             "map run it replaces")
+                self.assertGreater(
+                    before["minute"],
+                    0,
+                    f"step {index}: the run before the restart had not moved on",
+                )
+            self.assertEqual(
+                after["seed"],
+                before["seed"],
+                f"step {index}: the restart's seed differs from the seed of the "
+                "map run it replaces",
+            )
 
     def test_control_sends_take_other_seeds(self):
         # invariant: restart-seed
         records = drive(CONTROL_STEPS)
         seeds = [records[i]["run"]["seed"] for i, s in enumerate(CONTROL_STEPS) if s[0] == "send"]
         self.assertEqual(len(seeds), 3)
-        self.assertEqual(len(set(seeds)), 3, f"sends gave the seeds {seeds}, so a restart taking "
-                                             "a new seed as a send does could go unseen")
+        self.assertEqual(
+            len(set(seeds)),
+            3,
+            f"sends gave the seeds {seeds}, so a restart taking "
+            "a new seed as a send does could go unseen",
+        )
         main = drive(STEPS)
         first, second = main[3]["run"]["seed"], main[16]["run"]["seed"]
         self.assertNotEqual(first, second, "the two sends of the scenario share a seed")

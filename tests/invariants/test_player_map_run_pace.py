@@ -93,11 +93,15 @@ SENT = {"mapId": "forest", "characterId": 1}
 CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
-PROGRAM = program_from_rules([
-    {"condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
-     "action": {"kind": "explore"}},
-    {"condition": {"kind": "always"}, "action": {"kind": "wander"}},
-])
+PROGRAM = program_from_rules(
+    [
+        {
+            "condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
+            "action": {"kind": "explore"},
+        },
+        {"condition": {"kind": "always"}, "action": {"kind": "wander"}},
+    ]
+)
 
 
 def passed(ms):
@@ -308,7 +312,9 @@ DEATH_CONTROL = (
     (passed(5000), 84, True, 0, True, 1, False, False),
 )
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -331,6 +337,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -344,8 +351,9 @@ def drive(steps):
     copy = support.built_copy()
     game = copy.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-pace-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -365,12 +373,12 @@ def drive(steps):
 
 
 class PlayerMapRunPace(unittest.TestCase):
-
     def run_and_compare(self, table):
         records = drive(START + [list(step) for step, _minute, _paused in table])
         self.assertEqual(len(records), len(START) + len(table))
-        self.assertEqual(records[len(START) - 1]["minute"], 0, "the send started no map run "
-                                                               "at minute 0")
+        self.assertEqual(
+            records[len(START) - 1]["minute"], 0, "the send started no map run at minute 0"
+        )
         self.assertFalse(records[len(START) - 1]["paused"], "the sent map run is paused")
         for index, (step, minute, paused) in enumerate(table):
             record = records[len(START) + index]
@@ -393,14 +401,19 @@ class PlayerMapRunPace(unittest.TestCase):
         for index, (step, minute, paused, carry, discovery, *after) in enumerate(table):
             record = records[len(start) + index]
             if after:
-                self.assertEqual(record["pace"], after[0], f"pace after input {index}, "
-                                                            f"{json.dumps(step)}")
+                self.assertEqual(
+                    record["pace"], after[0], f"pace after input {index}, {json.dumps(step)}"
+                )
             if len(after) > 1:
-                self.assertEqual(record["completed"], after[1],
-                                 f"completion after input {index}, {json.dumps(step)}")
+                self.assertEqual(
+                    record["completed"],
+                    after[1],
+                    f"completion after input {index}, {json.dumps(step)}",
+                )
             if len(after) > 2:
-                self.assertEqual(record["dead"], after[2],
-                                 f"death after input {index}, {json.dumps(step)}")
+                self.assertEqual(
+                    record["dead"], after[2], f"death after input {index}, {json.dumps(step)}"
+                )
             where = f"input {index}, {json.dumps(step)}"
             self.assertEqual(record["minute"], minute, f"game minute after {where}")
             self.assertEqual(record["paused"], paused, f"paused after {where}")
@@ -435,7 +448,9 @@ class PlayerMapRunPace(unittest.TestCase):
         # invariant: player-map-run-pace
         self.run_and_compare_discovery(START, COMPLETION_CONTROL)
 
-    def test_a_death_in_the_minute_of_a_discovery_ends_the_run_unpaused_and_keeps_the_discovery(self):
+    def test_a_death_in_the_minute_of_a_discovery_ends_the_run_unpaused_and_keeps_the_discovery(
+        self,
+    ):
         # invariant: player-map-run-pace
         self.run_and_compare_discovery(BARE_START, DEATH_SCENARIO)
 

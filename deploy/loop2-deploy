@@ -98,16 +98,16 @@ path_name() {
 read_input() {
   if [[ -v SSH_ORIGINAL_COMMAND ]]; then
     RUN_PATH=forced
-    if (( $# != 0 )); then
+    if (($# != 0)); then
       fail 2 input "refused: SSH_ORIGINAL_COMMAND and an argument were both given"
     fi
     REQUESTED=$SSH_ORIGINAL_COMMAND
   else
     RUN_PATH=human
-    if (( $# == 0 )); then
+    if (($# == 0)); then
       fail 2 input "refused: no commit name given (no SSH command and no argument)"
     fi
-    if (( $# != 1 )); then
+    if (($# != 1)); then
       fail 2 input "refused: a human run takes exactly one argument, the commit name; got $#"
     fi
     REQUESTED=$1
@@ -136,7 +136,7 @@ running_commit() {
   # The commit the running loop2 container was built from (its revision label), or none.
   local label
   if label=$(docker inspect --type container --format "{{ index .Config.Labels \"$IMAGE_REVISION_LABEL\" }}" "$CONTAINER_NAME" 2>/dev/null) \
-      && [[ $label =~ $COMMIT_NAME_PATTERN ]]; then
+    && [[ $label =~ $COMMIT_NAME_PATTERN ]]; then
     printf '%s' "$label"
   else
     printf 'none'
@@ -156,7 +156,7 @@ fetch_commits() {
       '+refs/heads/*:refs/remotes/origin/*' 2>&1)
     status=$?
   fi
-  if (( status != 0 )); then
+  if ((status != 0)); then
     append_to_log "$output"
     fail 6 fetch "git fetch from GitHub failed (git exit $status; git's message is in $LOG_FILE)"
   fi
@@ -263,7 +263,7 @@ docker_root_free_kb() {
 }
 
 as_mib() {
-  if [[ -n $1 ]]; then printf '%s MiB' "$(( $1 / 1024 ))"; else printf 'unreadable'; fi
+  if [[ -n $1 ]]; then printf '%s MiB' "$(($1 / 1024))"; else printf 'unreadable'; fi
 }
 
 check_resources() {
@@ -274,10 +274,10 @@ check_resources() {
   if [[ -z $mem_kb || -z $free_kb ]]; then
     fail 5 resources "the resource gate cannot read its values; nothing was built, the running loop2 containers are untouched"
   fi
-  if (( mem_kb < MIN_MEM_AVAILABLE_MIB * 1024 )); then
+  if ((mem_kb < MIN_MEM_AVAILABLE_MIB * 1024)); then
     fail 5 resources "MemAvailable is below $MIN_MEM_AVAILABLE_MIB MiB; nothing was built, the running loop2 containers are untouched"
   fi
-  if (( free_kb < MIN_DOCKER_FREE_GIB * 1024 * 1024 )); then
+  if ((free_kb < MIN_DOCKER_FREE_GIB * 1024 * 1024)); then
     fail 5 resources "free space for Docker is below $MIN_DOCKER_FREE_GIB GiB; nothing was built, the running loop2 containers are untouched"
   fi
 }
@@ -288,7 +288,7 @@ log_old_game_state() {
   # Read-only: the name, status and health of the old game's container, never its port.
   local state
   if state=$(docker inspect --type container --format '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "$OLD_GAME_CONTAINER" 2>/dev/null) \
-      && [[ $state =~ ^/?[A-Za-z0-9_.-]+\ [a-z]+\ [a-z-]+$ ]]; then
+    && [[ $state =~ ^/?[A-Za-z0-9_.-]+\ [a-z]+\ [a-z-]+$ ]]; then
     log "old game container: ${state#/}"
   else
     log "old game container: $OLD_GAME_CONTAINER not found or its state not readable"
@@ -319,7 +319,7 @@ build_image() {
   output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" build "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
   status=$?
   append_to_log "$output"
-  if (( status != 0 )); then
+  if ((status != 0)); then
     fail_after_build 7 build "the build of $REQUESTED failed (docker exit $status; its output is in $LOG_FILE); the running loop2 containers are untouched"
   fi
   log "build of $REQUESTED succeeded"
@@ -353,7 +353,7 @@ dump_container_logs() {
   status=$?
   after=$(dump_file_size)
   append_to_log "$errors"
-  if (( status != 0 )); then
+  if ((status != 0)); then
     log "warning: the dump of the log of both loop2 services to $DUMP_FILE failed (exit $status; any message is in $LOG_FILE); this deployment goes on and the log of the containers it replaces is not kept"
     return 0
   fi
@@ -367,7 +367,7 @@ start_container() {
   output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" up -d --no-build --no-deps --remove-orphans --force-recreate --wait --wait-timeout "$HEALTH_WAIT_SECONDS" "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
   status=$?
   append_to_log "$output"
-  if (( status != 0 )); then
+  if ((status != 0)); then
     output=$(docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --tail 50 "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
     append_to_log "--- the last lines of both loop2 services' logs ---"
     append_to_log "$output"
@@ -410,7 +410,7 @@ prune_replaced_images() {
   output=$(docker image prune --force --filter "label=$IMAGE_TITLE_LABEL" 2>&1)
   status=$?
   append_to_log "$output"
-  if (( status != 0 )); then
+  if ((status != 0)); then
     log "warning: the prune of replaced loop2 images failed (docker exit $status; its output is in $LOG_FILE); the deployment stands"
   fi
 }

@@ -57,8 +57,10 @@ def notice(kind):
 def state_text(window_end, containers=None, last=None, messages=()):
     """A state file written out by hand in the format the script writes: `key value` lines."""
     if containers is None:
-        containers = {GAME: (support.GAME_ID, support.STARTED),
-                      TUNNEL: (support.TUNNEL_ID, support.STARTED)}
+        containers = {
+            GAME: (support.GAME_ID, support.STARTED),
+            TUNNEL: (support.TUNNEL_ID, support.STARTED),
+        }
     lines = [f"window_end {window_end}"]
     lines += [f"container {name} {cid} {started}" for name, (cid, started) in containers.items()]
     lines += [f"last {kind} {time}" for kind, time in (last or {}).items()]
@@ -70,11 +72,11 @@ STATE_LINE = re.compile(
     r"^(window_end [1-9][0-9]{9,10}"
     r"|container (loop2|loop2-cloudflared) [0-9a-f]{64} \d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d{1,9})?Z"
     r"|last (down|unhealthy|restarted|failures|backup|browser) [1-9][0-9]{9,10}"
-    r"|message [1-9][0-9]{9,10})$")
+    r"|message [1-9][0-9]{9,10})$"
+)
 
 
 class WithFixture(unittest.TestCase):
-
     def fixture(self):
         fixture = support.WatchFixture()
         self.addCleanup(fixture.remove)
@@ -111,7 +113,6 @@ class WithFixture(unittest.TestCase):
 
 
 class TheKinds(WithFixture):
-
     def test_each_kind_calls_pusher_once_with_its_own_fixed_notice(self):
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
@@ -119,10 +120,12 @@ class TheKinds(WithFixture):
         # The break: a notice paired with the wrong kind, or two calls for one trouble.
         arrangements = {
             "down": lambda f: f.set_container(support.GAME, support.GAME_ID, status="exited"),
-            "unhealthy": lambda f: f.set_container(support.GAME, support.GAME_ID,
-                                                   health="unhealthy"),
-            "restarted": lambda f: f.set_container(support.TUNNEL, support.TUNNEL_ID,
-                                                   started=support.RESTARTED),
+            "unhealthy": lambda f: f.set_container(
+                support.GAME, support.GAME_ID, health="unhealthy"
+            ),
+            "restarted": lambda f: f.set_container(
+                support.TUNNEL, support.TUNNEL_ID, started=support.RESTARTED
+            ),
             "failures": lambda f: f.set_log(failure_line()),
             "backup": lambda f: f.write_backup_log(""),
             "browser": lambda f: f.set_log(BROWSER_LINE),
@@ -171,13 +174,17 @@ class TheKinds(WithFixture):
     def test_an_answer_off_the_expected_shape_is_down_and_never_used(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         # The break: an id or a time taken as it comes, into the state or a command.
-        shapes = ("", "not a container line\n", "0123 running none 2026-11-08T22:00:00Z\n",
-                  f"{support.GAME_ID} running none 2026-11-08T22:00:00Z extra\n",
-                  f"{support.GAME_ID} flying none 2026-11-08T22:00:00Z\n",
-                  f"{support.GAME_ID} running none yesterday\n",
-                  f"{support.GAME_ID.upper()} running none 2026-11-08T22:00:00Z\n",
-                  f"{support.GAME_ID} running none 2026-11-08T22:00:00Z\nsecond line\n",
-                  f"{support.GAME_ID} running none 2026-11-08T22:00:00Z; touch pwned\n")
+        shapes = (
+            "",
+            "not a container line\n",
+            "0123 running none 2026-11-08T22:00:00Z\n",
+            f"{support.GAME_ID} running none 2026-11-08T22:00:00Z extra\n",
+            f"{support.GAME_ID} flying none 2026-11-08T22:00:00Z\n",
+            f"{support.GAME_ID} running none yesterday\n",
+            f"{support.GAME_ID.upper()} running none 2026-11-08T22:00:00Z\n",
+            f"{support.GAME_ID} running none 2026-11-08T22:00:00Z\nsecond line\n",
+            f"{support.GAME_ID} running none 2026-11-08T22:00:00Z; touch pwned\n",
+        )
         for shape in shapes:
             with self.subTest(shape):
                 fixture = self.primed()
@@ -189,7 +196,8 @@ class TheKinds(WithFixture):
                 self.assertIn(f"container loop2 {support.GAME_ID} {support.STARTED}", after)
                 self.assertEqual(
                     [line for line in after.splitlines() if line.startswith("container")],
-                    [line for line in before.splitlines() if line.startswith("container")])
+                    [line for line in before.splitlines() if line.startswith("container")],
+                )
 
     def test_a_service_that_is_unhealthy_is_reported_and_one_that_is_starting_is_not(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
@@ -233,8 +241,9 @@ class TheKinds(WithFixture):
         # The break: the backup kind listed before the server's failures or after the browser's.
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
-        fixture.set_container(support.TUNNEL, support.TUNNEL_ID, health="unhealthy",
-                              started=support.RESTARTED)
+        fixture.set_container(
+            support.TUNNEL, support.TUNNEL_ID, health="unhealthy", started=support.RESTARTED
+        )
         fixture.set_log(BROWSER_LINE + failure_line())
         fixture.write_backup_log("")
         result = fixture.run_at(T0 + FIVE_MINUTES)
@@ -245,9 +254,14 @@ class TheKinds(WithFixture):
         # The break: a match anywhere in the line, so a player's text or a quoted object counts.
         quoted = '{"event":"link-issued","note":"{\\"failure\\":\\"x\\"}"}\n'
         fixture = self.primed()
-        fixture.set_log(' {"failure":"database"}\n' + 'x{"failure":"database"}\n'
-                        + 'about {"failure":"browser"} here\n' + quoted
-                        + '{"failure": "database"}\n' + '{"event":"x","failure":"database"}\n')
+        fixture.set_log(
+            ' {"failure":"database"}\n'
+            + 'x{"failure":"database"}\n'
+            + 'about {"failure":"browser"} here\n'
+            + quoted
+            + '{"failure": "database"}\n'
+            + '{"event":"x","failure":"database"}\n'
+        )
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
 
     def test_a_line_on_the_standard_error_counts_like_one_on_the_standard_output(self):
@@ -265,7 +279,6 @@ class TheKinds(WithFixture):
 
 
 class TheWindow(WithFixture):
-
     def logs_calls(self, result):
         return [call for call in result.of("docker") if call[:1] == ["logs"]]
 
@@ -274,28 +287,47 @@ class TheWindow(WithFixture):
         # The break: a window that starts at the end of the run, or ends when the reading does.
         fixture = self.primed()
         result = fixture.run_at(T0 + FIVE_MINUTES)
-        self.assertEqual(self.logs_calls(result),
-                         [["logs", "--since", str(T0), "--until", str(T0 + FIVE_MINUTES), "loop2"]],
-                         result)
+        self.assertEqual(
+            self.logs_calls(result),
+            [["logs", "--since", str(T0), "--until", str(T0 + FIVE_MINUTES), "loop2"]],
+            result,
+        )
         self.assertIn(f"window_end {T0 + FIVE_MINUTES}\n", fixture.state_text())
         result = fixture.run_at(T0 + 2 * FIVE_MINUTES + 17)
-        self.assertEqual(self.logs_calls(result),
-                         [["logs", "--since", str(T0 + FIVE_MINUTES), "--until",
-                           str(T0 + 2 * FIVE_MINUTES + 17), "loop2"]], result)
+        self.assertEqual(
+            self.logs_calls(result),
+            [
+                [
+                    "logs",
+                    "--since",
+                    str(T0 + FIVE_MINUTES),
+                    "--until",
+                    str(T0 + 2 * FIVE_MINUTES + 17),
+                    "loop2",
+                ]
+            ],
+            result,
+        )
 
     def test_a_window_is_never_longer_than_24_hours(self):
         fixture = self.primed()
         fixture.write_state(state_text(T0 - 3 * DAY))
         result = fixture.run_at(T0)
-        self.assertEqual(self.logs_calls(result),
-                         [["logs", "--since", str(T0 - DAY), "--until", str(T0), "loop2"]], result)
+        self.assertEqual(
+            self.logs_calls(result),
+            [["logs", "--since", str(T0 - DAY), "--until", str(T0), "loop2"]],
+            result,
+        )
 
     def test_a_window_of_exactly_24_hours_is_read_whole(self):
         fixture = self.primed()
         fixture.write_state(state_text(T0 - DAY))
         result = fixture.run_at(T0)
-        self.assertEqual(self.logs_calls(result),
-                         [["logs", "--since", str(T0 - DAY), "--until", str(T0), "loop2"]], result)
+        self.assertEqual(
+            self.logs_calls(result),
+            [["logs", "--since", str(T0 - DAY), "--until", str(T0), "loop2"]],
+            result,
+        )
 
     def test_a_log_that_cannot_be_read_leaves_the_window_open_and_reports_nothing(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
@@ -307,9 +339,11 @@ class TheWindow(WithFixture):
         fixture.clear_answers("docker")
         fixture.set_log(failure_line())
         result = fixture.run_at(T0 + 2 * FIVE_MINUTES)
-        self.assertEqual(self.logs_calls(result),
-                         [["logs", "--since", str(T0), "--until", str(T0 + 2 * FIVE_MINUTES),
-                           "loop2"]], result)
+        self.assertEqual(
+            self.logs_calls(result),
+            [["logs", "--since", str(T0), "--until", str(T0 + 2 * FIVE_MINUTES), "loop2"]],
+            result,
+        )
         self.assert_sent(result, "failures")
 
     def test_a_game_container_that_cannot_be_read_leaves_the_window_open_too(self):
@@ -347,7 +381,6 @@ class TheWindow(WithFixture):
 
 
 class TheState(WithFixture):
-
     # Each is a state the strict reading must refuse as a whole.
     DAMAGED = {
         "garbage": "garbage\n",
@@ -360,20 +393,23 @@ class TheState(WithFixture):
         "window too short": state_text("12345"),
         "unknown key": state_text(T0) + "mode relaxed\n",
         "unknown container": state_text(T0) + f"container other {support.GAME_ID} "
-                             f"{support.STARTED}\n",
+        f"{support.STARTED}\n",
         "container id too short": state_text(T0, {GAME: ("abc123", support.STARTED)}),
         "container id not hexadecimal": state_text(T0, {GAME: ("g" * 64, support.STARTED)}),
-        "container id in capitals": state_text(T0, {GAME: (support.GAME_ID.upper(),
-                                                           support.STARTED)}),
+        "container id in capitals": state_text(
+            T0, {GAME: (support.GAME_ID.upper(), support.STARTED)}
+        ),
         "container time off the shape": state_text(T0, {GAME: (support.GAME_ID, "last tuesday")}),
         "container time with a command": state_text(
-            T0, {GAME: (support.GAME_ID, "2026-11-08T22:00:00Z; touch pwned")}),
+            T0, {GAME: (support.GAME_ID, "2026-11-08T22:00:00Z; touch pwned")}
+        ),
         "container twice": state_text(T0) + f"container loop2 {support.GAME_ID} "
-                           f"{support.STARTED}\n",
+        f"{support.STARTED}\n",
         "kind unknown": state_text(T0, last={"sleeping": T0}),
         "kind time not digits": state_text(T0) + "last down soon\n",
         "kind twice": state_text(T0, last={"down": T0 - HOUR}) + f"last down {T0 - 2 * HOUR}\n",
-        "backup twice": state_text(T0, last={"backup": T0 - HOUR}) + f"last backup {T0 - 2 * HOUR}\n",
+        "backup twice": state_text(T0, last={"backup": T0 - HOUR})
+        + f"last backup {T0 - 2 * HOUR}\n",
         "backup time not digits": state_text(T0) + "last backup soon\n",
         "a kind that only begins like backup": state_text(T0) + f"last backups {T0}\n",
         "backup in capitals": state_text(T0) + f"last Backup {T0}\n",
@@ -407,8 +443,7 @@ class TheState(WithFixture):
                 result = fixture.run_at(T0)
                 self.assert_quiet(result)
                 self.assertFalse(os.path.exists(fixture.path("pwned")), result)
-                self.assertEqual([c for c in result.of("docker") if c[:1] == ["logs"]], [],
-                                 result)
+                self.assertEqual([c for c in result.of("docker") if c[:1] == ["logs"]], [], result)
                 text = fixture.state_text()
                 self.assertIsNotNone(text, result)
                 self.assertEqual(text.splitlines()[0], f"window_end {T0}", text)
@@ -423,8 +458,12 @@ class TheState(WithFixture):
         self.assertTrue(lines, "the state is empty")
         for line in lines:
             self.assertRegex(line, STATE_LINE)
-        self.assertEqual(fixture.state_text(), state_text(
-            T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES}, messages=[T0 + FIVE_MINUTES]))
+        self.assertEqual(
+            fixture.state_text(),
+            state_text(
+                T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES}, messages=[T0 + FIVE_MINUTES]
+            ),
+        )
 
     def test_a_quiet_run_rewrites_the_state_so_its_age_shows_the_watcher_lives(self):
         fixture = self.primed()
@@ -443,13 +482,19 @@ class TheState(WithFixture):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them"
         # The break: a deployment's new container taken for a restart of the old one.
         fixture = self.primed()
-        fixture.set_container(support.GAME, support.OTHER_ID, health="healthy",
-                              started=support.RESTARTED)
+        fixture.set_container(
+            support.GAME, support.OTHER_ID, health="healthy", started=support.RESTARTED
+        )
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
-        self.assertIn(f"container loop2 {support.OTHER_ID} {support.RESTARTED}\n",
-                      fixture.state_text())
-        fixture.set_container(support.GAME, support.OTHER_ID, health="healthy",
-                              started="2026-11-09T00:20:00.000000000Z")
+        self.assertIn(
+            f"container loop2 {support.OTHER_ID} {support.RESTARTED}\n", fixture.state_text()
+        )
+        fixture.set_container(
+            support.GAME,
+            support.OTHER_ID,
+            health="healthy",
+            started="2026-11-09T00:20:00.000000000Z",
+        )
         self.assert_sent(fixture.run_at(T0 + 2 * FIVE_MINUTES), "restarted")
 
     def test_a_restart_is_reported_once(self):
@@ -462,28 +507,37 @@ class TheState(WithFixture):
     def test_a_container_new_to_the_state_is_recorded_silently(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them"
         fixture = self.primed()
-        fixture.write_state(state_text(T0, containers={
-            GAME: (support.GAME_ID, support.STARTED)}))
+        fixture.write_state(state_text(T0, containers={GAME: (support.GAME_ID, support.STARTED)}))
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
-        self.assertIn(f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n",
-                      fixture.state_text())
+        self.assertIn(
+            f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n",
+            fixture.state_text(),
+        )
 
     def test_a_container_that_cannot_be_read_keeps_its_old_entry(self):
         fixture = self.primed()
         fixture.remove_container(support.TUNNEL)
         fixture.run_at(T0 + FIVE_MINUTES)
-        self.assertIn(f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n",
-                      fixture.state_text())
+        self.assertIn(
+            f"container loop2-cloudflared {support.TUNNEL_ID} {support.STARTED}\n",
+            fixture.state_text(),
+        )
 
     def test_the_state_records_a_message_sent_and_nothing_older_than_its_need(self):
         fixture = self.primed()
-        fixture.write_state(state_text(T0, last={"failures": T0 - 7 * HOUR},
-                                       messages=[T0 - DAY - 1, T0 - HOUR]))
+        fixture.write_state(
+            state_text(T0, last={"failures": T0 - 7 * HOUR}, messages=[T0 - DAY - 1, T0 - HOUR])
+        )
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
-        self.assertEqual(fixture.state_text(), state_text(
-            T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "failures": T0 - 7 * HOUR},
-            messages=[T0 - HOUR, T0 + FIVE_MINUTES]))
+        self.assertEqual(
+            fixture.state_text(),
+            state_text(
+                T0 + FIVE_MINUTES,
+                last={"down": T0 + FIVE_MINUTES, "failures": T0 - 7 * HOUR},
+                messages=[T0 - HOUR, T0 + FIVE_MINUTES],
+            ),
+        )
 
     def test_a_last_backup_line_is_read_as_state_and_the_next_run_writes_it(self):
         # The break: the backup kind missing from the strict reading, so that a state the run
@@ -492,9 +546,14 @@ class TheState(WithFixture):
         fixture.write_state(state_text(T0, last={"backup": T0 - HOUR}))
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
-        self.assertEqual(fixture.state_text(), state_text(
-            T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "backup": T0 - HOUR},
-            messages=[T0 + FIVE_MINUTES]))
+        self.assertEqual(
+            fixture.state_text(),
+            state_text(
+                T0 + FIVE_MINUTES,
+                last={"down": T0 + FIVE_MINUTES, "backup": T0 - HOUR},
+                messages=[T0 + FIVE_MINUTES],
+            ),
+        )
 
 
 class TheBackupKind(WithFixture):
@@ -516,9 +575,11 @@ class TheBackupKind(WithFixture):
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a log that cannot be read taken for a quiet night.
-        arrangements = {"missing": lambda f: f.remove_backup_log(),
-                        "empty": lambda f: f.write_backup_log(""),
-                        "not a file": lambda f: f.make_backup_log_a_directory()}
+        arrangements = {
+            "missing": lambda f: f.remove_backup_log(),
+            "empty": lambda f: f.write_backup_log(""),
+            "not a file": lambda f: f.make_backup_log_a_directory(),
+        }
         for name, arrange in arrangements.items():
             with self.subTest(name):
                 fixture = self.stated()
@@ -556,10 +617,12 @@ class TheBackupKind(WithFixture):
         # The break: a message of this kind outside the budget of six a day, or listed before the
         # server's failures or after the browser's, so that it takes the last slot of another.
         recent = [NOW - HOUR]
-        cases = {"one slot, failures first": (5, failure_line(), ["failures"]),
-                 "one slot, backup before browser": (5, BROWSER_LINE, ["backup"]),
-                 "no slot": (6, failure_line(), []),
-                 "two slots": (4, failure_line() + BROWSER_LINE, ["failures", "backup"])}
+        cases = {
+            "one slot, failures first": (5, failure_line(), ["failures"]),
+            "one slot, backup before browser": (5, BROWSER_LINE, ["backup"]),
+            "no slot": (6, failure_line(), []),
+            "two slots": (4, failure_line() + BROWSER_LINE, ["failures", "backup"]),
+        }
         for name, (before, lines, kinds) in cases.items():
             with self.subTest(name):
                 fixture = self.stated("", messages=recent * before)
@@ -568,8 +631,10 @@ class TheBackupKind(WithFixture):
         fixture = self.stated("", messages=recent * 4)
         fixture.set_log(failure_line() + BROWSER_LINE)
         fixture.run_at(NOW)
-        self.assertEqual(fixture.state_text(), state_text(
-            NOW, last={"failures": NOW, "backup": NOW}, messages=recent * 4 + [NOW] * 2))
+        self.assertEqual(
+            fixture.state_text(),
+            state_text(NOW, last={"failures": NOW, "backup": NOW}, messages=recent * 4 + [NOW] * 2),
+        )
 
     def test_a_first_run_and_a_damaged_state_do_not_evaluate_it(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
@@ -645,11 +710,26 @@ LOOK_ALIKES = {
     ],
     "another file name": [
         f"{STAMP} loop2-backup: end: sent loop2-accounts-{name}"
-        for name in ("0.sqlite.age", "8.sqlite.age", "9.sqlite.age", "10.sqlite.age",
-                     "12.sqlite.age", "a.sqlite.age", "-1.sqlite.age", ".sqlite.age",
-                     "1.sqlite.age.old", "1.sqlite.ag", "1.sqlite", "1_sqlite_age", "1xsqlite.age",
-                     "1.sqlite_age", "1.SQLITE.AGE", "1.sqlite.age loop2-accounts-2.sqlite.age")
-    ] + [
+        for name in (
+            "0.sqlite.age",
+            "8.sqlite.age",
+            "9.sqlite.age",
+            "10.sqlite.age",
+            "12.sqlite.age",
+            "a.sqlite.age",
+            "-1.sqlite.age",
+            ".sqlite.age",
+            "1.sqlite.age.old",
+            "1.sqlite.ag",
+            "1.sqlite",
+            "1_sqlite_age",
+            "1xsqlite.age",
+            "1.sqlite_age",
+            "1.SQLITE.AGE",
+            "1.sqlite.age loop2-accounts-2.sqlite.age",
+        )
+    ]
+    + [
         f"{STAMP} loop2-backup: end: sent backup.sqlite.age",
         f"{STAMP} loop2-backup: end: sent ../loop2-accounts-1.sqlite.age",
         f"{STAMP} loop2-backup: end: sent /tmp/loop2-accounts-1.sqlite.age",
@@ -662,27 +742,51 @@ LOOK_ALIKES = {
     ],
     "a timestamp of another shape": [
         f"{when} {SENT_WORDS}"
-        for when in (STAMP[:-1], STAMP[:-1] + "+00:00", STAMP[:-1] + "+0000", STAMP.replace("T", " "),
-                     STAMP.lower(), STAMP.replace("Z", "z"), STAMP[:10], STAMP[:-1] + ".000Z",
-                     STAMP.replace("-11-08", "-11-8"), STAMP[2:], f"[{STAMP}]", f"{STAMP}:",
-                     STAMP.replace("T", "T "), "2026-11-08T23:17Z", "Sun Nov  8 23:17:00 UTC 2026",
-                     str(NOW - HOUR), STAMP[:11] + "24" + STAMP[13:], STAMP[:14] + "60" + STAMP[16:],
-                     STAMP[:17] + "60" + STAMP[19:])
+        for when in (
+            STAMP[:-1],
+            STAMP[:-1] + "+00:00",
+            STAMP[:-1] + "+0000",
+            STAMP.replace("T", " "),
+            STAMP.lower(),
+            STAMP.replace("Z", "z"),
+            STAMP[:10],
+            STAMP[:-1] + ".000Z",
+            STAMP.replace("-11-08", "-11-8"),
+            STAMP[2:],
+            f"[{STAMP}]",
+            f"{STAMP}:",
+            STAMP.replace("T", "T "),
+            "2026-11-08T23:17Z",
+            "Sun Nov  8 23:17:00 UTC 2026",
+            str(NOW - HOUR),
+            STAMP[:11] + "24" + STAMP[13:],
+            STAMP[:14] + "60" + STAMP[16:],
+            STAMP[:17] + "60" + STAMP[19:],
+        )
     ],
     "a timestamp after the run's clock": [
-        f"{support.stamp(when)} {SENT_WORDS}"
-        for when in (NOW + 1, NOW + HOUR, NOW + 10 * DAY)
-    ] + [f"2099-01-01T00:00:00Z {SENT_WORDS}"],
+        f"{support.stamp(when)} {SENT_WORDS}" for when in (NOW + 1, NOW + HOUR, NOW + 10 * DAY)
+    ]
+    + [f"2099-01-01T00:00:00Z {SENT_WORDS}"],
     "no timestamp": [
-        SENT_WORDS, f" {SENT_WORDS}", "end: sent loop2-accounts-1.sqlite.age",
-        "sent loop2-accounts-1.sqlite.age", f"{STAMP}{SENT_WORDS}", f"{STAMP}  {SENT_WORDS}",
+        SENT_WORDS,
+        f" {SENT_WORDS}",
+        "end: sent loop2-accounts-1.sqlite.age",
+        "sent loop2-accounts-1.sqlite.age",
+        f"{STAMP}{SENT_WORDS}",
+        f"{STAMP}  {SENT_WORDS}",
         f"{STAMP}\t{SENT_WORDS}",
     ],
     "a control character that the reading could lose or keep": [
-        EXACT_LINE.encode() + b"\r", b"\r" + EXACT_LINE.encode(), EXACT_LINE.encode() + b"\x1b",
+        EXACT_LINE.encode() + b"\r",
+        b"\r" + EXACT_LINE.encode(),
+        EXACT_LINE.encode() + b"\x1b",
         EXACT_LINE.encode().replace(b" ", b"\t", 1),
-    ] + [EXACT_LINE.encode()[:place] + b"\0" + EXACT_LINE.encode()[place:]
-         for place in range(len(EXACT_LINE) + 1)],
+    ]
+    + [
+        EXACT_LINE.encode()[:place] + b"\0" + EXACT_LINE.encode()[place:]
+        for place in range(len(EXACT_LINE) + 1)
+    ],
 }
 
 
@@ -692,11 +796,15 @@ def joined(lines):
 
 
 def failed_night(epoch):
-    return joined([f"{support.stamp(epoch - 20)} loop2-backup: start",
-                   f"{support.stamp(epoch - 10)} loop2-backup: stage stream: docker exit 1, "
-                   "age exit 1 (exit 6); nothing was sent",
-                   f"{support.stamp(epoch)} loop2-backup: notice: pusher exit 0",
-                   f"{support.stamp(epoch)} loop2-backup: end: failed (exit 6)"])
+    return joined(
+        [
+            f"{support.stamp(epoch - 20)} loop2-backup: start",
+            f"{support.stamp(epoch - 10)} loop2-backup: stage stream: docker exit 1, "
+            "age exit 1 (exit 6); nothing was sent",
+            f"{support.stamp(epoch)} loop2-backup: notice: pusher exit 0",
+            f"{support.stamp(epoch)} loop2-backup: end: failed (exit 6)",
+        ]
+    )
 
 
 class TheBackupLogAsInput(WithFixture):
@@ -719,8 +827,10 @@ class TheBackupLogAsInput(WithFixture):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The control of the test above: the reading is whole, not broken by a line it refuses.
         everything = [line for lines in LOOK_ALIKES.values() for line in lines]
-        for name, lines in (("before", [EXACT_LINE] + everything),
-                            ("after", everything + [EXACT_LINE])):
+        for name, lines in (
+            ("before", [EXACT_LINE] + everything),
+            ("after", everything + [EXACT_LINE]),
+        ):
             with self.subTest(name):
                 fixture = self.stated(joined(lines))
                 self.assert_quiet(fixture.run_at(NOW))
@@ -743,8 +853,9 @@ class TheBackupLogAsInput(WithFixture):
         for year, counts in ((2027, False), (2028, True)):
             with self.subTest(year):
                 now = calendar.timegm((year, 3, 1, 0, 30, 0))
-                fixture = self.stated(f"{year}-02-29T10:00:00Z {SENT_WORDS}\n",
-                                      window=now - FIVE_MINUTES)
+                fixture = self.stated(
+                    f"{year}-02-29T10:00:00Z {SENT_WORDS}\n", window=now - FIVE_MINUTES
+                )
                 self.assert_sent(fixture.run_at(now), *(() if counts else ("backup",)))
 
     def test_a_log_far_longer_than_the_part_read_is_read_from_its_end(self):
@@ -752,10 +863,15 @@ class TheBackupLogAsInput(WithFixture):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: the whole file read, which a flood of error text would turn into a slow run,
         # or its start read, which would miss the night that has just ended.
-        limit = int(deploy_support.constants(
-            deploy_support.read_bytes(support.SCRIPT))["BACKUP_LOG_LINE_LIMIT"])
-        junk = joined([f"{STAMP} loop2-backup: stage stream: docker exit 1, age exit 1 (exit 6)"]
-                      * (10 * limit))
+        limit = int(
+            deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))[
+                "BACKUP_LOG_LINE_LIMIT"
+            ]
+        )
+        junk = joined(
+            [f"{STAMP} loop2-backup: stage stream: docker exit 1, age exit 1 (exit 6)"]
+            * (10 * limit)
+        )
         with self.subTest("a send at the start"):
             fixture = self.stated(joined([EXACT_LINE]) + junk)
             self.assert_sent(fixture.run_at(NOW), "backup")
@@ -827,7 +943,6 @@ class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
 
 
 class TheDeploymentLock(WithFixture):
-
     def shared_calls(self, result):
         return [call for call in result.of("flock") if "--shared" in call]
 
@@ -860,12 +975,16 @@ class TheDeploymentLock(WithFixture):
         self.assertRegex(lines[0], r"dropped", result)
         fixture.release_deploy_lock()
         result = fixture.run_at(T0 + 2 * FIVE_MINUTES)
-        self.assertEqual([c for c in result.of("docker") if c[:1] == ["logs"]],
-                         [["logs", "--since", str(T0), "--until", str(T0 + 2 * FIVE_MINUTES),
-                           "loop2"]], result)
+        self.assertEqual(
+            [c for c in result.of("docker") if c[:1] == ["logs"]],
+            [["logs", "--since", str(T0), "--until", str(T0 + 2 * FIVE_MINUTES), "loop2"]],
+            result,
+        )
         self.assert_sent(result, "down", "failures", "browser")
 
-    def test_the_log_line_of_a_held_lock_says_held_and_that_of_a_broken_flock_names_its_status(self):
+    def test_the_log_line_of_a_held_lock_says_held_and_that_of_a_broken_flock_names_its_status(
+        self,
+    ):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         # decision: D-356 "A human installs the watcher and its schedule and sets the notifications of GitHub, and nothing is sent when the server and GitHub are both down, when the watcher's schedule does not start, when `flock` does not work on the server, where the watcher ends with success and a line in its own log and sends nothing"
         # The break: any non-zero status of `flock` named a held lock, so a host without `flock`
@@ -909,8 +1028,9 @@ class TheDeploymentLock(WithFixture):
                 self.assertIn("docker", result.tools(), "precondition: the readings were made")
                 self.assertEqual(fixture.state_text(), before)
                 self.assertEqual(len(lines), 1, result)
-                self.assertRegex(lines[0], rf"loop2-watch: dropped: .*\(flock exit {status}\)",
-                                 result)
+                self.assertRegex(
+                    lines[0], rf"loop2-watch: dropped: .*\(flock exit {status}\)", result
+                )
                 self.assertNotRegex(lines[0], r"is held|holds", result)
 
     def test_the_lock_is_only_asked_for_shared_and_without_waiting_by_its_descriptor(self):
@@ -950,14 +1070,18 @@ class TheDeploymentLock(WithFixture):
         before = os.stat(fixture.deploy_lock).st_mtime_ns
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
-        self.assertEqual(deploy_support.read_bytes(fixture.deploy_lock),
-                         b"held by the deployment account\n")
+        self.assertEqual(
+            deploy_support.read_bytes(fixture.deploy_lock), b"held by the deployment account\n"
+        )
         self.assertEqual(os.stat(fixture.deploy_lock).st_mtime_ns, before)
 
     def test_the_script_has_no_writing_redirection_to_the_deployment_lock(self):
         text = deploy_support.read_bytes(support.SCRIPT).decode()
-        uses = [line for line in text.splitlines()
-                if "DEPLOY_LOCK_FILE" in line and not line.startswith("readonly")]
+        uses = [
+            line
+            for line in text.splitlines()
+            if "DEPLOY_LOCK_FILE" in line and not line.startswith("readonly")
+        ]
         for line in uses:
             self.assertNotRegex(line, r">>?\s*\"?\$DEPLOY_LOCK_FILE", line)
             self.assertNotRegex(line, r"(touch|flock)\s+.*DEPLOY_LOCK_FILE", line)
@@ -969,7 +1093,6 @@ class TheDeploymentLock(WithFixture):
 
 
 class TheWatchersOwnLock(WithFixture):
-
     def test_a_second_run_ends_at_once_and_touches_nothing(self):
         fixture = self.primed()
         before = fixture.state_text()
@@ -1013,8 +1136,11 @@ class TheWatchersOwnLock(WithFixture):
 
     def test_a_lock_file_that_cannot_be_opened_is_a_failed_run_with_no_notice(self):
         fixture = self.primed()
-        fixture.write_copy(OWN_LOCK_FILE=deploy_support.shell_path(
-            fixture.path("no-such-directory", "loop2-watch.lock")))
+        fixture.write_copy(
+            OWN_LOCK_FILE=deploy_support.shell_path(
+                fixture.path("no-such-directory", "loop2-watch.lock")
+            )
+        )
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         result = fixture.run_at(T0 + FIVE_MINUTES)
         self.assertEqual(result.code, 3, result)
@@ -1023,7 +1149,6 @@ class TheWatchersOwnLock(WithFixture):
 
 
 class TheThrottles(WithFixture):
-
     def test_a_kind_is_not_sent_again_within_six_hours_and_is_sent_after_them(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         # The break: a message per run for a trouble that stays.
@@ -1074,9 +1199,14 @@ class TheThrottles(WithFixture):
         fixture.write_state(state_text(T0, messages=recent))
         result = fixture.run_at(T0 + FIVE_MINUTES)
         self.assert_sent(result, "down", "unhealthy")
-        self.assertEqual(fixture.state_text(), state_text(
-            T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "unhealthy": T0 + FIVE_MINUTES},
-            messages=recent + [T0 + FIVE_MINUTES] * 2))
+        self.assertEqual(
+            fixture.state_text(),
+            state_text(
+                T0 + FIVE_MINUTES,
+                last={"down": T0 + FIVE_MINUTES, "unhealthy": T0 + FIVE_MINUTES},
+                messages=recent + [T0 + FIVE_MINUTES] * 2,
+            ),
+        )
 
     def test_what_is_held_back_is_counted_in_the_log_only(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
@@ -1121,7 +1251,6 @@ class TheThrottles(WithFixture):
 
 
 class TheDockerCommands(WithFixture):
-
     def test_every_docker_command_is_a_read_of_the_two_containers_in_one_fixed_form(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: a command that changes a container, or a second form of the reading.
@@ -1144,8 +1273,9 @@ class TheDockerCommands(WithFixture):
         self.assertEqual(len(formats), 1, "the two readings use two formats")
         for field in ("{{.Id}}", "{{.State.Status}}", "{{.State.Health", "{{.State.StartedAt}}"):
             self.assertIn(field, next(iter(formats)))
-        self.assertEqual(logs[0], ["logs", "--since", str(T0), "--until", str(T0 + FIVE_MINUTES),
-                                   "loop2"])
+        self.assertEqual(
+            logs[0], ["logs", "--since", str(T0), "--until", str(T0 + FIVE_MINUTES), "loop2"]
+        )
 
     def test_the_commands_the_script_holds_are_only_these_two_reads(self):
         # The safeguard of the invariant test that does not cover the watcher: what the script can
@@ -1159,20 +1289,29 @@ class TheDockerCommands(WithFixture):
     def test_every_call_of_docker_and_pusher_stands_under_timeout_with_a_kill_delay(self):
         text = deploy_support.read_bytes(support.SCRIPT).decode()
         joined = re.sub(r"\\\n\s*", " ", text)
-        calls = [line.strip() for line in joined.splitlines()
-                 if re.search(r"(^|[\s$(])(docker|pusher)\s+(\w+|\"\$subject\")", line)
-                 and not line.lstrip().startswith(("#", "readonly", "log", "fail", "notes"))]
+        calls = [
+            line.strip()
+            for line in joined.splitlines()
+            if re.search(r"(^|[\s$(])(docker|pusher)\s+(\w+|\"\$subject\")", line)
+            and not line.lstrip().startswith(("#", "readonly", "log", "fail", "notes"))
+        ]
         self.assertEqual(len(calls), 3, calls)
         for line in calls:
-            self.assertRegex(line, r"timeout --kill-after=\"\$KILL_WAIT_SECONDS\" "
-                                   r"\"\$(DOCKER|PUSHER)_WAIT_SECONDS\"", line)
+            self.assertRegex(
+                line,
+                r"timeout --kill-after=\"\$KILL_WAIT_SECONDS\" "
+                r"\"\$(DOCKER|PUSHER)_WAIT_SECONDS\"",
+                line,
+            )
 
     def test_a_docker_that_never_answers_is_cut_off_and_read_as_down(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         wait_that_cuts_inspect = "1"
         wait_that_leaves_inspect_time_to_answer = "5"
-        waits = (("inspect *", wait_that_cuts_inspect),
-                 ("logs *", wait_that_leaves_inspect_time_to_answer))
+        waits = (
+            ("inspect *", wait_that_cuts_inspect),
+            ("logs *", wait_that_leaves_inspect_time_to_answer),
+        )
         for pattern, wait in waits:
             with self.subTest(pattern):
                 fixture = self.primed()
@@ -1204,7 +1343,6 @@ class TheDockerCommands(WithFixture):
 
 
 class TheAbnormalEnds(WithFixture):
-
     LAST_LINE = r"end: failed \(exit {code}\)$"
 
     def assert_failed_end(self, result, code):
@@ -1239,8 +1377,11 @@ class TheAbnormalEnds(WithFixture):
 
     def test_a_state_directory_that_cannot_be_made_is_a_failed_run(self):
         fixture = self.fixture()
-        fixture.write_copy(STATE_DIRECTORY=deploy_support.shell_path(
-            fixture.path("var", "no-such-directory", "deeper", "loop2-watch")))
+        fixture.write_copy(
+            STATE_DIRECTORY=deploy_support.shell_path(
+                fixture.path("var", "no-such-directory", "deeper", "loop2-watch")
+            )
+        )
         deploy_support.write_bytes(fixture.path("var", "no-such-directory"), b"a file\n")
         self.assert_failed_end(fixture.run_at(T0), 4)
 
@@ -1271,7 +1412,6 @@ class TheAbnormalEnds(WithFixture):
 
 
 class TheLog(WithFixture):
-
     def test_a_quiet_healthy_run_writes_no_line(self):
         fixture = self.primed()
         result, lines = self.run_logged(fixture, T0 + FIVE_MINUTES)
@@ -1281,8 +1421,9 @@ class TheLog(WithFixture):
     def test_an_eventful_run_writes_one_line_with_the_time_the_kinds_and_the_counts(self):
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
-        fixture.set_log(failure_line() + failure_line("mail") + failure_line("mail")
-                        + BROWSER_LINE * 5)
+        fixture.set_log(
+            failure_line() + failure_line("mail") + failure_line("mail") + BROWSER_LINE * 5
+        )
         result, lines = self.run_logged(fixture, T0 + FIVE_MINUTES)
         self.assertEqual(len(lines), 1, result)
         # 2026-11-09T00:05:00Z, by hand: five minutes after the clock's start.
@@ -1297,9 +1438,11 @@ class TheLog(WithFixture):
         # The break: a line of the backup log, or a count of its lines, quoted into the log of the
         # watcher, which an agent may read and a human reads at a glance.
         text = "text-of-the-log-9b2d"
-        logs = {"fresh": lambda f: f.write_backup_log(support.night(NOW - HOUR) + text + "\n"),
-                "stale": lambda f: f.write_backup_log(f"{STAMP} {text}\n"),
-                "unreadable": lambda f: f.make_backup_log_a_directory()}
+        logs = {
+            "fresh": lambda f: f.write_backup_log(support.night(NOW - HOUR) + text + "\n"),
+            "stale": lambda f: f.write_backup_log(f"{STAMP} {text}\n"),
+            "unreadable": lambda f: f.make_backup_log_a_directory(),
+        }
         for word, arrange in logs.items():
             with self.subTest(word):
                 fixture = self.stated()
@@ -1318,8 +1461,9 @@ class TheLog(WithFixture):
 
     def test_a_log_that_cannot_be_written_is_said_once_and_does_not_stop_the_run(self):
         fixture = self.primed()
-        fixture.write_copy(LOG_FILE=deploy_support.shell_path(
-            fixture.path("no-such-directory", "loop2-watch.log")))
+        fixture.write_copy(
+            LOG_FILE=deploy_support.shell_path(fixture.path("no-such-directory", "loop2-watch.log"))
+        )
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         result = fixture.run_at(T0 + FIVE_MINUTES)
         self.assert_sent(result, "down")
@@ -1334,18 +1478,21 @@ class TheLog(WithFixture):
 
 
 class TheScheduleAsCronReadsIt(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.data = deploy_support.read_bytes(support.SCHEDULE)
-        cls.lines = [line for line in cls.data.decode().splitlines()
-                     if line.strip() and not line.lstrip().startswith("#")]
+        cls.lines = [
+            line
+            for line in cls.data.decode().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
 
     def test_one_line_starts_the_installed_script_every_five_minutes_as_root(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes"
         schedules = [line.split() for line in self.lines if "=" not in line]
-        self.assertEqual(schedules, [["*/5", "*", "*", "*", "*", "root",
-                                      "/usr/local/bin/loop2-watch"]])
+        self.assertEqual(
+            schedules, [["*/5", "*", "*", "*", "*", "root", "/usr/local/bin/loop2-watch"]]
+        )
 
     def test_mail_is_off_before_the_schedule_line(self):
         self.assertEqual(self.lines[0], 'MAILTO=""')
@@ -1358,7 +1505,6 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
 
 
 class TheConstants(unittest.TestCase):
-
     def test_the_constants_name_the_design_s_own_files_and_containers(self):
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log`"
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"

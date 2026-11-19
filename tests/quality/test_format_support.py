@@ -73,9 +73,7 @@ class ListedFiles(unittest.TestCase):
             ]:
                 (root / name).parent.mkdir(parents=True, exist_ok=True)
                 (root / name).write_text("x = 1\n", encoding="utf-8")
-            self.assertEqual(
-                format_support.python_sources(root, self.ruff), ["a.py", "pkg/b.pyi"]
-            )
+            self.assertEqual(format_support.python_sources(root, self.ruff), ["a.py", "pkg/b.pyi"])
 
     def test_every_python_file_git_tracks_is_in_the_listing(self):
         # invariant: ruff-source-format

@@ -184,10 +184,10 @@ on_exit() {
   trap '' HUP INT USR1 USR2 PIPE ALRM TERM
   exec 7>&- 8<&-
   rm -f -- "$STATE_FILE.new" 2>/dev/null
-  if (( code == 0 )) && [[ $DONE != yes ]]; then
+  if ((code == 0)) && [[ $DONE != yes ]]; then
     code=1
   fi
-  if (( code != 0 )); then
+  if ((code != 0)); then
     log "end: failed (exit $code)"
   fi
   exit "$code"
@@ -203,12 +203,12 @@ take_own_lock() {
   fi
   flock --exclusive --nonblock 7 2>/dev/null
   status=$?
-  if (( status == 1 )); then
+  if ((status == 1)); then
     # 1 is flock's own answer for a lock that is taken; any other status is flock failing or missing.
     log "skipped: another run holds $OWN_LOCK_FILE (flock exit $status)"
     DONE=yes
     exit 0
-  elif (( status != 0 )); then
+  elif ((status != 0)); then
     log "skipped: flock could not take $OWN_LOCK_FILE (flock exit $status); nothing was read"
     DONE=yes
     exit 0
@@ -219,7 +219,7 @@ read_clock() {
   local now status
   now=$(date -u +%s 2>/dev/null)
   status=$?
-  if (( status != 0 )) || [[ ! $now =~ ^$EPOCH_PATTERN$ ]]; then
+  if ((status != 0)) || [[ ! $now =~ ^$EPOCH_PATTERN$ ]]; then
     fail 5 clock "the time cannot be read (date exit $status); nothing was read"
   fi
   NOW=$now
@@ -241,16 +241,16 @@ deploy_lock_is_held() {
   fi
   flock --shared --nonblock 8 2>/dev/null
   status=$?
-  if (( status == 0 )); then
+  if ((status == 0)); then
     flock --unlock 8 2>/dev/null
   fi
   exec 8<&-
-  if (( status == 1 )); then
+  if ((status == 1)); then
     DEPLOY_LOCK_WHY="is held (flock exit $status)"
-  elif (( status != 0 )); then
+  elif ((status != 0)); then
     DEPLOY_LOCK_WHY="could not be looked at, flock failed (flock exit $status)"
   fi
-  (( status != 0 ))
+  ((status != 0))
 }
 
 # --- 3. the state -------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ load_state() {
   fi
   while IFS= read -r line <&6 || [[ -n $line ]]; do
     count=$((count + 1))
-    if (( count > STATE_LINE_LIMIT )); then
+    if ((count > STATE_LINE_LIMIT)); then
       bad=yes
       break
     elif [[ $line =~ $WINDOW_LINE ]] && [[ -z $WINDOW_END ]]; then
@@ -331,7 +331,7 @@ state_text() {
     fi
   done
   for stamp in "${MESSAGE_TIMES[@]}"; do
-    if (( NOW - stamp < DAY_SECONDS )); then
+    if ((NOW - stamp < DAY_SECONDS)); then
       printf 'message %s\n' "$stamp"
     fi
   done
@@ -355,7 +355,7 @@ read_container() {
   output=$(timeout --kill-after="$KILL_WAIT_SECONDS" "$DOCKER_WAIT_SECONDS" \
     docker inspect --type container --format "$INSPECT_FORMAT" "$name" 2>/dev/null 7>&-)
   status=$?
-  if (( status == 0 )) && [[ $output =~ $INSPECT_LINE ]]; then
+  if ((status == 0)) && [[ $output =~ $INSPECT_LINE ]]; then
     READ_OK[$name]=yes
     READ_ID[$name]=${BASH_REMATCH[1]}
     READ_STATUS[$name]=${BASH_REMATCH[2]}
@@ -401,16 +401,16 @@ read_logs() {
     return 0
   fi
   since=$WINDOW_END
-  if (( since >= NOW )); then
+  if ((since >= NOW)); then
     return 0
   fi
-  if (( NOW - since > MAX_WINDOW_SECONDS )); then
+  if ((NOW - since > MAX_WINDOW_SECONDS)); then
     since=$((NOW - MAX_WINDOW_SECONDS))
   fi
   timeout --kill-after="$KILL_WAIT_SECONDS" "$DOCKER_WAIT_SECONDS" \
     docker logs --since "$since" --until "$NOW" "$GAME_CONTAINER" 2>&1 7>&- | count_lines
   LOGS_STATUS=${PIPESTATUS[0]}
-  if (( LOGS_STATUS != 0 )); then
+  if ((LOGS_STATUS != 0)); then
     LOGS_STATE=unreadable
     FAILURE_COUNT=0
     BROWSER_COUNT=0
@@ -427,7 +427,7 @@ calendar_day_exists() {
   case $month in
     4 | 6 | 9 | 11) last=30 ;;
     2)
-      if (( year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) )); then
+      if ((year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))); then
         last=29
       else
         last=28
@@ -435,7 +435,7 @@ calendar_day_exists() {
       ;;
     *) last=31 ;;
   esac
-  (( day <= last ))
+  ((day <= last))
 }
 
 find_send() {
@@ -448,7 +448,7 @@ find_send() {
     if [[ $line =~ $BACKUP_LINE ]]; then
       stamp=${line:0:BACKUP_TIME_LENGTH}
       if [[ ! $stamp < $oldest && ! $stamp > $newest ]] \
-          && calendar_day_exists "${stamp:0:4}" "${stamp:5:2}" "${stamp:8:2}"; then
+        && calendar_day_exists "${stamp:0:4}" "${stamp:5:2}" "${stamp:8:2}"; then
         BACKUP_LOG_STATE=fresh
       fi
     fi
@@ -471,7 +471,7 @@ read_backup_log() {
   timeout --kill-after="$KILL_WAIT_SECONDS" "$BACKUP_LOG_WAIT_SECONDS" \
     tail -n "$BACKUP_LOG_LINE_LIMIT" -- "$BACKUP_LOG_FILE" 2>/dev/null 7>&- \
     | tr '\0' '?' 7>&- | cut -c "1-$BACKUP_LOG_LINE_WIDTH" 7>&- | find_send "$oldest" "$newest"
-  if (( PIPESTATUS[0] != 0 )); then
+  if ((PIPESTATUS[0] != 0)); then
     BACKUP_LOG_STATE=unreadable
   fi
 }
@@ -492,19 +492,19 @@ evaluate() {
     fi
   done
   for name in "${CONTAINERS[@]}"; do
-    if [[ -n $STATE_OK && ${READ_OK[$name]-} == yes && -n ${CONTAINER_ID[$name]-} \
-        && ${CONTAINER_ID[$name]} == "${READ_ID[$name]-}" \
-        && ${CONTAINER_START[$name]} != "${READ_START[$name]-}" ]]; then
+    if [[ -n $STATE_OK && ${READ_OK[$name]-} == yes && -n ${CONTAINER_ID[$name]-} &&
+      ${CONTAINER_ID[$name]} == "${READ_ID[$name]-}" &&
+      ${CONTAINER_START[$name]} != "${READ_START[$name]-}" ]]; then
       CONDITION[restarted]=yes
     fi
   done
-  if (( FAILURE_COUNT > 0 )); then
+  if ((FAILURE_COUNT > 0)); then
     CONDITION[failures]=yes
   fi
   if [[ $BACKUP_LOG_STATE == stale || $BACKUP_LOG_STATE == unreadable ]]; then
     CONDITION[backup]=yes
   fi
-  if (( BROWSER_COUNT > 0 )); then
+  if ((BROWSER_COUNT > 0)); then
     CONDITION[browser]=yes
   fi
 }
@@ -528,7 +528,7 @@ decide() {
   SENT=()
   HELD=()
   for stamp in "${MESSAGE_TIMES[@]}"; do
-    if (( NOW - stamp < DAY_SECONDS )); then
+    if ((NOW - stamp < DAY_SECONDS)); then
       recent=$((recent + 1))
     fi
   done
@@ -542,9 +542,9 @@ decide() {
     if [[ $kind == backup ]]; then
       interval=$BACKUP_INTERVAL_SECONDS
     fi
-    if (( recent + ${#SENT[@]} >= DAY_MESSAGE_LIMIT )); then
+    if ((recent + ${#SENT[@]} >= DAY_MESSAGE_LIMIT)); then
       HELD+=("$kind(day)")
-    elif [[ -n $stamp ]] && (( NOW - stamp < interval )); then
+    elif [[ -n $stamp ]] && ((NOW - stamp < interval)); then
       HELD+=("$kind(kind)")
     else
       SENT+=("$kind")
@@ -603,22 +603,22 @@ report_run() {
   if [[ $LOGS_STATE == unreadable ]]; then
     notes+=("logs unreadable (docker exit $LOGS_STATUS), the window stays open")
   fi
-  if (( ${#DUE[@]} > 0 )); then
+  if ((${#DUE[@]} > 0)); then
     for name in "${CONTAINERS[@]}"; do
-      if [[ ${READ_OK[$name]-} != yes || ${READ_STATUS[$name]-} != running \
-          || ${READ_HEALTH[$name]-} == unhealthy ]]; then
+      if [[ ${READ_OK[$name]-} != yes || ${READ_STATUS[$name]-} != running ||
+        ${READ_HEALTH[$name]-} == unhealthy ]]; then
         faulty+=("$name")
       fi
     done
     notes+=("due=$(join , "${DUE[@]}")")
     notes+=("sent=$(join , "${SENT[@]}")")
-    if (( ${#HELD[@]} > 0 )); then
+    if ((${#HELD[@]} > 0)); then
       notes+=("held=$(join , "${HELD[@]}")")
     fi
-    if (( ${#PUSHER_EXITS[@]} > 0 )); then
+    if ((${#PUSHER_EXITS[@]} > 0)); then
       notes+=("pusher=$(join , "${PUSHER_EXITS[@]}")")
     fi
-    if (( ${#faulty[@]} > 0 )); then
+    if ((${#faulty[@]} > 0)); then
       notes+=("containers=$(join , "${faulty[@]}")")
     fi
     if [[ $LOGS_STATE == counted ]]; then
@@ -628,7 +628,7 @@ report_run() {
       notes+=("backup_log=$BACKUP_LOG_STATE")
     fi
   fi
-  if (( ${#notes[@]} > 0 )); then
+  if ((${#notes[@]} > 0)); then
     log "run: $(join '; ' "${notes[@]}")"
   fi
 }
@@ -636,7 +636,7 @@ report_run() {
 # --- run ----------------------------------------------------------------------------------------
 
 main() {
-  if (( $# != 0 )); then
+  if (($# != 0)); then
     fail 2 input "refused: the script takes no argument; got $#"
   fi
   take_own_lock

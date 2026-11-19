@@ -43,7 +43,7 @@ BUILT_ENTRY = "dist/public/main.js"
 PLANTED_USES = (
     ("document", "export const plantedPage = document.title;", "TS2584"),
     ("setTimeout", "export const plantedTimer = setTimeout(() => undefined, 0);", "TS2304"),
-    ("console", "console.log(\"planted\");", "TS2584"),
+    ("console", 'console.log("planted");', "TS2584"),
     ("structuredClone", "export const plantedClone = structuredClone({});", "TS2304"),
 )
 # What the compiler writes beside the sources when it is allowed to emit.
@@ -63,7 +63,6 @@ def plant_uses(copy):
 
 
 class SimulationTypeCheck(unittest.TestCase):
-
     def setUp(self):
         self.copies = []
 
@@ -84,15 +83,22 @@ class SimulationTypeCheck(unittest.TestCase):
         broken = self.fresh_copy()
         lines = plant_uses(broken)
         code, output = broken.npm("run", "typecheck")
-        self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {PLANTED_FILE} uses "
-                                     f"names outside the JavaScript language:\n{output}")
+        self.assertNotEqual(
+            code,
+            0,
+            f"`npm run typecheck` exits 0 although {PLANTED_FILE} uses "
+            f"names outside the JavaScript language:\n{output}",
+        )
         # Each name is refused at its own line with its error code, as a name the compiler cannot
         # find, so the browser configuration, which passes all four, is not what stopped it.
         refused = {(int(line), error) for line, error in ERROR_LINE.findall(output)}
         for name, _line, error in PLANTED_USES:
-            self.assertIn((lines[name], error), refused,
-                          f"`npm run typecheck` does not refuse a use of `{name}` at line "
-                          f"{lines[name]} of {PLANTED_FILE} with {error}:\n{output}")
+            self.assertIn(
+                (lines[name], error),
+                refused,
+                f"`npm run typecheck` does not refuse a use of `{name}` at line "
+                f"{lines[name]} of {PLANTED_FILE} with {error}:\n{output}",
+            )
 
     def test_build_refuses_it_too_and_leaves_nothing_to_serve(self):
         # invariant: simulation-type-check
@@ -100,10 +106,16 @@ class SimulationTypeCheck(unittest.TestCase):
         broken = self.fresh_copy()
         plant_uses(broken)
         code, output = broken.npm("run", "build")
-        self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {PLANTED_FILE} uses "
-                                     f"names outside the JavaScript language:\n{output}")
-        self.assertFalse(os.path.exists(broken.file(BUILT_ENTRY)),
-                         f"`npm run build` with such a use still leaves {BUILT_ENTRY} to serve")
+        self.assertNotEqual(
+            code,
+            0,
+            f"`npm run build` exits 0 although {PLANTED_FILE} uses "
+            f"names outside the JavaScript language:\n{output}",
+        )
+        self.assertFalse(
+            os.path.exists(broken.file(BUILT_ENTRY)),
+            f"`npm run build` with such a use still leaves {BUILT_ENTRY} to serve",
+        )
 
     def test_the_build_writes_nothing_beside_the_sources_of_the_simulation(self):
         # invariant: simulation-type-check
@@ -112,17 +124,25 @@ class SimulationTypeCheck(unittest.TestCase):
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
-        written = [path for path in support.files_under(SIMULATION_SOURCE, copy.path)
-                   if path.endswith(EMITTED_SUFFIXES)]
-        self.assertEqual(written, [], f"`npm run build` writes files beside {SIMULATION_SOURCE}: "
-                                      f"{SIMULATION_CONFIG} emits what it should only check")
+        written = [
+            path
+            for path in support.files_under(SIMULATION_SOURCE, copy.path)
+            if path.endswith(EMITTED_SUFFIXES)
+        ]
+        self.assertEqual(
+            written,
+            [],
+            f"`npm run build` writes files beside {SIMULATION_SOURCE}: "
+            f"{SIMULATION_CONFIG} emits what it should only check",
+        )
 
     def test_the_configuration_takes_every_typescript_file_of_the_simulation(self):
         # invariant: simulation-type-check
         # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own"
         copy = self.fresh_copy()
-        code, output = support.run(["node", copy.file(COMPILER), "-p", SIMULATION_CONFIG,
-                                    "--listFilesOnly"], copy.path)
+        code, output = support.run(
+            ["node", copy.file(COMPILER), "-p", SIMULATION_CONFIG, "--listFilesOnly"], copy.path
+        )
         self.assertEqual(code, 0, f"the compiler cannot read {SIMULATION_CONFIG}:\n{output}")
         # The compiler prints absolute paths; the copy's own directory may be spelled another way
         # than it was made, so each is read from `src/browser/sim/` on.
@@ -130,12 +150,16 @@ class SimulationTypeCheck(unittest.TestCase):
         for line in output.splitlines():
             line = line.strip().replace(chr(92), "/")
             if SIMULATION_SOURCE + "/" in line:
-                taken.add(line[line.index(SIMULATION_SOURCE + "/"):])
-        expected = {path for path in support.files_under(SIMULATION_SOURCE, copy.path)
-                    if path.endswith(".ts")}
+                taken.add(line[line.index(SIMULATION_SOURCE + "/") :])
+        expected = {
+            path
+            for path in support.files_under(SIMULATION_SOURCE, copy.path)
+            if path.endswith(".ts")
+        }
         self.assertTrue(expected, f"{SIMULATION_SOURCE} holds no TypeScript file")
-        self.assertEqual(sorted(expected - taken), [],
-                         f"{SIMULATION_CONFIG} leaves out files of the simulation")
+        self.assertEqual(
+            sorted(expected - taken), [], f"{SIMULATION_CONFIG} leaves out files of the simulation"
+        )
 
 
 if __name__ == "__main__":

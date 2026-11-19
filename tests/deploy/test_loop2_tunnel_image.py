@@ -18,11 +18,16 @@ from scripts import docker_gate
 
 
 class ConnectorImage(unittest.TestCase):
-
     def command(self, *arguments, timeout=30):
-        return subprocess.run([self.docker, *arguments], cwd=support.ROOT,
-                              capture_output=True, text=True, encoding="utf-8",
-                              errors="replace", timeout=timeout)
+        return subprocess.run(
+            [self.docker, *arguments],
+            cwd=support.ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
 
     def test_nonroot_connector_can_run_the_disconnected_readiness_check(self):
         # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
@@ -30,29 +35,43 @@ class ConnectorImage(unittest.TestCase):
         docker_gate.require_daemon(self, "connector image capabilities stay unchecked")
         self.docker = shutil.which("docker")
 
-        config = self.command("compose", "--project-name", "loop2", "-f", "compose.yaml",
-                              "config", "--format", "json")
+        config = self.command(
+            "compose", "--project-name", "loop2", "-f", "compose.yaml", "config", "--format", "json"
+        )
         self.assertEqual(config.returncode, 0, config.stderr)
         connector = json.loads(config.stdout)["services"]["cloudflared"]
         health = connector["healthcheck"]["test"]
         self.assertEqual(health[0], "CMD", "the distroless image needs an exec-form healthcheck")
         tag = "loop2-tunnel-check:" + uuid.uuid4().hex[:12]
         name = "loop2-tunnel-check-" + uuid.uuid4().hex[:12]
-        image = self.command("build", "-f", connector["build"]["dockerfile"], "-t", tag,
-                             os.fspath(support.ROOT), timeout=300)
+        image = self.command(
+            "build",
+            "-f",
+            connector["build"]["dockerfile"],
+            "-t",
+            tag,
+            os.fspath(support.ROOT),
+            timeout=300,
+        )
         self.addCleanup(self.command, "image", "rm", "-f", tag)
         self.assertEqual(image.returncode, 0, image.stdout + image.stderr)
         identity = self.command("image", "inspect", "--format", "{{.Config.User}}", tag)
         self.assertEqual(identity.returncode, 0, identity.stderr)
         self.assertEqual(identity.stdout.strip(), "65532:65532")
-        owner = self.command("image", "inspect", "--format",
-                             '{{index .Config.Labels "org.opencontainers.image.title"}}', tag)
+        owner = self.command(
+            "image",
+            "inspect",
+            "--format",
+            '{{index .Config.Labels "org.opencontainers.image.title"}}',
+            tag,
+        )
         self.assertEqual(owner.returncode, 0, owner.stderr)
         self.assertEqual(owner.stdout.strip(), "loop2")
 
         self.addCleanup(self.command, "rm", "-f", name)
-        ready = self.command("run", "--name", name, "--network", "none", "--entrypoint",
-                             health[1], tag, *health[2:])
+        ready = self.command(
+            "run", "--name", name, "--network", "none", "--entrypoint", health[1], tag, *health[2:]
+        )
         self.assertNotEqual(ready.returncode, 0, ready.stdout + ready.stderr)
         self.assertIn("connection refused", ready.stdout + ready.stderr)
 

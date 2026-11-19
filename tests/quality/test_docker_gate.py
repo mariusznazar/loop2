@@ -48,7 +48,8 @@ class DaemonGap(unittest.TestCase):
         self.addCleanup(state.cleanup)
         environment = docker.environment(
             LOOP2_DOCKER_START_LIMIT=limit,
-            LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"))
+            LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"),
+        )
         patch = mock.patch.dict(os.environ, environment)
         patch.start()
         self.addCleanup(patch.stop)
@@ -155,8 +156,9 @@ class DaemonGap(unittest.TestCase):
         empty = tempfile.TemporaryDirectory(prefix="loop2-no-docker-")
         self.addCleanup(empty.cleanup)
         state = Path(empty.name) / "state.json"
-        patch = mock.patch.dict(os.environ, {"PATH": empty.name,
-                                             "LOOP2_DOCKER_RUN_STATE": os.fspath(state)})
+        patch = mock.patch.dict(
+            os.environ, {"PATH": empty.name, "LOOP2_DOCKER_RUN_STATE": os.fspath(state)}
+        )
         patch.start()
         self.addCleanup(patch.stop)
         self.assertIsNotNone(docker_gate.daemon_gap())
@@ -166,8 +168,10 @@ class DaemonGap(unittest.TestCase):
         # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once where no daemon answers, with a message that says what stays unchecked"
         unchecked = "whether the checked thing works stays unchecked"
         reasons = {}
-        for name, docker, limit in (("no desktop", DockerStandIn(self, plugin=False), "20"),
-                                    ("start tried", DockerStandIn(self), "1")):
+        for name, docker, limit in (
+            ("no desktop", DockerStandIn(self, plugin=False), "20"),
+            ("start tried", DockerStandIn(self), "1"),
+        ):
             with self.subTest(name=name):
                 self.use(docker, limit)
                 with self.assertRaises(unittest.SkipTest) as skipped:
@@ -232,12 +236,18 @@ class ProcessesAtOnce(unittest.TestCase):
         self.addCleanup(state.cleanup)
         return docker.environment(
             LOOP2_DOCKER_START_LIMIT=limit,
-            LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"))
+            LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"),
+        )
 
     def ask(self, environment, program=ASK):
-        process = subprocess.Popen([sys.executable, "-B", "-c", program], env=environment,
-                                   stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(
+            [sys.executable, "-B", "-c", program],
+            env=environment,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         self.running.append(process)
         return process
 
@@ -277,8 +287,14 @@ class ProcessesAtOnce(unittest.TestCase):
         signals = tempfile.TemporaryDirectory(prefix="loop2-docker-signals-")
         self.addCleanup(signals.cleanup)
         asked, release = Path(signals.name) / "asked", Path(signals.name) / "release"
-        late = self.ask(dict(environment, LOOP2_TEST_ASKED=os.fspath(asked),
-                             LOOP2_TEST_RELEASE=os.fspath(release)), ASK_HELD)
+        late = self.ask(
+            dict(
+                environment,
+                LOOP2_TEST_ASKED=os.fspath(asked),
+                LOOP2_TEST_RELEASE=os.fspath(release),
+            ),
+            ASK_HELD,
+        )
         deadline = time.monotonic() + 30
         while not asked.exists():
             self.assertLess(time.monotonic(), deadline, "the held process never asked")
@@ -305,7 +321,9 @@ class ProcessesAtOnce(unittest.TestCase):
         self.assertLess(time.monotonic() - began, 3 + 20, "the wait for the lock had no limit")
         self.assertIn("within 3 seconds", gap)
         self.assertEqual(docker.starts(), [])
-        self.assertEqual(self.answer_of(self.ask(environment)), gap, "the gap is recorded for the run")
+        self.assertEqual(
+            self.answer_of(self.ask(environment)), gap, "the gap is recorded for the run"
+        )
 
     def test_a_process_that_asks_during_a_start_that_does_not_finish_gets_its_gap_after_it(self):
         # invariant: gate-docker-start-waits-once
@@ -354,8 +372,9 @@ class GateRuns(unittest.TestCase):
         self.gate.use_real_python_runner()
         self.write_needing_docker("one", "two")
         self.gate.track_files()
-        return self.gate.run(environment=docker.environment(LOOP2_DOCKER_START_LIMIT=limit),
-                             timeout=120)
+        return self.gate.run(
+            environment=docker.environment(LOOP2_DOCKER_START_LIMIT=limit), timeout=120
+        )
 
     def test_one_run_of_the_whole_gate_waits_for_a_docker_that_does_not_rise_once(self):
         # invariant: gate-docker-start-waits-once
@@ -414,8 +433,10 @@ class GateRuns(unittest.TestCase):
         # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate and in a run of one test file alike"
         docker = DockerStandIn(self, rise_after_polls=1)
         self.write_needing_docker("one")
-        result = self.gate.run("tests/one/test_needs_docker.py",
-                               environment=docker.environment(LOOP2_DOCKER_START_LIMIT="30"))
+        result = self.gate.run(
+            "tests/one/test_needs_docker.py",
+            environment=docker.environment(LOOP2_DOCKER_START_LIMIT="30"),
+        )
         output = result.stdout + result.stderr
         self.assertEqual(result.returncode, 0, output)
         self.assertEqual(len(docker.starts()), 1, output)

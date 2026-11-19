@@ -50,18 +50,24 @@ LIST_TEMPORARY = "console.log(JSON.stringify(require('node:fs').readdirSync('/tm
 
 
 class BackupBytesThroughDockerExec(unittest.TestCase):
-
     def test_bytes_of_docker_exec_without_a_terminal_open_as_the_database(self):
         # decision: D-228 "A completed, consistent backup of the account and save database"
         # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec`"
-        docker_gate.require_daemon(self, "whether the bytes of `docker exec` open as the database "
-                                         "stays unchecked")
+        docker_gate.require_daemon(
+            self, "whether the bytes of `docker exec` open as the database stays unchecked"
+        )
         suffix = uuid.uuid4().hex[:12]
         tag = "loop2-backup-stream-check:" + suffix
         self.addCleanup(storage.docker_run, "image", "rm", "-f", tag)
-        code, output = storage.docker_run("build", "--build-arg",
-                                          "LOOP2_COMMIT=backup-stream-check", "-t", tag, ".",
-                                          timeout=BUILD_TIMEOUT)
+        code, output = storage.docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=backup-stream-check",
+            "-t",
+            tag,
+            ".",
+            timeout=BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         data_volume, secret_volume = support.create_account_volumes(self, tag)
         name = "loop2-backup-stream-" + suffix
@@ -70,16 +76,25 @@ class BackupBytesThroughDockerExec(unittest.TestCase):
 
         added = subprocess.run(
             [storage.docker(), "exec", "-i", "-e", "CHECK_EMAIL=" + EMAIL, name, "node", "-"],
-            input=ADD_ACCOUNT.encode("utf-8"), capture_output=True, timeout=COMMAND_TIMEOUT)
+            input=ADD_ACCOUNT.encode("utf-8"),
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
         self.assertEqual(added.returncode, 0, added.stderr.decode("utf-8", "replace"))
 
         # No -t and no -i: standard input is closed, standard output is a pipe, as in the script.
         result = subprocess.run(
             [storage.docker(), "exec", name, "node", "dist/server/account-backup.js", WORD],
-            stdin=subprocess.DEVNULL, capture_output=True, timeout=COMMAND_TIMEOUT)
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
         self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", "replace"))
-        self.assertEqual(result.stdout[:16], b"SQLite format 3\x00",
-                         "standard output holds the database from its first byte")
+        self.assertEqual(
+            result.stdout[:16],
+            b"SQLite format 3\x00",
+            "standard output holds the database from its first byte",
+        )
 
         with tempfile.TemporaryDirectory() as directory:
             path = os.path.join(directory, "backup.sqlite")
@@ -87,20 +102,25 @@ class BackupBytesThroughDockerExec(unittest.TestCase):
                 handle.write(result.stdout)
             connection = sqlite3.connect("file:" + path.replace("\\", "/") + "?mode=ro", uri=True)
             try:
-                self.assertEqual(connection.execute("PRAGMA integrity_check").fetchall(),
-                                 [("ok",)])
+                self.assertEqual(connection.execute("PRAGMA integrity_check").fetchall(), [("ok",)])
                 self.assertEqual(connection.execute("PRAGMA user_version").fetchone(), (6,))
                 self.assertEqual(
-                    connection.execute("SELECT email FROM accounts").fetchall(), [(EMAIL,)])
+                    connection.execute("SELECT email FROM accounts").fetchall(), [(EMAIL,)]
+                )
             finally:
                 connection.close()
 
         listing = subprocess.run(
             [storage.docker(), "exec", name, "node", "-e", LIST_TEMPORARY],
-            capture_output=True, timeout=COMMAND_TIMEOUT)
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
         self.assertEqual(listing.returncode, 0, listing.stderr.decode("utf-8", "replace"))
-        left = [entry for entry in json.loads(listing.stdout.decode("utf-8"))
-                if entry.startswith("loop2-backup-")]
+        left = [
+            entry
+            for entry in json.loads(listing.stdout.decode("utf-8"))
+            if entry.startswith("loop2-backup-")
+        ]
         self.assertEqual(left, [], "the command left its temporary directory in the container")
 
 

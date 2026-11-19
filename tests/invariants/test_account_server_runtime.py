@@ -51,14 +51,16 @@ def load_json(relative):
 
 
 class NodeMajorInPackageFiles(unittest.TestCase):
-
     def test_package_engines_admit_only_node_24(self):
         # invariant: account-server-runtime
         # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
         engines = load_json("package.json").get("engines", {})
         self.assertIn("node", engines, "package.json declares no engines.node")
-        self.assertEqual(range_major(engines["node"]), EXPECTED_MAJOR,
-                         f"package.json engines.node is {engines['node']!r}")
+        self.assertEqual(
+            range_major(engines["node"]),
+            EXPECTED_MAJOR,
+            f"package.json engines.node is {engines['node']!r}",
+        )
 
     def test_lockfile_root_engines_admit_only_node_24(self):
         # invariant: account-server-runtime
@@ -66,44 +68,63 @@ class NodeMajorInPackageFiles(unittest.TestCase):
         root_entry = load_json("package-lock.json").get("packages", {}).get("", {})
         node = root_entry.get("engines", {}).get("node")
         self.assertIsNotNone(node, "package-lock.json's root entry declares no engines.node")
-        self.assertEqual(range_major(node), EXPECTED_MAJOR,
-                         f"package-lock.json root engines.node is {node!r}")
+        self.assertEqual(
+            range_major(node), EXPECTED_MAJOR, f"package-lock.json root engines.node is {node!r}"
+        )
 
     def test_node_type_definitions_are_major_24(self):
         # invariant: account-server-runtime
         package = load_json("package.json")
         declared = {**package.get("dependencies", {}), **package.get("devDependencies", {})}
         self.assertIn("@types/node", declared, "package.json does not depend on @types/node")
-        self.assertEqual(range_major(declared["@types/node"]), EXPECTED_MAJOR,
-                         f"package.json @types/node is {declared['@types/node']!r}")
-        locked = load_json("package-lock.json").get("packages", {}).get(
-            "node_modules/@types/node", {}).get("version")
+        self.assertEqual(
+            range_major(declared["@types/node"]),
+            EXPECTED_MAJOR,
+            f"package.json @types/node is {declared['@types/node']!r}",
+        )
+        locked = (
+            load_json("package-lock.json")
+            .get("packages", {})
+            .get("node_modules/@types/node", {})
+            .get("version")
+        )
         self.assertIsNotNone(locked, "package-lock.json locks no @types/node")
-        self.assertEqual(range_major(locked), EXPECTED_MAJOR,
-                         f"package-lock.json locks @types/node {locked!r}")
+        self.assertEqual(
+            range_major(locked), EXPECTED_MAJOR, f"package-lock.json locks @types/node {locked!r}"
+        )
 
     def test_server_compilation_uses_node_type_definitions(self):
         # invariant: account-server-runtime
         options = load_json("tsconfig.server.json").get("compilerOptions", {})
         if "types" in options:
-            self.assertIn("node", options["types"],
-                          f"tsconfig.server.json compilerOptions.types is {options['types']!r}, "
-                          "so the server is not checked against the Node.js definitions")
+            self.assertIn(
+                "node",
+                options["types"],
+                f"tsconfig.server.json compilerOptions.types is {options['types']!r}, "
+                "so the server is not checked against the Node.js definitions",
+            )
 
 
 # What names a Node.js version inside a deployment file. Every version a file names is read —
 # each FROM line, each element of a list or matrix, each version on a .tool-versions line.
 FROM_LINE = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*(\S+)", re.IGNORECASE | re.MULTILINE)
 IMAGE_LINE = re.compile(r"^\s*-?\s*image:\s*[\"']?([^\"'\s#]+)", re.MULTILINE)
-BUILD_DEFAULT = re.compile(r"^\s*(?:ARG|ENV)\s+([A-Za-z_]\w*)[= ]\s*[\"']?([^\"'\s]+)",
-                           re.IGNORECASE | re.MULTILINE)
+BUILD_DEFAULT = re.compile(
+    r"^\s*(?:ARG|ENV)\s+([A-Za-z_]\w*)[= ]\s*[\"']?([^\"'\s]+)", re.IGNORECASE | re.MULTILINE
+)
 NODE_VERSION_ENV = re.compile(r"\bNODE_VERSION[\"']?\s*[:= ]\s*[\"']?v?([^\"'\s]+)")
 TOOL_VERSIONS_LINE = re.compile(r"^\s*(?:nodejs|node)\s+(.+)$", re.MULTILINE)
 VERSION_KEYS = ("node-version", "node_version", "NODE_VERSION")
 VERSION_FILE_KEYS = ("node-version-file",)
 MATRIX_REFERENCE = re.compile(r"matrix\.([\w-]+)")
-DOCKERFILE_NAMES = ("Dockerfile", "Dockerfile.*", "*.Dockerfile", "*.dockerfile",
-                    "Containerfile", "Containerfile.*")
+DOCKERFILE_NAMES = (
+    "Dockerfile",
+    "Dockerfile.*",
+    "*.Dockerfile",
+    "*.dockerfile",
+    "Containerfile",
+    "Containerfile.*",
+)
 
 
 def image_major(reference):
@@ -143,7 +164,7 @@ def key_values(text, key):
         elif rest:
             values.append(rest.strip("\"'"))
         else:
-            for following in lines[number + 1:]:
+            for following in lines[number + 1 :]:
                 if not following.strip() or following.strip().startswith("#"):
                     continue
                 if len(following) - len(following.lstrip()) <= indent:
@@ -162,12 +183,17 @@ def node_mentions(relative, text):
     if base in (".nvmrc", ".node-version"):
         mentions.append((f"{base} content {text.strip()!r}", version_major(text)))
     if base == ".tool-versions":
-        mentions += [(f"node {v}", version_major(v))
-                     for line in TOOL_VERSIONS_LINE.findall(text) for v in line.split()]
+        mentions += [
+            (f"node {v}", version_major(v))
+            for line in TOOL_VERSIONS_LINE.findall(text)
+            for v in line.split()
+        ]
     if any(fnmatch.fnmatchcase(base, p) for p in DOCKERFILE_NAMES):
         defaults = dict(BUILD_DEFAULT.findall(text))
-        references = [re.sub(r"\$\{?(\w+)\}?", lambda m: defaults.get(m.group(1), m.group(0)), r)
-                      for r in FROM_LINE.findall(text)]
+        references = [
+            re.sub(r"\$\{?(\w+)\}?", lambda m: defaults.get(m.group(1), m.group(0)), r)
+            for r in FROM_LINE.findall(text)
+        ]
     else:
         references = IMAGE_LINE.findall(text)
     for reference in references:
@@ -191,14 +217,17 @@ def node_mentions(relative, text):
                 continue  # engines.node, checked by the tests above
             path = os.path.join(support.ROOT, *value.split("/"))
             content = support.read_text(path) if os.path.isfile(path) else ""
-            mentions.append((f"{key} {value} content {content.strip()!r}",
-                             version_major(content) if content else None))
+            mentions.append(
+                (
+                    f"{key} {value} content {content.strip()!r}",
+                    version_major(content) if content else None,
+                )
+            )
     mentions += [(f"NODE_VERSION {v}", version_major(v)) for v in NODE_VERSION_ENV.findall(text)]
     return mentions
 
 
 class NodeMajorInDeployment(unittest.TestCase):
-
     def test_deployment_files_name_only_node_24(self):
         # invariant: account-server-runtime
         # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
@@ -207,19 +236,27 @@ class NodeMajorInDeployment(unittest.TestCase):
         for relative in support.deployment_files():
             text = support.read_text(os.path.join(support.ROOT, *relative.split("/")))
             if relative == "deploy/cloudflared.Dockerfile":
-                instructions = [line.strip() for line in text.splitlines()
-                                if line.strip() and not line.lstrip().startswith("#")]
+                instructions = [
+                    line.strip()
+                    for line in text.splitlines()
+                    if line.strip() and not line.lstrip().startswith("#")
+                ]
                 self.assertEqual(len(instructions), 2)
-                self.assertRegex(instructions[0], r"^FROM cloudflare/cloudflared:"
-                                 r"[0-9]+\.[0-9]+\.[0-9]+@sha256:[0-9a-f]{64}$")
+                self.assertRegex(
+                    instructions[0],
+                    r"^FROM cloudflare/cloudflared:"
+                    r"[0-9]+\.[0-9]+\.[0-9]+@sha256:[0-9a-f]{64}$",
+                )
                 self.assertEqual(instructions[1], 'LABEL org.opencontainers.image.title="loop2"')
                 continue
             mentions = node_mentions(relative, text)
             base = relative.rsplit("/", 1)[-1]
             if any(fnmatch.fnmatchcase(base, p) for p in DOCKERFILE_NAMES) and not any(
-                    what.startswith("image ") for what, _ in mentions):
-                problems.append(f"{relative}: names no Node.js image, so the Node.js it runs "
-                                "cannot be told")
+                what.startswith("image ") for what, _ in mentions
+            ):
+                problems.append(
+                    f"{relative}: names no Node.js image, so the Node.js it runs cannot be told"
+                )
             for what, major in mentions:
                 if major != EXPECTED_MAJOR:
                     problems.append(f"{relative}: {what} is not Node.js {EXPECTED_MAJOR}")

@@ -29,16 +29,21 @@ def description(directory):
     values = [line for line in match.group(1).splitlines() if line.startswith("description:")]
     if len(values) != 1:
         raise AssertionError("the frontmatter must hold exactly one description line")
-    return values[0][len("description:"):].strip()
+    return values[0][len("description:") :].strip()
 
 
 def save_frames(frames, directory):
-    return subprocess.run(["node", SAVE_FRAMES], input=json.dumps(frames).encode(), cwd=directory,
-                          capture_output=True, timeout=30, check=False)
+    return subprocess.run(
+        ["node", SAVE_FRAMES],
+        input=json.dumps(frames).encode(),
+        cwd=directory,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
 
 
 class Loop2PlaySkill(unittest.TestCase):
-
     def test_both_copies_hold_the_same_files(self):
         self.assertEqual(sorted(os.listdir(CLAUDE_COPY)), sorted(FILES))
         self.assertEqual(sorted(os.listdir(AGENTS_COPY)), sorted(FILES))
@@ -57,8 +62,10 @@ class Loop2PlaySkill(unittest.TestCase):
             self.assertNotIn("\t", value)
 
     def test_each_frame_comes_out_as_its_own_bytes_with_its_time_since_the_first(self):
-        frames = [{"timestamp": 1000.0, "data": base64.b64encode(b"first").decode()},
-                  {"timestamp": 1250.4, "data": base64.b64encode(b"second").decode()}]
+        frames = [
+            {"timestamp": 1000.0, "data": base64.b64encode(b"first").decode()},
+            {"timestamp": 1250.4, "data": base64.b64encode(b"second").decode()},
+        ]
         with tempfile.TemporaryDirectory() as directory:
             result = save_frames(frames, directory)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -73,9 +80,14 @@ class Loop2PlaySkill(unittest.TestCase):
             source = os.path.join(directory, "frames.json")
             with open(source, "w", encoding="utf-8") as handle:
                 json.dump(frames, handle, indent=2)
-            result = subprocess.run(["node", SAVE_FRAMES, source], cwd=directory,
-                                    stdin=subprocess.DEVNULL, capture_output=True, timeout=30,
-                                    check=False)
+            result = subprocess.run(
+                ["node", SAVE_FRAMES, source],
+                cwd=directory,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
             self.assertEqual(result.returncode, 0, result.stderr)
             folder = os.path.join(directory, ".playwright-cli", "frames")
             self.assertEqual(read_bytes(folder, "000.jpeg"), b"from a file")
@@ -84,9 +96,14 @@ class Loop2PlaySkill(unittest.TestCase):
         frame = [{"timestamp": 1.0, "data": base64.b64encode(b"kept").decode()}]
         with tempfile.TemporaryDirectory() as directory:
             self.assertEqual(save_frames(frame, directory).returncode, 0)
-            result = subprocess.run(["node", SAVE_FRAMES, "missing.json"], cwd=directory,
-                                    stdin=subprocess.DEVNULL, capture_output=True, timeout=30,
-                                    check=False)
+            result = subprocess.run(
+                ["node", SAVE_FRAMES, "missing.json"],
+                cwd=directory,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b"ENOENT", result.stderr)
             self.assertNotIn(b"No frames came", result.stderr)
@@ -98,7 +115,7 @@ class Loop2PlaySkill(unittest.TestCase):
         # differ before and after this part: MCP sets a viewport first and keeps the frames in the
         # page, the CLI returns them.
         code = read_bytes(CLAUDE_COPY, "frames.js").decode("utf-8")
-        shared = code[code.index("  const frames = [];"):code.index("  return frames;")]
+        shared = code[code.index("  const frames = [];") : code.index("  return frames;")]
         self.assertIn("await page.screencast.stop();", shared, "precondition: the stream's lines")
         self.assertIn(shared, read_bytes(CLAUDE_COPY, "SKILL.md").decode("utf-8"))
 

@@ -145,15 +145,17 @@ export function made(createElement) {
 }
 """
 MADE_UP_SECTION_EXPECTED = (
-    '<details><summary>Autorzy grafiki</summary><ul><li>Paproć: „Fern icon”, Delapouite, '
+    "<details><summary>Autorzy grafiki</summary><ul><li>Paproć: „Fern icon”, Delapouite, "
     '<a href="https://game-icons.net/1x1/delapouite/fern.html">game-icons.net</a>, CC BY 3.0, '
-    'zmienione</li><li>Len: „Flax icon”, Delapouite, '
+    "zmienione</li><li>Len: „Flax icon”, Delapouite, "
     '<a href="https://game-icons.net/1x1/delapouite/flax.html">game-icons.net</a>, CC BY 3.0, '
-    'zmienione</li></ul></details>'
+    "zmienione</li></ul></details>"
 )
+
 
 class Tree(html.parser.HTMLParser):
     """Elements as dicts: {'tag', 'attrs', 'children'}; text as str."""
+
     VOID = {"br", "hr", "img", "input", "meta", "link", "wbr", "source"}
 
     def __init__(self):
@@ -202,6 +204,7 @@ def pages_in(node):
 
 def credit_for(root, stem):
     """The largest element holding the page of `stem` and no page of another file, or None."""
+
     def search(node):
         if isinstance(node, str):
             return None
@@ -215,6 +218,7 @@ def credit_for(root, stem):
             if found is not None:
                 return found
         return None
+
     return search(root)
 
 
@@ -223,21 +227,24 @@ def violations(section_html, files, titles=None):
     root = parse(section_html)
     found = []
     for name in files:
-        stem = name[:-len(".svg")]
+        stem = name[: -len(".svg")]
         credit = credit_for(root, stem)
         if credit is None:
             found.append(f"{name}: the section shows no credit with its page on game-icons.net")
             continue
         text = " ".join(text_of(credit).split())
         if name not in titles:
-            found.append(f"{name}: no title is written out in the check, as no title fact names "
-                         "it; the title of this icon file stays unchecked")
+            found.append(
+                f"{name}: no title is written out in the check, as no title fact names "
+                "it; the title of this icon file stays unchecked"
+            )
         elif titles[name] not in text:
             found.append(f"{name}: the credit does not name the title {titles[name]!r}: {text!r}")
         folders = [folder for folder, s in pages_in(credit) if s == stem]
         names = [folder.replace("-", " ").lower() for folder in folders]
-        if not any(n in text.lower() or n.replace(" ", "") in text.lower().replace(" ", "")
-                   for n in names):
+        if not any(
+            n in text.lower() or n.replace(" ", "") in text.lower().replace(" ", "") for n in names
+        ):
             found.append(f"{name}: the credit does not name the author of {folders}: {text!r}")
         if name in AUTHORS and AUTHORS[name] not in text:
             found.append(f"{name}: the credit does not name the author {AUTHORS[name]}: {text!r}")
@@ -266,7 +273,8 @@ def render_section(module_path, export_name, built_root, mode):
         with open(script, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(REACT_DRIVER)
         code, output = support.run(
-            [node(), script, module_path, export_name, built_root, mode, out_path], work)
+            [node(), script, module_path, export_name, built_root, mode, out_path], work
+        )
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -279,21 +287,32 @@ def render_section(module_path, export_name, built_root, mode):
 
 
 def icon_files():
-    return sorted(p[len(ICON_DIRECTORY):] for p in support.listed_files()
-                  if p.startswith(ICON_DIRECTORY) and "/" not in p[len(ICON_DIRECTORY):]
-                  and p.endswith(".svg"))
+    return sorted(
+        p[len(ICON_DIRECTORY) :]
+        for p in support.listed_files()
+        if p.startswith(ICON_DIRECTORY)
+        and "/" not in p[len(ICON_DIRECTORY) :]
+        and p.endswith(".svg")
+    )
 
 
-def credit_html(stem, author="Delapouite", folder="delapouite", licence=LICENCE,
-                change="zmienione (bez tła)", title=None):
+def credit_html(
+    stem,
+    author="Delapouite",
+    folder="delapouite",
+    licence=LICENCE,
+    change="zmienione (bez tła)",
+    title=None,
+):
     title = TITLES[stem + ".svg"] if title is None else title
-    return (f'<li>{stem}: „{title}”, <a href="https://game-icons.net/1x1/{folder}/{stem}.html">'
-            f'ikona</a>, {author}, <a href="https://creativecommons.org/licenses/by/3.0/">'
-            f'{licence}</a>, {change}</li>')
+    return (
+        f'<li>{stem}: „{title}”, <a href="https://game-icons.net/1x1/{folder}/{stem}.html">'
+        f'ikona</a>, {author}, <a href="https://creativecommons.org/licenses/by/3.0/">'
+        f"{licence}</a>, {change}</li>"
+    )
 
 
 class IconCredits(unittest.TestCase):
-
     def test_credits_section_credits_each_icon_file(self):
         # invariant: icon-credits
         # decision: D-27 "A section of credits, folded and opened with one click"
@@ -324,8 +343,10 @@ class IconCredits(unittest.TestCase):
             shutil.rmtree(work, ignore_errors=True)
         self.assertEqual(markup, MADE_UP_SECTION_EXPECTED)
         self.assertEqual(violations(markup, ["fern.svg", "flax.svg"]), [])
-        self.assertTrue(violations(markup.split("<li>Len")[0] + "</ul></details>", ["flax.svg"]),
-                        "a section without the credit of a file goes unseen")
+        self.assertTrue(
+            violations(markup.split("<li>Len")[0] + "</ul></details>", ["flax.svg"]),
+            "a section without the credit of a file goes unseen",
+        )
 
     def test_control_the_comparison_flags_missing_parts(self):
         # invariant: icon-credits
@@ -334,33 +355,49 @@ class IconCredits(unittest.TestCase):
         self.assertEqual(violations(good, files), [])
         broken = {
             "no credit for one file": "<section>" + credit_html("fern") + "</section>",
-            "no author": "<section>" + credit_html("fern", author="") + credit_html("flax")
-                         + "</section>",
-            "another author": "<section>" + credit_html("fern", author="Lorc", folder="lorc")
-                              + credit_html("flax") + "</section>",
-            "no title": "<section>" + credit_html("fern", title="") + credit_html("flax")
-                        + "</section>",
-            "another title": "<section>" + credit_html("fern", title="Flax icon")
-                             + credit_html("flax") + "</section>",
-            "the title in other letter case": "<section>" + credit_html("fern", title="fern icon")
-                                              + credit_html("flax") + "</section>",
+            "no author": "<section>"
+            + credit_html("fern", author="")
+            + credit_html("flax")
+            + "</section>",
+            "another author": "<section>"
+            + credit_html("fern", author="Lorc", folder="lorc")
+            + credit_html("flax")
+            + "</section>",
+            "no title": "<section>"
+            + credit_html("fern", title="")
+            + credit_html("flax")
+            + "</section>",
+            "another title": "<section>"
+            + credit_html("fern", title="Flax icon")
+            + credit_html("flax")
+            + "</section>",
+            "the title in other letter case": "<section>"
+            + credit_html("fern", title="fern icon")
+            + credit_html("flax")
+            + "</section>",
             "no page": "<section><li>fern: Fern icon, Delapouite, CC BY 3.0, zmienione</li>"
-                       + credit_html("flax") + "</section>",
-            "no licence": "<section>" + credit_html("fern", licence="CC BY") + credit_html("flax")
-                          + "</section>",
+            + credit_html("flax")
+            + "</section>",
+            "no licence": "<section>"
+            + credit_html("fern", licence="CC BY")
+            + credit_html("flax")
+            + "</section>",
             "licence outside the credits": "<section><p>CC BY 3.0</p><ul>"
-                                           + credit_html("fern", licence="licencja")
-                                           + credit_html("flax", licence="licencja")
-                                           + "</ul></section>",
-            "no change": "<section>" + credit_html("fern", change="") + credit_html("flax")
-                         + "</section>",
+            + credit_html("fern", licence="licencja")
+            + credit_html("flax", licence="licencja")
+            + "</ul></section>",
+            "no change": "<section>"
+            + credit_html("fern", change="")
+            + credit_html("flax")
+            + "</section>",
         }
         for label, markup in broken.items():
             with self.subTest(case=label):
                 self.assertTrue(violations(markup, files), f"{label} goes unseen")
         no_fact = {name: title for name, title in TITLES.items() if name != "flax.svg"}
-        self.assertTrue(violations(good, files, no_fact),
-                        "an icon file with no title written out passes")
+        self.assertTrue(
+            violations(good, files, no_fact), "an icon file with no title written out passes"
+        )
 
 
 if __name__ == "__main__":

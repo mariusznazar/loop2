@@ -58,7 +58,6 @@ def media_type(headers):
 
 
 class UnmatchedApiRequests(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.copy = support.built_copy()
@@ -71,9 +70,12 @@ class UnmatchedApiRequests(unittest.TestCase):
         self.assertTrue(self.pages, f"`npm run build` places no HTML file in {BUILT_PAGE}")
         status, _headers, body = self.server.request("GET", "/", {"Accept": "text/html"})
         self.assertEqual(status, 200)
-        self.assertIn(body, list(self.pages.values()),
-                      f"GET / does not return any of {sorted(self.pages)}, so the comparison "
-                      "below would not be made against the page the server serves")
+        self.assertIn(
+            body,
+            list(self.pages.values()),
+            f"GET / does not return any of {sorted(self.pages)}, so the comparison "
+            "below would not be made against the page the server serves",
+        )
 
     def test_unmatched_api_requests_receive_json_errors_not_the_page(self):
         # invariant: loop2-api-error-route
@@ -87,17 +89,25 @@ class UnmatchedApiRequests(unittest.TestCase):
                             headers["Content-Type"] = "application/json"
                             body = POST_BODY
                         status, response_headers, data = self.server.request(
-                            method, path, headers, body)
+                            method, path, headers, body
+                        )
                         kind = media_type(response_headers)
                         start = data.lstrip()[:64].lower()
-                        self.assertNotIn(data, list(self.pages.values()),
-                                         "the response is the built game's HTML page")
-                        self.assertFalse(start.startswith((b"<!doctype", b"<html")),
-                                         f"the response is an HTML document: {data[:200]!r}")
+                        self.assertNotIn(
+                            data,
+                            list(self.pages.values()),
+                            "the response is the built game's HTML page",
+                        )
+                        self.assertFalse(
+                            start.startswith((b"<!doctype", b"<html")),
+                            f"the response is an HTML document: {data[:200]!r}",
+                        )
                         self.assertNotIn(kind, ("text/html", "application/xhtml+xml"))
                         self.assertTrue(400 <= status <= 599, f"status {status}")
-                        self.assertTrue(kind == "application/json" or kind.endswith("+json"),
-                                        f"Content-Type {response_headers.get('content-type')!r}")
+                        self.assertTrue(
+                            kind == "application/json" or kind.endswith("+json"),
+                            f"Content-Type {response_headers.get('content-type')!r}",
+                        )
                         try:
                             json.loads(data.decode("utf-8"))
                         except (UnicodeDecodeError, ValueError) as error:

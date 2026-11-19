@@ -117,25 +117,27 @@ def walk_to(resource):
 
 
 # The acceptance program: eats when hungry, keeps a campfire, keeps a berry and 8 sticks at hand.
-ACCEPTANCE = program_from_rules([
-    rule(below("satietyBelow", 35), {"kind": "eat"}),
-    rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
-    rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
-    rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
-    rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
-    rule(item_below("berry", 1), gather("berry")),
-    rule(item_below("berry", 1), walk_to("berry")),
-    rule({"kind": "hereBelow", "resource": "berry", "value": 1}, {"kind": "explore"}),
-    rule(item_below("berry", 1), {"kind": "wander"}),
-    rule(item_below("stick", 8), gather("stick")),
-    rule(item_below("stick", 8), walk_to("stick")),
-    rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
-    rule(ALWAYS, {"kind": "explore"}),
-    rule(AWAY, {"kind": "walkToCampfire"}),
-    rule(ALWAYS, gather("stick")),
-    rule(ALWAYS, gather("berry")),
-    rule(ALWAYS, {"kind": "wander"}),
-])
+ACCEPTANCE = program_from_rules(
+    [
+        rule(below("satietyBelow", 35), {"kind": "eat"}),
+        rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+        rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+        rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+        rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+        rule(item_below("berry", 1), gather("berry")),
+        rule(item_below("berry", 1), walk_to("berry")),
+        rule({"kind": "hereBelow", "resource": "berry", "value": 1}, {"kind": "explore"}),
+        rule(item_below("berry", 1), {"kind": "wander"}),
+        rule(item_below("stick", 8), gather("stick")),
+        rule(item_below("stick", 8), walk_to("stick")),
+        rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+        rule(ALWAYS, {"kind": "explore"}),
+        rule(AWAY, {"kind": "walkToCampfire"}),
+        rule(ALWAYS, gather("stick")),
+        rule(ALWAYS, gather("berry")),
+        rule(ALWAYS, {"kind": "wander"}),
+    ]
+)
 EMPTY = program_from_rules([])
 
 # name: (program, real time of the send, span in game minutes)
@@ -193,18 +195,24 @@ SPLITS = {
     REFERENCE: (lambda total: minutes_calls([1], total), True),
     "one call": (lambda total: minutes_calls([total], total), True),
     "two minutes a call": (lambda total: minutes_calls([2], total), True),
-    "one, then two minutes a call": (lambda total: [["advanceMinutes", 1]]
-                                     + minutes_calls([2], total - 1), True),
+    "one, then two minutes a call": (
+        lambda total: [["advanceMinutes", 1]] + minutes_calls([2], total - 1),
+        True,
+    ),
     "three minutes a call": (lambda total: minutes_calls([3], total), True),
     "seven minutes a call": (lambda total: minutes_calls([7], total), True),
     "sixty minutes a call": (lambda total: minutes_calls([60], total), True),
     "growing calls": (lambda total: minutes_calls(GROWING, total), True),
-    "real time in whole seconds": (lambda total: real_time_calls([3000, 1000, 11000, 4000],
-                                                                 total), True),
+    "real time in whole seconds": (
+        lambda total: real_time_calls([3000, 1000, 11000, 4000], total),
+        True,
+    ),
     "real time in pieces of 1500 ms": (lambda total: real_time_calls([1500], total), False),
 }
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -229,6 +237,7 @@ for (const [key, { program, sent, realMs, calls, bare, patch }] of Object.entrie
 }
 writeFileSync(outPath, JSON.stringify(out));
 """
+)
 
 
 def node():
@@ -246,20 +255,34 @@ def drive():
     """{run key: records}: the send's record first, then one record after each call."""
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     runs = {}
     for scenario, (program, real_ms, span) in SCENARIOS.items():
         for split, (make, _carry) in SPLITS.items():
-            runs[run_key(scenario, split)] = {"program": program, "sent": SENT,
-                                              "realMs": real_ms, "calls": make(span)}
+            runs[run_key(scenario, split)] = {
+                "program": program,
+                "sent": SENT,
+                "realMs": real_ms,
+                "calls": make(span),
+            }
     for split, (make, _carry) in SPLITS.items():
-        runs[run_key(DISCOVERS[0], split)] = {"program": None, "sent": SENT, "bare": True,
-                                              "realMs": DISCOVERS[1], "calls": make(DISCOVERS[2])}
+        runs[run_key(DISCOVERS[0], split)] = {
+            "program": None,
+            "sent": SENT,
+            "bare": True,
+            "realMs": DISCOVERS[1],
+            "calls": make(DISCOVERS[2]),
+        }
     for split, (make, _carry) in SPLITS.items():
-        runs[run_key(COMPLETES[0], split)] = {"program": COMPLETES[1], "sent": SENT,
-                                              "realMs": COMPLETES[2], "calls": make(COMPLETES[3]),
-                                              "patch": COMPLETES[4]}
+        runs[run_key(COMPLETES[0], split)] = {
+            "program": COMPLETES[1],
+            "sent": SENT,
+            "realMs": COMPLETES[2],
+            "calls": make(COMPLETES[3]),
+            "patch": COMPLETES[4],
+        }
     directory = tempfile.mkdtemp(prefix="loop2-minute-span-split-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -317,22 +340,27 @@ def findings(reference, split, compare_carry):
     for index, record in enumerate(split[1:], start=1):
         reached = minute(record)
         if reached not in states:
-            found.append(f"call {index} reached game minute {reached}, which one minute a call "
-                         "never reached")
+            found.append(
+                f"call {index} reached game minute {reached}, which one minute a call never reached"
+            )
             break
         expected_state = states[reached]
         state = record["state"]
         if not compare_carry:
             expected_state, state = less_carry(expected_state), less_carry(state)
         if state != expected_state:
-            found.append(f"call {index}: the state at game minute {reached} differs:\n"
-                         f"split:     {json.dumps(state)[:1500]}\n"
-                         f"reference: {json.dumps(expected_state)[:1500]}")
+            found.append(
+                f"call {index}: the state at game minute {reached} differs:\n"
+                f"split:     {json.dumps(state)[:1500]}\n"
+                f"reference: {json.dumps(expected_state)[:1500]}"
+            )
         expected_events = [e for m in range(previous + 1, reached + 1) for e in events[m]]
         if record["events"] != expected_events:
-            found.append(f"call {index}: the events of game minutes {previous + 1} to {reached} "
-                         f"differ:\nsplit:     {json.dumps(record['events'])[:1500]}\n"
-                         f"reference: {json.dumps(expected_events)[:1500]}")
+            found.append(
+                f"call {index}: the events of game minutes {previous + 1} to {reached} "
+                f"differ:\nsplit:     {json.dumps(record['events'])[:1500]}\n"
+                f"reference: {json.dumps(expected_events)[:1500]}"
+            )
         previous = reached
     return found
 
@@ -342,13 +370,17 @@ def up_to_discovery(run_records):
     discovery or goes past it."""
     for index, record in enumerate(run_records):
         if minute(record) >= DISCOVERS[3]:
-            return run_records[:index + 1]
+            return run_records[: index + 1]
     return run_records
 
 
 def finished_kinds(run_records):
-    return {e["activity"]["action"]["kind"] for r in run_records for e in r["events"]
-            if e["kind"] == "activityFinished" and e["activity"]["kind"] == "rule"}
+    return {
+        e["activity"]["action"]["kind"]
+        for r in run_records
+        for e in r["events"]
+        if e["kind"] == "activityFinished" and e["activity"]["kind"] == "rule"
+    }
 
 
 def deaths(run_records):
@@ -356,7 +388,6 @@ def deaths(run_records):
 
 
 class MinuteSpanSplit(unittest.TestCase):
-
     def test_every_split_reaches_the_same_state_and_events_at_every_minute(self):
         # invariant: minute-span-split
         result = records()
@@ -366,8 +397,9 @@ class MinuteSpanSplit(unittest.TestCase):
                 if split == REFERENCE:
                     continue
                 with self.subTest(scenario=scenario, split=split):
-                    self.assertEqual(findings(reference, result[run_key(scenario, split)], carry),
-                                     [])
+                    self.assertEqual(
+                        findings(reference, result[run_key(scenario, split)], carry), []
+                    )
 
     def test_every_split_reaches_the_same_state_and_events_through_a_completion(self):
         # invariant: minute-span-split
@@ -377,15 +409,20 @@ class MinuteSpanSplit(unittest.TestCase):
             if split == REFERENCE:
                 continue
             with self.subTest(split=split):
-                self.assertEqual(findings(reference, result[run_key(COMPLETES[0], split)], carry),
-                                 [])
+                self.assertEqual(
+                    findings(reference, result[run_key(COMPLETES[0], split)], carry), []
+                )
 
     def test_control_the_completion_scenario_completes_once_and_the_map_run_then_stands(self):
         # invariant: minute-span-split
         result = records()
         reference = result[run_key(COMPLETES[0], REFERENCE)]
-        completions = [(i, e) for i, r in enumerate(reference) for e in r["events"]
-                       if e["kind"] == "mapRunCompleted"]
+        completions = [
+            (i, e)
+            for i, r in enumerate(reference)
+            for e in r["events"]
+            if e["kind"] == "mapRunCompleted"
+        ]
         self.assertEqual([e["minute"] for _i, e in completions], [COMPLETES[5]])
         at_completion = reference[completions[0][0]]
         self.assertEqual(minute(at_completion), COMPLETES[5])
@@ -394,16 +431,26 @@ class MinuteSpanSplit(unittest.TestCase):
         self.assertFalse(at_completion["state"]["paused"])
         self.assertEqual(at_completion["events"][-1]["kind"], "mapRunCompleted")
         self.assertLess(COMPLETES[5], COMPLETES[3], "the span does not reach past the completion")
-        for later in reference[completions[0][0] + 1:]:
+        for later in reference[completions[0][0] + 1 :]:
             self.assertEqual(later["events"], [])
             self.assertEqual(later["state"], at_completion["state"])
         whole = result[run_key(COMPLETES[0], "one call")]
-        self.assertEqual(minute(whole[-1]), COMPLETES[5],
-                         "one call of the whole span went past the game minute of the completion")
-        ended = {minute(r) for split in SPLITS if split != REFERENCE
-                 for r in result[run_key(COMPLETES[0], split)][1:]}
-        self.assertEqual(sorted(set(range(1, COMPLETES[5] + 1)) - ended), [],
-                         "no split other than one minute a call ends a call at these game minutes")
+        self.assertEqual(
+            minute(whole[-1]),
+            COMPLETES[5],
+            "one call of the whole span went past the game minute of the completion",
+        )
+        ended = {
+            minute(r)
+            for split in SPLITS
+            if split != REFERENCE
+            for r in result[run_key(COMPLETES[0], split)][1:]
+        }
+        self.assertEqual(
+            sorted(set(range(1, COMPLETES[5] + 1)) - ended),
+            [],
+            "no split other than one minute a call ends a call at these game minutes",
+        )
 
     def test_a_dead_character_stays_dead_and_gives_no_events(self):
         # invariant: minute-span-split
@@ -412,13 +459,16 @@ class MinuteSpanSplit(unittest.TestCase):
             for split in SPLITS:
                 with self.subTest(scenario=scenario, split=split):
                     run_records = result[run_key(scenario, split)]
-                    died = [i for i, r in enumerate(run_records)
-                            if any(e["kind"] == "characterDied" for e in r["events"])]
+                    died = [
+                        i
+                        for i, r in enumerate(run_records)
+                        if any(e["kind"] == "characterDied" for e in r["events"])
+                    ]
                     self.assertEqual(len(died), 1, "the character does not die exactly once")
                     at_death = run_records[died[0]]
                     death_minute = minute(at_death)
                     self.assertEqual(at_death["state"]["run"]["death"]["minute"], death_minute)
-                    for later in run_records[died[0] + 1:]:
+                    for later in run_records[died[0] + 1 :]:
                         self.assertEqual(later["events"], [])
                         self.assertEqual(minute(later), death_minute)
                         self.assertEqual(later["state"]["run"], at_death["state"]["run"])
@@ -429,26 +479,37 @@ class MinuteSpanSplit(unittest.TestCase):
         alive = result[run_key("ALIVE", REFERENCE)]
         self.assertEqual(minute(alive[-1]), SCENARIOS["ALIVE"][2])
         self.assertIsNone(alive[-1]["state"]["run"]["death"])
-        self.assertTrue({"gather", "eat", "craftCampfire", "lightCampfire", "feedCampfire"}
-                        <= finished_kinds(alive), finished_kinds(alive))
+        self.assertTrue(
+            {"gather", "eat", "craftCampfire", "lightCampfire", "feedCampfire"}
+            <= finished_kinds(alive),
+            finished_kinds(alive),
+        )
         idle = result[run_key("DIES_IDLE", REFERENCE)]
         self.assertEqual([d["minute"] for d in deaths(idle)], [IDLE_DEATH_MINUTE])
         busy = result[run_key("DIES_BUSY", REFERENCE)]
         self.assertEqual(len(deaths(busy)), 1, "DIES_BUSY does not die within its span")
         self.assertLess(deaths(busy)[0]["minute"], SCENARIOS["DIES_BUSY"][2] - 10)
-        self.assertTrue({"gather", "eat", "craftCampfire"} <= finished_kinds(busy),
-                        finished_kinds(busy))
+        self.assertTrue(
+            {"gather", "eat", "craftCampfire"} <= finished_kinds(busy), finished_kinds(busy)
+        )
 
     def test_control_the_splits_end_a_call_at_every_minute(self):
         # invariant: minute-span-split
         result = records()
         for scenario, (_program, _real_ms, span) in SCENARIOS.items():
             last = minute(result[run_key(scenario, REFERENCE)][-1])
-            ended = {minute(r) for split in SPLITS if split != REFERENCE
-                     for r in result[run_key(scenario, split)][1:]}
-            self.assertEqual(sorted(set(range(1, last + 1)) - ended), [],
-                             f"{scenario}: no split other than one minute a call ends a call at "
-                             "these game minutes")
+            ended = {
+                minute(r)
+                for split in SPLITS
+                if split != REFERENCE
+                for r in result[run_key(scenario, split)][1:]
+            }
+            self.assertEqual(
+                sorted(set(range(1, last + 1)) - ended),
+                [],
+                f"{scenario}: no split other than one minute a call ends a call at "
+                "these game minutes",
+            )
             self.assertGreater(last, 200, f"{scenario} passes too few game minutes")
             if scenario == "ALIVE":
                 self.assertEqual(last, span)
@@ -462,8 +523,11 @@ class MinuteSpanSplit(unittest.TestCase):
                 continue
             with self.subTest(split=split):
                 covered = up_to_discovery(result[run_key(DISCOVERS[0], split)])
-                self.assertEqual(minute(covered[-1]), DISCOVERS[3],
-                                 "no call ended in the game minute of the discovery")
+                self.assertEqual(
+                    minute(covered[-1]),
+                    DISCOVERS[3],
+                    "no call ended in the game minute of the discovery",
+                )
                 self.assertEqual(findings(reference, covered, carry), [])
 
     def test_control_the_discovery_scenario_stops_at_a_discovery(self):
@@ -474,12 +538,17 @@ class MinuteSpanSplit(unittest.TestCase):
         stopped = reference[-1]["state"]
         self.assertTrue(stopped["paused"], "the game minute of the discovery leaves no pause")
         self.assertIsNotNone(stopped["discovery"], "the stop holds no discovery")
-        self.assertEqual([e["kind"] for e in reference[-1]["events"]
-                          if e["kind"] == "discovered"], ["discovered"])
+        self.assertEqual(
+            [e["kind"] for e in reference[-1]["events"] if e["kind"] == "discovered"],
+            ["discovered"],
+        )
         whole = result[run_key(DISCOVERS[0], "one call")]
         self.assertEqual(len(whole), 2)
-        self.assertEqual(minute(whole[-1]), DISCOVERS[3],
-                         "one call of the whole span went past the game minute of the discovery")
+        self.assertEqual(
+            minute(whole[-1]),
+            DISCOVERS[3],
+            "one call of the whole span went past the game minute of the discovery",
+        )
         self.assertLess(DISCOVERS[3], DISCOVERS[2])
 
     def test_control_the_comparison_flags_breaks(self):
@@ -506,8 +575,11 @@ class MinuteSpanSplit(unittest.TestCase):
         carried = copying.deepcopy(split)
         carried[busy]["state"]["realMsCarry"] = 500
         self.assertTrue(findings(reference, carried, True), "a changed carry goes unseen")
-        self.assertEqual(findings(reference, carried, False), [],
-                         "the carry is compared where it is meant to be left out")
+        self.assertEqual(
+            findings(reference, carried, False),
+            [],
+            "the carry is compared where it is meant to be left out",
+        )
 
 
 if __name__ == "__main__":

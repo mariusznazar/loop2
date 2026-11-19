@@ -28,48 +28,108 @@ def bad_pngs():
         "a PNG whose checksum is wrong": (bytes(flipped), "checksum"),
         "bytes after the end": (good + b"\x00\x00", "bytes follow its IEND"),
         "pixel data of another size than the header": (
-            support.png_bytes(4, 3, None, raw=rows_of_three), "pixel data has 39 bytes where its header of 4 x 3 asks 51"),
+            support.png_bytes(4, 3, None, raw=rows_of_three),
+            "pixel data has 39 bytes where its header of 4 x 3 asks 51",
+        ),
         "a PNG with a second header": (
-            support.SIGNATURE + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0)) * 2
+            support.SIGNATURE
+            + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0)) * 2
             + support.chunk(b"IDAT", zlib.compress(bytes(17 * 3)))
-            + support.chunk(b"IEND", b""), "more than one IHDR"),
+            + support.chunk(b"IEND", b""),
+            "more than one IHDR",
+        ),
         "a PNG of no width": (support.png_bytes(0, 3, None, raw=b""), "PNG of no size"),
-        "an interlaced PNG": (support.png_bytes(4, 3, GOOD_ROWS, interlace=1), "interlaced PNG is not held"),
-        "a PNG of 16 bits": (support.png_bytes(4, 3, GOOD_ROWS, depth=16), "colour type 6 and depth 16"),
+        "an interlaced PNG": (
+            support.png_bytes(4, 3, GOOD_ROWS, interlace=1),
+            "interlaced PNG is not held",
+        ),
+        "a PNG of 16 bits": (
+            support.png_bytes(4, 3, GOOD_ROWS, depth=16),
+            "colour type 6 and depth 16",
+        ),
         "pixel data that is no zlib stream": (
-            support.SIGNATURE + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0))
-            + support.chunk(b"IDAT", b"not a zlib stream") + support.chunk(b"IEND", b""), "does not inflate"),
+            support.SIGNATURE
+            + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0))
+            + support.chunk(b"IDAT", b"not a zlib stream")
+            + support.chunk(b"IEND", b""),
+            "does not inflate",
+        ),
         "data that stops being a stream": (
-            support.SIGNATURE + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0))
-            + support.chunk(b"IDAT", zlib.compress(bytes(2000))) + support.chunk(b"IEND", b""), "longer than its header asks"),
+            support.SIGNATURE
+            + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0))
+            + support.chunk(b"IDAT", zlib.compress(bytes(2000)))
+            + support.chunk(b"IEND", b""),
+            "longer than its header asks",
+        ),
     }
 
 
 def commands(bad, good, out):
     """The command of each script that takes `bad` as an input, with the file it would write."""
     return {
-        "sheet-frames cut": (["sheet-frames.mjs", "cut", bad, "--at", "0,0", "--frame", "2x2", "--count", "1", "--out", out], out),
-        "sheet-frames compare": (["sheet-frames.mjs", "compare", good, "--at", "0,0", "--frame", "2x2", "--count", "1", bad], None),
+        "sheet-frames cut": (
+            [
+                "sheet-frames.mjs",
+                "cut",
+                bad,
+                "--at",
+                "0,0",
+                "--frame",
+                "2x2",
+                "--count",
+                "1",
+                "--out",
+                out,
+            ],
+            out,
+        ),
+        "sheet-frames compare": (
+            [
+                "sheet-frames.mjs",
+                "compare",
+                good,
+                "--at",
+                "0,0",
+                "--frame",
+                "2x2",
+                "--count",
+                "1",
+                bad,
+            ],
+            None,
+        ),
         "sheet-frames measure": (["sheet-frames.mjs", "measure", bad], None),
         "recolor input": (["recolor.mjs", bad, out, "--map", "#000000=#ffffff"], out),
-        "recolor palette": (["recolor.mjs", good, out, "--map", "#000000=#ffffff", "--palette", bad], out),
+        "recolor palette": (
+            ["recolor.mjs", good, out, "--map", "#000000=#ffffff", "--palette", bad],
+            out,
+        ),
         "grid to-grid": (["grid.mjs", "to-grid", bad, out], out),
         "contrast effect": (["contrast.mjs", "--effect", bad, "--ground", "#ffffff"], None),
-        "contrast ground": (["contrast.mjs", "--effect", "#000000", "--ground", bad + "@0,0"], None),
-        "preview scene": (["preview.mjs", "--scene", bad, "--put", good + "@0,0", "--out", out], out),
+        "contrast ground": (
+            ["contrast.mjs", "--effect", "#000000", "--ground", bad + "@0,0"],
+            None,
+        ),
+        "preview scene": (
+            ["preview.mjs", "--scene", bad, "--put", good + "@0,0", "--out", out],
+            out,
+        ),
         "preview put": (["preview.mjs", "--scene", good, "--put", bad + "@0,0", "--out", out], out),
         "flashes frame": (["flashes.mjs", good, bad], None),
     }
 
 
 class Refusals(unittest.TestCase):
-
-    def test_each_script_refuses_each_unsound_png_with_a_message_naming_the_file_and_writes_nothing(self):
+    def test_each_script_refuses_each_unsound_png_with_a_message_naming_the_file_and_writes_nothing(
+        self,
+    ):
         with tempfile.TemporaryDirectory() as directory:
             good = support.write_png(directory, "good.png", GOOD_ROWS)
             for kind, (content, said) in bad_pngs().items():
                 bad = support.write_bytes(directory, "bad.png", content)
-                for script, (arguments, written) in commands(bad, good, os.path.join(directory, "out.png")).items():
+                for script, (arguments, written) in commands(
+                    bad, good, os.path.join(directory, "out.png")
+                ).items():
                     if script == "grid to-grid":
                         written = os.path.join(directory, "out.png")
                     with self.subTest(kind=kind, script=script):
@@ -84,8 +144,13 @@ class Refusals(unittest.TestCase):
 
     def test_a_file_that_is_not_there_is_refused_the_same_way(self):
         with tempfile.TemporaryDirectory() as directory:
-            result = support.run_script("recolor.mjs", os.path.join(directory, "missing.png"),
-                                        os.path.join(directory, "out.png"), "--map", "#000000=#ffffff")
+            result = support.run_script(
+                "recolor.mjs",
+                os.path.join(directory, "missing.png"),
+                os.path.join(directory, "out.png"),
+                "--map",
+                "#000000=#ffffff",
+            )
             self.assertEqual(result.returncode, 1)
             self.assertIn("missing.png: cannot be read (ENOENT)", result.stderr)
 
@@ -96,14 +161,19 @@ class Refusals(unittest.TestCase):
             alpha = support.chunk(b"tRNS", bytes([255, 128, 255]))
             header = support.chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 1, 2, 3, 0, 0, 0))
             data = support.chunk(b"IDAT", zlib.compress(bytes([0, 0b01100000])))
-            path = support.write_bytes(directory, "palette.png",
-                                       support.SIGNATURE + header + table + alpha + data + support.chunk(b"IEND", b""))
+            path = support.write_bytes(
+                directory,
+                "palette.png",
+                support.SIGNATURE + header + table + alpha + data + support.chunk(b"IEND", b""),
+            )
             out = os.path.join(directory, "frame.txt")
             result = support.run_script("grid.mjs", "to-grid", path, out)
             self.assertEqual(result.returncode, 1)
             self.assertIn("pixel 0,0 is partly transparent (alpha 128)", result.stderr)
             self.assertFalse(os.path.exists(out))
-            contrast = support.run_script("contrast.mjs", "--effect", "#c86432", "--ground", path + "@1,0")
+            contrast = support.run_script(
+                "contrast.mjs", "--effect", "#c86432", "--ground", path + "@1,0"
+            )
             self.assertEqual(contrast.returncode, 0, contrast.stderr)
             self.assertIn("ground " + path + "@1,0 = #c86432", contrast.stdout)
 

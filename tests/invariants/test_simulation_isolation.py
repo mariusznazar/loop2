@@ -65,35 +65,153 @@ CODE_EXTENSIONS = (".ts", ".mts", ".cts", ".tsx", ".js", ".mjs", ".cjs")
 # Globals the browser or Node.js add to those of the JavaScript language, as a name standing
 # alone: the page, timers, the system's clock and the other host objects.
 HOST_GLOBALS = (
-    "window", "self", "global", "document", "navigator", "location", "history", "screen",
-    "localStorage", "sessionStorage", "indexedDB", "caches", "alert", "confirm", "prompt",
-    "fetch", "XMLHttpRequest", "WebSocket", "EventSource", "Worker", "SharedWorker",
-    "setTimeout", "setInterval", "setImmediate", "clearTimeout", "clearInterval",
-    "clearImmediate", "requestAnimationFrame", "cancelAnimationFrame", "requestIdleCallback",
-    "cancelIdleCallback", "queueMicrotask", "performance", "console", "process", "Buffer",
-    "require", "module", "exports", "__dirname", "__filename", "structuredClone", "crypto",
-    "atob", "btoa", "TextEncoder", "TextDecoder", "URL", "URLSearchParams", "AbortController",
-    "AbortSignal", "Event", "EventTarget", "CustomEvent", "MessageChannel", "BroadcastChannel",
-    "Blob", "File", "FileReader", "FormData", "Headers", "Request", "Response", "Image",
-    "Audio", "HTMLElement", "Element", "HTMLCanvasElement", "CanvasRenderingContext2D",
-    "matchMedia", "getComputedStyle", "customElements", "ResizeObserver", "MutationObserver",
-    "IntersectionObserver", "WebAssembly",
+    "window",
+    "self",
+    "global",
+    "document",
+    "navigator",
+    "location",
+    "history",
+    "screen",
+    "localStorage",
+    "sessionStorage",
+    "indexedDB",
+    "caches",
+    "alert",
+    "confirm",
+    "prompt",
+    "fetch",
+    "XMLHttpRequest",
+    "WebSocket",
+    "EventSource",
+    "Worker",
+    "SharedWorker",
+    "setTimeout",
+    "setInterval",
+    "setImmediate",
+    "clearTimeout",
+    "clearInterval",
+    "clearImmediate",
+    "requestAnimationFrame",
+    "cancelAnimationFrame",
+    "requestIdleCallback",
+    "cancelIdleCallback",
+    "queueMicrotask",
+    "performance",
+    "console",
+    "process",
+    "Buffer",
+    "require",
+    "module",
+    "exports",
+    "__dirname",
+    "__filename",
+    "structuredClone",
+    "crypto",
+    "atob",
+    "btoa",
+    "TextEncoder",
+    "TextDecoder",
+    "URL",
+    "URLSearchParams",
+    "AbortController",
+    "AbortSignal",
+    "Event",
+    "EventTarget",
+    "CustomEvent",
+    "MessageChannel",
+    "BroadcastChannel",
+    "Blob",
+    "File",
+    "FileReader",
+    "FormData",
+    "Headers",
+    "Request",
+    "Response",
+    "Image",
+    "Audio",
+    "HTMLElement",
+    "Element",
+    "HTMLCanvasElement",
+    "CanvasRenderingContext2D",
+    "matchMedia",
+    "getComputedStyle",
+    "customElements",
+    "ResizeObserver",
+    "MutationObserver",
+    "IntersectionObserver",
+    "WebAssembly",
 )
 # Objects through whose members any host object can be reached.
 GLOBAL_OBJECTS = ("globalThis", "window", "self", "global")
 # The globals of the JavaScript language (ECMAScript and its Intl API), as a node:vm context
 # holds them.
 LANGUAGE_GLOBALS = (
-    "AggregateError", "Array", "ArrayBuffer", "AsyncDisposableStack", "Atomics", "BigInt",
-    "BigInt64Array", "BigUint64Array", "Boolean", "DataView", "Date", "DisposableStack",
-    "Error", "EvalError", "FinalizationRegistry", "Float16Array", "Float32Array",
-    "Float64Array", "Function", "Infinity", "Int16Array", "Int32Array", "Int8Array", "Intl",
-    "Iterator", "JSON", "Map", "Math", "NaN", "Number", "Object", "Promise", "Proxy",
-    "RangeError", "ReferenceError", "Reflect", "RegExp", "Set", "SharedArrayBuffer", "String",
-    "SuppressedError", "Symbol", "SyntaxError", "TypeError", "URIError", "Uint16Array",
-    "Uint32Array", "Uint8Array", "Uint8ClampedArray", "WeakMap", "WeakRef", "WeakSet",
-    "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent", "escape", "eval",
-    "globalThis", "isFinite", "isNaN", "parseFloat", "parseInt", "undefined", "unescape",
+    "AggregateError",
+    "Array",
+    "ArrayBuffer",
+    "AsyncDisposableStack",
+    "Atomics",
+    "BigInt",
+    "BigInt64Array",
+    "BigUint64Array",
+    "Boolean",
+    "DataView",
+    "Date",
+    "DisposableStack",
+    "Error",
+    "EvalError",
+    "FinalizationRegistry",
+    "Float16Array",
+    "Float32Array",
+    "Float64Array",
+    "Function",
+    "Infinity",
+    "Int16Array",
+    "Int32Array",
+    "Int8Array",
+    "Intl",
+    "Iterator",
+    "JSON",
+    "Map",
+    "Math",
+    "NaN",
+    "Number",
+    "Object",
+    "Promise",
+    "Proxy",
+    "RangeError",
+    "ReferenceError",
+    "Reflect",
+    "RegExp",
+    "Set",
+    "SharedArrayBuffer",
+    "String",
+    "SuppressedError",
+    "Symbol",
+    "SyntaxError",
+    "TypeError",
+    "URIError",
+    "Uint16Array",
+    "Uint32Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
+    "WeakMap",
+    "WeakRef",
+    "WeakSet",
+    "decodeURI",
+    "decodeURIComponent",
+    "encodeURI",
+    "encodeURIComponent",
+    "escape",
+    "eval",
+    "globalThis",
+    "isFinite",
+    "isNaN",
+    "parseFloat",
+    "parseInt",
+    "undefined",
+    "unescape",
 )
 # Reads of the system time, however `Date` or `performance` is reached: by its own name or as a
 # member of anything (`globalThis.Date`, `window.performance`, ...).
@@ -108,8 +226,22 @@ BARE_DATE_CALL = re.compile(r"(?<![\w$])Date\s*(?:\?\.\s*)?\(")
 NEW_BEFORE = re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"$")
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
-REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
-                     "void", "throw", "yield", "await", "instanceof")
+REGEX_AFTER_WORDS = (
+    "return",
+    "typeof",
+    "case",
+    "do",
+    "else",
+    "in",
+    "of",
+    "new",
+    "delete",
+    "void",
+    "throw",
+    "yield",
+    "await",
+    "instanceof",
+)
 
 
 def segments(text):
@@ -143,10 +275,10 @@ def segments(text):
                 j += 2
                 continue
             if text[j] == "`":
-                out.append(("template", text[start:j + 1]))
+                out.append(("template", text[start : j + 1]))
                 return j + 1
             if text.startswith("${", j):
-                out.append(("template", text[start:j + 2]))
+                out.append(("template", text[start : j + 2]))
                 braces.append(0)
                 return j + 2
             j += 1
@@ -172,7 +304,7 @@ def segments(text):
             while j < n and text[j] != c and text[j] != "\n":
                 j += 2 if text[j] == "\\" else 1
             flush()
-            out.append(("string", text[i:j + 1]))
+            out.append(("string", text[i : j + 1]))
             i = j + 1
             continue
         if c == "`":
@@ -191,8 +323,11 @@ def segments(text):
         if c == "/":
             before = last_code()
             word = re.search(r"([A-Za-z_$][\w$]*)$", before)
-            if not before or before[-1] in REGEX_AFTER or (
-                    word and word.group(1) in REGEX_AFTER_WORDS):
+            if (
+                not before
+                or before[-1] in REGEX_AFTER
+                or (word and word.group(1) in REGEX_AFTER_WORDS)
+            ):
                 j, in_class = i + 1, False
                 while j < n and text[j] != "\n":
                     if text[j] == "\\":
@@ -263,8 +398,10 @@ def import_findings(relative, text):
             continue
         target = posixpath.normpath(posixpath.join(posixpath.dirname(relative), specifier))
         if not (target + "/").startswith(SOURCE_DIRECTORY):
-            found.append(f"{relative} imports {specifier!r}, resolving to {target}, outside "
-                         f"{SOURCE_DIRECTORY}")
+            found.append(
+                f"{relative} imports {specifier!r}, resolving to {target}, outside "
+                f"{SOURCE_DIRECTORY}"
+            )
     return found
 
 
@@ -273,8 +410,8 @@ def name_findings(relative, text):
     code = code_only(text)
     for name in HOST_GLOBALS:
         for match in re.finditer(r"(?<![\w$])" + re.escape(name) + r"(?![\w$])", code):
-            before = code[:match.start()].rstrip()
-            after = code[match.end():].lstrip()
+            before = code[: match.start()].rstrip()
+            after = code[match.end() :].lstrip()
             if before.endswith("."):
                 continue  # a member of something else
             if after.startswith(":") and not after.startswith("::") and before[-1:] in ("{", ","):
@@ -287,13 +424,15 @@ def name_findings(relative, text):
             member = match.group(1)
             if member == "[":
                 found.append(f"{relative} reads a computed member of {name}")
-            elif member not in LANGUAGE_GLOBALS and code[match.start():match.end()].find(".") >= 0:
+            elif (
+                member not in LANGUAGE_GLOBALS and code[match.start() : match.end()].find(".") >= 0
+            ):
                 found.append(f"{relative} reads {name}.{member}, no global of the language")
     for pattern, label in SYSTEM_TIME:
         if pattern.search(code):
             found.append(f"{relative} reads the system time by {label}")
     for match in BARE_DATE_CALL.finditer(code):
-        if not NEW_BEFORE.search(code[:match.start()]):
+        if not NEW_BEFORE.search(code[: match.start()]):
             found.append(f"{relative} reads the system time by Date() without new")
             break
     return found
@@ -314,7 +453,7 @@ FLAGGED_SOURCES = (
     "import { readFileSync } from 'node:fs';\n",
     "const m = await import('../view/app.js');\n",
     "const m = await import(name);\n",
-    "/// <reference path=\"../view/app.ts\" />\nexport const a = 1;\n",
+    '/// <reference path="../view/app.ts" />\nexport const a = 1;\n',
     "export const t = document.title;\n",
     "export function f() { setTimeout(() => {}, 0); }\n",
     "export function f() { requestAnimationFrame(() => {}); }\n",
@@ -385,7 +524,9 @@ GUARD = r"""
 })()
 """
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import vm from 'node:vm';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, resolve, relative, isAbsolute } from 'node:path';
@@ -469,15 +610,20 @@ try {
 result.hits = [...hits];
 writeFileSync(outPath, JSON.stringify(result));
 """
+)
 
 ALWAYS = {"kind": "always"}
-MIXED = program_from_rules([
-    {"condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
-     "action": {"kind": "explore"}},
-    {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
-    {"condition": ALWAYS, "action": {"kind": "explore"}},
-    {"condition": ALWAYS, "action": {"kind": "wander"}},
-])
+MIXED = program_from_rules(
+    [
+        {
+            "condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
+            "action": {"kind": "explore"},
+        },
+        {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
+        {"condition": ALWAYS, "action": {"kind": "explore"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}
@@ -485,20 +631,49 @@ CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 # Inputs on the paths with no map run: before the first send and after an end.
-NO_RUN = [["setPaused", True], ["passRealTime", 5000], ["setPaused", False],
-          ["passRealTime", 1500], ["advanceMinutes", 3], ["setProgram", MIXED], ["restart"],
-          ["end"]]
-NO_RUN_FUNCTIONS = ("createCharacter", "setPaused", "passRealTime", "advanceMinutes", "setProgram",
-                    "restart", "end")
+NO_RUN = [
+    ["setPaused", True],
+    ["passRealTime", 5000],
+    ["setPaused", False],
+    ["passRealTime", 1500],
+    ["advanceMinutes", 3],
+    ["setProgram", MIXED],
+    ["restart"],
+    ["end"],
+]
+NO_RUN_FUNCTIONS = (
+    "createCharacter",
+    "setPaused",
+    "passRealTime",
+    "advanceMinutes",
+    "setProgram",
+    "restart",
+    "end",
+)
 GAME_STEPS = (
-    [["newGame"], CREATE] + NO_RUN + [["setProgram", MIXED], ["send", SENT, T]]
-    + [["advanceMinutes", 1]] * 150
-    + [["passRealTime", 61000], ["setPaused", True], ["passRealTime", 5000],
-       ["advanceMinutes", 5], ["setPaused", False], ["restart"], ["advanceMinutes", 100],
-       ["end"]]
+    [["newGame"], CREATE]
     + NO_RUN
-    + [["send", SENT, T_OTHER], ["advanceMinutes", 100], ["setPaused", True], ["restart"],
-       ["setPaused", False], ["end"]]
+    + [["setProgram", MIXED], ["send", SENT, T]]
+    + [["advanceMinutes", 1]] * 150
+    + [
+        ["passRealTime", 61000],
+        ["setPaused", True],
+        ["passRealTime", 5000],
+        ["advanceMinutes", 5],
+        ["setPaused", False],
+        ["restart"],
+        ["advanceMinutes", 100],
+        ["end"],
+    ]
+    + NO_RUN
+    + [
+        ["send", SENT, T_OTHER],
+        ["advanceMinutes", 100],
+        ["setPaused", True],
+        ["restart"],
+        ["setPaused", False],
+        ["end"],
+    ]
 )
 FIRST_SEND = GAME_STEPS.index(["send", SENT, T])
 
@@ -514,10 +689,14 @@ def run_problems(result):
         problems.append(f"failed: {result['error']}")
     for index, record in enumerate(result["records"]):
         error = record["error"]
-        if error and (record["hadRun"] or error["name"] != "Error"
-                      or error["message"].startswith("simulation-isolation")):
-            problems.append(f"step {index} {record['step']} raised {error['name']}: "
-                            f"{error['message']}")
+        if error and (
+            record["hadRun"]
+            or error["name"] != "Error"
+            or error["message"].startswith("simulation-isolation")
+        ):
+            problems.append(
+                f"step {index} {record['step']} raised {error['name']}: {error['message']}"
+            )
     return problems
 
 
@@ -594,8 +773,9 @@ def harness(directory, config):
             handle.write(DRIVER)
         with open(config_path, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(dict(config, guard=GUARD), handle)
-        code, output = support.run([node(), "--experimental-vm-modules", script, directory,
-                                    config_path, out_path], work)
+        code, output = support.run(
+            [node(), "--experimental-vm-modules", script, directory, config_path, out_path], work
+        )
         if not os.path.isfile(out_path):
             raise AssertionError(f"the harness exited {code} without a result:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -617,7 +797,6 @@ def made_up_directory(files):
 
 
 class SimulationIsolation(unittest.TestCase):
-
     def test_source_imports_and_uses_nothing_outside_the_language(self):
         # invariant: simulation-isolation
         files = [p for p in support.listed_files() if p.startswith(SOURCE_DIRECTORY)]
@@ -625,35 +804,50 @@ class SimulationIsolation(unittest.TestCase):
         found = []
         for relative in files:
             found += findings(relative, support.read_text(os.path.join(support.ROOT, relative)))
-        self.assertEqual(found, [], "a file of the simulation imports from outside it or uses "
-                                    "a host global or the system time")
+        self.assertEqual(
+            found,
+            [],
+            "a file of the simulation imports from outside it or uses "
+            "a host global or the system time",
+        )
 
     def test_control_the_scan_flags_each_forbidden_form(self):
         # invariant: simulation-isolation
         for text in FLAGGED_SOURCES:
             with self.subTest(source=text):
                 self.assertTrue(findings(PROBE, text), f"the scan does not flag {text!r}")
-        self.assertEqual(findings(PROBE, CLEAN_SOURCE), [],
-                         "the scan flags forms the sentence allows")
+        self.assertEqual(
+            findings(PROBE, CLEAN_SOURCE), [], "the scan flags forms the sentence allows"
+        )
 
     def test_built_simulation_runs_with_the_language_globals_alone(self):
         # invariant: simulation-isolation
         copy = support.built_copy()
         directory = copy.file(BUILT_DIRECTORY)
-        self.assertTrue(os.path.isfile(os.path.join(directory, "game.js")),
-                        f"`npm run build` placed no {BUILT_DIRECTORY}/game.js")
+        self.assertTrue(
+            os.path.isfile(os.path.join(directory, "game.js")),
+            f"`npm run build` placed no {BUILT_DIRECTORY}/game.js",
+        )
         result = harness(directory, {"mode": "game", "steps": GAME_STEPS, "knowing": True})
         for name in ("console", "WebAssembly", "process", "setTimeout", "document"):
             self.assertNotIn(name, result["globals"], f"the harness's context holds {name}")
-        self.assertEqual(run_problems(result), [], "the simulation imports from outside it, reads "
-                                                   "the system time or uses a host global")
+        self.assertEqual(
+            run_problems(result),
+            [],
+            "the simulation imports from outside it, reads the system time or uses a host global",
+        )
         self.assertIn("game.js", result["modules"])
         self.assertEqual(len(result["records"]), len(GAME_STEPS))
-        self.assertEqual(result["records"][FIRST_SEND + 150]["minute"], 150,
-                         "the driven run did not reach game minute 150")
+        self.assertEqual(
+            result["records"][FIRST_SEND + 150]["minute"],
+            150,
+            "the driven run did not reach game minute 150",
+        )
         for name in NO_RUN_FUNCTIONS:
-            self.assertTrue(any(r["step"] == name and not r["hadRun"] for r in result["records"]),
-                            f"{name} was never called on a game with no map run")
+            self.assertTrue(
+                any(r["step"] == name and not r["hadRun"] for r in result["records"]),
+                f"{name} was never called on a game with no map run",
+            )
 
     def test_control_the_no_run_paths_are_judged(self):
         # invariant: simulation-isolation
@@ -662,13 +856,18 @@ class SimulationIsolation(unittest.TestCase):
             result = harness(inner, {"mode": "game", "steps": GAME_STEPS})
             shutil.rmtree(directory, ignore_errors=True)
             with self.subTest(read=label):
-                self.assertTrue(run_problems(result),
-                                f"a read of {label} on the paths with no map run goes unseen")
+                self.assertTrue(
+                    run_problems(result),
+                    f"a read of {label} on the paths with no map run goes unseen",
+                )
         directory, inner = made_up_directory({"game.js": made_up_game("")})
         result = harness(inner, {"mode": "game", "steps": GAME_STEPS})
         shutil.rmtree(directory, ignore_errors=True)
-        self.assertEqual(run_problems(result), [], "a made-up game reading nothing is judged "
-                                                   "to break the sentence")
+        self.assertEqual(
+            run_problems(result),
+            [],
+            "a made-up game reading nothing is judged to break the sentence",
+        )
 
     def test_control_the_harness_fails_each_forbidden_use(self):
         # invariant: simulation-isolation
@@ -677,14 +876,17 @@ class SimulationIsolation(unittest.TestCase):
             result = harness(inner, {"mode": "call"})
             shutil.rmtree(directory, ignore_errors=True)
             with self.subTest(module=name):
-                self.assertTrue(result["error"] or result["refused"] or result["hits"],
-                                f"the harness lets the made-up module {name} run: {text!r}")
-                self.assertEqual(result["records"], [],
-                                 f"the made-up module {name} ran to its end")
+                self.assertTrue(
+                    result["error"] or result["refused"] or result["hits"],
+                    f"the harness lets the made-up module {name} run: {text!r}",
+                )
+                self.assertEqual(result["records"], [], f"the made-up module {name} ran to its end")
         directory, inner = made_up_directory({"clean.js": CLEAN_MODULE, "helper.js": CLEAN_HELPER})
         result = harness(inner, {"mode": "call"})
         shutil.rmtree(directory, ignore_errors=True)
-        self.assertIsNone(result["error"], f"the harness refuses a clean module:\n{result['error']}")
+        self.assertIsNone(
+            result["error"], f"the harness refuses a clean module:\n{result['error']}"
+        )
         self.assertEqual(result["records"], [{"step": "clean.js"}])
 
 

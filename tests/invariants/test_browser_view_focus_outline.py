@@ -73,26 +73,33 @@ def findings(sheets):
             chosen = selectors(prelude)
             where = f"{path}: line {line}: the rule {prelude!r}"
             allowed = chosen == [FOCUS_VISIBLE] or (
-                path == KITCHEN_SINK_STYLESHEET and len(chosen) == 2 and FOCUS_VISIBLE in chosen)
+                path == KITCHEN_SINK_STYLESHEET and len(chosen) == 2 and FOCUS_VISIBLE in chosen
+            )
             if not allowed:
                 found.append(f"{where} declares {', '.join(p for p, _ in outlines)}")
                 continue
-            drawn = any(prop in ("outline", "outline-color") and FROM_FOCUS.search(value)
-                        for prop, value in outlines)
+            drawn = any(
+                prop in ("outline", "outline-color") and FROM_FOCUS.search(value)
+                for prop, value in outlines
+            )
             if not drawn:
                 found.append(f"{where} does not draw its outline from the role focus")
             elif path == STYLESHEET and chosen == [FOCUS_VISIBLE]:
                 has_rule = True
     if not has_rule:
-        found.append(f"{STYLESHEET} holds no rule {FOCUS_VISIBLE} drawing its outline from the "
-                     "role focus")
+        found.append(
+            f"{STYLESHEET} holds no rule {FOCUS_VISIBLE} drawing its outline from the role focus"
+        )
     return found
 
 
-RULE = ":focus-visible {\n  outline: var(--focus-width) solid var(--focus);\n" \
-       "  outline-offset: var(--focus-offset);\n}\n"
-KITCHEN_SINK_RULE = ":focus-visible,\n.sample-focus {\n" \
-                    "  outline: var(--focus-width) solid var(--focus);\n}\n"
+RULE = (
+    ":focus-visible {\n  outline: var(--focus-width) solid var(--focus);\n"
+    "  outline-offset: var(--focus-offset);\n}\n"
+)
+KITCHEN_SINK_RULE = (
+    ":focus-visible,\n.sample-focus {\n  outline: var(--focus-width) solid var(--focus);\n}\n"
+)
 
 FLAGGED = {
     "no stylesheet": {},
@@ -100,29 +107,42 @@ FLAGGED = {
     "an outline in another rule": {STYLESHEET: RULE + "button { outline: none; }\n"},
     "an outline on :focus": {STYLESHEET: RULE + ":focus { outline: 0; }\n"},
     "an outline-* property in upper case": {STYLESHEET: RULE + "a { OUTLINE-WIDTH: 0; }\n"},
-    "an outline inside @media":
-        {STYLESHEET: RULE + "@media (max-width: 720px) { a { outline-style: none; } }\n"},
+    "an outline inside @media": {
+        STYLESHEET: RULE + "@media (max-width: 720px) { a { outline-style: none; } }\n"
+    },
     "an outline in a nested rule": {STYLESHEET: RULE + "a { &:hover { outline: 0; } }\n"},
-    "an outline in another stylesheet": {STYLESHEET: RULE, "src/browser/other.css":
-                                         "a { outline: 0; }\n"},
-    "an outline in the token file": {STYLESHEET: RULE, "src/browser/tokens.css":
-                                     ":root { --focus: #f4f4f5; }\na { outline: 0; }\n"},
-    "the rule drawing from another role":
-        {STYLESHEET: ":focus-visible { outline: var(--focus-width) solid var(--text); }\n"},
-    "the rule reading only the focus width":
-        {STYLESHEET: ":focus-visible { outline: var(--focus-width) solid; }\n"},
-    "the rule with outline-offset alone":
-        {STYLESHEET: ":focus-visible { outline-offset: var(--focus-offset); }\n"},
-    "a second selector in styles.css":
-        {STYLESHEET: ":focus-visible,\nbutton { outline: var(--focus-width) solid var(--focus); }\n"},
-    "a second selector in another stylesheet": {STYLESHEET: RULE, "src/browser/other.css":
-                                                KITCHEN_SINK_RULE},
-    "three selectors in the kitchen-sink's stylesheet":
-        {STYLESHEET: RULE, KITCHEN_SINK_STYLESHEET:
-         ":focus-visible, .a, .b { outline: var(--focus-width) solid var(--focus); }\n"},
-    "the kitchen-sink's rule without :focus-visible":
-        {STYLESHEET: RULE, KITCHEN_SINK_STYLESHEET:
-         ".a, .b { outline: var(--focus-width) solid var(--focus); }\n"},
+    "an outline in another stylesheet": {
+        STYLESHEET: RULE,
+        "src/browser/other.css": "a { outline: 0; }\n",
+    },
+    "an outline in the token file": {
+        STYLESHEET: RULE,
+        "src/browser/tokens.css": ":root { --focus: #f4f4f5; }\na { outline: 0; }\n",
+    },
+    "the rule drawing from another role": {
+        STYLESHEET: ":focus-visible { outline: var(--focus-width) solid var(--text); }\n"
+    },
+    "the rule reading only the focus width": {
+        STYLESHEET: ":focus-visible { outline: var(--focus-width) solid; }\n"
+    },
+    "the rule with outline-offset alone": {
+        STYLESHEET: ":focus-visible { outline-offset: var(--focus-offset); }\n"
+    },
+    "a second selector in styles.css": {
+        STYLESHEET: ":focus-visible,\nbutton { outline: var(--focus-width) solid var(--focus); }\n"
+    },
+    "a second selector in another stylesheet": {
+        STYLESHEET: RULE,
+        "src/browser/other.css": KITCHEN_SINK_RULE,
+    },
+    "three selectors in the kitchen-sink's stylesheet": {
+        STYLESHEET: RULE,
+        KITCHEN_SINK_STYLESHEET: ":focus-visible, .a, .b { outline: var(--focus-width) solid var(--focus); }\n",
+    },
+    "the kitchen-sink's rule without :focus-visible": {
+        STYLESHEET: RULE,
+        KITCHEN_SINK_STYLESHEET: ".a, .b { outline: var(--focus-width) solid var(--focus); }\n",
+    },
     "the rule only in the kitchen-sink's stylesheet": {KITCHEN_SINK_STYLESHEET: RULE},
 }
 CLEAN = {
@@ -139,18 +159,21 @@ CLEAN = {
 
 
 class BrowserViewFocusOutline(unittest.TestCase):
-
     def test_the_outline_stands_only_in_the_focus_visible_rule(self):
         # invariant: browser-view-focus-outline
-        sheets = {path: support.read_text(str(Path(support.ROOT, *path.split("/"))))
-                  for path in part_files() if path.endswith(".css")}
+        sheets = {
+            path: support.read_text(str(Path(support.ROOT, *path.split("/"))))
+            for path in part_files()
+            if path.endswith(".css")
+        }
         self.assertEqual(findings(sheets), [])
 
     def test_control_the_population_holds_the_part_stylesheets(self):
         # invariant: browser-view-focus-outline
         sheets = [path for path in part_files() if path.endswith(".css")]
-        directly = sorted(path for path in support.listed_files()
-                          if re.fullmatch(r"src/browser/[^/]+\.css", path))
+        directly = sorted(
+            path for path in support.listed_files() if re.fullmatch(r"src/browser/[^/]+\.css", path)
+        )
         self.assertTrue(directly, "src/browser holds no stylesheet")
         for path in directly:
             self.assertIn(path, sheets)

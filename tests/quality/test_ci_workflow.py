@@ -52,7 +52,6 @@ def steps():
 
 
 class TestsWorkflow(unittest.TestCase):
-
     def test_it_runs_on_a_pull_request_into_main_and_on_nothing_else(self):
         # decision: D-413 "The workflow starts on the event `pull_request`, never on `pull_request_target`"
         # decision: D-413 "On every pull request into `main`, GitHub Actions runs the one command of tests"
@@ -84,7 +83,9 @@ class TestsWorkflow(unittest.TestCase):
         for step in steps():
             self.assertNotIn("${{", step.get("run", ""))
 
-    def test_the_one_command_of_tests_is_the_last_step_and_no_checking_command_stands_beside_it(self):
+    def test_the_one_command_of_tests_is_the_last_step_and_no_checking_command_stands_beside_it(
+        self,
+    ):
         # decision: D-413 "On every pull request into `main`, GitHub Actions runs the one command of tests on a Linux machine, in a job named `tests`, a name that stays as it is, and no other checking command stands beside it"
         # decision: D-413 "The steps before the one command only set the machine up"
         # decision: D-412 "The CI of the repository and the one command of tests add no scanner of secrets"
