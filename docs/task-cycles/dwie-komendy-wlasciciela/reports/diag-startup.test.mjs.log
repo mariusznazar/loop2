@@ -1,0 +1,26 @@
+✔ exits with an error instead of reporting ready when its listening port is occupied (299.0581ms)
+✔ listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT (244.2121ms)
+✔ rejects LOOP2_LISTEN_PORT="0" without a readiness line (240.448ms)
+✔ rejects LOOP2_LISTEN_PORT="65536" without a readiness line (232.5673ms)
+✔ rejects LOOP2_LISTEN_PORT="abc" without a readiness line (224.3927ms)
+✔ rejects LOOP2_LISTEN_PORT="3000x" without a readiness line (219.7925ms)
+✔ rejects LOOP2_LISTEN_PORT="" without a readiness line (215.3016ms)
+✔ production missing settings and partial or invalid explicit configuration refuse readiness (4717.8254ms)
+✔ secret files reject noncanonical keys, invalid UTF-8 and oversized or non-file input without echoing contents (86.6057ms)
+✔ each mail setting that is invalid refuses readiness naming the setting and nothing of its value (866.7724ms)
+✔ the SMTP password file must be a small non-empty UTF-8 regular file without control characters and is refused without echoing its contents (366.8334ms)
+✔ a full valid set of settings starts, carries the mail settings and password, and a mailer, without contacting the mail server (379.4913ms)
+✔ configured runtime has a real database and dummy hash and releases its connection (314.2098ms)
+✔ configured startup refuses unknown schema and unavailable database before readiness (457.8975ms)
+✔ a start that fails names the setting and the original error's kind and code, so that two causes of one setting read apart (707.2048ms)
+✔ an exception no code of the server handled ends it with one line of its kind, code and place (279.2122ms)
+✔ a rejected promise no code of the server handled ends it with one line of its kind, code and place (263.4217ms)
+✔ configured process becomes ready with public health response and exits on shutdown (466.0208ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10773.0666

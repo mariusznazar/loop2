@@ -1,0 +1,333 @@
+✔ serves the built HTML and JavaScript from another working directory (36.6002ms)
+✔ API keeps its JSON error across paths, methods, queries and HTML negotiation (36.9534ms)
+✔ ordinary missing routes and files do not become the home page or API (5.6233ms)
+✔ raw and encoded traversal cannot expose files outside dist/public (15.0563ms)
+✔ unconfigured accounts answer the canonical account routes as unavailable JSON (15.4845ms)
+{"event":"signed-out","accountId":"4c003bbe-9d75-4875-b75b-64aed06a1812"}
+✔ a stored session alone selects the account, whatever identifier the request supplies (429.312ms)
+✔ absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout (212.1213ms)
+{"event":"signed-out","accountId":"98dfe9ba-fcad-4162-bee6-3c0dd1faee36"}
+✔ logout destroys only this browser's session and clears the same host cookie (201.2755ms)
+{"failure":"logout","kind":"Error","code":"ERR_SQLITE_ERROR","errcode":1811,"place":"account-routes.logout","accountId":"d13252c0-5c46-4e55-815b-71b5d718878a"}
+{"event":"signed-out","accountId":"d13252c0-5c46-4e55-815b-71b5d718878a"}
+✔ a failed session destruction is not reported as logout and leaves the browser signed in (195.125ms)
+{"event":"signed-out","accountId":"1403527b-3230-4ee2-b8a7-38f5e580facf"}
+✔ a read that loaded its session before logout cannot revive it afterwards (191.0222ms)
+{"event":"account-created","accountId":"f6bc4374-4a41-40a1-8a5d-62e2532496ed"}
+{"event":"signed-in","accountId":"f6bc4374-4a41-40a1-8a5d-62e2532496ed"}
+{"event":"link-issued","accountId":"f6bc4374-4a41-40a1-8a5d-62e2532496ed","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"f6bc4374-4a41-40a1-8a5d-62e2532496ed","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"f6bc4374-4a41-40a1-8a5d-62e2532496ed"}
+✔ registration stores an Argon2id hash of the exact password and signs this browser in at once (836.6106ms)
+{"event":"account-created","accountId":"ed2686a9-58e9-4dbd-97ca-5d9152c45aa0"}
+{"event":"signed-in","accountId":"ed2686a9-58e9-4dbd-97ca-5d9152c45aa0"}
+{"event":"link-issued","accountId":"ed2686a9-58e9-4dbd-97ca-5d9152c45aa0","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"ed2686a9-58e9-4dbd-97ca-5d9152c45aa0","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"ed2686a9-58e9-4dbd-97ca-5d9152c45aa0"}
+✔ a credential success replaces only this browser's session with a fresh identity (469.2114ms)
+{"event":"account-created","accountId":"f8955b0a-47f1-449c-be09-0a88674d3269"}
+{"event":"signed-in","accountId":"f8955b0a-47f1-449c-be09-0a88674d3269"}
+{"event":"link-issued","accountId":"f8955b0a-47f1-449c-be09-0a88674d3269","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"f8955b0a-47f1-449c-be09-0a88674d3269","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"f8955b0a-47f1-449c-be09-0a88674d3269"}
+✔ one normalized address holds one account and a duplicate gets the required message, also in a race (461.2651ms)
+{"event":"account-created","accountId":"bbdac08d-f552-49f2-8e29-1c0be0b2cf9a"}
+{"event":"signed-in","accountId":"bbdac08d-f552-49f2-8e29-1c0be0b2cf9a"}
+{"event":"link-issued","accountId":"bbdac08d-f552-49f2-8e29-1c0be0b2cf9a","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"bbdac08d-f552-49f2-8e29-1c0be0b2cf9a","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"c12b0264-6b4e-4fd3-814e-233fe88b81ea"}
+{"event":"signed-in","accountId":"c12b0264-6b4e-4fd3-814e-233fe88b81ea"}
+{"event":"link-issued","accountId":"c12b0264-6b4e-4fd3-814e-233fe88b81ea","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"c12b0264-6b4e-4fd3-814e-233fe88b81ea","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"de728136-f078-4654-81cc-3845b60a572c"}
+{"event":"signed-in","accountId":"de728136-f078-4654-81cc-3845b60a572c"}
+{"event":"link-issued","accountId":"de728136-f078-4654-81cc-3845b60a572c","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"de728136-f078-4654-81cc-3845b60a572c","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"f2c692b5-07d3-4de0-bd21-9245c6eed009"}
+{"event":"signed-in","accountId":"f2c692b5-07d3-4de0-bd21-9245c6eed009"}
+{"event":"link-issued","accountId":"f2c692b5-07d3-4de0-bd21-9245c6eed009","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"f2c692b5-07d3-4de0-bd21-9245c6eed009","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"c12b0264-6b4e-4fd3-814e-233fe88b81ea"}
+{"event":"signed-in","accountId":"de728136-f078-4654-81cc-3845b60a572c"}
+✔ passwords count 12 to 128 Unicode code points and keep their exact content (991.4711ms)
+{"event":"account-created","accountId":"32640cd8-2392-42e3-9a92-af6b459f6e99"}
+{"event":"signed-in","accountId":"32640cd8-2392-42e3-9a92-af6b459f6e99"}
+{"event":"link-issued","accountId":"32640cd8-2392-42e3-9a92-af6b459f6e99","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"32640cd8-2392-42e3-9a92-af6b459f6e99","linkPurpose":"email-confirmation"}
+✔ malformed fields and out-of-shape credentials are refused before password work or writes (875.3778ms)
+{"event":"account-created","accountId":"4b26cff8-e8bd-4ae5-9420-f7831488e890"}
+{"event":"signed-in","accountId":"4b26cff8-e8bd-4ae5-9420-f7831488e890"}
+{"event":"link-issued","accountId":"4b26cff8-e8bd-4ae5-9420-f7831488e890","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"4b26cff8-e8bd-4ae5-9420-f7831488e890","linkPurpose":"email-confirmation"}
+✔ a known address with a wrong password and an unknown address fail login identically (561.1169ms)
+{"event":"account-created","accountId":"5020ec2c-3cf9-4639-8b38-879e043ae295"}
+{"failure":"session","kind":"Error","code":"ERR_SQLITE_ERROR","errcode":1811,"place":"account-routes.establishSession","accountId":"5020ec2c-3cf9-4639-8b38-879e043ae295"}
+{"failure":"session","kind":"Error","code":"ERR_SQLITE_ERROR","errcode":1811,"place":"account-routes.establishSession","accountId":"5020ec2c-3cf9-4639-8b38-879e043ae295"}
+{"event":"signed-in","accountId":"5020ec2c-3cf9-4639-8b38-879e043ae295"}
+✔ a failed session save keeps the new account usable and issues no success cookie (566.6973ms)
+{"event":"account-created","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1"}
+{"event":"signed-in","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1"}
+{"event":"link-issued","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1"}
+{"event":"signed-in","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1"}
+{"event":"signed-in","accountId":"136198d0-754a-4026-837a-3bc31f0f3ba1"}
+✔ five failed logins lock an address for 15 minutes from the fifth, also for its correct password (2709.7635ms)
+{"event":"account-created","accountId":"9a0c19bc-747d-482b-8383-2058e1445176"}
+{"event":"signed-in","accountId":"9a0c19bc-747d-482b-8383-2058e1445176"}
+{"event":"link-issued","accountId":"9a0c19bc-747d-482b-8383-2058e1445176","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"9a0c19bc-747d-482b-8383-2058e1445176","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"9a0c19bc-747d-482b-8383-2058e1445176"}
+{"event":"signed-in","accountId":"9a0c19bc-747d-482b-8383-2058e1445176"}
+✔ one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them (2179.8668ms)
+{"event":"account-created","accountId":"4933f525-4c71-428e-99b4-cc5a32f48a5b"}
+{"event":"signed-in","accountId":"4933f525-4c71-428e-99b4-cc5a32f48a5b"}
+{"event":"link-issued","accountId":"4933f525-4c71-428e-99b4-cc5a32f48a5b","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"4933f525-4c71-428e-99b4-cc5a32f48a5b","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"8a3d68d9-5567-4aae-a02e-f43ee75c8a91"}
+{"event":"signed-in","accountId":"8a3d68d9-5567-4aae-a02e-f43ee75c8a91"}
+{"event":"link-issued","accountId":"8a3d68d9-5567-4aae-a02e-f43ee75c8a91","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"8a3d68d9-5567-4aae-a02e-f43ee75c8a91","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"62eec971-37a4-4056-b209-c480db5610ec"}
+{"event":"signed-in","accountId":"62eec971-37a4-4056-b209-c480db5610ec"}
+{"event":"link-issued","accountId":"62eec971-37a4-4056-b209-c480db5610ec","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"62eec971-37a4-4056-b209-c480db5610ec","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"6fd2ebf4-8155-41b7-883b-6bb301d94a74"}
+{"event":"signed-in","accountId":"6fd2ebf4-8155-41b7-883b-6bb301d94a74"}
+{"event":"link-issued","accountId":"6fd2ebf4-8155-41b7-883b-6bb301d94a74","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"6fd2ebf4-8155-41b7-883b-6bb301d94a74","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"6cc67f82-a0ad-4277-8602-e398ae7e3492"}
+{"event":"signed-in","accountId":"6cc67f82-a0ad-4277-8602-e398ae7e3492"}
+{"event":"link-issued","accountId":"6cc67f82-a0ad-4277-8602-e398ae7e3492","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"6cc67f82-a0ad-4277-8602-e398ae7e3492","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"21ec02d7-d789-45c0-924a-40d43fe67f12"}
+{"event":"signed-in","accountId":"21ec02d7-d789-45c0-924a-40d43fe67f12"}
+{"event":"link-issued","accountId":"21ec02d7-d789-45c0-924a-40d43fe67f12","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"21ec02d7-d789-45c0-924a-40d43fe67f12","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"a2f15698-8f63-4551-9c3b-d70cbf5f436a"}
+{"event":"signed-in","accountId":"a2f15698-8f63-4551-9c3b-d70cbf5f436a"}
+{"event":"link-issued","accountId":"a2f15698-8f63-4551-9c3b-d70cbf5f436a","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"a2f15698-8f63-4551-9c3b-d70cbf5f436a","linkPurpose":"email-confirmation"}
+✔ one client address creates five accounts per rolling hour, and refused registrations take no slot (1139.5752ms)
+{"event":"account-created","accountId":"fb48cb87-98f1-43f7-bf61-de2012df8bbe"}
+{"event":"signed-in","accountId":"fb48cb87-98f1-43f7-bf61-de2012df8bbe"}
+{"event":"link-issued","accountId":"fb48cb87-98f1-43f7-bf61-de2012df8bbe","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"fb48cb87-98f1-43f7-bf61-de2012df8bbe","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"fb48cb87-98f1-43f7-bf61-de2012df8bbe"}
+✔ a disconnected login keeps its reservation until its password work completes and still counts (1074.5706ms)
+{"event":"account-created","accountId":"be98b759-25f7-433c-8086-4232466ddbd7"}
+{"event":"signed-in","accountId":"be98b759-25f7-433c-8086-4232466ddbd7"}
+{"event":"link-issued","accountId":"be98b759-25f7-433c-8086-4232466ddbd7","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"be98b759-25f7-433c-8086-4232466ddbd7","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"be98b759-25f7-433c-8086-4232466ddbd7"}
+✔ full limiter tables refuse newcomers without evicting a live restriction (1311.7483ms)
+✔ the password rules of a new password are those of registration, with the same problems (0.2702ms)
+✔ a locked address admits a login after its attempts are cleared, and failures before the lock are forgotten (0.3523ms)
+✔ clearing an address's attempts leaves its client address's failures counting (0.2004ms)
+✔ a login in progress at a clear keeps its reservation and settles once on the same entry (0.1181ms)
+✔ a login in progress at a clear that is released leaves the failures made after the clear counting (0.0974ms)
+✔ a login in progress at a clear leaves no reservation behind once it has failed (0.1007ms)
+✔ clearing an unknown address changes nothing and a clear frees a locked place without touching others (0.1186ms)
+{"event":"account-created","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8"}
+{"event":"signed-in","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8"}
+{"event":"link-issued","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8"}
+{"event":"signed-in","accountId":"31404593-0e53-4c6e-b21f-d3ef8dec13b8"}
+✔ no session of a blocked account authorizes lookup or logout, in any browser, also after unblocking (614.7828ms)
+{"event":"account-created","accountId":"7b0fe23f-a2e7-4d53-8f80-54b42426f95e"}
+{"event":"signed-in","accountId":"7b0fe23f-a2e7-4d53-8f80-54b42426f95e"}
+{"event":"link-issued","accountId":"7b0fe23f-a2e7-4d53-8f80-54b42426f95e","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"7b0fe23f-a2e7-4d53-8f80-54b42426f95e","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"7b0fe23f-a2e7-4d53-8f80-54b42426f95e"}
+✔ a blocked account's correct password gets its own refusal and no session, a wrong one the common message, and only the wrong one counts (1782.1727ms)
+{"event":"account-created","accountId":"2344e4fb-c15d-4853-be58-3d0053713ede"}
+{"event":"signed-in","accountId":"2344e4fb-c15d-4853-be58-3d0053713ede"}
+{"event":"link-issued","accountId":"2344e4fb-c15d-4853-be58-3d0053713ede","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"2344e4fb-c15d-4853-be58-3d0053713ede","linkPurpose":"email-confirmation"}
+✔ a block committed while the password is checked refuses that login as blocked and clears no failure (1051.8935ms)
+{"event":"account-created","accountId":"b815db36-462a-4e81-842c-605f8a9cbcab"}
+{"event":"signed-in","accountId":"b815db36-462a-4e81-842c-605f8a9cbcab"}
+{"event":"link-issued","accountId":"b815db36-462a-4e81-842c-605f8a9cbcab","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"b815db36-462a-4e81-842c-605f8a9cbcab","linkPurpose":"email-confirmation"}
+✔ a password replaced while the old password is checked refuses that login, stores no session and clears no failure (1163.1209ms)
+{"event":"account-created","accountId":"0554709d-9a20-43fd-b85a-de13be002a3c"}
+{"event":"signed-in","accountId":"0554709d-9a20-43fd-b85a-de13be002a3c"}
+{"event":"link-issued","accountId":"0554709d-9a20-43fd-b85a-de13be002a3c","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"0554709d-9a20-43fd-b85a-de13be002a3c","linkPurpose":"email-confirmation"}
+{"failure":"session","kind":"Error","code":"none","place":"app.sessions","accountId":"0554709d-9a20-43fd-b85a-de13be002a3c"}
+✔ a password replaced while a registration waits on its message leaves no session, and the cookie it got is refused (328.9257ms)
+✔ a block committed while a registration waits on its message leaves no line of failure, and the answer stays 201 (304.4516ms)
+✔ a session write at the end of a registration refused for another cause than a block leaves its line of failure (557.0995ms)
+{"event":"account-created","accountId":"f8a8f196-8a2a-4603-852c-eca0a50a966f"}
+{"event":"signed-in","accountId":"f8a8f196-8a2a-4603-852c-eca0a50a966f"}
+{"event":"link-issued","accountId":"f8a8f196-8a2a-4603-852c-eca0a50a966f","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"f8a8f196-8a2a-4603-852c-eca0a50a966f","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"4d3b8fc1-b368-4dc2-b8ec-812f1d2cd36d"}
+{"event":"signed-in","accountId":"4d3b8fc1-b368-4dc2-b8ec-812f1d2cd36d"}
+{"event":"link-issued","accountId":"4d3b8fc1-b368-4dc2-b8ec-812f1d2cd36d","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"15001e3b-a647-4178-8568-44a852103a34"}
+{"event":"signed-in","accountId":"15001e3b-a647-4178-8568-44a852103a34"}
+{"event":"link-issued","accountId":"15001e3b-a647-4178-8568-44a852103a34","linkPurpose":"email-confirmation"}
+{"failure":"mail","kind":"Error","code":"none","place":"account-routes.boundedSending","accountId":"15001e3b-a647-4178-8568-44a852103a34","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"da1fd522-3e0c-43d7-9822-499e2766727f"}
+{"event":"signed-in","accountId":"da1fd522-3e0c-43d7-9822-499e2766727f"}
+{"event":"link-issued","accountId":"da1fd522-3e0c-43d7-9822-499e2766727f","linkPurpose":"email-confirmation"}
+{"failure":"mail","kind":"ReasonedFailure","code":"DEADLINE","place":"account-routes.boundedSending","accountId":"da1fd522-3e0c-43d7-9822-499e2766727f","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"9915350c-ecc6-45cf-bfd2-1130aa1f6578"}
+{"event":"signed-in","accountId":"9915350c-ecc6-45cf-bfd2-1130aa1f6578"}
+{"failure":"link-record","kind":"Error","code":"ERR_SQLITE_ERROR","errcode":1811,"place":"account-routes.sendLinkMessage","accountId":"9915350c-ecc6-45cf-bfd2-1130aa1f6578","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"e8b905a8-2ef4-4ea5-8f09-c91bac90d242"}
+{"event":"signed-in","accountId":"e8b905a8-2ef4-4ea5-8f09-c91bac90d242"}
+✔ registration answers 201 with its message's outcome in every case and the player stays signed in (1327.478ms)
+{"event":"account-created","accountId":"5d0b42e0-9f27-4c8b-a0c4-8b25fbb269d4"}
+{"failure":"session","kind":"Error","code":"ERR_SQLITE_ERROR","errcode":1811,"place":"account-routes.establishSession","accountId":"5d0b42e0-9f27-4c8b-a0c4-8b25fbb269d4"}
+{"event":"account-created","accountId":"caa710e8-7fcf-4308-80c6-ada6803fd9ac"}
+{"event":"signed-in","accountId":"caa710e8-7fcf-4308-80c6-ada6803fd9ac"}
+{"event":"link-issued","accountId":"caa710e8-7fcf-4308-80c6-ada6803fd9ac","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"caa710e8-7fcf-4308-80c6-ada6803fd9ac","linkPurpose":"email-confirmation"}
+✔ a refused registration or one whose session is not stored hands no message on and records no link (573.477ms)
+{"event":"link-issued","accountId":"26a40297-467c-4103-9f8b-42ea4089b40b","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"26a40297-467c-4103-9f8b-42ea4089b40b","linkPurpose":"email-confirmation"}
+{"event":"email-confirmed","accountId":"26a40297-467c-4103-9f8b-42ea4089b40b"}
+✔ only a valid session of an unblocked account asks for a message, and it goes only to that account's own address (229.1015ms)
+{"event":"link-issued","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"4779513d-1700-4998-ad95-fecb0c8860c3","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"4779513d-1700-4998-ad95-fecb0c8860c3","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"4cab178c-1bc0-4355-bae8-1c7a01a17444","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"4cab178c-1bc0-4355-bae8-1c7a01a17444","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"b3b2fc35-34e7-4c33-916c-b4f0aa302d28","linkPurpose":"email-confirmation"}
+✔ above three messages an hour for an account or thirty in total a resend answers limited and hands nothing on, until the hour has passed (314.4002ms)
+{"event":"account-created","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa"}
+{"event":"signed-in","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa"}
+{"event":"link-issued","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa","linkPurpose":"email-confirmation"}
+{"event":"email-confirmed","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa"}
+{"event":"signed-in","accountId":"6a8f5063-15d7-4fa7-a461-3047ae893ffa"}
+✔ a link confirms its own account once, with or without a session, and every malformed, unknown or used token gets the one refusal and changes nothing (461.9073ms)
+{"event":"account-created","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc"}
+{"event":"signed-in","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc"}
+{"event":"link-issued","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc","linkPurpose":"email-confirmation"}
+{"event":"link-issued","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc","linkPurpose":"email-confirmation"}
+{"event":"email-confirmed","accountId":"5509e2a2-f97c-429f-97c8-cc6e584866cc"}
+✔ a later message's link stops earlier ones, also when its sending failed, and an expired or other-kind link confirms nothing (330.6416ms)
+{"event":"account-created","accountId":"4ffc2783-4a62-494e-930a-5cc2c58d6e27"}
+{"event":"signed-in","accountId":"4ffc2783-4a62-494e-930a-5cc2c58d6e27"}
+{"event":"link-issued","accountId":"4ffc2783-4a62-494e-930a-5cc2c58d6e27","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"4ffc2783-4a62-494e-930a-5cc2c58d6e27","linkPurpose":"email-confirmation"}
+{"event":"account-created","accountId":"efead3d6-296b-4b9e-890c-9e4ff7c58db5"}
+{"event":"signed-in","accountId":"efead3d6-296b-4b9e-890c-9e4ff7c58db5"}
+✔ a block committed through another connection while the message is on its way stops its link for good, and a block just before recording sends nothing (495.6597ms)
+✔ no response and no line of the server's log holds a link's token (667.6809ms)
+{"event":"link-issued","accountId":"a24018c9-f8ef-4894-9f0a-9beed639c0c3","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"a24018c9-f8ef-4894-9f0a-9beed639c0c3","linkPurpose":"password-reset"}
+✔ a request for a reset link is answered before the mail service is asked, whatever it does (181.8509ms)
+{"event":"link-issued","accountId":"2f86575e-8ff4-4ba2-8328-6970c8da8e2f","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"2f86575e-8ff4-4ba2-8328-6970c8da8e2f","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"f129a4b9-5505-4e54-8c7a-556c3f74257d","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"f129a4b9-5505-4e54-8c7a-556c3f74257d","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"7306198b-eba8-43f4-ba9e-cd4fad204513","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"7306198b-eba8-43f4-ba9e-cd4fad204513","linkPurpose":"password-reset"}
+✔ the answer to a request for a reset link ends before the account is looked up and before the link is recorded (201.1174ms)
+✔ a well-formed address gets the same answer whether its account is confirmed, unknown, unconfirmed, blocked, above a limit or fails to record, and the last five hand nothing on (264.622ms)
+✔ a failed lookup after the answer leaves the process alive and one fixed line in the log without the address (193.1879ms)
+{"event":"link-issued","accountId":"33343778-88c2-4546-ba0d-de3f46fcf1ac","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"33343778-88c2-4546-ba0d-de3f46fcf1ac","linkPurpose":"password-reset"}
+✔ an address not written as name@domain is refused with invalid-email and a body of other fields with invalid-request, and nothing is handed on (210.7172ms)
+{"event":"link-issued","accountId":"d8bee734-c615-4475-bfdd-ea86d905f8a6","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"d8bee734-c615-4475-bfdd-ea86d905f8a6","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"d8bee734-c615-4475-bfdd-ea86d905f8a6","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"d8bee734-c615-4475-bfdd-ea86d905f8a6","linkPurpose":"password-reset"}
+✔ a request needs no session, names only the account whose confirmed address gets the link, and nothing else in the request changes where it goes (198.04ms)
+{"event":"link-issued","accountId":"2809ee9f-5e57-475b-9341-da283992e2ca","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"2809ee9f-5e57-475b-9341-da283992e2ca","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"2809ee9f-5e57-475b-9341-da283992e2ca","linkPurpose":"password-reset"}
+✔ a recorded reset link lives one hour, a later request stops the earlier link, and each message is of the password-reset kind (191.7482ms)
+{"event":"link-issued","accountId":"08da2f2c-1cdb-41ce-8364-44267b83eef7","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"08da2f2c-1cdb-41ce-8364-44267b83eef7","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"08da2f2c-1cdb-41ce-8364-44267b83eef7","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"1d886ca9-7255-4f04-a36b-ed78596ac2af","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"1d886ca9-7255-4f04-a36b-ed78596ac2af","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"475a0b3a-3055-4f11-8419-a4e82792f86c","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"4ddf4acd-7b1a-4d52-acb0-c03b268a2d66","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"4ddf4acd-7b1a-4d52-acb0-c03b268a2d66","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"1075c5d3-4c5a-4413-94d3-b41802605301","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"1075c5d3-4c5a-4413-94d3-b41802605301","linkPurpose":"password-reset"}
+{"event":"link-issued","accountId":"5035151f-fef0-4935-a80a-89d3b10e2f3e","linkPurpose":"password-reset"}
+{"event":"message-sent","accountId":"5035151f-fef0-4935-a80a-89d3b10e2f3e","linkPurpose":"password-reset"}
+✔ a reset message counts against the limits shared with the confirmation message: three an hour for an account, thirty in all (315.6197ms)
+✔ no answer and no line of the server's log holds a reset link's token or the address asked for (414.3511ms)
+{"event":"password-set","accountId":"67da3388-78ad-4552-b405-7b6bc75367ed"}
+{"event":"signed-in","accountId":"67da3388-78ad-4552-b405-7b6bc75367ed"}
+✔ a working link sets the exact password once, the new password signs in and the old one does not, and the reset signs nobody in (1170.7932ms)
+{"event":"password-set","accountId":"8e264247-1583-4515-bca3-e806d67a36b4"}
+✔ the password rules come before the link and the link before any password work, and a good link survives every refusal (1007.4685ms)
+{"event":"password-set","accountId":"38fdd52b-d659-44f9-91eb-742d4f4df1f3"}
+{"event":"password-set","accountId":"5d7f9470-0e12-45ed-b7c1-b6fd5d0faecc"}
+{"event":"password-set","accountId":"ff2f2db8-9296-4293-9429-4c017717dc3b"}
+{"event":"password-set","accountId":"f3301a2d-3e41-4f87-b0c8-57c80a36fbfd"}
+✔ every token that does not work gets the one refusal after no password work, and changes nothing (3723.8022ms)
+{"event":"password-set","accountId":"53ff5dd9-70d2-4f22-a7df-406c5ee6fa4c"}
+✔ a block, a later link or an expiry committed during the hashing change nothing and the old link gets the one refusal (1193.0935ms)
+{"event":"password-set","accountId":"35e2d6bc-46d2-49d8-b50c-5d33c8b76f0d"}
+{"event":"password-set","accountId":"6e6274c9-f17d-4592-a908-631f28ebfe86"}
+✔ a reset ends every session of its account, even the one sent along, and leaves the sessions of another account (786.296ms)
+{"event":"password-set","accountId":"473d2c3f-19d0-4e5c-bfc5-213246d2b253"}
+{"event":"signed-in","accountId":"473d2c3f-19d0-4e5c-bfc5-213246d2b253"}
+✔ a locked address logs in with the new password straight after a reset, the client address keeps its failures, and a refused set-password clears nothing (3620.0372ms)
+{"event":"password-set","accountId":"ca3fe84d-6a97-48ff-b475-86a6672245a0"}
+✔ the route clears the address's failed logins once, with the address the reset returned, after the commit and in the same turn, and a refusal clears none (439.0877ms)
+{"failure":"request","kind":"Error","code":"none","place":"app.errors"}
+{"event":"password-set","accountId":"db3ed35d-d8a6-4bd9-8afa-1775f1623fc6"}
+✔ a hash that fails answers 500 with no detail and spends nothing, and the failure clears no lock (1156.4738ms)
+✔ no answer and no line of the server's log holds a set-password request's token or password (560.6878ms)
+✔ each account's session reads and replaces only its own saved game state (246.0863ms)
+✔ no session, a forged or removed session and a session of a blocked account get JSON 401 on both save routes and change no saved game state (240.5107ms)
+✔ a block committed between the session check and the write stores nothing and answers 401 (176.7297ms)
+✔ the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged (254.1867ms)
+✔ each malformed save body is a 400 that stores nothing, and a body that is not an object never reaches the fields (313.7402ms)
+✔ the stored text of a game is measured in bytes after re-serializing, at most 65 536, and a larger one is a 413 that stores nothing (227.9834ms)
+✔ no session, a forged or removed session and a blocked account get JSON 401 on both previous-save routes and change no save (228.2898ms)
+✔ a block committed between the session check and the reset moves nothing and answers 401 (198.2877ms)
+✔ an account without the previous-save privilege gets 403 on both routes whatever its slot holds, and its saves stay (229.0739ms)
+✔ a privileged account reads null, then the document of its slot; a save of a higher version fills it, and the privilege off stops the reads and keeps the slot (262.5954ms)
+✔ the reset moves the save to the previous slot and answers 204, a second reset changes nothing, and a card on another revision then gets the conflict (213.1823ms)
+{"event":"saved-game-reset","accountId":"021d0ce3-2cad-4eac-8340-07aade0ef17b"}
+✔ a reset with any field is a 400 that moves nothing, and no request names an account (230.4445ms)
+✔ each business event of the server leaves one line with the account's number, and no line holds an address, a secret or a request's content (585.4682ms)
+✔ an expected refusal and a message that was not sent leave no line of success, and a refusal no line at all (316.9626ms)
+✔ a browser that breaks off sending a request body is refused and leaves no failure line (188.7739ms)
+✔ every failure the server handles leaves a line of its kind, code and place, with the account's number, and no text of the error or the request (487.9247ms)
+✔ a route's deadline on a mailer that never answers writes the deadline as its reason (283.4249ms)
+✔ a failed renewal after a route answered writes one line of the session, and no stack (239.3025ms)
+✔ a failed renewal of a request for a missing file, past every layer, writes one line of the session, and no stack (229.8979ms)
+✔ a route that fails and a renewal that fails write one line each, with their own place, and no stack (234.4201ms)
+✔ a report of the allowed form from a page with no session is answered 204 and writes the one line of its three words (175.637ms)
+✔ the words a browser writes and the places that exist are accepted as they are (163.6542ms)
+✔ the account on the line is the one the stored session names, and a forged, foreign, expired or absent cookie and a body naming an account give none (205.2204ms)
+✔ a body that is not exactly the three string fields is refused with invalid-request and writes nothing (180.9266ms)
+✔ a kind, code or place of another form is refused with invalid-request and writes nothing, at the edges of each length (273.0246ms)
+✔ the guards and the gate stand before the body of a report: a foreign origin, a body of another media or size and missing proxy metadata are refused and write nothing (179.829ms)
+✔ any other method of the report path gets the JSON 404 of the unmatched API, and writes nothing (158.7343ms)
+✔ a policy is refused a browser report limit that is no whole number from one up, which would leave the flood unlimited or the route shut (0.6292ms)
+✔ over its limit the route answers 429 and writes nothing, one LIMITED line at the first refusal of an hour, and refused bodies use none of the limit (184.9329ms)
+✔ the hour is rolling: a report counts until an hour has passed since its own moment (167.232ms)
+✔ from many addresses the server accepts 30 reports in an hour and refuses the 31st (191.4972ms)
+✔ a file whose read breaks off while it is sent is cut, writes one line of the request, and is not handed to Express's own handler (236.8286ms)
+✔ a failed renewal after an answer that has ended writes one line of the session and calls no destroy on the response (279.6221ms)
+ℹ tests 95
+ℹ suites 0
+ℹ pass 95
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 53353.3581
