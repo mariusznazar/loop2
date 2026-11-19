@@ -44,19 +44,33 @@ import loop2_invariant_support as support
 TOKEN_FILE = "src/browser/tokens.css"
 
 BACKGROUNDS = ("page", "panel", "highlight", "rule-winning", "rule-running")
-TEXT_ROLES = ("text-strong", "text", "text-secondary", "text-label", "positive", "warning",
-              "danger", "discovery", "player-change")
+TEXT_ROLES = (
+    "text-strong",
+    "text",
+    "text-secondary",
+    "text-label",
+    "positive",
+    "warning",
+    "danger",
+    "discovery",
+    "player-change",
+)
 TEXT_THRESHOLD = 4.5
 NON_TEXT_THRESHOLD = 3.0
 
 # (foreground, background, least ratio), as the invariant's sentence lists them.
 PAIRS = tuple(
     [(role, background, TEXT_THRESHOLD) for role in TEXT_ROLES for background in BACKGROUNDS]
-    + [(role, background, NON_TEXT_THRESHOLD)
-       for role in ("control-border", "focus") for background in BACKGROUNDS]
-    + [("character", "tile-revealed", NON_TEXT_THRESHOLD),
-       ("character", "tile-hidden", NON_TEXT_THRESHOLD),
-       ("tile-revealed", "tile-hidden", NON_TEXT_THRESHOLD)]
+    + [
+        (role, background, NON_TEXT_THRESHOLD)
+        for role in ("control-border", "focus")
+        for background in BACKGROUNDS
+    ]
+    + [
+        ("character", "tile-revealed", NON_TEXT_THRESHOLD),
+        ("character", "tile-hidden", NON_TEXT_THRESHOLD),
+        ("tile-revealed", "tile-hidden", NON_TEXT_THRESHOLD),
+    ]
 )
 ROLES = tuple(dict.fromkeys(role for pair in PAIRS for role in pair[:2]))
 
@@ -76,16 +90,18 @@ HEX_COLOUR = re.compile(r"#[0-9a-fA-F]{6}")
 def relative_luminance(colour):
     luminance = 0.0
     for weight, start in zip(LUMINANCE_WEIGHTS, (1, 3, 5), strict=True):
-        q = int(colour[start:start + 2], 16) / 255
-        linear = q / LINEAR_DIVISOR if q <= LINEAR_LIMIT else \
-            ((q + GAMMA_OFFSET) / GAMMA_DIVISOR) ** GAMMA
+        q = int(colour[start : start + 2], 16) / 255
+        linear = (
+            q / LINEAR_DIVISOR
+            if q <= LINEAR_LIMIT
+            else ((q + GAMMA_OFFSET) / GAMMA_DIVISOR) ** GAMMA
+        )
         luminance += weight * linear
     return luminance
 
 
 def contrast_ratio(first, second):
-    lighter, darker = sorted((relative_luminance(first), relative_luminance(second)),
-                             reverse=True)
+    lighter, darker = sorted((relative_luminance(first), relative_luminance(second)), reverse=True)
     return (lighter + RATIO_OFFSET) / (darker + RATIO_OFFSET)
 
 
@@ -112,8 +128,10 @@ def findings(text):
         if foreground in values and background in values:
             ratio = contrast_ratio(values[foreground], values[background])
             if ratio < least:
-                found.append(f"--{foreground} {values[foreground]} on --{background} "
-                             f"{values[background]}: {ratio:.3f}:1, less than {least}:1")
+                found.append(
+                    f"--{foreground} {values[foreground]} on --{background} "
+                    f"{values[background]}: {ratio:.3f}:1, less than {least}:1"
+                )
     return found
 
 
@@ -124,12 +142,18 @@ def tokens(values):
 
 # Made-up values whose pairs all pass: #808080 is 5.317:1 on black and 3.949:1 on white.
 PASSING = {
-    "page": "#000000", "panel": "#000000", "highlight": "#000000",
-    "rule-winning": "#000000", "rule-running": "#000000",
+    "page": "#000000",
+    "panel": "#000000",
+    "highlight": "#000000",
+    "rule-winning": "#000000",
+    "rule-running": "#000000",
     **dict.fromkeys(TEXT_ROLES, "#808080"),
     "text-disabled": "#000000",
-    "control-border": "#808080", "focus": "#808080",
-    "tile-hidden": "#000000", "tile-revealed": "#ffffff", "character": "#808080",
+    "control-border": "#808080",
+    "focus": "#808080",
+    "tile-hidden": "#000000",
+    "tile-revealed": "#ffffff",
+    "character": "#808080",
 }
 
 
@@ -141,54 +165,83 @@ def without(role):
     return tokens({r: v for r, v in PASSING.items() if r != role})
 
 
-WHITE_BACKGROUNDS = {"page": "#ffffff", "panel": "#ffffff", "highlight": "#ffffff",
-                     "rule-winning": "#ffffff", "rule-running": "#ffffff",
-                     **dict.fromkeys(TEXT_ROLES, "#000000"), "focus": "#000000"}
+WHITE_BACKGROUNDS = {
+    "page": "#ffffff",
+    "panel": "#ffffff",
+    "highlight": "#ffffff",
+    "rule-winning": "#ffffff",
+    "rule-running": "#ffffff",
+    **dict.fromkeys(TEXT_ROLES, "#000000"),
+    "focus": "#000000",
+}
 
 # Made-up token text, and a part of the finding it must give.
 FLAGGED = {
     "text roles at 3.949:1 on page": (changed({"page": "#ffffff"}), "on --page #ffffff"),
-    "text roles at 3.949:1 on highlight": (changed({"highlight": "#ffffff"}),
-                                           "on --highlight #ffffff"),
-    "text roles at 3.949:1 on rule-winning": (changed({"rule-winning": "#ffffff"}),
-                                              "on --rule-winning #ffffff"),
-    "text roles at 3.949:1 on rule-running": (changed({"rule-running": "#ffffff"}),
-                                              "on --rule-running #ffffff"),
-    "a signal colour at 1:1 on rule-running": (changed({"rule-running": "#808080",
-                                                        "warning": "#808080"}),
-                                               "--warning #808080 on --rule-running"),
-    "control-border at 1:1 on rule-winning": (changed({"rule-winning": "#808080",
-                                                       **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
-                                              "--control-border #808080 on --rule-winning"),
-    "focus at 1:1 on rule-running": (changed({"rule-running": "#808080",
-                                              **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
-                                     "--focus #808080 on --rule-running"),
-    "a role of a new background missing": (without("rule-winning"),
-                                           "--rule-winning is declared 0 times"),
-    "a signal colour at 1:1 on panel": (changed({"player-change": "#000000"}),
-                                        "--player-change #000000 on --panel"),
-    "control-border at 2.615:1": (changed({**WHITE_BACKGROUNDS, "control-border": "#a0a0a0"}),
-                                  "--control-border #a0a0a0 on --page"),
+    "text roles at 3.949:1 on highlight": (
+        changed({"highlight": "#ffffff"}),
+        "on --highlight #ffffff",
+    ),
+    "text roles at 3.949:1 on rule-winning": (
+        changed({"rule-winning": "#ffffff"}),
+        "on --rule-winning #ffffff",
+    ),
+    "text roles at 3.949:1 on rule-running": (
+        changed({"rule-running": "#ffffff"}),
+        "on --rule-running #ffffff",
+    ),
+    "a signal colour at 1:1 on rule-running": (
+        changed({"rule-running": "#808080", "warning": "#808080"}),
+        "--warning #808080 on --rule-running",
+    ),
+    "control-border at 1:1 on rule-winning": (
+        changed({"rule-winning": "#808080", **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
+        "--control-border #808080 on --rule-winning",
+    ),
+    "focus at 1:1 on rule-running": (
+        changed({"rule-running": "#808080", **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
+        "--focus #808080 on --rule-running",
+    ),
+    "a role of a new background missing": (
+        without("rule-winning"),
+        "--rule-winning is declared 0 times",
+    ),
+    "a signal colour at 1:1 on panel": (
+        changed({"player-change": "#000000"}),
+        "--player-change #000000 on --panel",
+    ),
+    "control-border at 2.615:1": (
+        changed({**WHITE_BACKGROUNDS, "control-border": "#a0a0a0"}),
+        "--control-border #a0a0a0 on --page",
+    ),
     "focus at 1:1 on panel": (changed({"focus": "#000000"}), "--focus #000000 on --panel"),
-    "character at 1:1 on tile-hidden": (changed({"character": "#000000"}),
-                                        "--character #000000 on --tile-hidden"),
-    "character at 1:1 on tile-revealed": (changed({"character": "#ffffff"}),
-                                          "--character #ffffff on --tile-revealed"),
+    "character at 1:1 on tile-hidden": (
+        changed({"character": "#000000"}),
+        "--character #000000 on --tile-hidden",
+    ),
+    "character at 1:1 on tile-revealed": (
+        changed({"character": "#ffffff"}),
+        "--character #ffffff on --tile-revealed",
+    ),
     "tile-revealed at 1:1 against tile-hidden": (
         changed({"tile-revealed": "#000000", "character": "#ffffff"}),
-        "--tile-revealed #000000 on --tile-hidden"),
+        "--tile-revealed #000000 on --tile-hidden",
+    ),
     "a role missing": (without("text-label"), "--text-label is declared 0 times"),
-    "a role only inside a comment": (without("warning") + "/* :root { --warning: #808080; } */\n",
-                                     "--warning is declared 0 times"),
-    "a role declared twice": (changed({}) + ":root {\n  --danger: #808080;\n}\n",
-                              "--danger is declared 2 times"),
+    "a role only inside a comment": (
+        without("warning") + "/* :root { --warning: #808080; } */\n",
+        "--warning is declared 0 times",
+    ),
+    "a role declared twice": (
+        changed({}) + ":root {\n  --danger: #808080;\n}\n",
+        "--danger is declared 2 times",
+    ),
     "a role written as #rgb": (changed({"discovery": "#888"}), "--discovery holds '#888'"),
     "a role written as var()": (changed({"text": "var(--other)"}), "--text holds 'var(--other)'"),
 }
 
 
 class DesignTokenContrast(unittest.TestCase):
-
     def test_token_file_keeps_every_pair(self):
         # invariant: design-token-contrast
         # decision: D-48 "In the file of design tokens of the browser view, each role of its styleguide's table of roles is the custom property `--<role>`"
@@ -213,8 +266,10 @@ class DesignTokenContrast(unittest.TestCase):
         for name, (text, expected) in FLAGGED.items():
             with self.subTest(case=name):
                 found = findings(text)
-                self.assertTrue(any(expected in f for f in found),
-                                f"the check does not flag {name} as {expected!r}: {found}")
+                self.assertTrue(
+                    any(expected in f for f in found),
+                    f"the check does not flag {name} as {expected!r}: {found}",
+                )
 
 
 if __name__ == "__main__":

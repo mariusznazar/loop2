@@ -80,8 +80,7 @@ def findings(name, text):
             where = f"{name} <{tag} {attribute_name}>"
             if attribute_name.lower().startswith("on"):
                 found.append(f"{name} holds the attribute {attribute_name} on <{tag}>")
-            if attribute_name.lower() in REFERENCE_ATTRIBUTES and \
-                    not value.strip().startswith("#"):
+            if attribute_name.lower() in REFERENCE_ATTRIBUTES and not value.strip().startswith("#"):
                 found.append(f"{where} refers to {value!r}")
             found += css_findings(where, value)
         for piece in (element.text, element.tail):
@@ -123,25 +122,27 @@ FLAGGED = (
     '<?xml version="1.0"?><?xml-stylesheet href="a.css"?>' + svg('<path d="M0 0"/>'),
     svg('<path d="M0 0">'),
 )
-CLEAN = (
-    '<?xml version="1.0" encoding="UTF-8"?>\n'
-    + svg('<defs><linearGradient id="g"><stop offset="0"/></linearGradient>'
-          '<path id="p" d="M0 0h10v10z"/></defs>'
-          '<style>path { fill: url(#g); }</style>'
-          '<use href="#p"/><use xlink:href="#p"/>'
-          '<path fill="#2b2b2b" style="fill: url( #g ); stroke: none" d="M0 0h512v512H0z"/>'
-          '<text>one</text>',
-          f' xmlns:xlink="{XLINK}"')
+CLEAN = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg(
+    '<defs><linearGradient id="g"><stop offset="0"/></linearGradient>'
+    '<path id="p" d="M0 0h10v10z"/></defs>'
+    "<style>path { fill: url(#g); }</style>"
+    '<use href="#p"/><use xlink:href="#p"/>'
+    '<path fill="#2b2b2b" style="fill: url( #g ); stroke: none" d="M0 0h512v512H0z"/>'
+    "<text>one</text>",
+    f' xmlns:xlink="{XLINK}"',
 )
 
 
 class IconFileContent(unittest.TestCase):
-
     def test_icon_files_hold_nothing_that_runs_or_refers_outside(self):
         # invariant: icon-file-content
-        files = [p for p in support.listed_files()
-                 if p.startswith(ICON_DIRECTORY) and "/" not in p[len(ICON_DIRECTORY):]
-                 and p.lower().endswith(".svg")]
+        files = [
+            p
+            for p in support.listed_files()
+            if p.startswith(ICON_DIRECTORY)
+            and "/" not in p[len(ICON_DIRECTORY) :]
+            and p.lower().endswith(".svg")
+        ]
         self.assertTrue(files, f"the working tree holds no SVG file in {ICON_DIRECTORY}")
         found = []
         for relative in files:

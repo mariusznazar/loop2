@@ -64,8 +64,17 @@ CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 # Further real times of a send, for more layouts in the main scenario.
-MORE = (1760000200000, 1760000300000, 1760000400000, 1760000500000, 1760000600000,
-        1760000700000, 1760000800000, 1760000900000, 1760001000000)
+MORE = (
+    1760000200000,
+    1760000300000,
+    1760000400000,
+    1760000500000,
+    1760000600000,
+    1760000700000,
+    1760000800000,
+    1760000900000,
+    1760001000000,
+)
 RESOURCES = ("stick", "berry", "moss", "fiber")
 
 # The six neighbours of a hexagonal tile in axial coordinates (q, r).
@@ -79,8 +88,13 @@ def rule(condition, action):
 
 
 def program(resource):
-    return program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
-                              rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+    return program_from_rules(
+        [
+            rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
+            rule(ALWAYS, {"kind": "explore"}),
+            rule(ALWAYS, {"kind": "wander"}),
+        ]
+    )
 
 
 # The program in force between spells of going, so that the character roams away from the
@@ -89,7 +103,9 @@ ROAM = program_from_rules([rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kin
 LONG_MINUTES = 240
 SPELL_MINUTES = 40  # the programs alternate: going for 40 game minutes, roaming for 40
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -104,6 +120,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -117,8 +134,12 @@ def drive(prog, minutes, real_ms=T, roam_spells=False):
     """(the map run after the send and after each of `minutes` game minutes, by minute; for each
     minute, whether `prog` was the program in force when it began). With `roam_spells`, `prog`
     and ROAM alternate every SPELL_MINUTES game minutes, starting with ROAM."""
-    steps = [["newGame"], CREATE, ["setProgram", ROAM if roam_spells else prog],
-             ["send", SENT, real_ms]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", ROAM if roam_spells else prog],
+        ["send", SENT, real_ms],
+    ]
     in_force = [not roam_spells]
     for minute in range(1, minutes + 1):
         if roam_spells and minute % SPELL_MINUTES == 0:
@@ -189,25 +210,33 @@ def violations(runs, resource):
             continue
         activity = current["activity"]
         going = activity.get("kind") == "rule" and activity.get("action") == {
-            "kind": "walkTo", "resource": resource}
+            "kind": "walkTo",
+            "resource": resource,
+        }
         if not going:
             continue
         here = key(run["character"]["at"])
         targets = [key(t["at"]) for t in run["tiles"] if holds_some(t, resource)]
         if not targets:
-            found.append(f"minute {minute}: going to {resource} with no revealed tile holding "
-                         "some to move toward")
+            found.append(
+                f"minute {minute}: going to {resource} with no revealed tile holding "
+                "some to move toward"
+            )
             continue
         if here in targets:
-            found.append(f"minute {minute}: going to {resource} while the character stands on "
-                         "a nearest tile, so no move goes toward one")
+            found.append(
+                f"minute {minute}: going to {resource} while the character stands on "
+                "a nearest tile, so no move goes toward one"
+            )
             continue
         counts["went"] += 1
         from_here = walking_minutes(run["tiles"], here)
         nearest = min(from_here[t] for t in targets)
         nearest_tiles = [t for t in targets if from_here[t] == nearest]
-        if any(max(abs(t[0] - here[0]), abs(t[1] - here[1]),
-                   abs(t[0] + t[1] - here[0] - here[1])) >= 2 for t in nearest_tiles):
+        if any(
+            max(abs(t[0] - here[0]), abs(t[1] - here[1]), abs(t[0] + t[1] - here[0] - here[1])) >= 2
+            for t in nearest_tiles
+        ):
             counts["far"] += 1
         step_to = current["stepTo"]
         if step_to is None:
@@ -220,8 +249,10 @@ def violations(runs, resource):
         entering = next(t["stepMinutes"] for t in run["tiles"] if key(t["at"]) == step)
         from_step = walking_minutes(run["tiles"], step)
         if not any(entering + from_step[t] == nearest for t in nearest_tiles):
-            found.append(f"minute {minute}: the move from {here} to {step} is not toward the "
-                         f"nearest tiles {nearest_tiles} holding {resource}")
+            found.append(
+                f"minute {minute}: the move from {here} to {step} is not toward the "
+                f"nearest tiles {nearest_tiles} holding {resource}"
+            )
         end = current["endMinute"]
         if end < len(runs) and key(runs[end]["character"]["at"]) != step:
             found.append(f"minute {end}: the move to {step} ends with the character elsewhere")
@@ -229,15 +260,15 @@ def violations(runs, resource):
 
 
 class WalkTarget(unittest.TestCase):
-
     def test_going_to_each_resource(self):
         # invariant: walk-target
         totals = {"went": 0, "far": 0}
         for resource in RESOURCES:
             for real_ms in (T, T_OTHER) + MORE:
                 with self.subTest(resource=resource, real_ms=real_ms):
-                    runs, _in_force = drive(program(resource), LONG_MINUTES, real_ms,
-                                            roam_spells=True)
+                    runs, _in_force = drive(
+                        program(resource), LONG_MINUTES, real_ms, roam_spells=True
+                    )
                     found, counts = violations(runs, resource)
                     self.assertEqual(found, [])
                     for name, value in counts.items():
@@ -268,11 +299,14 @@ class WalkTarget(unittest.TestCase):
         chosen = None
         for resource in RESOURCES:
             for real_ms in (T, T_OTHER):
-                runs, _in_force = drive(program(resource), LONG_MINUTES, real_ms,
-                                        roam_spells=True)
-                picks = [i for i, r in enumerate(runs) if r["current"]["startMinute"] == i
-                         and r["current"]["activity"].get("action", {}).get("kind") == "walkTo"
-                         and r["current"]["endMinute"] < len(runs)]
+                runs, _in_force = drive(program(resource), LONG_MINUTES, real_ms, roam_spells=True)
+                picks = [
+                    i
+                    for i, r in enumerate(runs)
+                    if r["current"]["startMinute"] == i
+                    and r["current"]["activity"].get("action", {}).get("kind") == "walkTo"
+                    and r["current"]["endMinute"] < len(runs)
+                ]
                 farther = far_pick(runs, resource, picks)
                 if farther:
                     chosen = (resource, runs, picks, farther)
@@ -307,15 +341,15 @@ class WalkTarget(unittest.TestCase):
         planted = tile(nearer[farther[0]], farther[1])
         planted["revealed"] = True
         planted["stock"][resource] = 5
-        self.assertTrue(violations(nearer, resource)[0],
-                        "a move toward a farther tile goes unseen")
+        self.assertTrue(violations(nearer, resource)[0], "a move toward a farther tile goes unseen")
 
         # A move whose end leaves the character elsewhere.
         elsewhere = copying.deepcopy(runs)
         end = elsewhere[index]["current"]["endMinute"]
         elsewhere[end]["character"]["at"] = dict(elsewhere[index]["character"]["at"])
-        self.assertTrue(violations(elsewhere, resource)[0],
-                        "a move ending off its target goes unseen")
+        self.assertTrue(
+            violations(elsewhere, resource)[0], "a move ending off its target goes unseen"
+        )
 
 
 if __name__ == "__main__":

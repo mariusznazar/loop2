@@ -52,8 +52,8 @@ ICON_SUFFIX = ".svg"
 URL_PREFIX = "/icons/"
 EXPECTED_STATUS = 200
 
-BUILD_TIMEOUT = 1200    # seconds for the image build
-LISTEN_WAIT = 60        # seconds for the started container to hold a listening socket
+BUILD_TIMEOUT = 1200  # seconds for the image build
+LISTEN_WAIT = 60  # seconds for the started container to hold a listening socket
 
 # Run inside the container by its own Node.js: the ports of the listening sockets (state 0A) in
 # the container's TCP tables.
@@ -95,11 +95,17 @@ def docker_run(*arguments, timeout=support.COMMAND_TIMEOUT):
 def node_in_container(name, script, *arguments):
     """(exit code, stdout, stderr) of a script run by the container's own Node.js, the script
     given on standard input."""
-    result = subprocess.run([docker(), "exec", "-i", name, "node", "-", *arguments],
-                            input=script.encode("utf-8"), capture_output=True,
-                            timeout=support.COMMAND_TIMEOUT)
-    return (result.returncode, result.stdout.decode("utf-8", "replace"),
-            result.stderr.decode("utf-8", "replace"))
+    result = subprocess.run(
+        [docker(), "exec", "-i", name, "node", "-", *arguments],
+        input=script.encode("utf-8"),
+        capture_output=True,
+        timeout=support.COMMAND_TIMEOUT,
+    )
+    return (
+        result.returncode,
+        result.stdout.decode("utf-8", "replace"),
+        result.stderr.decode("utf-8", "replace"),
+    )
 
 
 def working_tree_icons():
@@ -118,19 +124,28 @@ def working_tree_icons():
 
 
 class ContainerServesIcons(unittest.TestCase):
-
     def test_container_serves_each_icon_with_the_file_bytes(self):
         # invariant: loop2-container-icons
         support.read_required(DOCKERFILE)
         icons = working_tree_icons()
         self.assertTrue(icons, f"{ICONS_DIRECTORY}/ holds no file ending in {ICON_SUFFIX}")
-        docker_gate.require_daemon(self, "whether the loop2 container serves the icons of "
-                                         "assets/icons/ (loop2-container-icons) stays unchecked")
+        docker_gate.require_daemon(
+            self,
+            "whether the loop2 container serves the icons of "
+            "assets/icons/ (loop2-container-icons) stays unchecked",
+        )
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
-        code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",
-                                  "-t", tag, ".", timeout=BUILD_TIMEOUT)
+        code, output = docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=invariant-check",
+            "-t",
+            tag,
+            ".",
+            timeout=BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         start_production_container(self, tag, name)
 
@@ -142,10 +157,16 @@ class ContainerServesIcons(unittest.TestCase):
             if ports or time.monotonic() > deadline:
                 break
             time.sleep(1)
-        self.assertTrue(ports, f"nothing listens in the container within {LISTEN_WAIT} s; "
-                               f"container log:\n{docker_run('logs', name)[1]}")
-        self.assertEqual(len(ports), 1, f"the container listens on several ports, so its "
-                                        f"listening port is not one: {ports}")
+        self.assertTrue(
+            ports,
+            f"nothing listens in the container within {LISTEN_WAIT} s; "
+            f"container log:\n{docker_run('logs', name)[1]}",
+        )
+        self.assertEqual(
+            len(ports),
+            1,
+            f"the container listens on several ports, so its listening port is not one: {ports}",
+        )
 
         paths = {URL_PREFIX + urllib.parse.quote(icon, safe=""): icon for icon in icons}
         code, output, errors = node_in_container(name, HTTP_PROBE, str(ports[0]), *paths)
@@ -154,13 +175,19 @@ class ContainerServesIcons(unittest.TestCase):
         for path, icon in paths.items():
             with self.subTest(icon=icon):
                 answer = answers[path]
-                self.assertEqual(answer["status"], EXPECTED_STATUS,
-                                 f"GET {path} in the container answers {answer['status']}")
+                self.assertEqual(
+                    answer["status"],
+                    EXPECTED_STATUS,
+                    f"GET {path} in the container answers {answer['status']}",
+                )
                 body = base64.b64decode(answer["body"])
-                self.assertEqual(body, icons[icon],
-                                 f"GET {path} in the container answers {len(body)} bytes that "
-                                 f"differ from {ICONS_DIRECTORY}/{icon} ({len(icons[icon])} "
-                                 "bytes) in the working tree")
+                self.assertEqual(
+                    body,
+                    icons[icon],
+                    f"GET {path} in the container answers {len(body)} bytes that "
+                    f"differ from {ICONS_DIRECTORY}/{icon} ({len(icons[icon])} "
+                    "bytes) in the working tree",
+                )
 
 
 if __name__ == "__main__":

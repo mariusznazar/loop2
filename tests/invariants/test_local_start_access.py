@@ -31,9 +31,9 @@ import unittest
 
 import loop2_invariant_support as support
 
-START_TIMEOUT = 60       # seconds for a start to print its address
-STOP_TIMEOUT = 30        # seconds for `npm run local:stop` to end
-CONNECT_TIMEOUT = 3      # seconds for one TCP connection
+START_TIMEOUT = 60  # seconds for a start to print its address
+STOP_TIMEOUT = 30  # seconds for `npm run local:stop` to end
+CONNECT_TIMEOUT = 3  # seconds for one TCP connection
 # The mail sender gives up after 10 seconds (src/server/account-mail.ts, defaultDeadline): a
 # registration below that did not wait for it.
 MAIL_DEADLINE = 10
@@ -97,9 +97,12 @@ createServer((request) => {
 """
 
 # A server that holds its whole process, as a start busy on its way up does.
-BUSY_SERVER = STAND_IN_SERVER + """
+BUSY_SERVER = (
+    STAND_IN_SERVER
+    + """
 Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
 """
+)
 
 # The server of a start whose port another program took between the start's picking it and the
 # server's listening. The program is a process of its own that takes every connection and says
@@ -162,8 +165,10 @@ def tls_context():
 def exchange(port, request, context=None):
     """Send one request of raw bytes over TLS; return (status, lower-cased headers, body)."""
     context = context or tls_context()
-    with socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw, \
-            context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+    with (
+        socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw,
+        context.wrap_socket(raw, server_hostname="127.0.0.1") as secure,
+    ):
         secure.sendall(request)
         answer = b""
         while chunk := secure.recv(65536):
@@ -184,8 +189,10 @@ def answer_until_end(port, request):
     connection ended within HTTP_TIMEOUT, as against a browser left waiting."""
     context = tls_context()
     answer = b""
-    with socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw, \
-            context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+    with (
+        socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw,
+        context.wrap_socket(raw, server_hostname="127.0.0.1") as secure,
+    ):
         secure.sendall(request)
         try:
             while chunk := secure.recv(65536):
@@ -216,7 +223,7 @@ def decoded_chunks(body):
         if length == 0:
             break
         plain += rest[:length]
-        body = rest[length + 2:]
+        body = rest[length + 2 :]
     return plain
 
 
@@ -235,8 +242,13 @@ class Start:
     def __init__(self, copy, command, env=None, wait=True):
         descriptor, self.log_path = tempfile.mkstemp(dir=copy.path)
         with os.fdopen(descriptor, "wb") as log:
-            self.process = support.popen(command, copy.path, env={**os.environ, **(env or {})},
-                                         stdout=log, stderr=subprocess.STDOUT)
+            self.process = support.popen(
+                command,
+                copy.path,
+                env={**os.environ, **(env or {})},
+                stdout=log,
+                stderr=subprocess.STDOUT,
+            )
         if wait:
             self.wait()
 
@@ -249,8 +261,9 @@ class Start:
                 server = SERVER_LINE.search(output)
                 if server is None:
                     self.close()
-                    raise AssertionError("no line `Loop: http://127.0.0.1:<port>` before the "
-                                         f"address:\n{output}")
+                    raise AssertionError(
+                        f"no line `Loop: http://127.0.0.1:<port>` before the address:\n{output}"
+                    )
                 self.port = int(address.group(1))
                 self.server_port = int(server.group(1))
                 return
@@ -267,8 +280,9 @@ class Start:
 
 
 def local_stop(copy):
-    code, output = support.run([support.npm(), "run", "local:stop"], copy.path,
-                               timeout=STOP_TIMEOUT)
+    code, output = support.run(
+        [support.npm(), "run", "local:stop"], copy.path, timeout=STOP_TIMEOUT
+    )
     if code != 0:
         raise AssertionError(f"`npm run local:stop` exited {code}:\n{output}")
     return output
@@ -293,13 +307,18 @@ class Accounts:
 
     def post(self, path, fields):
         body = json.dumps(fields).encode()
-        return exchange(self.port, request_bytes(
-            self.port, "POST", path,
-            [("Origin", f"https://127.0.0.1:{self.port}")], body))
+        return exchange(
+            self.port,
+            request_bytes(
+                self.port, "POST", path, [("Origin", f"https://127.0.0.1:{self.port}")], body
+            ),
+        )
 
     def register(self, email):
-        return self.post("/api/accounts", {"email": email, "password": PASSWORD,
-                                           "passwordConfirmation": PASSWORD})
+        return self.post(
+            "/api/accounts",
+            {"email": email, "password": PASSWORD, "passwordConfirmation": PASSWORD},
+        )
 
     def log_in(self, email):
         return self.post("/api/session", {"email": email, "password": PASSWORD})
@@ -317,8 +336,9 @@ class LocalStartBoundary(unittest.TestCase):
         cls.addClassCleanup(cls.start.close)
 
     def received_headers(self, headers):
-        status, _, body = exchange(self.start.port, request_bytes(
-            self.start.port, "GET", "/probe", headers))
+        status, _, body = exchange(
+            self.start.port, request_bytes(self.start.port, "GET", "/probe", headers)
+        )
         self.assertEqual(status, 200)
         raw = json.loads(body)
         return [(raw[index].lower(), raw[index + 1]) for index in range(0, len(raw), 2)]
@@ -330,9 +350,16 @@ class LocalStartBoundary(unittest.TestCase):
         self.assertIn(("cookie", "kept=1"), received, "precondition: other headers are forwarded")
         self.assertEqual(
             [pair for pair in received if pair[0] == "x-forwarded-proto"],
-            [("x-forwarded-proto", "https")])
-        for name in ("forwarded", "x-forwarded-for", "x-forwarded-host", "x-forwarded-port",
-                     "x-real-ip", "cf-connecting-ip"):
+            [("x-forwarded-proto", "https")],
+        )
+        for name in (
+            "forwarded",
+            "x-forwarded-for",
+            "x-forwarded-host",
+            "x-forwarded-port",
+            "x-real-ip",
+            "cf-connecting-ip",
+        ):
             self.assertNotIn(name, names)
 
     def test_the_proxy_says_https_also_when_no_browser_header_came(self):
@@ -368,8 +395,10 @@ class LocalStart(unittest.TestCase):
         # invariant: local-start-access
         start = self.local()
         for port in (start.port, start.server_port):
-            self.assertTrue(accepts_connections("127.0.0.1", port),
-                            "precondition: the port answers on 127.0.0.1")
+            self.assertTrue(
+                accepts_connections("127.0.0.1", port),
+                "precondition: the port answers on 127.0.0.1",
+            )
             for address in own_addresses():
                 self.assertFalse(accepts_connections(address, port), f"{address}:{port}")
 
@@ -388,9 +417,15 @@ class LocalStart(unittest.TestCase):
 
         cookie = headers["set-cookie"][0].split(";")[0]
         self.assertTrue(cookie.startswith("__Host-"), cookie)
-        status, _, body = exchange(start.port, request_bytes(
-            start.port, "GET", "/api/account",
-            [("Cookie", cookie), ("X-Forwarded-Proto", "http")]))
+        status, _, body = exchange(
+            start.port,
+            request_bytes(
+                start.port,
+                "GET",
+                "/api/account",
+                [("Cookie", cookie), ("X-Forwarded-Proto", "http")],
+            ),
+        )
         self.assertEqual(status, 200, "a browser's own header changes nothing on the real server")
         self.assertEqual(json.loads(body)["email"], "first@example.test")
 
@@ -410,10 +445,16 @@ class LocalStart(unittest.TestCase):
         second = self.local()
         self.assertNotEqual(first.port, second.port)
         self.assertEqual(Accounts(first.port).register("side@example.test")[0], 201)
-        self.assertEqual(Accounts(second.port).register("side@example.test")[0], 201,
-                         "a start's accounts are its own")
-        self.assertEqual(Accounts(first.port).log_in("side@example.test")[0], 200,
-                         "the later start left the earlier one's database alone")
+        self.assertEqual(
+            Accounts(second.port).register("side@example.test")[0],
+            201,
+            "a start's accounts are its own",
+        )
+        self.assertEqual(
+            Accounts(first.port).log_in("side@example.test")[0],
+            200,
+            "the later start left the earlier one's database alone",
+        )
         self.assertEqual(len(directories(self.copy)), 2)
 
     def test_a_start_removes_the_database_of_a_start_that_ended(self):
@@ -421,9 +462,11 @@ class LocalStart(unittest.TestCase):
         first = self.local()
         self.assertEqual(Accounts(first.port).register("gone@example.test")[0], 201)
         earlier = directories(self.copy)
-        self.assertIn("accounts.sqlite-wal", os.listdir(
-            self.copy.file(f".runs/local-start/{earlier[0]}")),
-            "precondition: the database has its side files")
+        self.assertIn(
+            "accounts.sqlite-wal",
+            os.listdir(self.copy.file(f".runs/local-start/{earlier[0]}")),
+            "precondition: the database has its side files",
+        )
         local_stop(self.copy)
         self.assertEqual(directories(self.copy), earlier, "ending a start removes nothing")
 
@@ -439,8 +482,7 @@ class LocalStart(unittest.TestCase):
         earlier = directories(self.copy)
         support.kill_tree(first.process)
         deadline = time.monotonic() + 15
-        while accepts_connections("127.0.0.1", first.server_port) and \
-                time.monotonic() < deadline:
+        while accepts_connections("127.0.0.1", first.server_port) and time.monotonic() < deadline:
             time.sleep(0.2)
         self.assertFalse(accepts_connections("127.0.0.1", first.server_port))
         self.local()
@@ -490,8 +532,9 @@ class LocalStart(unittest.TestCase):
         """`npm run local:stop` with a planted directory that passes for a running start, its
         name sorted first by the zeros before a live number, the order in which the script
         takes the directories; its stop file is the case's."""
-        return support.run([support.npm(), "run", "local:stop"], self.copy.path,
-                           timeout=STOP_TIMEOUT)
+        return support.run(
+            [support.npm(), "run", "local:stop"], self.copy.path, timeout=STOP_TIMEOUT
+        )
 
     def planted_name(self):
         return f"0000{os.getpid()}-{self.silent_port()}-abcdefabcdefabcd"
@@ -514,7 +557,9 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(len(lines), 1, output)
         self.assertEqual(json.loads(lines[0])["code"], "EEXIST")
 
-    def test_stop_with_no_built_game_still_tells_every_start_and_leaves_the_missing_writer_once(self):
+    def test_stop_with_no_built_game_still_tells_every_start_and_leaves_the_missing_writer_once(
+        self,
+    ):
         # decision: D-253 "A script run by hand or by the test gate that touches none of those data meets the rule on the last resort through the default print of Node.js or Python, which writes what nothing handled"
         # A copy that holds no dist/server/log-line.js, with a start of the stand-in
         # server that holds no writer either, and a directory whose stop file cannot be written
@@ -523,8 +568,10 @@ class LocalStart(unittest.TestCase):
         start = Start(self.copy, ["node", "scripts/local-start.mjs"])
         self.starts.append(start)
         os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
-        self.assertFalse(os.path.exists(self.copy.file("dist/server/log-line.js")),
-                         "precondition: no writer of failure lines is built")
+        self.assertFalse(
+            os.path.exists(self.copy.file("dist/server/log-line.js")),
+            "precondition: no writer of failure lines is built",
+        )
         code, output = self.stop_with_a_silent_directory()
         self.assertEqual(code, 1, "the planted start did not stop: " + output)
         self.assertIn("stopped: 1", output)
@@ -572,8 +619,11 @@ class LocalStart(unittest.TestCase):
         local_stop(self.copy)
         ended = directories(self.copy)
 
-        code, output = support.run(["node", "scripts/local-start.mjs", "--database", outside],
-                                   self.copy.path, timeout=STOP_TIMEOUT)
+        code, output = support.run(
+            ["node", "scripts/local-start.mjs", "--database", outside],
+            self.copy.path,
+            timeout=STOP_TIMEOUT,
+        )
         self.assertEqual(code, 2, output)
         self.assertEqual(directories(self.copy), ended, "a refused start removes nothing")
         for path in (outside, foreign):
@@ -583,8 +633,11 @@ class LocalStart(unittest.TestCase):
     def test_a_server_that_cannot_start_ends_the_start_with_no_address(self):
         code, output = self.copy.npm("run", "build")
         self.assertEqual(code, 0, output)
-        process = support.popen(["node", "scripts/local-start.mjs"], self.copy.path,
-                                env={**os.environ, "NODE_ENV": "production"})
+        process = support.popen(
+            ["node", "scripts/local-start.mjs"],
+            self.copy.path,
+            env={**os.environ, "NODE_ENV": "production"},
+        )
         try:
             output, _ = process.communicate(timeout=START_TIMEOUT)
         finally:
@@ -593,18 +646,25 @@ class LocalStart(unittest.TestCase):
         self.assertNotIn(b"Local game:", output)
         self.assertEqual(output.count(b'"failure":'), 1, "the server's own line, and no second")
 
-    def test_a_port_another_program_took_ends_the_start_with_the_servers_failure_and_no_address(self):
+    def test_a_port_another_program_took_ends_the_start_with_the_servers_failure_and_no_address(
+        self,
+    ):
         # decision: D-431 "When another program holds the port the local start picked for its server by the time the server listens, the start ends as it ends when its server cannot start"
         # decision: D-431 "The start announces no address, passes no request of a browser to that program and tries no other port"
         code, output = self.copy.npm("run", "build")
         self.assertEqual(code, 0, output)
-        os.rename(self.copy.file("dist/server/main.js"), self.copy.file("dist/server/main-built.js"))
+        os.rename(
+            self.copy.file("dist/server/main.js"), self.copy.file("dist/server/main-built.js")
+        )
         write_stand_in(self.copy, PORT_TAKEN_SERVER)
         start = Start(self.copy, ["node", "scripts/local-start.mjs"], wait=False)
         self.starts.append(start)
         deadline = time.monotonic() + START_TIMEOUT
-        while (start.process.poll() is None and "Local game:" not in start.output()
-               and time.monotonic() < deadline):
+        while (
+            start.process.poll() is None
+            and "Local game:" not in start.output()
+            and time.monotonic() < deadline
+        ):
             time.sleep(0.1)
         output = start.output()
         self.assertNotIn("Local game:", output, "the address of a game that is not there")
@@ -616,8 +676,10 @@ class LocalStart(unittest.TestCase):
         self.assertNotRegex(output, SERVER_LINE, "no server was ready")
         [name] = directories(self.copy)
         proxy_port = int(name.split("-")[1])
-        self.assertFalse(accepts_connections("127.0.0.1", proxy_port),
-                         "the proxy of the start stands no longer, so no request reaches that program")
+        self.assertFalse(
+            accepts_connections("127.0.0.1", proxy_port),
+            "the proxy of the start stands no longer, so no request reaches that program",
+        )
 
     def test_a_request_the_server_drops_gets_502_and_leaves_one_line_with_its_cause(self):
         code, output = self.copy.npm("run", "build")
@@ -679,9 +741,12 @@ class LocalStart(unittest.TestCase):
         start = Start(self.copy, ["node", "scripts/local-start.mjs"])
         self.starts.append(start)
         context = tls_context()
-        with socket.create_connection(("127.0.0.1", start.port),
-                                      timeout=support.HTTP_TIMEOUT) as raw, \
-                context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+        with (
+            socket.create_connection(
+                ("127.0.0.1", start.port), timeout=support.HTTP_TIMEOUT
+            ) as raw,
+            context.wrap_socket(raw, server_hostname="127.0.0.1") as secure,
+        ):
             secure.sendall(request_bytes(start.port, "GET", "/hold"))
             self.assertTrue(wait_until(lambda: "held /hold" in start.output()), start.output())
         self.assertTrue(wait_until(lambda: "closed /hold" in start.output()), start.output())

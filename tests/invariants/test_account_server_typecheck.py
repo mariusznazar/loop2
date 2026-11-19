@@ -62,7 +62,7 @@ import loop2_invariant_support as support
 # The made-up input: a value of the wrong type under TypeScript's strict checking.
 DELIBERATE_TYPE_ERROR = (
     "\n// Appended by the invariant check account-server-typecheck.\n"
-    "const invariantCheckDeliberateTypeError: number = \"not a number\";\n"
+    'const invariantCheckDeliberateTypeError: number = "not a number";\n'
     "void invariantCheckDeliberateTypeError;\n"
 )
 SERVER_SOURCE = "src/server"
@@ -72,8 +72,7 @@ DOCKERFILE = "Dockerfile"
 COMPOSE_FILE = "compose.yaml"
 WORKFLOW = ".github/workflows/deploy.yml"
 DEPLOY_SCRIPT = "deploy/loop2-deploy"
-ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
-               "deploy/cloudflared.Dockerfile")
+ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT, "deploy/cloudflared.Dockerfile")
 # Files of `deploy/` that start no image: the backup script is read by a test of its own below, the
 # failure watcher's by tests/deploy/test_loop2_watch.py, which lists every Docker command it holds.
 BACKUP_SCRIPT = "deploy/loop2-backup"
@@ -81,21 +80,39 @@ LOGROTATE_CONFIG = "deploy/loop2-app.logrotate"
 WATCH_SCRIPT = "deploy/loop2-watch"
 SCHEDULED_CHECK_WORKFLOW = ".github/workflows/check-address.yml"
 TESTS_WORKFLOW = ".github/workflows/tests.yml"
-NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG, WATCH_SCRIPT,
-              "deploy/loop2-watch.cron", SCHEDULED_CHECK_WORKFLOW, TESTS_WORKFLOW)
+NOT_ROUTES = (
+    BACKUP_SCRIPT,
+    "deploy/loop2-backup.cron",
+    LOGROTATE_CONFIG,
+    WATCH_SCRIPT,
+    "deploy/loop2-watch.cron",
+    SCHEDULED_CHECK_WORKFLOW,
+    TESTS_WORKFLOW,
+)
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
 # Shell operators after which a RUN goes on although a command before them failed.
 UNSAFE_OPERATORS = re.compile(r";|\|\||(?<![&|])\|(?!\|)|(?<![&>])&(?![&>])")
 # Docker commands that bring an image in other than by building it.
-IMAGE_IMPORTS = (("pull",), ("load",), ("import",), ("tag",), ("image", "pull"),
-                 ("image", "load"), ("image", "import"), ("image", "tag"))
+IMAGE_IMPORTS = (
+    ("pull",),
+    ("load",),
+    ("import",),
+    ("tag",),
+    ("image", "pull"),
+    ("image", "load"),
+    ("image", "import"),
+    ("image", "tag"),
+)
 
 
 def append_type_error(copy):
-    targets = [p for p in support.files_under(SERVER_SOURCE, copy.path)
-               if p.endswith((".ts", ".mts", ".cts")) and not p.endswith(".d.ts")]
+    targets = [
+        p
+        for p in support.files_under(SERVER_SOURCE, copy.path)
+        if p.endswith((".ts", ".mts", ".cts")) and not p.endswith(".d.ts")
+    ]
     if not targets:
         raise AssertionError(f"{SERVER_SOURCE} holds no TypeScript file")
     for relative in targets:
@@ -105,7 +122,6 @@ def append_type_error(copy):
 
 
 class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
-
     def setUp(self):
         self.copies = []
 
@@ -126,24 +142,29 @@ class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
         broken = self.fresh_copy()
         targets = append_type_error(broken)
         code, output = broken.npm("run", "typecheck")
-        self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {targets} hold a "
-                                     f"type error:\n{output}")
+        self.assertNotEqual(
+            code, 0, f"`npm run typecheck` exits 0 although {targets} hold a type error:\n{output}"
+        )
 
     def test_build_refuses_server_type_error(self):
         # invariant: account-server-typecheck
         clean = self.fresh_copy()
         code, output = clean.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
-        self.assertTrue(os.path.isfile(clean.file(SERVER_ENTRY_BUILT)),
-                        f"`npm run build` on the unchanged tree leaves no {SERVER_ENTRY_BUILT}")
+        self.assertTrue(
+            os.path.isfile(clean.file(SERVER_ENTRY_BUILT)),
+            f"`npm run build` on the unchanged tree leaves no {SERVER_ENTRY_BUILT}",
+        )
         broken = self.fresh_copy()
         targets = append_type_error(broken)
         code, output = broken.npm("run", "build")
-        self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {targets} hold a "
-                                     f"type error:\n{output}")
-        self.assertFalse(os.path.exists(broken.file(SERVER_ENTRY_BUILT)),
-                         f"`npm run build` with a server type error still leaves "
-                         f"{SERVER_ENTRY_BUILT} to start")
+        self.assertNotEqual(
+            code, 0, f"`npm run build` exits 0 although {targets} hold a type error:\n{output}"
+        )
+        self.assertFalse(
+            os.path.exists(broken.file(SERVER_ENTRY_BUILT)),
+            f"`npm run build` with a server type error still leaves {SERVER_ENTRY_BUILT} to start",
+        )
 
 
 def typecheck_runs(stage):
@@ -164,8 +185,11 @@ def typecheck_runs(stage):
         if "typecheck" not in text:
             continue
         segments = [" ".join(part.split()) for part in text.split("&&")]
-        if heredoc is None and not UNSAFE_OPERATORS.search(text) and \
-                " ".join(TYPECHECK_COMMAND) in segments:
+        if (
+            heredoc is None
+            and not UNSAFE_OPERATORS.search(text)
+            and " ".join(TYPECHECK_COMMAND) in segments
+        ):
             accepted.append(arguments)
         else:
             refused.append(arguments)
@@ -220,7 +244,6 @@ ORDER_EXPECTED = [
 
 
 class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
-
     def test_shell_reader_reads_past_heredoc_look_alikes(self):
         # A check of the shell reader; it cites no invariant.
         self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
@@ -235,24 +258,34 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
             refused += [f"{stage!r}: RUN {r}" for r in bad]
             if accepted:
                 checking.add(stage.index)
-        self.assertEqual(refused, [], f"{DOCKERFILE} runs the type check in a form whose failure "
-                                      "need not stop the build")
-        self.assertTrue(checking, f"no stage the last stage of {DOCKERFILE} is built from runs "
-                                  f"`{' '.join(TYPECHECK_COMMAND)}`")
+        self.assertEqual(
+            refused,
+            [],
+            f"{DOCKERFILE} runs the type check in a form whose failure need not stop the build",
+        )
+        self.assertTrue(
+            checking,
+            f"no stage the last stage of {DOCKERFILE} is built from runs "
+            f"`{' '.join(TYPECHECK_COMMAND)}`",
+        )
         sources = []
         for keyword, arguments, _heredoc in runtime.instructions:
             name = takes_built_output(arguments) if keyword in ("COPY", "ADD") else None
             source = support._stage_reference(stages, name, runtime.index) if name else None
             if source is not None:
                 sources.append(source)
-        self.assertTrue(sources, f"the last stage of {DOCKERFILE} takes no `{BUILT_OUTPUT}/` from "
-                                 "an earlier stage")
+        self.assertTrue(
+            sources,
+            f"the last stage of {DOCKERFILE} takes no `{BUILT_OUTPUT}/` from an earlier stage",
+        )
         for source in sources:
             with self.subTest(source=repr(source)):
                 upstream = [source] + support.stage_dependencies(stages, source)
-                self.assertTrue(any(stage.index in checking for stage in upstream),
-                                f"{source!r}, from which the last stage takes `{BUILT_OUTPUT}/`, "
-                                "is built without a stage that runs the type check")
+                self.assertTrue(
+                    any(stage.index in checking for stage in upstream),
+                    f"{source!r}, from which the last stage takes `{BUILT_OUTPUT}/`, "
+                    "is built without a stage that runs the type check",
+                )
 
     def test_compose_builds_the_image_and_names_none_to_pull(self):
         # invariant: account-server-typecheck
@@ -266,10 +299,12 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
                 build = support.block_text(keys["build"])
                 files = re.findall(r"^\s*dockerfile\s*:\s*[\"']?([^\"'\s]+)", build, re.MULTILINE)
                 expected = DOCKERFILE if name == "app" else "deploy/cloudflared.Dockerfile"
-                self.assertEqual(files, [expected],
-                                f"service `{name}` is built from {files}")
-                self.assertNotRegex(build, re.compile(r"^\s*dockerfile_inline\s*:", re.MULTILINE),
-                                    f"service `{name}` is built from an inline Dockerfile")
+                self.assertEqual(files, [expected], f"service `{name}` is built from {files}")
+                self.assertNotRegex(
+                    build,
+                    re.compile(r"^\s*dockerfile_inline\s*:", re.MULTILINE),
+                    f"service `{name}` is built from an inline Dockerfile",
+                )
 
     def test_deploy_script_builds_before_starting_without_building(self):
         # invariant: account-server-typecheck
@@ -277,7 +312,7 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
         builds, ups, problems = [], [], []
         for number, words in support.docker_commands(text):
             plain = tuple(w for w in words if not w.startswith("-"))
-            if any(plain[:len(i)] == i for i in IMAGE_IMPORTS):
+            if any(plain[: len(i)] == i for i in IMAGE_IMPORTS):
                 problems.append(f"line {number}: {' '.join(words)}")
             if words[:1] != ["compose"]:
                 continue
@@ -300,8 +335,11 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
                 if subcommand in ("build", "up"):
                     run.append((subcommand, number))
         self.assertTrue(run, f"{DEPLOY_SCRIPT} runs no `docker compose ... build` or `up`")
-        self.assertEqual(run[0][0], "build", f"{DEPLOY_SCRIPT} starts the service before it "
-                                             f"builds it, in the order it runs: {run}")
+        self.assertEqual(
+            run[0][0],
+            "build",
+            f"{DEPLOY_SCRIPT} starts the service before it builds it, in the order it runs: {run}",
+        )
         self.assertIn("up", [s for s, _n in run], f"{DEPLOY_SCRIPT} never runs its `up`: {run}")
 
     def test_shell_reader_follows_the_order_of_the_calls(self):
@@ -310,10 +348,17 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_no_other_deployment_route(self):
         # invariant: account-server-typecheck
-        others = [p for p in support.deployment_route_files()
-                  if p not in ROUTE_FILES and p not in NOT_ROUTES]
-        self.assertEqual(others, [], "deployment files exist that this check does not read; "
-                                     "extend it to show their route runs the type check first")
+        others = [
+            p
+            for p in support.deployment_route_files()
+            if p not in ROUTE_FILES and p not in NOT_ROUTES
+        ]
+        self.assertEqual(
+            others,
+            [],
+            "deployment files exist that this check does not read; "
+            "extend it to show their route runs the type check first",
+        )
 
     def test_backup_script_starts_no_image(self):
         # invariant: account-server-typecheck
@@ -321,8 +366,12 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
         commands = support.docker_commands(support.read_required(BACKUP_SCRIPT))
         self.assertTrue(commands, f"{BACKUP_SCRIPT} holds no Docker command to read")
         others = [(number, words) for number, words in commands if words[:1] != ["exec"]]
-        self.assertEqual(others, [], f"{BACKUP_SCRIPT} runs Docker other than by `docker exec`, "
-                                     "so it may be a route of its own")
+        self.assertEqual(
+            others,
+            [],
+            f"{BACKUP_SCRIPT} runs Docker other than by `docker exec`, "
+            "so it may be a route of its own",
+        )
 
 
 if __name__ == "__main__":

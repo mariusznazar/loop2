@@ -78,12 +78,26 @@ T_OTHER = 1760000123456
 MINUTES = 240
 EVERY = 20
 ALWAYS = {"kind": "always"}
-ROAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
-                          {"condition": ALWAYS, "action": {"kind": "wander"}}])
+ROAM = program_from_rules(
+    [
+        {"condition": ALWAYS, "action": {"kind": "explore"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
 # The attributes a browser shows for an element or reads out as its name or description.
-SHOWN_ATTRIBUTES = ("title", "aria-label", "aria-description", "aria-roledescription",
-                    "aria-valuetext", "aria-valuenow", "aria-placeholder", "alt", "placeholder",
-                    "value", "label")
+SHOWN_ATTRIBUTES = (
+    "title",
+    "aria-label",
+    "aria-description",
+    "aria-roledescription",
+    "aria-valuetext",
+    "aria-valuenow",
+    "aria-placeholder",
+    "alt",
+    "placeholder",
+    "value",
+    "label",
+)
 POINTING_ATTRIBUTES = ("aria-labelledby", "aria-describedby")
 DIGITS = re.compile(r"\d+")
 
@@ -105,8 +119,7 @@ function drawnWithoutReport(markup) {
 """
 
 DRIVER = (
-    KNOWING_GAME_JS
-    + "import { readFileSync, writeFileSync } from 'node:fs';\n"
+    KNOWING_GAME_JS + "import { readFileSync, writeFileSync } from 'node:fs';\n"
     "import { pathToFileURL } from 'node:url';\n"
     + REACT_JS
     + r"""
@@ -157,15 +170,25 @@ writeFileSync(outPath, JSON.stringify(drawnWithoutReport(renderToStaticMarkup(ma
 """
 )
 MADE_UP_EXPECTED = {
-    "tag": "svg", "attrs": {"class": "drawing", "viewbox": "0 0 8 8"},
+    "tag": "svg",
+    "attrs": {"class": "drawing", "viewbox": "0 0 8 8"},
     "children": [
-        {"tag": "g", "attrs": {"data-tile": "1,2", "class": "tile hovered"},
-         "children": [
-             {"tag": "polygon", "attrs": {"points": "0,0 4,4"}, "children": []},
-             {"tag": "image", "attrs": {"href": "/icons/stick.svg", "x": "1", "width": "6"},
-              "children": []},
-             {"tag": "title", "attrs": {}, "children": ['a < b & "c"']}]},
-        {"tag": "text", "attrs": {"aria-label": "x"}, "children": ["onetwo"]}]}
+        {
+            "tag": "g",
+            "attrs": {"data-tile": "1,2", "class": "tile hovered"},
+            "children": [
+                {"tag": "polygon", "attrs": {"points": "0,0 4,4"}, "children": []},
+                {
+                    "tag": "image",
+                    "attrs": {"href": "/icons/stick.svg", "x": "1", "width": "6"},
+                    "children": [],
+                },
+                {"tag": "title", "attrs": {}, "children": ['a < b & "c"']},
+            ],
+        },
+        {"tag": "text", "attrs": {"aria-label": "x"}, "children": ["onetwo"]},
+    ],
+}
 
 
 class MarkupReader(HTMLParser):
@@ -179,8 +202,11 @@ class MarkupReader(HTMLParser):
         self.open = [self.root]
 
     def handle_starttag(self, tag, attrs):
-        element = {"tag": tag, "attrs": {k: "" if v is None else v for k, v in attrs},
-                   "children": []}
+        element = {
+            "tag": tag,
+            "attrs": {k: "" if v is None else v for k, v in attrs},
+            "children": [],
+        }
         self.open[-1]["children"].append(element)
         self.open.append(element)
 
@@ -190,8 +216,9 @@ class MarkupReader(HTMLParser):
 
     def handle_endtag(self, tag):
         if len(self.open) == 1 or self.open[-1]["tag"] != tag:
-            raise AssertionError(f"the markup closes <{tag}> where "
-                                 f"<{self.open[-1]['tag']}> is open")
+            raise AssertionError(
+                f"the markup closes <{tag}> where <{self.open[-1]['tag']}> is open"
+            )
         self.open.pop()
 
     def handle_data(self, data):
@@ -256,16 +283,24 @@ def built(module):
 
 
 def drawings(real_ms):
-    steps = [["newGame"], CREATE, ["setProgram", ROAM], ["draw", "before a send"],
-             ["send", SENT, real_ms], ["draw", "minute 0"]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", ROAM],
+        ["draw", "before a send"],
+        ["send", SENT, real_ms],
+        ["draw", "minute 0"],
+    ]
     for minute in range(1, MINUTES + 1):
         steps.append(["advanceMinutes", 1])
         if minute % EVERY == 0:
             steps.append(["draw", f"minute {minute}"])
     steps += [["zeroStock", "stick"], ["draw", f"minute {MINUTES}, stock of stick set to 0"]]
-    records = run_driver(DRIVER, [built(GAME_MODULE), built(DRAWING_MODULE),
-                                  built(TILE_LIST_MODULE)],
-                         [("steps.json", json.dumps(steps))])
+    records = run_driver(
+        DRIVER,
+        [built(GAME_MODULE), built(DRAWING_MODULE), built(TILE_LIST_MODULE)],
+        [("steps.json", json.dumps(steps))],
+    )
     return [dict(r, tree=read_tree(r["markup"])) for r in records]
 
 
@@ -302,8 +337,9 @@ def shown(drawing):
         for name in POINTING_ATTRIBUTES:
             for ref in node["attrs"].get(name, "").split():
                 target = by_id.get(ref)
-                found.append((f"{name} of {here} -> #{ref}",
-                              None if target is None else text_of(target)))
+                found.append(
+                    (f"{name} of {here} -> #{ref}", None if target is None else text_of(target))
+                )
         for child in node["children"]:
             visit(child, here)
 
@@ -321,8 +357,10 @@ def findings(record):
     found = []
     for where, text in shown(record["tree"]):
         if text is None:
-            found.append(f"{record['label']}: {where} points at an element outside the "
-                         "drawing, whose text this check does not read")
+            found.append(
+                f"{record['label']}: {where} points at an element outside the "
+                "drawing, whose text this check does not read"
+            )
             continue
         hits = [n for n in DIGITS.findall(text) if str(int(n)) in numbers]
         if hits:
@@ -331,7 +369,6 @@ def findings(record):
 
 
 class TerrainDrawingNumbers(unittest.TestCase):
-
     def test_the_drawing_shows_no_stock(self):
         # invariant: terrain-drawing-numbers
         drawing_module = built(DRAWING_MODULE)
@@ -339,29 +376,36 @@ class TerrainDrawingNumbers(unittest.TestCase):
         for current, _dirs, names in os.walk(support.built_copy().file(VIEW_DIRECTORY)):
             for name in names:
                 path = os.path.join(current, name)
-                if name.endswith(".js") and \
-                        os.path.abspath(path) != os.path.abspath(drawing_module):
+                if name.endswith(".js") and os.path.abspath(path) != os.path.abspath(
+                    drawing_module
+                ):
                     text = support.read_text(path)
-                    if re.search(r"from\s*['\"][./]*(?:view/)?terrain-drawing\.js['\"]", text) \
-                            and re.search(r"(?:jsxs?|jsxDEV|createElement)\(\s*TerrainDrawing\b",
-                                          text):
+                    if re.search(
+                        r"from\s*['\"][./]*(?:view/)?terrain-drawing\.js['\"]", text
+                    ) and re.search(r"(?:jsxs?|jsxDEV|createElement)\(\s*TerrainDrawing\b", text):
                         callers.append(name)
-        self.assertTrue(callers, "no module of the game imports terrain-drawing.js and renders "
-                                 "TerrainDrawing, so the drawing is not the game's")
+        self.assertTrue(
+            callers,
+            "no module of the game imports terrain-drawing.js and renders "
+            "TerrainDrawing, so the drawing is not the game's",
+        )
         found = []
         for real_ms in (T, T_OTHER):
             records = drawings(real_ms)
             for record in records:
                 found += findings(record)
                 if record["tiles"]:
-                    self.assertGreaterEqual(len(elements(record["tree"])) - 1,
-                                            len(record["tiles"]),
-                                            f"{record['label']}: the drawing holds fewer "
-                                            "elements than the map run has tiles, so it is "
-                                            "not drawn")
-            self.assertTrue("set to 0" in records[-1]["label"]
-                            and "0" in stock_numbers(records[-1]["tiles"]),
-                            "the state with a stock of 0 did not come about")
+                    self.assertGreaterEqual(
+                        len(elements(record["tree"])) - 1,
+                        len(record["tiles"]),
+                        f"{record['label']}: the drawing holds fewer "
+                        "elements than the map run has tiles, so it is "
+                        "not drawn",
+                    )
+            self.assertTrue(
+                "set to 0" in records[-1]["label"] and "0" in stock_numbers(records[-1]["tiles"]),
+                "the state with a stock of 0 did not come about",
+            )
         self.assertEqual(found, [])
 
     def test_control_the_markup_reads_back_as_the_tree_it_means(self):
@@ -370,10 +414,17 @@ class TerrainDrawingNumbers(unittest.TestCase):
         self.assertEqual(read_tree(markup), MADE_UP_EXPECTED)
         # React closes an element of no children of SVG with its end tag, an empty element of
         # HTML such as `img` with `/>`; both read as an element with no children.
-        self.assertEqual(read_tree('<svg><image x="1"/><text>12</text></svg>'),
-                         {"tag": "svg", "attrs": {}, "children": [
-                             {"tag": "image", "attrs": {"x": "1"}, "children": []},
-                             {"tag": "text", "attrs": {}, "children": ["12"]}]})
+        self.assertEqual(
+            read_tree('<svg><image x="1"/><text>12</text></svg>'),
+            {
+                "tag": "svg",
+                "attrs": {},
+                "children": [
+                    {"tag": "image", "attrs": {"x": "1"}, "children": []},
+                    {"tag": "text", "attrs": {}, "children": ["12"]},
+                ],
+            },
+        )
         for broken in ("<svg><g></svg>", "<svg><g>", "<svg></svg><svg></svg>", "12"):
             with self.subTest(markup=broken), self.assertRaises(AssertionError):
                 read_tree(broken)
@@ -388,17 +439,22 @@ class TerrainDrawingNumbers(unittest.TestCase):
         def drawing(*drawn):
             return {"label": "made up", "tiles": tiles, "tree": element("svg", {}, list(drawn))}
 
-        clean = drawing(element("g", {"data-tile": "1,2", "transform": "translate(12 12)"},
-                                [element("polygon", {"points": "0,0 12,12"}),
-                                 element("text", {}, ["(1, 2)"])]))
+        clean = drawing(
+            element(
+                "g",
+                {"data-tile": "1,2", "transform": "translate(12 12)"},
+                [element("polygon", {"points": "0,0 12,12"}), element("text", {}, ["(1, 2)"])],
+            )
+        )
         self.assertEqual(findings(clean), [])
         broken = {
             "a text element": drawing(element("text", {}, ["patyk: 12"])),
             "a title element": drawing(element("g", {}, [element("title", {}, ["jagoda 0"])])),
             "a title attribute": drawing(element("g", {"title": "12 szt."})),
             "an aria-label": drawing(element("g", {"aria-label": "patyk 12"})),
-            "an aria-labelledby pointing outside the drawing":
-                drawing(element("g", {"aria-labelledby": "tile-line"})),
+            "an aria-labelledby pointing outside the drawing": drawing(
+                element("g", {"aria-labelledby": "tile-line"})
+            ),
         }
         for label, record in broken.items():
             with self.subTest(case=label):

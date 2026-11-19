@@ -43,16 +43,36 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import deploy_script_support as support  # noqa: E402
 
 # Docker calls that only read, by their first word or, for a management command, their first two.
-READ_ONLY_DOCKER = {("inspect",), ("info",), ("ps",), ("images",), ("logs",), ("version",),
-                    ("image", "ls"), ("image", "inspect"),
-                    ("container", "ls"), ("container", "inspect"), ("container", "logs")}
+READ_ONLY_DOCKER = {
+    ("inspect",),
+    ("info",),
+    ("ps",),
+    ("images",),
+    ("logs",),
+    ("version",),
+    ("image", "ls"),
+    ("image", "inspect"),
+    ("container", "ls"),
+    ("container", "inspect"),
+    ("container", "logs"),
+}
 # Subcommands of `docker compose` that only read.
 READ_ONLY_COMPOSE = {"ps", "logs", "config", "images", "ls", "version"}
 # The subcommand a stop at the build stage may also have called.
 BUILD = "build"
 # Options of `docker compose` before its subcommand that take the next word as their value.
-COMPOSE_OPTIONS_WITH_VALUE = {"--project-name", "-p", "--file", "-f", "--project-directory",
-                              "--env-file", "--profile", "--ansi", "--progress", "--parallel"}
+COMPOSE_OPTIONS_WITH_VALUE = {
+    "--project-name",
+    "-p",
+    "--file",
+    "-f",
+    "--project-directory",
+    "--env-file",
+    "--profile",
+    "--ansi",
+    "--progress",
+    "--parallel",
+}
 
 # The revision label of the loop2 container running before every deployment here.
 RUNNING_REVISION = "fedcba9876543210fedcba9876543210fedcba98"
@@ -87,7 +107,6 @@ def off_the_list(calls, build_started):
 
 
 class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -109,13 +128,18 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
     def test_stop_at_the_input(self):
         # invariant: loop2-deploy-keeps-running
         result = self.run_with_passing_answers(
-            ssh_original_command="0123456789ABCDEF0123456789ABCDEF01234567")
+            ssh_original_command="0123456789ABCDEF0123456789ABCDEF01234567"
+        )
         self.assert_stopped_and_kept(result, 2)
 
     def test_stop_at_the_commit(self):
         # invariant: loop2-deploy-keeps-running
-        feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first,
-                                      files={"compose.yaml": b"name: loop2\n"})
+        feature = self.fixture.commit(
+            "feature",
+            "only on feature",
+            parent=self.fixture.first,
+            files={"compose.yaml": b"name: loop2\n"},
+        )
         result = self.run_with_passing_answers(ssh_original_command=feature)
         self.assert_stopped_and_kept(result, 3)
 
@@ -166,10 +190,13 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
     def test_stop_at_the_build_or_its_type_check(self):
         # The type check runs inside the image build, so its failure is the build's failure.
         # invariant: loop2-deploy-keeps-running
-        self.fixture.answer("docker", exit_code=1,
-                            stdout="#12 ERROR: process \"npm run typecheck\" did not complete "
-                                   "successfully: exit code: 2\n",
-                            match="compose * build *")
+        self.fixture.answer(
+            "docker",
+            exit_code=1,
+            stdout='#12 ERROR: process "npm run typecheck" did not complete '
+            "successfully: exit code: 2\n",
+            match="compose * build *",
+        )
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 7, build_started=True)
 
     def test_stop_at_a_commit_without_compose_file(self):
@@ -195,17 +222,48 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
         read_only = [
             ["inspect", "--type", "container", "--format", "{{ .State.Status }}", "loop2"],
             ["info", "--format", "{{.DockerRootDir}}"],
-            ["compose", "--project-name", "loop2", "-f", "/srv/loop2/compose.yaml", "logs",
-             "--tail", "50", "app"],
+            [
+                "compose",
+                "--project-name",
+                "loop2",
+                "-f",
+                "/srv/loop2/compose.yaml",
+                "logs",
+                "--tail",
+                "50",
+                "app",
+            ],
             ["compose", "-p", "loop2", "ps"],
         ]
-        build = ["compose", "--project-name", "loop2", "-f", "/srv/loop2/compose.yaml", "build",
-                 "app"]
+        build = [
+            "compose",
+            "--project-name",
+            "loop2",
+            "-f",
+            "/srv/loop2/compose.yaml",
+            "build",
+            "app",
+        ]
         mutating = [
-            ["compose", "--project-name", "loop2", "-f", "/srv/loop2/compose.yaml", "up", "-d",
-             "app"],
-            ["compose", "--project-name", "loop2", "-f", "/srv/loop2/compose.yaml", "scale",
-             "app=0"],
+            [
+                "compose",
+                "--project-name",
+                "loop2",
+                "-f",
+                "/srv/loop2/compose.yaml",
+                "up",
+                "-d",
+                "app",
+            ],
+            [
+                "compose",
+                "--project-name",
+                "loop2",
+                "-f",
+                "/srv/loop2/compose.yaml",
+                "scale",
+                "app=0",
+            ],
             ["compose", "-p", "loop2", "stop", "app"],
             ["compose", "-p", "loop2", "down"],
             ["compose", "--project-name", "loop2", "--dry-run", "rm", "-f", "app"],
@@ -214,8 +272,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
             ["update", "--memory", "6m", "loop2"],
             ["container", "kill", "loop2"],
             ["container", "kill", "loop2-cloudflared"],
-            ["image", "prune", "--force", "--filter",
-             "label=org.opencontainers.image.title=loop2"],
+            ["image", "prune", "--force", "--filter", "label=org.opencontainers.image.title=loop2"],
             ["compose"],
         ]
         self.assertEqual(off_the_list(read_only, build_started=False), [])

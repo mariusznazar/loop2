@@ -60,11 +60,18 @@ def rule(condition, action):
 
 
 P_WANDER = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
-P_GO = program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                           rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+P_GO = program_from_rules(
+    [
+        rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+        rule(ALWAYS, {"kind": "explore"}),
+        rule(ALWAYS, {"kind": "wander"}),
+    ]
+)
 LONG_MINUTES = 240
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -79,6 +86,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -90,8 +98,9 @@ def node():
 
 def drive(program, minutes, real_ms=T):
     """The map run after the send and after each of `minutes` game minutes, by minute."""
-    steps = ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
-             + [["advanceMinutes", 1]] * minutes)
+    steps = [["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]] + [
+        ["advanceMinutes", 1]
+    ] * minutes
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
         raise AssertionError(f"`npm run build` placed no {GAME_MODULE}")
@@ -141,18 +150,19 @@ def violations(runs):
         step = offset(start_at, end_at)
         offsets.append(step)
         if step not in NEIGHBOUR_OFFSETS:
-            found.append(f"the move from minute {minute} goes from {start_at} to {end_at}, "
-                         "which is no neighbour")
+            found.append(
+                f"the move from minute {minute} goes from {start_at} to {end_at}, "
+                "which is no neighbour"
+            )
     for previous, run in zip(runs, runs[1:]):
-        if run["character"]["at"] != previous["character"]["at"] and \
-                run["minute"] not in move_ends:
-            found.append(f"minute {run['minute']}: the character's tile changes outside the end "
-                         "of a move")
+        if run["character"]["at"] != previous["character"]["at"] and run["minute"] not in move_ends:
+            found.append(
+                f"minute {run['minute']}: the character's tile changes outside the end of a move"
+            )
     return found, offsets
 
 
 class MoveReach(unittest.TestCase):
-
     def test_every_move_ends_on_a_neighbour(self):
         # invariant: move-reach
         # decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
@@ -180,14 +190,20 @@ class MoveReach(unittest.TestCase):
             return changed
 
         two_away = {"q": start_at["q"] + 2, "r": start_at["r"]}
-        self.assertTrue(any(t["at"] == two_away for t in start["tiles"]),
-                        "the control's tile two away is not on the map")
+        self.assertTrue(
+            any(t["at"] == two_away for t in start["tiles"]),
+            "the control's tile two away is not on the map",
+        )
         self.assertTrue(violations(moved_to(two_away))[0], "a move of two tiles goes unseen")
-        self.assertTrue(violations(moved_to(start_at))[0], "a move ending where it started "
-                                                           "goes unseen")
-        self.assertTrue(violations(moved_to({"q": 40, "r": 40}))[0],
-                        "a move ending off the map goes unseen")
-        explore = copying.deepcopy(drive(program_from_rules([rule(ALWAYS, {"kind": "explore"})]), 20))
+        self.assertTrue(
+            violations(moved_to(start_at))[0], "a move ending where it started goes unseen"
+        )
+        self.assertTrue(
+            violations(moved_to({"q": 40, "r": 40}))[0], "a move ending off the map goes unseen"
+        )
+        explore = copying.deepcopy(
+            drive(program_from_rules([rule(ALWAYS, {"kind": "explore"})]), 20)
+        )
         explore[10]["character"]["at"] = {"q": 2, "r": 1}
         self.assertTrue(violations(explore)[0], "a change of tile outside a move goes unseen")
 

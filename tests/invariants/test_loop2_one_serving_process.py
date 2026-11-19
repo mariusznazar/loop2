@@ -54,7 +54,7 @@ UNMATCHED_API_PATHS = (
 )
 BROWSER_ACCEPT = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
 DEBUG_ENV = {"DEBUG": "router", "DEBUG_COLORS": "no"}
-DISPATCH_WAIT = 5   # seconds for the debug line of a request to reach the log
+DISPATCH_WAIT = 5  # seconds for the debug line of a request to reach the log
 
 
 # --- processes and listeners ---------------------------------------------------------------
@@ -64,21 +64,28 @@ def _processes():
     """{pid: (parent pid, creation time in ms or None, name)} of every process on the machine."""
     table = {}
     if os.name == "nt":
-        script = ("Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2} {3}' -f "
-                  "$_.ProcessId, $_.ParentProcessId, "
-                  "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }")
-        result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                                capture_output=True, timeout=60)
+        script = (
+            "Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2} {3}' -f "
+            "$_.ProcessId, $_.ParentProcessId, "
+            "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True,
+            timeout=60,
+        )
         if result.returncode != 0 or result.stderr.strip():
-            raise AssertionError("Get-CimInstance failed: "
-                                 + result.stderr.decode("utf-8", "replace"))
+            raise AssertionError(
+                "Get-CimInstance failed: " + result.stderr.decode("utf-8", "replace")
+            )
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             parts = line.split(" ", 3)
             if len(parts) == 4 and all(p.lstrip("-").isdigit() for p in parts[:3]):
                 table[int(parts[0])] = (int(parts[1]), int(parts[2]), parts[3].strip())
     else:
-        result = subprocess.run(["ps", "-A", "-o", "pid=,ppid=,comm="],
-                                capture_output=True, timeout=60)
+        result = subprocess.run(
+            ["ps", "-A", "-o", "pid=,ppid=,comm="], capture_output=True, timeout=60
+        )
         if result.returncode != 0:
             raise AssertionError("ps failed: " + result.stderr.decode("utf-8", "replace"))
         for line in result.stdout.decode("utf-8", "replace").splitlines():
@@ -110,21 +117,30 @@ def tcp_listeners():
     """[(pid, local address, port)] of every listening TCP socket on the machine."""
     listeners = []
     if os.name == "nt":
-        script = ("Get-NetTCPConnection -State Listen | ForEach-Object { '{0} {1} {2}' -f "
-                  "$_.OwningProcess, $_.LocalAddress, $_.LocalPort }")
-        result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                                capture_output=True, timeout=60)
+        script = (
+            "Get-NetTCPConnection -State Listen | ForEach-Object { '{0} {1} {2}' -f "
+            "$_.OwningProcess, $_.LocalAddress, $_.LocalPort }"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True,
+            timeout=60,
+        )
         if result.returncode != 0:
-            raise AssertionError("Get-NetTCPConnection failed: "
-                                 + result.stderr.decode("utf-8", "replace"))
+            raise AssertionError(
+                "Get-NetTCPConnection failed: " + result.stderr.decode("utf-8", "replace")
+            )
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             parts = line.split()
             if len(parts) == 3 and parts[0].isdigit() and parts[2].isdigit():
                 listeners.append((int(parts[0]), parts[1], int(parts[2])))
     else:
         try:
-            result = subprocess.run(["lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pn"],
-                                    capture_output=True, timeout=60)
+            result = subprocess.run(
+                ["lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pn"],
+                capture_output=True,
+                timeout=60,
+            )
         except FileNotFoundError:
             raise AssertionError("lsof is not on PATH; the listening sockets cannot be read")
         if result.returncode != 0:
@@ -152,11 +168,10 @@ def built_game_files(copy):
 
 
 def url_path(relative):
-    return "/" + relative[len(BUILT_GAME) + 1:]
+    return "/" + relative[len(BUILT_GAME) + 1 :]
 
 
 class OneExpressProcessServesGameAndApi(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.copy = support.built_copy()
@@ -166,8 +181,9 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
         # Every request the check makes, answered before the processes are read.
         cls.answers = {}
         for relative in cls.game:
-            cls.answers[url_path(relative)] = cls.server.request("GET", url_path(relative),
-                                                                 BROWSER_ACCEPT)
+            cls.answers[url_path(relative)] = cls.server.request(
+                "GET", url_path(relative), BROWSER_ACCEPT
+            )
         cls.answers["/"] = cls.server.request("GET", "/", BROWSER_ACCEPT)
         for path in UNMATCHED_API_PATHS:
             cls.answers[path] = cls.server.request("GET", path, BROWSER_ACCEPT)
@@ -187,14 +203,16 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
         self.assertTrue(scripts, f"`npm run build` places no JavaScript file in {BUILT_GAME}")
         status, _headers, body = self.answers["/"]
         self.assertEqual(status, 200, "GET / does not return 200")
-        self.assertIn(body, list(html.values()),
-                      f"GET / returns none of the HTML files {sorted(html)}")
+        self.assertIn(
+            body, list(html.values()), f"GET / returns none of the HTML files {sorted(html)}"
+        )
         for relative, data in sorted(self.game.items()):
             with self.subTest(file=relative):
                 status, _headers, body = self.answers[url_path(relative)]
                 self.assertEqual(status, 200, f"GET {url_path(relative)} returns {status}")
-                self.assertEqual(body, data, f"GET {url_path(relative)} does not return the "
-                                             f"bytes of {relative}")
+                self.assertEqual(
+                    body, data, f"GET {url_path(relative)} does not return the bytes of {relative}"
+                )
 
     def test_api_requests_are_answered(self):
         # invariant: loop2-one-serving-process
@@ -206,19 +224,40 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
     def test_one_process_of_the_started_tree_listens_and_starts_nothing(self):
         # invariant: loop2-one-serving-process
         tree = set(self.tree_and_root)
-        on_port = sorted({pid for pid, _address, port in self.listeners
-                          if pid in tree and port == self.server.port})
-        self.assertEqual(len(on_port), 1,
-                         f"processes of the tree `npm start` started that listen on port "
-                         f"{self.server.port}: {self.describe(on_port)}")
-        elsewhere = sorted({(pid, address, port) for pid, address, port in self.listeners
-                            if pid in tree and port != self.server.port})
-        self.assertEqual(elsewhere, [], "processes of the started tree listen on other ports, "
-                                        "where a second serving process could stand")
+        on_port = sorted(
+            {
+                pid
+                for pid, _address, port in self.listeners
+                if pid in tree and port == self.server.port
+            }
+        )
+        self.assertEqual(
+            len(on_port),
+            1,
+            f"processes of the tree `npm start` started that listen on port "
+            f"{self.server.port}: {self.describe(on_port)}",
+        )
+        elsewhere = sorted(
+            {
+                (pid, address, port)
+                for pid, address, port in self.listeners
+                if pid in tree and port != self.server.port
+            }
+        )
+        self.assertEqual(
+            elsewhere,
+            [],
+            "processes of the started tree listen on other ports, "
+            "where a second serving process could stand",
+        )
         listener = on_port[0]
         below = descendants(self.table, listener, self.server.process.loop2_started)
-        self.assertEqual(below, [], f"the listening process {self.describe([listener])} has "
-                                    f"started processes of its own: {self.describe(below)}")
+        self.assertEqual(
+            below,
+            [],
+            f"the listening process {self.describe([listener])} has "
+            f"started processes of its own: {self.describe(below)}",
+        )
 
     def test_installed_express_is_major_5(self):
         # invariant: loop2-one-serving-process
@@ -227,21 +266,28 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
             version = json.load(handle).get("version", "")
         found = re.match(r"v?(\d+)", version)
         self.assertIsNotNone(found, f"node_modules/express/package.json version {version!r}")
-        self.assertEqual(int(found.group(1)), EXPECTED_EXPRESS_MAJOR,
-                         f"the started copy runs express {version!r}")
+        self.assertEqual(
+            int(found.group(1)),
+            EXPECTED_EXPRESS_MAJOR,
+            f"the started copy runs express {version!r}",
+        )
 
     def test_express_5_router_dispatches_game_and_api_requests(self):
         # invariant: loop2-one-serving-process
         for path in sorted(self.answers):
             with self.subTest(path=path):
-                line = re.compile(r"(?:^|\s)router dispatching GET " + re.escape(path)
-                                  + r"(?:\s|$)", re.MULTILINE)
+                line = re.compile(
+                    r"(?:^|\s)router dispatching GET " + re.escape(path) + r"(?:\s|$)", re.MULTILINE
+                )
                 deadline = time.monotonic() + DISPATCH_WAIT
                 while not line.search(self.server.stderr()) and time.monotonic() < deadline:
                     time.sleep(0.1)
-                self.assertRegex(self.server.stderr(), line,
-                                 f"Express 5's router logged no dispatch of GET {path}; server "
-                                 f"output:\n{self.server.output()}")
+                self.assertRegex(
+                    self.server.stderr(),
+                    line,
+                    f"Express 5's router logged no dispatch of GET {path}; server "
+                    f"output:\n{self.server.output()}",
+                )
 
 
 if __name__ == "__main__":

@@ -25,7 +25,6 @@ RUNNING_LABEL = "fedcba9876543210fedcba9876543210fedcba98"
 
 
 class DeployScriptTestCase(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -42,32 +41,47 @@ class DeployScriptTestCase(unittest.TestCase):
         self.assertEqual(self.fixture.git("-C", checkout, "rev-parse", "HEAD"), sha)
         branch = self.fixture.git("-C", checkout, "rev-parse", "--abbrev-ref", "HEAD")
         self.assertEqual(branch, "HEAD", "the checkout is not detached")
-        self.assertEqual(self.fixture.git("-C", checkout, "status", "--porcelain", "--ignored",
-                                          "--untracked-files=all"), "")
+        self.assertEqual(
+            self.fixture.git(
+                "-C", checkout, "status", "--porcelain", "--ignored", "--untracked-files=all"
+            ),
+            "",
+        )
 
     def assert_refused(self, result, code):
         self.assertEqual(result.code, code, result)
-        self.assertEqual(result.calls["docker"], [["inspect", "--type", "container", "--format",
-                                                   '{{ index .Config.Labels '
-                                                   '"org.opencontainers.image.revision" }}',
-                                                   "loop2"]], result)
+        self.assertEqual(
+            result.calls["docker"],
+            [
+                [
+                    "inspect",
+                    "--type",
+                    "container",
+                    "--format",
+                    '{{ index .Config.Labels "org.opencontainers.image.revision" }}',
+                    "loop2",
+                ]
+            ],
+            result,
+        )
         self.assertEqual(result.calls["curl"] + result.calls["df"], [], result)
 
 
 class Lock(DeployScriptTestCase):
-
     def test_lock_taken_with_the_scripts_wait_before_git_or_docker(self):
         result = self.forced(self.fixture.first)
-        self.assertEqual(result.calls["flock"], [["--exclusive", "--wait", LOCK_WAIT_SECONDS,
-                                                  "9"]], result)
+        self.assertEqual(
+            result.calls["flock"], [["--exclusive", "--wait", LOCK_WAIT_SECONDS, "9"]], result
+        )
         self.assert_checked_out(result, self.fixture.first)
 
     def test_held_lock_exits_4(self):
         self.fixture.answer("flock", exit_code=1)
         result = self.forced(self.fixture.first)
         self.assertEqual(result.code, 4, result)
-        self.assertEqual(result.calls["flock"], [["--exclusive", "--wait", LOCK_WAIT_SECONDS,
-                                                  "9"]], result)
+        self.assertEqual(
+            result.calls["flock"], [["--exclusive", "--wait", LOCK_WAIT_SECONDS, "9"]], result
+        )
         self.assertEqual(result.calls["docker"], [], result)
         self.assertEqual(result.git_trace, "", result.git_trace)
         self.assertIn("lock", self.fixture.log_text().splitlines()[-1])
@@ -83,7 +97,6 @@ class Lock(DeployScriptTestCase):
 
 
 class StartLine(DeployScriptTestCase):
-
     def start_line(self):
         return [line for line in self.fixture.log_text().splitlines() if "start:" in line][-1]
 
@@ -111,7 +124,6 @@ class StartLine(DeployScriptTestCase):
 
 
 class Fetch(DeployScriptTestCase):
-
     def setUp(self):
         super().setUp()
         # After the clone: main moves on, a new branch appears, a branch the clone knows is gone.
@@ -149,12 +161,13 @@ class Fetch(DeployScriptTestCase):
                 self.assert_refused(result, 6)
                 self.assertNotIn("github-unreachable", result.output)
                 self.assertIn("fetch", self.fixture.log_text().splitlines()[-1])
-                self.assertEqual(self.fixture.git("-C", self.fixture.checkout, "rev-parse",
-                                                  "HEAD"), self.fixture.first)
+                self.assertEqual(
+                    self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
+                    self.fixture.first,
+                )
 
 
 class AcceptedCommit(DeployScriptTestCase):
-
     def test_earlier_ancestor_of_main_accepted_on_both_paths(self):
         # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit"
         second = self.fixture.commit("main", "second")
@@ -168,10 +181,12 @@ class AcceptedCommit(DeployScriptTestCase):
         self.assert_checked_out(self.forced(tip), tip)
 
     def test_commit_on_no_branch_refused_on_both_paths(self):
-        absent = self.fixture.make_commit(self.fixture.github, "on no branch, only on GitHub",
-                                          parent=self.fixture.first)
-        present = self.fixture.make_commit(self.fixture.checkout, "on no branch, in the clone",
-                                           parent=self.fixture.first)
+        absent = self.fixture.make_commit(
+            self.fixture.github, "on no branch, only on GitHub", parent=self.fixture.first
+        )
+        present = self.fixture.make_commit(
+            self.fixture.checkout, "on no branch, in the clone", parent=self.fixture.first
+        )
         self.assertTrue(self.fixture.clone_has_object(present))
         for run in (self.forced, self.human):
             for sha in (absent, present):
@@ -179,8 +194,10 @@ class AcceptedCommit(DeployScriptTestCase):
                     result = run(sha)
                     self.assert_refused(result, 3)
                     self.assertIn("commit", self.fixture.log_text().splitlines()[-1])
-                    self.assertEqual(self.fixture.git("-C", self.fixture.checkout, "rev-parse",
-                                                      "HEAD"), self.fixture.first)
+                    self.assertEqual(
+                        self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
+                        self.fixture.first,
+                    )
 
     def test_object_that_is_no_commit_refused(self):
         tree = self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD^{tree}")
@@ -200,8 +217,11 @@ class AcceptedCommit(DeployScriptTestCase):
         self.assertIn("refs/remotes/origin/feature", self.fixture.clone_refs())
         result = self.forced(feature)
         self.assert_refused(result, 3)
-        self.assertEqual(self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
-                         feature, "the refused run moved the checkout")
+        self.assertEqual(
+            self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
+            feature,
+            "the refused run moved the checkout",
+        )
 
     def test_commit_only_on_another_branch_accepted_on_human_path(self):
         # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository"
@@ -210,7 +230,6 @@ class AcceptedCommit(DeployScriptTestCase):
 
 
 class Checkout(DeployScriptTestCase):
-
     def test_checkout_detached_at_the_commit_and_clean(self):
         tip = self.fixture.commit("main", "tip")
         checkout = self.fixture.checkout
@@ -220,8 +239,9 @@ class Checkout(DeployScriptTestCase):
             os.makedirs(os.path.dirname(os.path.join(checkout, name)), exist_ok=True)
             with open(os.path.join(checkout, name), "w", encoding="utf-8") as handle:
                 handle.write("left behind\n")
-        self.assertNotEqual(self.fixture.git("-C", checkout, "status", "--porcelain",
-                                             "--ignored"), "")
+        self.assertNotEqual(
+            self.fixture.git("-C", checkout, "status", "--porcelain", "--ignored"), ""
+        )
         result = self.forced(tip)
         self.assert_checked_out(result, tip)
         self.assertFalse(os.path.exists(os.path.join(checkout, "new-dir")))

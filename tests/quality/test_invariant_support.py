@@ -15,16 +15,21 @@ import loop2_invariant_support as support
 
 # Stand-ins for `npm start`, run by Python: each reads the address the server is given from
 # LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT and answers as the built server does.
-READY_CHILD = ("import os,sys,time; "
-               "print('Loop: http://' + os.environ['LOOP2_LISTEN_HOST'] + ':' "
-               "+ os.environ['LOOP2_LISTEN_PORT']); "
-               "print('child err', file=sys.stderr); time.sleep(60)")
-TAKEN_CHILD = ("import os,sys; "
-               "a = os.environ['LOOP2_LISTEN_HOST'] + ':' + os.environ['LOOP2_LISTEN_PORT']; "
-               "print('Loop could not start on ' + a + ': EADDRINUSE listen EADDRINUSE: '"
-               " 'address already in use ' + a, file=sys.stderr); sys.exit(1)")
-FAILING_CHILD = "import sys; print('Loop could not start: something else', file=sys.stderr); " \
-                "sys.exit(1)"
+READY_CHILD = (
+    "import os,sys,time; "
+    "print('Loop: http://' + os.environ['LOOP2_LISTEN_HOST'] + ':' "
+    "+ os.environ['LOOP2_LISTEN_PORT']); "
+    "print('child err', file=sys.stderr); time.sleep(60)"
+)
+TAKEN_CHILD = (
+    "import os,sys; "
+    "a = os.environ['LOOP2_LISTEN_HOST'] + ':' + os.environ['LOOP2_LISTEN_PORT']; "
+    "print('Loop could not start on ' + a + ': EADDRINUSE listen EADDRINUSE: '"
+    " 'address already in use ' + a, file=sys.stderr); sys.exit(1)"
+)
+FAILING_CHILD = (
+    "import sys; print('Loop could not start: something else', file=sys.stderr); sys.exit(1)"
+)
 
 
 class ServerResources(unittest.TestCase):
@@ -88,7 +93,8 @@ class ServerResources(unittest.TestCase):
         server._logs = ExitStack()
         self.addCleanup(server._logs.close)
         server._stdout = server._logs.enter_context(
-            self.open_log(os.path.join(server.log_dir, "stdout.txt"), "wb"))
+            self.open_log(os.path.join(server.log_dir, "stdout.txt"), "wb")
+        )
         server.stop()
         self.assert_released()
 
@@ -126,39 +132,47 @@ class ServerResources(unittest.TestCase):
     def test_start_gives_the_server_a_free_port_on_127_0_0_1(self):
         # decision: D-49 "Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port"
         start_child, environments = self.start_children(READY_CHILD)
-        with patch.object(support, "popen", start_child), \
-                patch.object(support, "free_port", return_value=50123):
+        with (
+            patch.object(support, "popen", start_child),
+            patch.object(support, "free_port", return_value=50123),
+        ):
             server = support.Server(self.copy)
         self.addCleanup(server.stop)
         self.assertEqual(server.port, 50123)
-        self.assertEqual([(e.get("LOOP2_LISTEN_HOST"), e.get("LOOP2_LISTEN_PORT"))
-                          for e in environments], [("127.0.0.1", "50123")])
+        self.assertEqual(
+            [(e.get("LOOP2_LISTEN_HOST"), e.get("LOOP2_LISTEN_PORT")) for e in environments],
+            [("127.0.0.1", "50123")],
+        )
 
     def test_start_whose_port_was_taken_runs_once_more_on_another_port(self):
         # decision: D-49 "Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port"
         start_child, environments = self.start_children(TAKEN_CHILD, READY_CHILD)
-        with patch.object(support, "popen", start_child), \
-                patch.object(support, "free_port", side_effect=[50001, 50002]):
+        with (
+            patch.object(support, "popen", start_child),
+            patch.object(support, "free_port", side_effect=[50001, 50002]),
+        ):
             server = support.Server(self.copy)
         self.addCleanup(server.stop)
         self.assertEqual(server.port, 50002)
-        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments],
-                         ["50001", "50002"])
+        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments], ["50001", "50002"])
 
     def test_port_taken_twice_fails_without_a_third_start(self):
         start_child, environments = self.start_children(TAKEN_CHILD, TAKEN_CHILD, READY_CHILD)
-        with patch.object(support, "popen", start_child), \
-                patch.object(support, "free_port", side_effect=[50001, 50002, 50003]):
+        with (
+            patch.object(support, "popen", start_child),
+            patch.object(support, "free_port", side_effect=[50001, 50002, 50003]),
+        ):
             with self.assertRaisesRegex(AssertionError, "taken in each of 2 attempts"):
                 support.Server(self.copy)
-        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments],
-                         ["50001", "50002"])
+        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments], ["50001", "50002"])
         self.assert_released()
 
     def test_exit_for_another_reason_is_not_started_again(self):
         start_child, environments = self.start_children(FAILING_CHILD, READY_CHILD)
-        with patch.object(support, "popen", start_child), \
-                patch.object(support, "free_port", side_effect=[50001, 50002]):
+        with (
+            patch.object(support, "popen", start_child),
+            patch.object(support, "free_port", side_effect=[50001, 50002]),
+        ):
             with self.assertRaisesRegex(AssertionError, "exited 1 before reporting ready"):
                 support.Server(self.copy)
         self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments], ["50001"])
@@ -187,41 +201,49 @@ class ServerResources(unittest.TestCase):
 
 class WindowsProcessCleanup(unittest.TestCase):
     def test_exit_zero_descendant_query_error_rejects_partial_stdout(self):
-        answer = subprocess.CompletedProcess(["powershell"], 0,
-                                             b"42 7 1700000000000\r\n", b"query failed")
+        answer = subprocess.CompletedProcess(
+            ["powershell"], 0, b"42 7 1700000000000\r\n", b"query failed"
+        )
         with patch.object(support.subprocess, "run", return_value=answer):
             with self.assertRaisesRegex(AssertionError, "query failed"):
                 support._windows_descendants(7, 1700000000)
 
     def test_failed_descendant_query_rejects_partial_stdout(self):
-        answer = subprocess.CompletedProcess(["powershell"], 1,
-                                             b"42 7 1700000000000\r\n", b"query failed")
+        answer = subprocess.CompletedProcess(
+            ["powershell"], 1, b"42 7 1700000000000\r\n", b"query failed"
+        )
         with patch.object(support.subprocess, "run", return_value=answer):
             with self.assertRaisesRegex(AssertionError, "query failed"):
                 support._windows_descendants(7, 1700000000)
 
     def test_successful_descendant_query_keeps_age_and_parent_filter(self):
-        answer = subprocess.CompletedProcess(["powershell"], 0,
-                                             b"42 7 1700000000000\n"
-                                             b"43 42 1700000000000\n"
-                                             b"44 7 1600000000000\n"
-                                             b"45 45 1700000000000\n", b"")
+        answer = subprocess.CompletedProcess(
+            ["powershell"],
+            0,
+            b"42 7 1700000000000\n43 42 1700000000000\n44 7 1600000000000\n45 45 1700000000000\n",
+            b"",
+        )
         with patch.object(support.subprocess, "run", return_value=answer):
             self.assertEqual(support._windows_descendants(7, 1700000000), [42, 43])
 
     @unittest.skipUnless(os.name == "nt", "native Windows taskkill integration")
     def test_failed_descendant_query_still_terminates_known_main_process(self):
         real_run = subprocess.run
-        sentinel = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"],
-                                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                    stderr=subprocess.DEVNULL)
+        sentinel = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(60)"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         self.addCleanup(ServerResources.reap, sentinel)
-        for failure in (None,
-                        subprocess.TimeoutExpired(["powershell"], 60)):
+        for failure in (None, subprocess.TimeoutExpired(["powershell"], 60)):
             with self.subTest(failure=type(failure).__name__):
-                process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"],
-                                           stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                           stderr=subprocess.DEVNULL)
+                process = subprocess.Popen(
+                    [sys.executable, "-c", "import time; time.sleep(60)"],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
                 self.addCleanup(ServerResources.reap, process)
 
                 def query_fails(command, failure=failure, process=process, **options):
@@ -233,7 +255,9 @@ class WindowsProcessCleanup(unittest.TestCase):
                     return real_run(command, **options)
 
                 with patch.object(support.subprocess, "run", side_effect=query_fails):
-                    with self.assertRaises(type(failure) if failure is not None else AssertionError):
+                    with self.assertRaises(
+                        type(failure) if failure is not None else AssertionError
+                    ):
                         support.kill_tree(process)
                 self.assertIsNotNone(process.poll(), "main process survived failed observation")
                 self.assertIsNone(sentinel.poll(), "partial failed output killed unrelated process")

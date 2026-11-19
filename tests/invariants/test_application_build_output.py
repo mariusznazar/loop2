@@ -69,8 +69,8 @@ BROWSER_PROBE = (
     "  readonly root: HTMLElement | null;\n"
     "}\n"
     "export function invariantCheckBrowserProbe(): InvariantCheckBrowserProbeShape {\n"
-    "  return { marker: \"application-build-output-browser-probe\", "
-    "root: document.querySelector<HTMLElement>(\"main\") };\n"
+    '  return { marker: "application-build-output-browser-probe", '
+    'root: document.querySelector<HTMLElement>("main") };\n'
     "}\n"
 )
 BROWSER_MARKER = "application-build-output-browser-probe"
@@ -85,7 +85,7 @@ TSX_MARKER = "application-build-output-tsx-probe"
 # Made-up `.tsx` source with a type error: a string where a number is declared.
 TSX_TYPE_ERROR = (
     "// Written by the invariant check application-build-output.\n"
-    "export const invariantCheckTsxTypeError: number = \"not a number\";\n"
+    'export const invariantCheckTsxTypeError: number = "not a number";\n'
 )
 
 # Made-up source that compiles under the server configuration only: Node's `process`.
@@ -96,7 +96,7 @@ SERVER_PROBE = (
     "  readonly variable: string | undefined;\n"
     "}\n"
     "export function invariantCheckServerProbe(): InvariantCheckServerProbeShape {\n"
-    "  return { marker: \"application-build-output-server-probe\", "
+    '  return { marker: "application-build-output-server-probe", '
     "variable: process.env.LOOP2_INVARIANT_CHECK };\n"
     "}\n"
 )
@@ -106,10 +106,10 @@ SERVER_MARKER = "application-build-output-server-probe"
 # packages in turn, so the file the page loads can hold them only if the build joined them.
 BUNDLE_PROBE = (
     "// Written by the invariant check application-build-output.\n"
-    "import { createElement } from \"react\";\n"
-    "import { createRoot } from \"react-dom/client\";\n"
-    "createRoot(document.createElement(\"main\")).render(\n"
-    "  createElement(\"p\", null, \"application-build-output-bundle-probe\"),\n"
+    'import { createElement } from "react";\n'
+    'import { createRoot } from "react-dom/client";\n'
+    'createRoot(document.createElement("main")).render(\n'
+    '  createElement("p", null, "application-build-output-bundle-probe"),\n'
     ");\n"
 )
 BUNDLE_MARKER = "application-build-output-bundle-probe"
@@ -133,10 +133,11 @@ TYPESCRIPT_ONLY = "interface InvariantCheck"
 # probe file placed into the configuration's source, and TypeScript's report of each name that
 # configuration does not give it.
 CROSSED_FAILURE = {
-    "browser": ("src/browser/invariant_check_build_probe.ts",
-                ("Cannot find name 'process'",)),
-    "server": ("src/server/invariant_check_build_probe.ts",
-               ("Cannot find name 'HTMLElement'", "Cannot find name 'document'")),
+    "browser": ("src/browser/invariant_check_build_probe.ts", ("Cannot find name 'process'",)),
+    "server": (
+        "src/server/invariant_check_build_probe.ts",
+        ("Cannot find name 'HTMLElement'", "Cannot find name 'document'"),
+    ),
 }
 ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -160,12 +161,11 @@ def write_probe(copy, source_directory, text, extension=".ts"):
 
 
 def emitted_path(relative_source, source_directory, output_directory):
-    stem, extension = os.path.splitext(relative_source[len(source_directory) + 1:])
+    stem, extension = os.path.splitext(relative_source[len(source_directory) + 1 :])
     return f"{output_directory}/{stem}{EMITTED_EXTENSION[extension]}"
 
 
 class BuildCompilesBothConfigurations(unittest.TestCase):
-
     def setUp(self):
         self.copies = []
 
@@ -176,11 +176,14 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
     def fresh_copy(self):
         copy = support.TreeCopy()
         self.copies.append(copy)
-        self.assertFalse(os.path.exists(copy.file("dist")),
-                         "the fresh copy already holds dist, so its output would prove nothing")
+        self.assertFalse(
+            os.path.exists(copy.file("dist")),
+            "the fresh copy already holds dist, so its output would prove nothing",
+        )
         for _name, config_file, _source, _output in CONFIGURATIONS:
-            self.assertTrue(os.path.isfile(copy.file(config_file)),
-                            f"the working tree holds no {config_file}")
+            self.assertTrue(
+                os.path.isfile(copy.file(config_file)), f"the working tree holds no {config_file}"
+            )
         return copy
 
     def assert_javascript(self, copy, relative):
@@ -196,9 +199,13 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
         for name, _config, source, out in CONFIGURATIONS:
-            sources = [p for p in support.files_under(source, copy.path)
-                       if p.endswith(tuple(EMITTED_EXTENSION)) and not p.endswith(".d.ts")
-                       and not p.startswith(LEFT_OUT[name])]
+            sources = [
+                p
+                for p in support.files_under(source, copy.path)
+                if p.endswith(tuple(EMITTED_EXTENSION))
+                and not p.endswith(".d.ts")
+                and not p.startswith(LEFT_OUT[name])
+            ]
             with self.subTest(configuration=name):
                 self.assertTrue(sources, f"{source} holds no TypeScript file")
                 for relative in sources:
@@ -212,8 +219,12 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         for name, (text, _marker) in PROBES.items():
             write_probe(copy, configuration(name)[2], text)
         code, output = copy.npm("run", "build")
-        self.assertEqual(code, 0, f"`npm run build` fails with the probes, which each compile "
-                                  f"under their own configuration:\n{output}")
+        self.assertEqual(
+            code,
+            0,
+            f"`npm run build` fails with the probes, which each compile "
+            f"under their own configuration:\n{output}",
+        )
         for name, (_text, marker) in PROBES.items():
             _name, _config, source, out = configuration(name)
             emitted = f"{out}/{PROBE_NAME}.js"
@@ -221,8 +232,11 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                 self.assert_javascript(copy, emitted)
                 text = support.read_text(copy.file(emitted))
                 self.assertIn(marker, text, f"{emitted} does not hold the probe's marker")
-                self.assertNotIn(TYPESCRIPT_ONLY, text,
-                                 f"{emitted} still holds TypeScript, so it was not compiled")
+                self.assertNotIn(
+                    TYPESCRIPT_ONLY,
+                    text,
+                    f"{emitted} still holds TypeScript, so it was not compiled",
+                )
 
     def test_build_compiles_made_up_tsx_source_into_javascript(self):
         # invariant: application-build-output
@@ -230,8 +244,12 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         copy = self.fresh_copy()
         placed = write_probe(copy, "src/browser", TSX_PROBE, ".tsx")
         code, output = copy.npm("run", "build")
-        self.assertEqual(code, 0, f"`npm run build` fails with {placed}, which compiles under "
-                                  f"the browser configuration:\n{output}")
+        self.assertEqual(
+            code,
+            0,
+            f"`npm run build` fails with {placed}, which compiles under "
+            f"the browser configuration:\n{output}",
+        )
         emitted = emitted_path(placed, "src/browser", "dist/browser")
         self.assertEqual(emitted, f"dist/browser/{PROBE_NAME}.js")
         self.assert_javascript(copy, emitted)
@@ -244,13 +262,19 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         copy = self.fresh_copy()
         placed = write_probe(copy, "src/browser", TSX_TYPE_ERROR, ".tsx")
         code, output = copy.npm("run", "typecheck")
-        self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {placed} holds a "
-                                     f"type error:\n{output}")
+        self.assertNotEqual(
+            code, 0, f"`npm run typecheck` exits 0 although {placed} holds a type error:\n{output}"
+        )
         plain = ANSI_ESCAPE.sub("", output).replace("\\", "/")
-        self.assertIn(placed, plain, f"the failed check does not name {placed}, so it may have "
-                                     f"failed for another reason:\n{output}")
-        self.assertIn("TS2322", plain,
-                      f"the failed check does not report the type error:\n{output}")
+        self.assertIn(
+            placed,
+            plain,
+            f"the failed check does not name {placed}, so it may have "
+            f"failed for another reason:\n{output}",
+        )
+        self.assertIn(
+            "TS2322", plain, f"the failed check does not report the type error:\n{output}"
+        )
 
     def test_each_configuration_rejects_source_only_the_other_accepts(self):
         # invariant: application-build-output
@@ -260,18 +284,28 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                 copy = self.fresh_copy()
                 placed = write_probe(copy, source, crossed_text)
                 code, output = copy.npm("run", "build")
-                self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {placed} uses "
-                                             f"what the {name} configuration does not give "
-                                             f"it:\n{output}")
+                self.assertNotEqual(
+                    code,
+                    0,
+                    f"`npm run build` exits 0 although {placed} uses "
+                    f"what the {name} configuration does not give "
+                    f"it:\n{output}",
+                )
                 plain = ANSI_ESCAPE.sub("", output).replace("\\", "/")
                 expected_file, missing_names = CROSSED_FAILURE[name]
-                self.assertIn(expected_file, plain,
-                              f"the failed build does not name {expected_file}, so it may have "
-                              f"failed for another reason:\n{output}")
+                self.assertIn(
+                    expected_file,
+                    plain,
+                    f"the failed build does not name {expected_file}, so it may have "
+                    f"failed for another reason:\n{output}",
+                )
                 for missing in missing_names:
-                    self.assertIn(missing, plain,
-                                  f"the failed build does not report {missing!r}, so it may "
-                                  f"have failed for another reason:\n{output}")
+                    self.assertIn(
+                        missing,
+                        plain,
+                        f"the failed build does not report {missing!r}, so it may "
+                        f"have failed for another reason:\n{output}",
+                    )
 
     def test_the_page_loads_one_file_that_joins_the_browsers_code(self):
         # invariant: application-build-output
@@ -282,27 +316,38 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         with open(copy.file("src/browser/main.ts"), "a", encoding="utf-8", newline="\n") as handle:
             handle.write(f'import "./{PROBE_NAME}.js";\n')
         code, output = copy.npm("run", "build")
-        self.assertEqual(code, 0, f"`npm run build` fails with a module that imports React, "
-                                  f"which the browser's code may do:\n{output}")
+        self.assertEqual(
+            code,
+            0,
+            f"`npm run build` fails with a module that imports React, "
+            f"which the browser's code may do:\n{output}",
+        )
         scripts = PAGE_SCRIPT.findall(support.read_text(copy.file(BUILT_PAGE)))
         self.assertEqual(scripts, ["main.js"], f"{BUILT_PAGE} does not load the one script")
         loaded = f"{SERVED_DIRECTORY}/{scripts[0]}"
         text = support.read_text(copy.file(loaded))
-        self.assertEqual(MODULE_SPECIFIER.findall(text), [],
-                         f"{loaded} imports other files, so it is not a bundle")
+        self.assertEqual(
+            MODULE_SPECIFIER.findall(text),
+            [],
+            f"{loaded} imports other files, so it is not a bundle",
+        )
         self.assertIn(BUNDLE_MARKER, text, f"{loaded} does not hold code main.ts imports")
         self.assertIn(REACT_MARKER, text, f"{loaded} does not hold the React that code imports")
         self.assertNotIn("process.env", text, f"{loaded} reads what a browser does not have")
-        served = [p for p in support.files_under(SERVED_DIRECTORY, copy.path)
-                  if p.endswith((".js", ".mjs", ".cjs"))]
+        served = [
+            p
+            for p in support.files_under(SERVED_DIRECTORY, copy.path)
+            if p.endswith((".js", ".mjs", ".cjs"))
+        ]
         self.assertEqual(served, [loaded], f"{SERVED_DIRECTORY} hands out JavaScript no page loads")
 
     def test_a_build_leaves_nothing_of_an_earlier_build(self):
         # D-266: a module left by an earlier build would be served or imported silently.
         # decision: D-266 "A build that writes them first removes both directories"
         copy = self.fresh_copy()
-        left_over = [f"{directory}/{PROBE_NAME}.js"
-                     for directory in (SERVED_DIRECTORY, "dist/browser")]
+        left_over = [
+            f"{directory}/{PROBE_NAME}.js" for directory in (SERVED_DIRECTORY, "dist/browser")
+        ]
         for relative in left_over:
             os.makedirs(os.path.dirname(copy.file(relative)), exist_ok=True)
             with open(copy.file(relative), "w", encoding="utf-8", newline="\n") as handle:
@@ -311,14 +356,18 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         self.assertEqual(code, 0, f"`npm run typecheck` fails on the unchanged tree:\n{output}")
         for relative in left_over:
             with self.subTest(after="typecheck", file=relative):
-                self.assertTrue(os.path.isfile(copy.file(relative)),
-                                f"`npm run typecheck`, which writes nothing, removed {relative}")
+                self.assertTrue(
+                    os.path.isfile(copy.file(relative)),
+                    f"`npm run typecheck`, which writes nothing, removed {relative}",
+                )
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
         for relative in left_over:
             with self.subTest(after="build", file=relative):
-                self.assertFalse(os.path.exists(copy.file(relative)),
-                                 f"`npm run build` left {relative} of an earlier build")
+                self.assertFalse(
+                    os.path.exists(copy.file(relative)),
+                    f"`npm run build` left {relative} of an earlier build",
+                )
 
 
 if __name__ == "__main__":

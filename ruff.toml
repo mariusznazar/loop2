@@ -3,6 +3,13 @@
 required-version = "==0.17.1"
 preview = false
 extend-exclude = [".the-way", ".runs"]
+# The one width of the formatter and of what reads the width in the linter (SIM401). Every other
+# formatter setting stays at its default; the formatter leaves Markdown alone, so that it reads
+# only the Python files the linter reads (D-433).
+line-length = 100
+
+[format]
+exclude = ["*.md"]
 
 [lint]
 select = [

@@ -67,9 +67,13 @@ console.log(JSON.stringify({ uid: process.getuid(), gid: process.getgid(),
 
 
 def run(*arguments, script=None):
-    result = subprocess.run([shutil.which("docker"), *arguments], cwd=ROOT,
-                            input=None if script is None else script.encode("utf-8"),
-                            capture_output=True, timeout=COMMAND_TIMEOUT)
+    result = subprocess.run(
+        [shutil.which("docker"), *arguments],
+        cwd=ROOT,
+        input=None if script is None else script.encode("utf-8"),
+        capture_output=True,
+        timeout=COMMAND_TIMEOUT,
+    )
     return result.returncode, (result.stdout + result.stderr).decode("utf-8", "replace")
 
 
@@ -90,34 +94,77 @@ def create_account_volumes(test, tag):
         test.assertEqual(code, 0, output)
     setup = "loop2-account-secret-setup-" + suffix[:12]
     test.addCleanup(run, "rm", "-f", setup)
-    code, output = run("run", "--rm", "-i", "--name", setup, "--network", "none",
-                       "--memory", "512m", "--user", "0:0", "--entrypoint", "node",
-                       "--mount", f"type=volume,src={secret_volume},dst=/run/secrets",
-                       tag, "-", script=SECRET_SETUP)
+    code, output = run(
+        "run",
+        "--rm",
+        "-i",
+        "--name",
+        setup,
+        "--network",
+        "none",
+        "--memory",
+        "512m",
+        "--user",
+        "0:0",
+        "--entrypoint",
+        "node",
+        "--mount",
+        f"type=volume,src={secret_volume},dst=/run/secrets",
+        tag,
+        "-",
+        script=SECRET_SETUP,
+    )
     test.assertEqual(code, 0, f"temporary secret setup failed: {output}")
     return data_volume, secret_volume
 
 
-def start_application(test, tag, name, data_volume, secret_volume, database_path=DATABASE_PATH,
-                      data_destination=DATA_DESTINATION):
+def start_application(
+    test,
+    tag,
+    name,
+    data_volume,
+    secret_volume,
+    database_path=DATABASE_PATH,
+    data_destination=DATA_DESTINATION,
+):
     """Start the image's normal command with explicit production settings on the given volumes,
     and wait until the server is ready.
 
     The database path and the data volume's mount point default to those of compose.yaml; a test
     reading them from compose.yaml passes what it read."""
     test.addCleanup(run, "rm", "-f", name)
-    code, output = run("run", "-d", "--init", "--name", name, "--memory", "512m",
-                       "--mount", f"type=volume,src={data_volume},dst={data_destination}",
-                       "--mount", f"type=volume,src={secret_volume},dst=/run/secrets,readonly",
-                       "-e", f"LOOP2_DATABASE_PATH={database_path}",
-                       "-e", "LOOP2_SESSION_SECRET_FILE=/run/secrets/loop2_session_secrets",
-                       "-e", "LOOP2_PUBLIC_ORIGIN=https://loop2.mariusznazar.com",
-                       "-e", "LOOP2_PROXY_MODE=cloudflare-tunnel",
-                       "-e", "LOOP2_MAIL_FROM=sender@mail.example.test",
-                       "-e", "LOOP2_SMTP_HOST=smtp.example.test",
-                       "-e", "LOOP2_SMTP_PORT=587",
-                       "-e", "LOOP2_SMTP_USER=sender@mail.example.test",
-                       "-e", f"LOOP2_SMTP_PASSWORD_FILE={SMTP_PASSWORD_FILE}", tag)
+    code, output = run(
+        "run",
+        "-d",
+        "--init",
+        "--name",
+        name,
+        "--memory",
+        "512m",
+        "--mount",
+        f"type=volume,src={data_volume},dst={data_destination}",
+        "--mount",
+        f"type=volume,src={secret_volume},dst=/run/secrets,readonly",
+        "-e",
+        f"LOOP2_DATABASE_PATH={database_path}",
+        "-e",
+        "LOOP2_SESSION_SECRET_FILE=/run/secrets/loop2_session_secrets",
+        "-e",
+        "LOOP2_PUBLIC_ORIGIN=https://loop2.mariusznazar.com",
+        "-e",
+        "LOOP2_PROXY_MODE=cloudflare-tunnel",
+        "-e",
+        "LOOP2_MAIL_FROM=sender@mail.example.test",
+        "-e",
+        "LOOP2_SMTP_HOST=smtp.example.test",
+        "-e",
+        "LOOP2_SMTP_PORT=587",
+        "-e",
+        "LOOP2_SMTP_USER=sender@mail.example.test",
+        "-e",
+        f"LOOP2_SMTP_PASSWORD_FILE={SMTP_PASSWORD_FILE}",
+        tag,
+    )
     test.assertEqual(code, 0, f"production container start failed: {output}")
     wait_until_ready(test, name)
 
@@ -135,10 +182,16 @@ def wait_until_ready(test, name):
         test.assertEqual(code, 0, logs)
         if READY_LINE.search(logs):
             return
-        test.assertEqual(running.strip(), "true",
-                         f"the container stopped before the server's readiness line:\n{logs}")
-        test.assertLess(time.monotonic(), deadline,
-                        f"no readiness line from the server within {READY_WAIT} s:\n{logs}")
+        test.assertEqual(
+            running.strip(),
+            "true",
+            f"the container stopped before the server's readiness line:\n{logs}",
+        )
+        test.assertLess(
+            time.monotonic(),
+            deadline,
+            f"no readiness line from the server within {READY_WAIT} s:\n{logs}",
+        )
         time.sleep(0.25)
 
 
@@ -149,22 +202,42 @@ def start_production_container(test, tag, name):
     verify_account_resources(test, name, data_volume, secret_volume)
 
 
-def verify_account_resources(test, name, data_volume, secret_volume,
-                             database_path=DATABASE_PATH, data_destination=DATA_DESTINATION):
+def verify_account_resources(
+    test,
+    name,
+    data_volume,
+    secret_volume,
+    database_path=DATABASE_PATH,
+    data_destination=DATA_DESTINATION,
+):
     """Node writes /app/data and opens the database; settings, limit and mounts hold."""
     code, output = run("exec", "-i", name, "node", "-", script=RESOURCE_PROBE)
     test.assertEqual(code, 0, f"node cannot use fresh account resources: {output}")
     # The successful probe writes one JSON line; Node may append SQLite's experimental warning.
     actual = json.loads(output.splitlines()[0])
-    test.assertEqual(actual, {
-        "uid": 1000, "gid": 1000, "directoryUid": 1000, "directoryGid": 1000,
-        "written": "written by node", "secretUid": 0, "secretGid": 1000,
-        "secretMode": 0o440, "smtpUid": 0, "smtpGid": 1000, "smtpMode": 0o440,
-        "smtpPasswordFile": SMTP_PASSWORD_FILE, "keyBytes": [32],
-        "databasePath": database_path, "databaseFile": True,
-        "production": "production",
-        "origin": "https://loop2.mariusznazar.com", "proxyMode": "cloudflare-tunnel",
-    })
+    test.assertEqual(
+        actual,
+        {
+            "uid": 1000,
+            "gid": 1000,
+            "directoryUid": 1000,
+            "directoryGid": 1000,
+            "written": "written by node",
+            "secretUid": 0,
+            "secretGid": 1000,
+            "secretMode": 0o440,
+            "smtpUid": 0,
+            "smtpGid": 1000,
+            "smtpMode": 0o440,
+            "smtpPasswordFile": SMTP_PASSWORD_FILE,
+            "keyBytes": [32],
+            "databasePath": database_path,
+            "databaseFile": True,
+            "production": "production",
+            "origin": "https://loop2.mariusznazar.com",
+            "proxyMode": "cloudflare-tunnel",
+        },
+    )
     code, output = run("inspect", name)
     test.assertEqual(code, 0, output)
     container = json.loads(output)[0]
@@ -175,6 +248,8 @@ def verify_account_resources(test, name, data_volume, secret_volume,
     test.assertTrue(mounts[data_destination]["RW"])
     test.assertFalse(mounts["/run/secrets"]["RW"])
     test.assertEqual(container["HostConfig"]["PortBindings"], {})
-    print(f"Production image {container['Image']}; container {name}; data volume {data_volume}; "
-          f"secret volume {secret_volume}; uid/gid 1000; memory 536870912; resources verified",
-          flush=True)
+    print(
+        f"Production image {container['Image']}; container {name}; data volume {data_volume}; "
+        f"secret volume {secret_volume}; uid/gid 1000; memory 536870912; resources verified",
+        flush=True,
+    )

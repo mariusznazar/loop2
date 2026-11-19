@@ -61,13 +61,15 @@ def address_declarations(text):
 
 
 class Loop2PublicAddress(unittest.TestCase):
-
     def test_public_address_is_declared_once(self):
         # invariant: loop2-distinct-address
         declarations = address_declarations(support.read_required(WORKFLOW))
-        self.assertEqual(len(declarations), 1,
-                         f"{WORKFLOW} declares loop2's public address {len(declarations)} times, "
-                         f"not once: {declarations}")
+        self.assertEqual(
+            len(declarations),
+            1,
+            f"{WORKFLOW} declares loop2's public address {len(declarations)} times, "
+            f"not once: {declarations}",
+        )
 
     def test_public_address_host_is_not_the_old_game(self):
         # invariant: loop2-distinct-address
@@ -77,9 +79,11 @@ class Loop2PublicAddress(unittest.TestCase):
             with self.subTest(line=number, name=name):
                 host = (urllib.parse.urlsplit(value).hostname or "").rstrip(".").lower()
                 self.assertTrue(host, f"{WORKFLOW}:{number}: {name} = {value!r} has no host")
-                self.assertNotEqual(host, OLD_GAME_HOST,
-                                    f"{WORKFLOW}:{number}: {name} = {value!r} is the old game's "
-                                    "address")
+                self.assertNotEqual(
+                    host,
+                    OLD_GAME_HOST,
+                    f"{WORKFLOW}:{number}: {name} = {value!r} is the old game's address",
+                )
 
 
 if __name__ == "__main__":

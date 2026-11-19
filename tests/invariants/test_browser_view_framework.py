@@ -45,43 +45,127 @@ BUILT_PAGE = "dist/public"
 # UI frameworks other than React, as npm package names. A library built on React is not named
 # here: refused_names() finds it in the lock file by its peer dependency on react.
 UI_FRAMEWORKS = (
-    "preact", "vue", "@vue/runtime-dom", "@vue/runtime-core", "svelte",
-    "@sveltejs/kit", "solid-js", "@angular/core", "@angular/platform-browser", "lit", "lit-html",
-    "lit-element", "@lit/reactive-element", "mithril", "inferno", "hyperapp", "alpinejs",
-    "htmx.org", "ember-source", "@builder.io/qwik", "@stencil/core", "backbone", "knockout",
-    "riot", "marko", "petite-vue", "@preact/signals", "next", "nuxt", "@remix-run/react",
-    "astro", "uhtml", "hyperhtml", "million", "van", "vanjs-core", "@hotwired/stimulus",
-    "@hotwired/turbo", "aurelia", "@aurelia/runtime-html", "cycle", "@cycle/dom", "elm",
+    "preact",
+    "vue",
+    "@vue/runtime-dom",
+    "@vue/runtime-core",
+    "svelte",
+    "@sveltejs/kit",
+    "solid-js",
+    "@angular/core",
+    "@angular/platform-browser",
+    "lit",
+    "lit-html",
+    "lit-element",
+    "@lit/reactive-element",
+    "mithril",
+    "inferno",
+    "hyperapp",
+    "alpinejs",
+    "htmx.org",
+    "ember-source",
+    "@builder.io/qwik",
+    "@stencil/core",
+    "backbone",
+    "knockout",
+    "riot",
+    "marko",
+    "petite-vue",
+    "@preact/signals",
+    "next",
+    "nuxt",
+    "@remix-run/react",
+    "astro",
+    "uhtml",
+    "hyperhtml",
+    "million",
+    "van",
+    "vanjs-core",
+    "@hotwired/stimulus",
+    "@hotwired/turbo",
+    "aurelia",
+    "@aurelia/runtime-html",
+    "cycle",
+    "@cycle/dom",
+    "elm",
 )
 # React itself, which the view is built with.
 REACT_ITSELF = ("react", "react-dom")
 # Global names the listed frameworks leave in their built code.
 FRAMEWORK_MARKERS = (
-    "__VUE_PROD_DEVTOOLS__", "__VUE_OPTIONS_API__", "__PREACT_DEVTOOLS__", "ngDevMode",
-    "litHtmlVersions", "litElementVersions", "reactiveElementVersions", "__svelte",
-    "_$HY", "Alpine.start", "htmx.config",
+    "__VUE_PROD_DEVTOOLS__",
+    "__VUE_OPTIONS_API__",
+    "__PREACT_DEVTOOLS__",
+    "ngDevMode",
+    "litHtmlVersions",
+    "litElementVersions",
+    "reactiveElementVersions",
+    "__svelte",
+    "_$HY",
+    "Alpine.start",
+    "htmx.config",
 )
 # Code formats other than TypeScript.
 FOREIGN_CODE_EXTENSIONS = (
-    ".js", ".mjs", ".cjs", ".jsx", ".vue", ".svelte", ".astro", ".marko", ".riot",
-    ".coffee", ".elm", ".dart", ".hbs", ".handlebars", ".ejs", ".pug", ".njk",
+    ".js",
+    ".mjs",
+    ".cjs",
+    ".jsx",
+    ".vue",
+    ".svelte",
+    ".astro",
+    ".marko",
+    ".riot",
+    ".coffee",
+    ".elm",
+    ".dart",
+    ".hbs",
+    ".handlebars",
+    ".ejs",
+    ".pug",
+    ".njk",
 )
 TYPESCRIPT_EXTENSIONS = (".ts", ".mts", ".cts", ".tsx")
-TEXT_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".htm", ".css",
-                   ".json", ".svg", ".jsx", ".tsx", ".vue", ".svelte")
+TEXT_EXTENSIONS = (
+    ".ts",
+    ".mts",
+    ".cts",
+    ".js",
+    ".mjs",
+    ".cjs",
+    ".html",
+    ".htm",
+    ".css",
+    ".json",
+    ".svg",
+    ".jsx",
+    ".tsx",
+    ".vue",
+    ".svelte",
+)
 
 # Members of `document` that create, find or insert elements: the browser API rendering uses.
 DOM_RENDERING_MEMBERS = (
-    "createElement", "createElementNS", "createTextNode", "createDocumentFragment",
-    "getElementById", "getElementsByClassName", "getElementsByTagName", "querySelector",
-    "querySelectorAll", "append", "prepend",
-    "replaceChildren", "adoptNode", "importNode",
+    "createElement",
+    "createElementNS",
+    "createTextNode",
+    "createDocumentFragment",
+    "getElementById",
+    "getElementsByClassName",
+    "getElementsByTagName",
+    "querySelector",
+    "querySelectorAll",
+    "append",
+    "prepend",
+    "replaceChildren",
+    "adoptNode",
+    "importNode",
 )
-DOM_RENDERING_CALL = re.compile(
-    r"\bdocument\s*\.\s*(?:" + "|".join(DOM_RENDERING_MEMBERS) + r")\b")
+DOM_RENDERING_CALL = re.compile(r"\bdocument\s*\.\s*(?:" + "|".join(DOM_RENDERING_MEMBERS) + r")\b")
 
 IMPORT_SPECIFIER = re.compile(
-    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s*)["']([^"']+)["']""")
+    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s*)["']([^"']+)["']"""
+)
 SCRIPT_SOURCE = re.compile(r"""<script\b[^>]*\bsrc\s*=\s*["']?([^"'\s>]+)""", re.IGNORECASE)
 
 
@@ -195,7 +279,8 @@ def built_file_problems(relative, text):
     if relative.endswith((".js", ".mjs", ".html", ".htm")):
         for specifier in IMPORT_SPECIFIER.findall(text):
             own = specifier.startswith(("./", "../")) or (
-                specifier.startswith("/") and not specifier.startswith("//"))
+                specifier.startswith("/") and not specifier.startswith("//")
+            )
             if not own:
                 problems.append((relative, "imports " + specifier))
     problems += [(relative, "holds marker " + m) for m in FRAMEWORK_MARKERS if m in text]
@@ -203,7 +288,6 @@ def built_file_problems(relative, text):
 
 
 class BrowserSourceIsTypeScript(unittest.TestCase):
-
     def test_browser_source_holds_typescript_and_no_other_code(self):
         # invariant: browser-view-framework
         # decision: D-03 "The browser view is built in TypeScript"
@@ -218,26 +302,36 @@ class BrowserSourceIsTypeScript(unittest.TestCase):
         # invariant: browser-view-framework
         libraries = load_json("tsconfig.browser.json").get("compilerOptions", {}).get("lib")
         self.assertIsNotNone(libraries, "tsconfig.browser.json sets no compilerOptions.lib")
-        self.assertIn("dom", [str(x).lower() for x in libraries],
-                      f"tsconfig.browser.json lib is {libraries!r}, without DOM")
+        self.assertIn(
+            "dom",
+            [str(x).lower() for x in libraries],
+            f"tsconfig.browser.json lib is {libraries!r}, without DOM",
+        )
 
     def test_browser_source_renders_through_document_in_code(self):
         # invariant: browser-view-framework
-        rendering = [p for p, text in text_files(BROWSER_SOURCE, support.ROOT)
-                     if p.endswith(TYPESCRIPT_EXTENSIONS)
-                     and DOM_RENDERING_CALL.search(code_only(text))]
-        self.assertTrue(rendering, f"no TypeScript file of {BROWSER_SOURCE} uses one of "
-                                   f"{DOM_RENDERING_MEMBERS} on document outside comments "
-                                   "and strings")
+        rendering = [
+            p
+            for p, text in text_files(BROWSER_SOURCE, support.ROOT)
+            if p.endswith(TYPESCRIPT_EXTENSIONS) and DOM_RENDERING_CALL.search(code_only(text))
+        ]
+        self.assertTrue(
+            rendering,
+            f"no TypeScript file of {BROWSER_SOURCE} uses one of "
+            f"{DOM_RENDERING_MEMBERS} on document outside comments "
+            "and strings",
+        )
 
 
 class NoUiFramework(unittest.TestCase):
-
     def test_no_ui_framework_in_runtime_dependencies(self):
         # invariant: browser-view-framework
         manifest, lock = load_json("package.json"), load_json("package-lock.json")
-        self.assertEqual(sorted(runtime_names(manifest, lock) & refused_names(lock)), [],
-                         "a UI framework or a library built on React is a runtime dependency")
+        self.assertEqual(
+            sorted(runtime_names(manifest, lock) & refused_names(lock)),
+            [],
+            "a UI framework or a library built on React is a runtime dependency",
+        )
 
     def test_browser_source_imports_no_ui_framework(self):
         # invariant: browser-view-framework
@@ -254,35 +348,50 @@ class NoUiFramework(unittest.TestCase):
     def test_control_the_dependency_check_reads_what_an_entry_really_is(self):
         # invariant: browser-view-framework
         react = {"name": "loop2", "dependencies": {"react": "19.3.1", "react-dom": "19.3.1"}}
-        lock = {"packages": {
-            "": {"name": "loop2"},
-            "node_modules/react": {"version": "19.3.1"},
-            "node_modules/react-dom": {"peerDependencies": {"react": "^19.3.1"}},
-            "node_modules/scheduler": {"version": "0.28.0"},
-            "node_modules/@mui/material": {"dev": True, "peerDependencies": {"react": "^19"}},
-        }}
+        lock = {
+            "packages": {
+                "": {"name": "loop2"},
+                "node_modules/react": {"version": "19.3.1"},
+                "node_modules/react-dom": {"peerDependencies": {"react": "^19.3.1"}},
+                "node_modules/scheduler": {"version": "0.28.0"},
+                "node_modules/@mui/material": {"dev": True, "peerDependencies": {"react": "^19"}},
+            }
+        }
         # The tree as it is: React, react-dom, scheduler, a development library on React.
         self.assertEqual(runtime_names(react, lock) & refused_names(lock), set())
         crafted = {
             "an alias in package.json to a listed framework": (
                 {"dependencies": {"react": "npm:preact@10.0.0"}},
-                {"packages": {"node_modules/react": {"version": "10.0.0"}}}),
+                {"packages": {"node_modules/react": {"version": "10.0.0"}}},
+            ),
             "an alias in package.json without a version": (
-                {"dependencies": {"react": "npm:vue"}}, {"packages": {}}),
+                {"dependencies": {"react": "npm:vue"}},
+                {"packages": {}},
+            ),
             "an alias in package.json to a scoped framework": (
-                {"dependencies": {"react": "npm:@vue/runtime-dom@3.0.0"}}, {"packages": {}}),
+                {"dependencies": {"react": "npm:@vue/runtime-dom@3.0.0"}},
+                {"packages": {}},
+            ),
             "a lock entry named after a listed framework": (
                 {"dependencies": {"react": "19.3.1"}},
-                {"packages": {"node_modules/react": {"name": "preact", "version": "10.0.0"}}}),
+                {"packages": {"node_modules/react": {"name": "preact", "version": "10.0.0"}}},
+            ),
             "a nested lock entry named after a listed framework": (
                 {"dependencies": {}},
-                {"packages": {"node_modules/a/node_modules/x": {"name": "vue"}}}),
+                {"packages": {"node_modules/a/node_modules/x": {"name": "vue"}}},
+            ),
             "a component library on React": (
                 {"dependencies": {"react": "19.3.1", "@mui/material": "7.0.0"}},
-                {"packages": {"node_modules/@mui/material": {"peerDependencies": {"react": "^19"}}}}),
+                {
+                    "packages": {
+                        "node_modules/@mui/material": {"peerDependencies": {"react": "^19"}}
+                    }
+                },
+            ),
             "a component library on React that only the lock holds": (
                 {"dependencies": {"react": "19.3.1"}},
-                {"packages": {"node_modules/ui-kit": {"peerDependencies": {"react": "^19"}}}}),
+                {"packages": {"node_modules/ui-kit": {"peerDependencies": {"react": "^19"}}}},
+            ),
         }
         for name, (manifest, crafted_lock) in crafted.items():
             with self.subTest(case=name):
@@ -300,17 +409,24 @@ class NoUiFramework(unittest.TestCase):
         # npm writes this field (npm-lock-peer-dependencies). Were it gone, no library on React
         # would be found, and every case above would still pass on its hand-written lock.
         entry = load_json("package-lock.json")["packages"]["node_modules/react-dom"]
-        self.assertIn("react", entry.get("peerDependencies", {}),
-                      "the lock's entry of react-dom names no peer dependency on react")
+        self.assertIn(
+            "react",
+            entry.get("peerDependencies", {}),
+            "the lock's entry of react-dom names no peer dependency on react",
+        )
 
     def test_built_page_loads_only_its_own_code_and_no_framework(self):
         # invariant: browser-view-framework
         copy = support.built_copy()
         built = list(text_files(BUILT_PAGE, copy.path))
-        self.assertTrue([p for p, _ in built if p.endswith((".js", ".mjs"))],
-                        f"`npm run build` places no JavaScript in {BUILT_PAGE}")
-        self.assertTrue([p for p, _ in built if p.endswith((".html", ".htm"))],
-                        f"`npm run build` places no HTML in {BUILT_PAGE}")
+        self.assertTrue(
+            [p for p, _ in built if p.endswith((".js", ".mjs"))],
+            f"`npm run build` places no JavaScript in {BUILT_PAGE}",
+        )
+        self.assertTrue(
+            [p for p, _ in built if p.endswith((".html", ".htm"))],
+            f"`npm run build` places no HTML in {BUILT_PAGE}",
+        )
         problems = []
         for relative, text in built:
             problems += built_file_problems(relative, text)

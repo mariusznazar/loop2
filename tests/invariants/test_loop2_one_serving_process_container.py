@@ -61,8 +61,8 @@ EXPECTED_PROGRAM = "node"
 EXPECTED_EXPRESS_MAJOR = 5
 UNMATCHED_API_PATH = "/api/one-serving-process-container-check-no-such-route"
 
-BUILD_TIMEOUT = 1200    # seconds for the image build
-LISTEN_WAIT = 60        # seconds for the started container to hold a listening socket
+BUILD_TIMEOUT = 1200  # seconds for the image build
+LISTEN_WAIT = 60  # seconds for the started container to hold a listening socket
 
 # Run inside the container by its own Node.js: the listening sockets of the container's TCP
 # tables (state 0A in /proc/net/tcp and tcp6), and every process with its parent, command line,
@@ -143,34 +143,45 @@ def docker_run(*arguments, timeout=support.COMMAND_TIMEOUT):
 def node_in_container(name, script, *arguments, user=None):
     """(exit code, stdout, stderr) of a script run by the container's own Node.js, the script
     given on standard input."""
-    command = [docker(), "exec", "-i"] + (["-u", user] if user else []) + [
-        name, "node", "-", *arguments]
-    result = subprocess.run(command, input=script.encode("utf-8"), capture_output=True,
-                            timeout=support.COMMAND_TIMEOUT)
-    return (result.returncode, result.stdout.decode("utf-8", "replace"),
-            result.stderr.decode("utf-8", "replace"))
+    command = (
+        [docker(), "exec", "-i"] + (["-u", user] if user else []) + [name, "node", "-", *arguments]
+    )
+    result = subprocess.run(
+        command, input=script.encode("utf-8"), capture_output=True, timeout=support.COMMAND_TIMEOUT
+    )
+    return (
+        result.returncode,
+        result.stdout.decode("utf-8", "replace"),
+        result.stderr.decode("utf-8", "replace"),
+    )
 
 
 class ContainerStartsOneNodeProcess(unittest.TestCase):
-
     def test_image_command_is_exec_form_node(self):
         # invariant: loop2-one-serving-process
         stages, last = final_stage(support.read_required(DOCKERFILE))
         commands = [args for keyword, args, _h in last.instructions if keyword == "CMD"]
         self.assertTrue(commands, f"the last stage of {DOCKERFILE} sets no CMD")
         command = support.exec_form(commands[-1])
-        self.assertIsNotNone(command, f"the CMD of {DOCKERFILE}'s last stage is not in exec form: "
-                                      f"{commands[-1]!r}")
+        self.assertIsNotNone(
+            command, f"the CMD of {DOCKERFILE}'s last stage is not in exec form: {commands[-1]!r}"
+        )
         self.assertTrue(command, f"the CMD of {DOCKERFILE}'s last stage is empty")
-        self.assertEqual(command[0].rsplit("/", 1)[-1], EXPECTED_PROGRAM,
-                         f"the CMD of {DOCKERFILE}'s last stage runs {command[0]!r}")
-        self.assertGreater(len(command), 1, f"the CMD of {DOCKERFILE}'s last stage gives `node` "
-                                            "no script to run")
+        self.assertEqual(
+            command[0].rsplit("/", 1)[-1],
+            EXPECTED_PROGRAM,
+            f"the CMD of {DOCKERFILE}'s last stage runs {command[0]!r}",
+        )
+        self.assertGreater(
+            len(command), 1, f"the CMD of {DOCKERFILE}'s last stage gives `node` no script to run"
+        )
         for stage in support.stage_chain(stages, last):
             entrypoints = [a for k, a, _h in stage.instructions if k == "ENTRYPOINT"]
             with self.subTest(stage=repr(stage)):
-                self.assertTrue(all(support.exec_form(a) == [] for a in entrypoints),
-                                f"{stage!r} of {DOCKERFILE} sets ENTRYPOINT {entrypoints}")
+                self.assertTrue(
+                    all(support.exec_form(a) == [] for a in entrypoints),
+                    f"{stage!r} of {DOCKERFILE} sets ENTRYPOINT {entrypoints}",
+                )
 
     def test_compose_runs_one_application_with_the_image_command(self):
         # invariant: loop2-one-serving-process
@@ -181,29 +192,40 @@ class ContainerStartsOneNodeProcess(unittest.TestCase):
             for key in ("command", "entrypoint"):
                 self.assertNotIn(key, keys, f"service `{name}` overrides the image with `{key}`")
             if "scale" in keys:
-                self.assertEqual(keys["scale"].value, "1",
-                                 f"service `{name}` scale {keys['scale']!r}")
+                self.assertEqual(
+                    keys["scale"].value, "1", f"service `{name}` scale {keys['scale']!r}"
+                )
             if "deploy" in keys:
-                replicas = re.findall(r"^\s*replicas\s*:\s*(\S+)",
-                                      support.block_text(keys["deploy"]), re.MULTILINE)
-                self.assertTrue(all(r.strip("\"'") == "1" for r in replicas),
-                                f"service `{name}` deploys {replicas} replicas")
+                replicas = re.findall(
+                    r"^\s*replicas\s*:\s*(\S+)", support.block_text(keys["deploy"]), re.MULTILINE
+                )
+                self.assertTrue(
+                    all(r.strip("\"'") == "1" for r in replicas),
+                    f"service `{name}` deploys {replicas} replicas",
+                )
 
 
 class RunningContainerHasOneServingProcess(unittest.TestCase):
-
     def test_running_container_has_one_listening_node_process(self):
         # invariant: loop2-one-serving-process
         # decision: D-08 "The game and its account and save server run in a dedicated loop2 container"
         support.read_required(DOCKERFILE)
         support.read_required(COMPOSE_FILE)
-        docker_gate.require_daemon(self, "the container part of loop2-one-serving-process stays "
-                                         "unchecked")
+        docker_gate.require_daemon(
+            self, "the container part of loop2-one-serving-process stays unchecked"
+        )
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
-        code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",
-                                  "-t", tag, ".", timeout=BUILD_TIMEOUT)
+        code, output = docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=invariant-check",
+            "-t",
+            tag,
+            ".",
+            timeout=BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         start_production_container(self, tag, name)
 
@@ -215,22 +237,32 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
                 break
             time.sleep(1)
         if not listeners:
-            self.fail(f"no process the probe can read listens within {LISTEN_WAIT} s; listening "
-                      f"sockets of the container: {table['sockets']}; container "
-                      f"log:\n{docker_run('logs', name)[1]}")
-        self.assertEqual(len(listeners), 1, f"processes listening in the container before the "
-                                            f"requests: {listeners}")
+            self.fail(
+                f"no process the probe can read listens within {LISTEN_WAIT} s; listening "
+                f"sockets of the container: {table['sockets']}; container "
+                f"log:\n{docker_run('logs', name)[1]}"
+            )
+        self.assertEqual(
+            len(listeners),
+            1,
+            f"processes listening in the container before the requests: {listeners}",
+        )
         port = listeners[0]["ports"][0]
 
-        code, output, errors = node_in_container(name, HTTP_PROBE, str(port), "/",
-                                                 UNMATCHED_API_PATH)
+        code, output, errors = node_in_container(
+            name, HTTP_PROBE, str(port), "/", UNMATCHED_API_PATH
+        )
         self.assertEqual(code, 0, f"the HTTP probe in the container failed:\n{output}{errors}")
         answers = {a["path"]: a for a in json.loads(output.strip().splitlines()[-1])}
         self.assertEqual(answers["/"]["status"], 200, f"GET / in the container: {answers['/']}")
-        self.assertTrue(answers["/"]["html"] or "html" in (answers["/"]["type"] or ""),
-                        f"GET / in the container returns no HTML page: {answers['/']}")
-        self.assertTrue(100 <= answers[UNMATCHED_API_PATH]["status"] <= 599,
-                        f"GET {UNMATCHED_API_PATH} in the container: {answers[UNMATCHED_API_PATH]}")
+        self.assertTrue(
+            answers["/"]["html"] or "html" in (answers["/"]["type"] or ""),
+            f"GET / in the container returns no HTML page: {answers['/']}",
+        )
+        self.assertTrue(
+            100 <= answers[UNMATCHED_API_PATH]["status"] <= 599,
+            f"GET {UNMATCHED_API_PATH} in the container: {answers[UNMATCHED_API_PATH]}",
+        )
 
         # Exercise the actual deployment probe in the real application container,
         # which has no host port. Controlled Docker answers elsewhere only check decisions.
@@ -250,22 +282,36 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
         held = {inode for p in others for inode in p["inodes"]}
         unowned = [s for s in table["sockets"] if s["inode"] not in held]
         unreadable = [p for p in others if not p["descriptors"]]
-        self.assertEqual(unowned, [], f"listening sockets of the container that no process the "
-                                      f"probe can read holds; processes whose descriptors it "
-                                      f"could not read: {unreadable}")
+        self.assertEqual(
+            unowned,
+            [],
+            f"listening sockets of the container that no process the "
+            f"probe can read holds; processes whose descriptors it "
+            f"could not read: {unreadable}",
+        )
         listeners = [p for p in others if p["ports"]]
         self.assertEqual(len(listeners), 1, f"processes listening in the container: {listeners}")
         listener = listeners[0]
-        self.assertEqual(os.path.basename(listener["cmd"][0]) if listener["cmd"] else None,
-                         EXPECTED_PROGRAM, f"the listening process is {listener}")
+        self.assertEqual(
+            os.path.basename(listener["cmd"][0]) if listener["cmd"] else None,
+            EXPECTED_PROGRAM,
+            f"the listening process is {listener}",
+        )
         children = [p for p in others if p["ppid"] == listener["pid"]]
-        self.assertEqual(children, [], f"the listening process {listener['cmd']} has started "
-                                       f"processes of its own: {children}")
+        self.assertEqual(
+            children,
+            [],
+            f"the listening process {listener['cmd']} has started processes of its own: {children}",
+        )
         found = re.match(r"v?(\d+)", listener["express"] or "")
-        self.assertIsNotNone(found, f"the listening process loads no express from "
-                                    f"{listener['cwd']}/node_modules")
-        self.assertEqual(int(found.group(1)), EXPECTED_EXPRESS_MAJOR,
-                         f"the listening process loads express {listener['express']!r}")
+        self.assertIsNotNone(
+            found, f"the listening process loads no express from {listener['cwd']}/node_modules"
+        )
+        self.assertEqual(
+            int(found.group(1)),
+            EXPECTED_EXPRESS_MAJOR,
+            f"the listening process loads express {listener['express']!r}",
+        )
 
     def processes(self, name):
         code, output, errors = node_in_container(name, PROCESS_PROBE)

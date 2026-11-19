@@ -37,7 +37,6 @@ TIMESTAMP = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"
 
 
 class DumpTestCase(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -55,8 +54,11 @@ class DumpTestCase(unittest.TestCase):
         return self.fixture.run(ssh_original_command=self.sha)
 
     def compose_calls(self, result, subcommand):
-        return [call for call in result.calls["docker"]
-                if call[:1] == ["compose"] and subcommand in call]
+        return [
+            call
+            for call in result.calls["docker"]
+            if call[:1] == ["compose"] and subcommand in call
+        ]
 
     def dump_calls(self, result):
         return self.compose_calls(result, "logs")
@@ -83,7 +85,6 @@ class DumpTestCase(unittest.TestCase):
 
 
 class Dump(DumpTestCase):
-
     def test_a_deployment_appends_the_log_of_the_containers_it_replaces(self):
         # invariant: loop2-deploy-log-dump
         # decision: D-355 "Just before a deployment replaces the containers of the game, it appends the whole log of the application and of the tunnel connector to `/var/log/loop2-app.log` on the test server"
@@ -92,9 +93,24 @@ class Dump(DumpTestCase):
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
-        self.assertEqual(self.dump_calls(result), [
-            ["compose", "--project-name", "loop2", "-f", compose_file, "logs", "--no-color",
-             "--timestamps", "app", "cloudflared"]], result)
+        self.assertEqual(
+            self.dump_calls(result),
+            [
+                [
+                    "compose",
+                    "--project-name",
+                    "loop2",
+                    "-f",
+                    compose_file,
+                    "logs",
+                    "--no-color",
+                    "--timestamps",
+                    "app",
+                    "cloudflared",
+                ]
+            ],
+            result,
+        )
         docker = result.calls["docker"]
         build = self.compose_calls(result, "build")[0]
         up = self.compose_calls(result, "up")[0]
@@ -103,8 +119,10 @@ class Dump(DumpTestCase):
         self.assertLess(docker.index(dump), docker.index(up))
         lines = self.dump_text().splitlines()
         self.assertEqual(lines[0], OLDER_CONTENT.strip(), "the dump replaced the file's content")
-        self.assertRegex(lines[1], f"^{TIMESTAMP} loop2-deploy \\| previous commit {PREVIOUS}, "
-                                   f"new commit {self.sha}$")
+        self.assertRegex(
+            lines[1],
+            f"^{TIMESTAMP} loop2-deploy \\| previous commit {PREVIOUS}, new commit {self.sha}$",
+        )
         self.assertEqual(lines[2:], [APP_LINE, TUNNEL_LINE])
 
     def test_the_header_of_a_first_deployment_names_no_previous_commit(self):
@@ -112,8 +130,9 @@ class Dump(DumpTestCase):
         result = self.deploy(running=None)
         self.assertEqual(result.code, 0, result)
         lines = self.dump_text().splitlines()
-        self.assertRegex(lines[0], f"^{TIMESTAMP} loop2-deploy \\| previous commit none, "
-                                   f"new commit {self.sha}$")
+        self.assertRegex(
+            lines[0], f"^{TIMESTAMP} loop2-deploy \\| previous commit none, new commit {self.sha}$"
+        )
         self.assertEqual(lines[1:], [APP_LINE, TUNNEL_LINE])
 
     def test_the_deploy_log_gets_byte_counts_and_no_content(self):
@@ -138,8 +157,9 @@ class Dump(DumpTestCase):
         self.assertEqual(self.warning_lines(result), [], result)
 
     def test_docker_standard_error_goes_to_the_deploy_log_file_only(self):
-        self.fixture.answer("docker", stdout=LOGS_OUTPUT, stderr=ERROR_MARKER + "\n",
-                            match=LOGS_PATTERN)
+        self.fixture.answer(
+            "docker", stdout=LOGS_OUTPUT, stderr=ERROR_MARKER + "\n", match=LOGS_PATTERN
+        )
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         self.assertIn(ERROR_MARKER, self.fixture.log_text())
@@ -148,7 +168,6 @@ class Dump(DumpTestCase):
 
 
 class FailedDump(DumpTestCase):
-
     def assert_warned_and_went_on(self, result, exit_status):
         self.assertEqual(result.code, 0, result)
         warning = self.warning_lines(result)
@@ -158,19 +177,28 @@ class FailedDump(DumpTestCase):
         self.assertIn(warning[0], self.fixture.log_text())
         self.assertNotIn("loop2-deploy: dump:", self.fixture.log_text())
         self.assertEqual(len(self.compose_calls(result, "up")), 1, result)
-        self.assertTrue(self.log_lines()[-1].endswith(f"deployed {self.sha}, previously "
-                                                      f"{PREVIOUS}"), self.log_lines()[-1])
+        self.assertTrue(
+            self.log_lines()[-1].endswith(f"deployed {self.sha}, previously {PREVIOUS}"),
+            self.log_lines()[-1],
+        )
         self.assert_marker_nowhere_but_in_the_dump(result)
 
     def test_a_failing_dump_warns_and_the_deployment_still_starts_the_containers(self):
         # invariant: loop2-deploy-log-dump
-        self.fixture.answer("docker", exit_code=3, stdout=LOGS_OUTPUT, stderr=ERROR_MARKER + "\n",
-                            match=LOGS_PATTERN)
+        self.fixture.answer(
+            "docker",
+            exit_code=3,
+            stdout=LOGS_OUTPUT,
+            stderr=ERROR_MARKER + "\n",
+            match=LOGS_PATTERN,
+        )
         result = self.deploy()
         self.assert_warned_and_went_on(result, 3)
         docker = result.calls["docker"]
-        self.assertLess(docker.index(self.dump_calls(result)[0]),
-                        docker.index(self.compose_calls(result, "up")[0]))
+        self.assertLess(
+            docker.index(self.dump_calls(result)[0]),
+            docker.index(self.compose_calls(result, "up")[0]),
+        )
         self.assertIn(ERROR_MARKER, self.fixture.log_text())
         self.assertNotIn(ERROR_MARKER, result.output)
 
@@ -198,14 +226,19 @@ class FailedDump(DumpTestCase):
 
 
 class NothingDumpedBeforeAStop(DumpTestCase):
-
     def test_a_deployment_that_stops_before_up_dumps_nothing(self):
         # decision: D-355 "Just before a deployment replaces the containers of the game"
         stops = {
-            "a failed build": (7, lambda: self.fixture.answer("docker", exit_code=1,
-                                                              match="compose * build *")),
-            "too little memory": (5, lambda: support.write_bytes(
-                self.fixture.meminfo, b"MemTotal: 4456448 kB\nMemAvailable: 524288 kB\n")),
+            "a failed build": (
+                7,
+                lambda: self.fixture.answer("docker", exit_code=1, match="compose * build *"),
+            ),
+            "too little memory": (
+                5,
+                lambda: support.write_bytes(
+                    self.fixture.meminfo, b"MemTotal: 4456448 kB\nMemAvailable: 524288 kB\n"
+                ),
+            ),
             "a held lock": (4, lambda: self.fixture.answer("flock", exit_code=1)),
         }
         for name, (code, make_stop) in stops.items():

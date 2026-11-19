@@ -29,10 +29,31 @@ EXPECTED_EXPRESS_MAJOR = 5
 
 # HTTP server frameworks other than Express, as npm package names.
 OTHER_HTTP_FRAMEWORKS = (
-    "fastify", "koa", "@koa/router", "koa-router", "@hapi/hapi", "hapi", "restify", "polka",
-    "hono", "@hono/node-server", "@nestjs/core", "micro", "h3", "sails", "@feathersjs/feathers",
-    "connect", "@tinyhttp/app", "elysia", "itty-router", "@adonisjs/core", "loopback",
-    "@loopback/core", "total.js", "derby", "meteor",
+    "fastify",
+    "koa",
+    "@koa/router",
+    "koa-router",
+    "@hapi/hapi",
+    "hapi",
+    "restify",
+    "polka",
+    "hono",
+    "@hono/node-server",
+    "@nestjs/core",
+    "micro",
+    "h3",
+    "sails",
+    "@feathersjs/feathers",
+    "connect",
+    "@tinyhttp/app",
+    "elysia",
+    "itty-router",
+    "@adonisjs/core",
+    "loopback",
+    "@loopback/core",
+    "total.js",
+    "derby",
+    "meteor",
 )
 
 # Requests the running server is probed with: (method, path).
@@ -56,26 +77,35 @@ def major_of(version):
 
 
 class ExpressFiveDeclared(unittest.TestCase):
-
     def test_runtime_dependency_on_express_5(self):
         # invariant: account-server-express-http
         dependencies = load_json("package.json").get("dependencies", {})
         self.assertIn("express", dependencies, "express is not a runtime dependency")
         spec = dependencies["express"]
-        self.assertRegex(spec, r"^[\^~=]?\s*5(\.(\d+|x|\*)){0,2}$",
-                         f"package.json pins express {spec!r}, not one admitting only major 5")
-        locked = load_json("package-lock.json").get("packages", {}).get(
-            "node_modules/express", {}).get("version", "")
-        self.assertEqual(major_of(locked), EXPECTED_EXPRESS_MAJOR,
-                         f"package-lock.json locks express {locked!r}")
+        self.assertRegex(
+            spec,
+            r"^[\^~=]?\s*5(\.(\d+|x|\*)){0,2}$",
+            f"package.json pins express {spec!r}, not one admitting only major 5",
+        )
+        locked = (
+            load_json("package-lock.json")
+            .get("packages", {})
+            .get("node_modules/express", {})
+            .get("version", "")
+        )
+        self.assertEqual(
+            major_of(locked), EXPECTED_EXPRESS_MAJOR, f"package-lock.json locks express {locked!r}"
+        )
 
     def test_installed_express_is_5(self):
         # invariant: account-server-express-http
-        with open(os.path.join(support.ROOT, "node_modules", "express", "package.json"),
-                  encoding="utf-8") as handle:
+        with open(
+            os.path.join(support.ROOT, "node_modules", "express", "package.json"), encoding="utf-8"
+        ) as handle:
             installed = json.load(handle).get("version", "")
-        self.assertEqual(major_of(installed), EXPECTED_EXPRESS_MAJOR,
-                         f"node_modules holds express {installed!r}")
+        self.assertEqual(
+            major_of(installed), EXPECTED_EXPRESS_MAJOR, f"node_modules holds express {installed!r}"
+        )
 
     def test_no_other_http_framework_dependency(self):
         # invariant: account-server-express-http
@@ -84,9 +114,11 @@ class ExpressFiveDeclared(unittest.TestCase):
 
 
 IMPORT_SPECIFIER = re.compile(
-    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']""")
+    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']"""
+)
 RAW_HANDLER = re.compile(
-    r"""createServer\s*\(\s*(?:\{[^)]*?\}\s*,\s*)?(?:async\s+)?(?:function\b|\([^()]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)""")
+    r"""createServer\s*\(\s*(?:\{[^)]*?\}\s*,\s*)?(?:async\s+)?(?:function\b|\([^()]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)"""
+)
 REQUEST_LISTENER = re.compile(r"""\.\s*on\s*\(\s*["']request["']""")
 
 
@@ -97,39 +129,51 @@ def package_name(specifier):
 
 
 class ExpressInServerSource(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.sources = {}
         for relative in support.files_under("src/server", support.ROOT):
             if relative.endswith((".ts", ".mts", ".cts")):
                 cls.sources[relative] = support.read_text(
-                    os.path.join(support.ROOT, *relative.split("/")))
+                    os.path.join(support.ROOT, *relative.split("/"))
+                )
 
     def test_server_source_imports_express(self):
         # invariant: account-server-express-http
         self.assertTrue(self.sources, "src/server holds no TypeScript file")
-        importing = [p for p, text in self.sources.items()
-                     if "express" in IMPORT_SPECIFIER.findall(text)]
+        importing = [
+            p for p, text in self.sources.items() if "express" in IMPORT_SPECIFIER.findall(text)
+        ]
         self.assertTrue(importing, "no file of src/server imports express")
 
     def test_server_source_uses_no_other_http_framework(self):
         # invariant: account-server-express-http
-        found = sorted({(p, package_name(s)) for p, text in self.sources.items()
-                        for s in IMPORT_SPECIFIER.findall(text)
-                        if package_name(s) in OTHER_HTTP_FRAMEWORKS})
+        found = sorted(
+            {
+                (p, package_name(s))
+                for p, text in self.sources.items()
+                for s in IMPORT_SPECIFIER.findall(text)
+                if package_name(s) in OTHER_HTTP_FRAMEWORKS
+            }
+        )
         self.assertEqual(found, [])
 
     def test_server_source_gives_node_http_no_handler_of_its_own(self):
         # invariant: account-server-express-http
-        found = sorted(p for p, text in self.sources.items()
-                       if RAW_HANDLER.search(text) or REQUEST_LISTENER.search(text))
-        self.assertEqual(found, [], "these files hand Node's HTTP server a request handler "
-                                    "other than an Express application")
+        found = sorted(
+            p
+            for p, text in self.sources.items()
+            if RAW_HANDLER.search(text) or REQUEST_LISTENER.search(text)
+        )
+        self.assertEqual(
+            found,
+            [],
+            "these files hand Node's HTTP server a request handler "
+            "other than an Express application",
+        )
 
 
 class ExpressRoutesRunningServer(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         copy = support.built_copy()
@@ -141,14 +185,23 @@ class ExpressRoutesRunningServer(unittest.TestCase):
         for method, path in PROBES:
             with self.subTest(method=method, path=path):
                 self.server.request(method, path)
-                line = re.compile(r"(?:^|\s)router dispatching " + re.escape(method) + " "
-                                  + re.escape(path) + r"(?:\s|$)", re.MULTILINE)
+                line = re.compile(
+                    r"(?:^|\s)router dispatching "
+                    + re.escape(method)
+                    + " "
+                    + re.escape(path)
+                    + r"(?:\s|$)",
+                    re.MULTILINE,
+                )
                 deadline = time.monotonic() + DISPATCH_WAIT
                 while not line.search(self.server.stderr()) and time.monotonic() < deadline:
                     time.sleep(0.1)
-                self.assertRegex(self.server.stderr(), line,
-                                 f"Express 5's router logged no dispatch of {method} {path}; "
-                                 f"server output:\n{self.server.output()}")
+                self.assertRegex(
+                    self.server.stderr(),
+                    line,
+                    f"Express 5's router logged no dispatch of {method} {path}; "
+                    f"server output:\n{self.server.output()}",
+                )
 
 
 if __name__ == "__main__":

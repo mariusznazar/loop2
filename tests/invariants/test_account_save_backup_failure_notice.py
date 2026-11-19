@@ -56,13 +56,19 @@ def key_absent(fixture):
 
 
 def log_cannot_be_written(fixture):
-    fixture.write_copy(LOG_FILE=support.deploy_support.shell_path(
-        fixture.path("no-such-directory", "loop2-backup.log")))
+    fixture.write_copy(
+        LOG_FILE=support.deploy_support.shell_path(
+            fixture.path("no-such-directory", "loop2-backup.log")
+        )
+    )
 
 
 def lock_file_cannot_be_opened(fixture):
-    fixture.write_copy(LOCK_FILE=support.deploy_support.shell_path(
-        fixture.path("no-such-directory", "loop2-deploy.lock")))
+    fixture.write_copy(
+        LOCK_FILE=support.deploy_support.shell_path(
+            fixture.path("no-such-directory", "loop2-deploy.lock")
+        )
+    )
 
 
 def lock_not_free_in_time(fixture):
@@ -70,8 +76,9 @@ def lock_not_free_in_time(fixture):
 
 
 def temporary_directory_cannot_be_made(fixture):
-    fixture.write_copy(TEMPORARY_ROOT=support.deploy_support.shell_path(
-        fixture.path("no-such-directory")))
+    fixture.write_copy(
+        TEMPORARY_ROOT=support.deploy_support.shell_path(fixture.path("no-such-directory"))
+    )
 
 
 def container_stopped(fixture):
@@ -176,14 +183,38 @@ def signal_with_no_trap_while_sending(fixture):
     fixture.answer("rsync", action="VTALRM")
 
 
-FAILED_ENDS = (key_absent, log_cannot_be_written, lock_file_cannot_be_opened, lock_not_free_in_time,
-               temporary_directory_cannot_be_made, container_stopped, command_fails,
-               command_killed, command_hangs, encryption_fails, encryption_leaves_an_empty_file,
-               encryption_leaves_no_file, encryption_killed, lock_cannot_be_released, date_fails,
-               date_gives_no_weekday, send_fails, send_refused_by_a_changed_host_key,
-               send_finds_no_room_for_the_new_file, send_killed, send_hangs, terminated, hung_up,
-               interrupted, terminated_while_sending, alarm, first_user_signal, second_user_signal,
-               signal_the_script_has_no_trap_for, signal_with_no_trap_while_sending)
+FAILED_ENDS = (
+    key_absent,
+    log_cannot_be_written,
+    lock_file_cannot_be_opened,
+    lock_not_free_in_time,
+    temporary_directory_cannot_be_made,
+    container_stopped,
+    command_fails,
+    command_killed,
+    command_hangs,
+    encryption_fails,
+    encryption_leaves_an_empty_file,
+    encryption_leaves_no_file,
+    encryption_killed,
+    lock_cannot_be_released,
+    date_fails,
+    date_gives_no_weekday,
+    send_fails,
+    send_refused_by_a_changed_host_key,
+    send_finds_no_room_for_the_new_file,
+    send_killed,
+    send_hangs,
+    terminated,
+    hung_up,
+    interrupted,
+    terminated_while_sending,
+    alarm,
+    first_user_signal,
+    second_user_signal,
+    signal_the_script_has_no_trap_for,
+    signal_with_no_trap_while_sending,
+)
 
 STAGE = re.compile(r"stage (\w+):")
 FAILED_LAST_LINE = r"end: failed \(exit [1-9][0-9]*\)$"
@@ -194,7 +225,6 @@ EXIT_CODE_OF_SIGPIPE = 141
 
 
 class EveryFailedEndCallsPusher(unittest.TestCase):
-
     def fixture(self):
         fixture = support.BackupFixture()
         self.addCleanup(fixture.remove)

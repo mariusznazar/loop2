@@ -15,8 +15,12 @@ import unittest
 import docker_gate
 
 ROOT = Path(__file__).resolve().parents[1]
-NODE_TESTS = ["tests/*.test.mjs", "tests/sim/*.test.mjs", "tests/view/*.test.mjs",
-              "tests/balance/*.test.mjs"]
+NODE_TESTS = [
+    "tests/*.test.mjs",
+    "tests/sim/*.test.mjs",
+    "tests/view/*.test.mjs",
+    "tests/balance/*.test.mjs",
+]
 
 
 def command(*arguments):
@@ -48,15 +52,17 @@ def python_file(path):
 
 def main(arguments):
     if not arguments:
-        stages = [build,
-                  lambda: command("node", "--test", *NODE_TESTS),
-                  # The directories of tests run at the same time (D-406).
-                  lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py"),
-                  lambda: command(sys.executable, "-B",
-                                  ".the-way/elements/common/foundation_check.py"),
-                  # Its exit code is 1 for an error and 0 for warnings alone (D-405).
-                  lambda: command(sys.executable, "-B",
-                                  ".the-way/instruction-files/check_instructions.py")]
+        stages = [
+            build,
+            lambda: command("node", "--test", *NODE_TESTS),
+            # The directories of tests run at the same time (D-406).
+            lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py"),
+            lambda: command(sys.executable, "-B", ".the-way/elements/common/foundation_check.py"),
+            # Its exit code is 1 for an error and 0 for warnings alone (D-405).
+            lambda: command(
+                sys.executable, "-B", ".the-way/instruction-files/check_instructions.py"
+            ),
+        ]
         for stage in stages:
             code = stage()
             if code:

@@ -66,10 +66,18 @@ BUILT_DIRECTORY = "dist/browser/sim"
 # src/browser/sim/data/maps.ts gives them.
 MAP_RESOURCES = {
     "forestEdge": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8}),
-    "forest": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
-               {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
-    "forestDeep": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
-                   {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
+    "forest": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
+    "forestDeep": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
 }
 # The game maps whose resources lie on every tile: the density of each resource is 1 in the data.
 ON_EVERY_TILE = ("forestEdge",)
@@ -79,15 +87,32 @@ CHARACTER_NAME = "Ala"
 # the outcome a layout gives where the draw left the resource on no tile and it is placed on one
 # tile all the same, a case a few starts in a thousand reach: berry, fiber and moss in turn.
 SINGLE_TILE_TIMES = {1760001609000: "berry", 1760002975000: "fiber", 1760006249000: "moss"}
-REAL_TIMES = (1760000000000, 1760000123456, 1760000200000, 1760000300000, 1760000400000,
-              1760000500000, 1, 86400000, 1700000000000, 1800000000000, 1760000000001,
-              1765432109876) + tuple(SINGLE_TILE_TIMES)
+REAL_TIMES = (
+    1760000000000,
+    1760000123456,
+    1760000200000,
+    1760000300000,
+    1760000400000,
+    1760000500000,
+    1,
+    86400000,
+    1700000000000,
+    1800000000000,
+    1760000000001,
+    1765432109876,
+) + tuple(SINGLE_TILE_TIMES)
 ALWAYS = {"kind": "always"}
-PROGRAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
-                              {"condition": ALWAYS, "action": {"kind": "wander"}}])
+PROGRAM = program_from_rules(
+    [
+        {"condition": ALWAYS, "action": {"kind": "explore"}},
+        {"condition": ALWAYS, "action": {"kind": "wander"}},
+    ]
+)
 STARTS_PER_TIME = 3
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -117,6 +142,7 @@ for (const mapId of config.mapIds) {
 }
 writeFileSync(outPath, JSON.stringify(out));
 """
+)
 
 
 def node():
@@ -142,9 +168,15 @@ def starts():
             with open(script, "w", encoding="utf-8", newline="\n") as handle:
                 handle.write(DRIVER)
             with open(config, "w", encoding="utf-8", newline="\n") as handle:
-                json.dump({"realTimes": REAL_TIMES, "program": PROGRAM,
-                           "characterName": CHARACTER_NAME,
-                           "mapIds": list(MAP_RESOURCES)}, handle)
+                json.dump(
+                    {
+                        "realTimes": REAL_TIMES,
+                        "program": PROGRAM,
+                        "characterName": CHARACTER_NAME,
+                        "mapIds": list(MAP_RESOURCES),
+                    },
+                    handle,
+                )
             code, output = support.run([node(), script, directory, config, out_path], work)
             if code != 0:
                 raise AssertionError(f"the driver exited {code}:\n{output}")
@@ -194,15 +226,19 @@ def not_written_out(read, written):
     found = []
     for map_id, resources in read.items():
         if map_id not in written:
-            found.append(f"the data gives the game map {map_id!r}, which {where} does not hold; "
-                         "add it there with its resources and stocks")
+            found.append(
+                f"the data gives the game map {map_id!r}, which {where} does not hold; "
+                "add it there with its resources and stocks"
+            )
             continue
         known = {(r["id"], r["stock"]) for r in written[map_id]}
         for resource in resources:
             if (resource["id"], resource["stock"]) not in known:
-                found.append(f"the data gives {map_id!r} the resource {resource['id']!r} with "
-                             f"the stock {resource['stock']!r}, which {where} does not hold; "
-                             "write it out there")
+                found.append(
+                    f"the data gives {map_id!r} the resource {resource['id']!r} with "
+                    f"the stock {resource['stock']!r}, which {where} does not hold; "
+                    "write it out there"
+                )
     return found
 
 
@@ -211,19 +247,22 @@ def violations(start, resources):
     stock_of = {r["id"]: r["stock"] for r in resources}
     found = []
     for tile in start["tiles"]:
-        where = f"{start['mapId']} ({start['how']} at {start['realMs']}) tile " \
-                f"{tile['col']},{tile['row']}"
+        where = (
+            f"{start['mapId']} ({start['how']} at {start['realMs']}) tile "
+            f"{tile['col']},{tile['row']}"
+        )
         for resource, value in tile["stock"].items():
             if resource not in stock_of:
                 found.append(f"{where} holds {resource}, missing from the map's list")
             elif value not in (0, stock_of[resource]) or isinstance(value, bool):
-                found.append(f"{where} holds {value!r} of {resource}, neither none nor the "
-                             f"stock per tile {stock_of[resource]}")
+                found.append(
+                    f"{where} holds {value!r} of {resource}, neither none nor the "
+                    f"stock per tile {stock_of[resource]}"
+                )
     return found
 
 
 class MapRunTiles(unittest.TestCase):
-
     def test_tiles_at_each_start(self):
         # invariant: map-run-tiles
         result = starts()
@@ -242,30 +281,39 @@ class MapRunTiles(unittest.TestCase):
         result = starts()
         for map_id, resources in MAP_RESOURCES.items():
             for resource in resources:
-                tiles = [t for s in result["starts"] if s["mapId"] == map_id
-                         for t in s["tiles"]]
-                self.assertTrue(any(t["stock"].get(resource["id"]) == resource["stock"]
-                                    for t in tiles),
-                                f"no tile of {map_id} holds {resource['id']}")
+                tiles = [t for s in result["starts"] if s["mapId"] == map_id for t in s["tiles"]]
+                self.assertTrue(
+                    any(t["stock"].get(resource["id"]) == resource["stock"] for t in tiles),
+                    f"no tile of {map_id} holds {resource['id']}",
+                )
                 if map_id in ON_EVERY_TILE:
-                    self.assertTrue(all(t["stock"].get(resource["id"]) == resource["stock"]
-                                        for t in tiles),
-                                    f"a tile of {map_id} lacks {resource['id']}")
+                    self.assertTrue(
+                        all(t["stock"].get(resource["id"]) == resource["stock"] for t in tiles),
+                        f"a tile of {map_id} lacks {resource['id']}",
+                    )
                     continue
-                self.assertTrue(any(not t["stock"].get(resource["id"]) for t in tiles),
-                                f"every tile of {map_id} holds {resource['id']}")
+                self.assertTrue(
+                    any(not t["stock"].get(resource["id"]) for t in tiles),
+                    f"every tile of {map_id} holds {resource['id']}",
+                )
 
     def test_control_single_tile_starts_are_reached(self):
         # invariant: map-run-tiles
         result = starts()
         for real_ms, resource in SINGLE_TILE_TIMES.items():
-            start = next(s for s in result["starts"] if s["mapId"] == "forest"
-                         and s["how"] == "send" and s["realMs"] == real_ms)
+            start = next(
+                s
+                for s in result["starts"]
+                if s["mapId"] == "forest" and s["how"] == "send" and s["realMs"] == real_ms
+            )
             holding = [t for t in start["tiles"] if t["stock"].get(resource)]
-            self.assertEqual(len(holding), 1,
-                             f"the send at {real_ms} no longer gives {resource} on one tile alone, "
-                             "so the starts may not reach a layout that places a resource no "
-                             "tile drew")
+            self.assertEqual(
+                len(holding),
+                1,
+                f"the send at {real_ms} no longer gives {resource} on one tile alone, "
+                "so the starts may not reach a layout that places a resource no "
+                "tile drew",
+            )
             self.assertEqual(violations(start, MAP_RESOURCES["forest"]), [])
 
     def test_tripwire_every_map_and_resource_is_written_out(self):
@@ -281,8 +329,10 @@ class MapRunTiles(unittest.TestCase):
         new_map = dict(same, cave=[{"id": "stone", "stock": 4}])
         self.assertTrue(not_written_out(new_map, MAP_RESOURCES), "a new game map goes unseen")
         new_resource = {m: rs + [{"id": "stone", "stock": 4}] for m, rs in same.items()}
-        self.assertTrue(not_written_out(new_resource, MAP_RESOURCES),
-                        "a new resource on a map's list goes unseen")
+        self.assertTrue(
+            not_written_out(new_resource, MAP_RESOURCES),
+            "a new resource on a map's list goes unseen",
+        )
         new_stock = {m: [dict(r, stock=r["stock"] + 1) for r in rs] for m, rs in same.items()}
         self.assertTrue(not_written_out(new_stock, MAP_RESOURCES), "a changed stock goes unseen")
 
@@ -292,15 +342,19 @@ class MapRunTiles(unittest.TestCase):
         start = result["starts"][0]
         resources = MAP_RESOURCES[start["mapId"]]
         self.assertEqual(violations(start, resources), [])
-        changes = {"one more": lambda n: n + 1, "one less": lambda n: n - 1,
-                   "half": lambda n: n / 2}
+        changes = {
+            "one more": lambda n: n + 1,
+            "one less": lambda n: n - 1,
+            "half": lambda n: n / 2,
+        }
         for resource in resources:
             for label, change in changes.items():
                 made_up = copying.deepcopy(start)
                 made_up["tiles"][0]["stock"][resource["id"]] = change(resource["stock"])
                 with self.subTest(resource=resource["id"], change=label):
-                    self.assertTrue(violations(made_up, resources),
-                                    f"{label} of {resource['id']} goes unseen")
+                    self.assertTrue(
+                        violations(made_up, resources), f"{label} of {resource['id']} goes unseen"
+                    )
         made_up = copying.deepcopy(start)
         made_up["tiles"][0]["stock"]["off-the-list"] = 1
         self.assertTrue(violations(made_up, resources), "a resource off the list goes unseen")

@@ -13,7 +13,7 @@ from pathlib import Path
 import sys
 import tempfile
 
-PROGRAM = '''\
+PROGRAM = """\
 import json
 import sys
 import time
@@ -84,7 +84,7 @@ finally:
 sys.stdout.write(output)
 sys.stderr.write(error)
 sys.exit(code)
-'''
+"""
 
 
 class DockerStandIn:
@@ -94,23 +94,37 @@ class DockerStandIn:
     `cached_version`: `version` names a server version whatever the daemon does, as Docker
     Desktop answers it from its cache while the virtual machine of its daemon is stopped."""
 
-    def __init__(self, case, answers=False, plugin=True, rise_after_polls=None,
-                 cached_version=False):
+    def __init__(
+        self, case, answers=False, plugin=True, rise_after_polls=None, cached_version=False
+    ):
         temporary = tempfile.TemporaryDirectory(prefix="loop2-docker-standin-")
         case.addCleanup(temporary.cleanup)
         self.folder = Path(temporary.name)
         (self.folder / "standin_docker.py").write_text(PROGRAM, encoding="utf-8")
-        (self.folder / "state.json").write_text(json.dumps({
-            "answers": answers, "plugin": plugin, "rise_after_polls": rise_after_polls,
-            "cached_version": cached_version, "started": False, "polls": 0}), encoding="utf-8")
+        (self.folder / "state.json").write_text(
+            json.dumps(
+                {
+                    "answers": answers,
+                    "plugin": plugin,
+                    "rise_after_polls": rise_after_polls,
+                    "cached_version": cached_version,
+                    "started": False,
+                    "polls": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
         python = sys.executable
         if sys.platform == "win32":
             (self.folder / "docker.cmd").write_text(
-                f'@"{python}" "%~dp0standin_docker.py" %*\r\n', encoding="utf-8", newline="")
+                f'@"{python}" "%~dp0standin_docker.py" %*\r\n', encoding="utf-8", newline=""
+            )
         else:
             launcher = self.folder / "docker"
-            launcher.write_text(f'#!/bin/sh\nexec "{python}" "$(dirname "$0")/standin_docker.py" '
-                                '"$@"\n', encoding="utf-8")
+            launcher.write_text(
+                f'#!/bin/sh\nexec "{python}" "$(dirname "$0")/standin_docker.py" "$@"\n',
+                encoding="utf-8",
+            )
             launcher.chmod(0o755)
 
     def environment(self, **extra):
@@ -132,5 +146,8 @@ class DockerStandIn:
 
     def stops(self):
         """Every call that would take Docker Desktop down or restart it."""
-        return [call for call in self.calls() if call[:2] in (["desktop", "stop"],
-                                                              ["desktop", "restart"])]
+        return [
+            call
+            for call in self.calls()
+            if call[:2] in (["desktop", "stop"], ["desktop", "restart"])
+        ]

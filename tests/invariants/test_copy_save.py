@@ -76,7 +76,9 @@ BASE = program_from_rules([rule(fewer_sticks_than(0), WANDER), rule(ALWAYS, EXPL
 
 
 def add_rule(program):
-    program_rules(program).append({"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER})
+    program_rules(program).append(
+        {"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER}
+    )
     program["nextRuleId"] += 1
 
 
@@ -95,7 +97,9 @@ EDITS = [
     ("the condition of a rule changed", edited(BASE, change_condition)),
 ]
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -120,6 +124,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -133,8 +138,9 @@ def drive(steps):
     built = support.built_copy()
     game = built.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-copy-save-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -169,26 +175,37 @@ def after_step(edit, step, paused=False, other=None):
 
 
 class CopySave(unittest.TestCase):
-
     def test_precondition_the_streak_stands_at_ten_before_the_save(self):
         before, _ = after_step(EDITS[0][1], ["programs.saveCopyIntoProgram"])
-        self.assertEqual(before["streak"], STREAK_BEFORE,
-                         "the map run does not hold a streak of 10 after 10 game minutes of "
-                         "exploring, so what is left unchanged below would prove nothing")
-        self.assertNotEqual(before["copy"]["program"], before["copy"]["base"],
-                            "the copy does not differ from its program, so there is nothing to save")
+        self.assertEqual(
+            before["streak"],
+            STREAK_BEFORE,
+            "the map run does not hold a streak of 10 after 10 game minutes of "
+            "exploring, so what is left unchanged below would prove nothing",
+        )
+        self.assertNotEqual(
+            before["copy"]["program"],
+            before["copy"]["base"],
+            "the copy does not differ from its program, so there is nothing to save",
+        )
 
     def test_save_into_the_program_leaves_the_copy_and_the_streak(self):
         # invariant: copy-save
         for paused in (False, True):
             for name, edit in EDITS:
                 with self.subTest(edit=name, paused=paused):
-                    before, after = after_step(edit, ["programs.saveCopyIntoProgram"], paused=paused)
-                    self.assertEqual(after["copy"]["program"], before["copy"]["program"],
-                                     f"{name}: the content of the copy changed")
+                    before, after = after_step(
+                        edit, ["programs.saveCopyIntoProgram"], paused=paused
+                    )
+                    self.assertEqual(
+                        after["copy"]["program"],
+                        before["copy"]["program"],
+                        f"{name}: the content of the copy changed",
+                    )
                     self.assertEqual(after["streak"], STREAK_BEFORE, f"{name}: the streak changed")
-                    self.assertEqual(after["copy"]["programId"], 1,
-                                     f"{name}: the copy moved to another program")
+                    self.assertEqual(
+                        after["copy"]["programId"], 1, f"{name}: the copy moved to another program"
+                    )
                     self.assertEqual(after["paused"], paused, f"{name}: the pause changed")
 
     def test_save_as_a_new_program_leaves_the_copy_and_the_streak_and_is_no_switch(self):
@@ -196,13 +213,20 @@ class CopySave(unittest.TestCase):
         for paused in (False, True):
             for name, edit in EDITS:
                 with self.subTest(edit=name, paused=paused):
-                    before, after = after_step(edit, ["programs.saveCopyAsNewProgram", "Nocna"],
-                                               paused=paused)
-                    self.assertEqual(after["copy"]["program"], before["copy"]["program"],
-                                     f"{name}: the content of the copy changed")
+                    before, after = after_step(
+                        edit, ["programs.saveCopyAsNewProgram", "Nocna"], paused=paused
+                    )
+                    self.assertEqual(
+                        after["copy"]["program"],
+                        before["copy"]["program"],
+                        f"{name}: the content of the copy changed",
+                    )
                     self.assertEqual(after["streak"], STREAK_BEFORE, f"{name}: the streak changed")
-                    self.assertEqual(after["copy"]["programId"], 3,
-                                     f"{name}: the copy does not belong to the new program")
+                    self.assertEqual(
+                        after["copy"]["programId"],
+                        3,
+                        f"{name}: the copy does not belong to the new program",
+                    )
                     self.assertEqual(after["paused"], paused, f"{name}: the pause changed")
 
     def test_control_the_saves_were_made(self):
@@ -210,15 +234,22 @@ class CopySave(unittest.TestCase):
         for name, edit in EDITS:
             with self.subTest(edit=name):
                 before, after = after_step(edit, ["programs.saveCopyIntoProgram"])
-                self.assertEqual(after["saved"][0]["program"], before["copy"]["program"],
-                                 f"{name}: program 1 does not hold the copy")
+                self.assertEqual(
+                    after["saved"][0]["program"],
+                    before["copy"]["program"],
+                    f"{name}: program 1 does not hold the copy",
+                )
                 before, after = after_step(edit, ["programs.saveCopyAsNewProgram", "Nocna"])
                 self.assertEqual([saved["id"] for saved in after["saved"]], [1, 2, 3])
                 self.assertEqual(after["saved"][2]["name"], "Nocna")
-                self.assertEqual(after["saved"][2]["program"], before["copy"]["program"],
-                                 f"{name}: the new program does not hold the copy")
-                self.assertEqual(after["saved"][0], before["saved"][0],
-                                 f"{name}: program 1 changed")
+                self.assertEqual(
+                    after["saved"][2]["program"],
+                    before["copy"]["program"],
+                    f"{name}: the new program does not hold the copy",
+                )
+                self.assertEqual(
+                    after["saved"][0], before["saved"][0], f"{name}: program 1 changed"
+                )
 
     def test_control_a_switch_in_the_same_scenario_zeroes_the_streak(self):
         # invariant: copy-save
@@ -226,8 +257,9 @@ class CopySave(unittest.TestCase):
             for name, edit in EDITS:
                 for program, other in (("other rules", None), ("the rules of the copy", edit)):
                     with self.subTest(edit=name, program=program, paused=paused):
-                        before, after = after_step(edit, ["programs.switchProgram", 2],
-                                                   paused=paused, other=other)
+                        before, after = after_step(
+                            edit, ["programs.switchProgram", 2], paused=paused, other=other
+                        )
                         self.assertEqual(before["streak"], STREAK_BEFORE)
                         self.assertEqual(after["streak"], 0, f"{name}: the switch kept the streak")
                         self.assertEqual(after["copy"]["programId"], 2)

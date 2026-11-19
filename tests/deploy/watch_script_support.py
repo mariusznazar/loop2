@@ -73,23 +73,33 @@ RESTARTED = "2026-11-09T00:03:00.000000000Z"
 # found): the subject goes into a URL path, so it is ASCII; the text is one sentence line in
 # UTF-8, and it differs per kind. The test of the invariant failure-watcher-message holds these words fixed.
 NOTICES = {
-    "down": ("loop2_gra_nie_dziala",
-             "Gra loop2 nie działa: kontener gry albo tunelu nie jest uruchomiony. "
-             "Co dalej: skill loop2-deploy."),
-    "unhealthy": ("loop2_usluga_niezdrowa",
-                  "Usługa gry loop2 jest niezdrowa: kontrola zdrowia kontenera zawodzi. "
-                  "Co dalej: skill loop2-deploy."),
-    "restarted": ("loop2_ponowny_start",
-                  "Kontener gry albo tunelu loop2 wystartował od nowa. "
-                  "Co dalej: skill loop2-deploy."),
-    "failures": ("loop2_awarie_serwera",
-                 "Serwer gry loop2 zapisał awarie w logu. Co dalej: skill loop2-deploy."),
-    "backup": ("loop2_brak_kopii_bazy",
-               "Brak udanej kopii bazy loop2 od ponad doby: nocna kopia nie została wysłana. "
-               "Co dalej: skill loop2-deploy."),
-    "browser": ("loop2_awarie_przegladarek",
-                "Przeglądarki graczy zgłosiły awarie gry loop2. "
-                "Co dalej: skill loop2-deploy."),
+    "down": (
+        "loop2_gra_nie_dziala",
+        "Gra loop2 nie działa: kontener gry albo tunelu nie jest uruchomiony. "
+        "Co dalej: skill loop2-deploy.",
+    ),
+    "unhealthy": (
+        "loop2_usluga_niezdrowa",
+        "Usługa gry loop2 jest niezdrowa: kontrola zdrowia kontenera zawodzi. "
+        "Co dalej: skill loop2-deploy.",
+    ),
+    "restarted": (
+        "loop2_ponowny_start",
+        "Kontener gry albo tunelu loop2 wystartował od nowa. Co dalej: skill loop2-deploy.",
+    ),
+    "failures": (
+        "loop2_awarie_serwera",
+        "Serwer gry loop2 zapisał awarie w logu. Co dalej: skill loop2-deploy.",
+    ),
+    "backup": (
+        "loop2_brak_kopii_bazy",
+        "Brak udanej kopii bazy loop2 od ponad doby: nocna kopia nie została wysłana. "
+        "Co dalej: skill loop2-deploy.",
+    ),
+    "browser": (
+        "loop2_awarie_przegladarek",
+        "Przeglądarki graczy zgłosiły awarie gry loop2. Co dalej: skill loop2-deploy.",
+    ),
 }
 
 STAND_INS = ("docker", "pusher", "flock", "date")
@@ -143,9 +153,11 @@ def sent_line(epoch, day="1"):
 
 def night(epoch, day="1"):
     """The lines of a whole night's backup that was sent, the last one the one that counts."""
-    return (f"{stamp(epoch - 40)} loop2-backup: start\n"
-            f"{stamp(epoch - 5)} loop2-backup: made: loop2-accounts-{day}.sqlite.age, 1024 bytes\n"
-            + sent_line(epoch, day))
+    return (
+        f"{stamp(epoch - 40)} loop2-backup: start\n"
+        f"{stamp(epoch - 5)} loop2-backup: made: loop2-accounts-{day}.sqlite.age, 1024 bytes\n"
+        + sent_line(epoch, day)
+    )
 
 
 class WatchResult:
@@ -153,8 +165,8 @@ class WatchResult:
         self.code = code
         self.stdout = stdout
         self.stderr = stderr
-        self.calls = calls                  # [[tool, argument, ...], ...] in the order of the calls
-        self.log = log                      # the watcher's log file after the run
+        self.calls = calls  # [[tool, argument, ...], ...] in the order of the calls
+        self.log = log  # the watcher's log file after the run
         self.pusher_inputs = pusher_inputs  # [bytes read by each pusher call, ...], in order
 
     def of(self, tool):
@@ -167,14 +179,20 @@ class WatchResult:
     def messages(self):
         """[(subject, text)] of the pusher calls: the subject is the call's only argument, the text
         what the call read from its standard input, one line."""
-        return [(arguments[0] if len(arguments) == 1 else tuple(arguments),
-                 data.decode("utf-8", "replace"))
-                for arguments, data in zip(self.of("pusher"), self.pusher_inputs, strict=True)]
+        return [
+            (
+                arguments[0] if len(arguments) == 1 else tuple(arguments),
+                data.decode("utf-8", "replace"),
+            )
+            for arguments, data in zip(self.of("pusher"), self.pusher_inputs, strict=True)
+        ]
 
     def __repr__(self):
-        return (f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
-                f"\n--- log ---\n{self.log}\n--- calls ---\n{self.calls}"
-                f"\n--- pusher inputs ---\n{self.pusher_inputs}")
+        return (
+            f"exit {self.code}\n--- stdout ---\n{self.stdout}\n--- stderr ---\n{self.stderr}"
+            f"\n--- log ---\n{self.log}\n--- calls ---\n{self.calls}"
+            f"\n--- pusher inputs ---\n{self.pusher_inputs}"
+        )
 
 
 class WatchFixture(backup_support.BackupFixture):
@@ -189,9 +207,13 @@ class WatchFixture(backup_support.BackupFixture):
         self.stubs = self.path("stubs")
         for tool in backup_support.STUBBED_TOOLS:
             stub = backup_support.STUB.format(
-                tool=tool, stubs=shell_path(self.stubs), hang=backup_support.HANG_SECONDS,
-                reader_tries=backup_support.READER_TRIES, before=BEFORE.get(tool, ""),
-                default=DEFAULT.get(tool, "")).encode()
+                tool=tool,
+                stubs=shell_path(self.stubs),
+                hang=backup_support.HANG_SECONDS,
+                reader_tries=backup_support.READER_TRIES,
+                before=BEFORE.get(tool, ""),
+                default=DEFAULT.get(tool, ""),
+            ).encode()
             deploy_support.write_bytes(os.path.join(self.stubs, tool), stub)
             os.chmod(os.path.join(self.stubs, tool), 0o755)
             os.makedirs(os.path.join(self.stubs, "answers", tool), exist_ok=True)
@@ -240,10 +262,12 @@ class WatchFixture(backup_support.BackupFixture):
         os.chmod(self.copy, 0o755)
         source_head, _lines, source_tail = deploy_support.split_script(source)
         copy_head, _lines, copy_tail = deploy_support.split_script(
-            deploy_support.read_bytes(self.copy))
+            deploy_support.read_bytes(self.copy)
+        )
         if (source_head, source_tail) != (copy_head, copy_tail):
-            raise AssertionError("the copy differs from deploy/loop2-watch outside the constants "
-                                 "block")
+            raise AssertionError(
+                "the copy differs from deploy/loop2-watch outside the constants block"
+            )
 
     # --- what the stand-ins answer ----------------------------------------------------------------
 
@@ -256,8 +280,9 @@ class WatchFixture(backup_support.BackupFixture):
         """Put the text or the bytes a test chose into the backup log, which the clock no longer
         rewrites."""
         self.backup_log_is_default = False
-        deploy_support.write_bytes(self.backup_log,
-                                   data if isinstance(data, bytes) else data.encode())
+        deploy_support.write_bytes(
+            self.backup_log, data if isinstance(data, bytes) else data.encode()
+        )
 
     def remove_backup_log(self):
         self.backup_log_is_default = False
@@ -271,8 +296,11 @@ class WatchFixture(backup_support.BackupFixture):
     def make_backup_log_a_pipe_with_no_writer(self):
         """A named pipe where the log should be: a read of it blocks until the time limit ends it."""
         self.remove_backup_log()
-        subprocess.run([self.bash, "-c", 'mkfifo -- "$1"', "bash",
-                        deploy_support.shell_path(self.backup_log)], check=True, timeout=30)
+        subprocess.run(
+            [self.bash, "-c", 'mkfifo -- "$1"', "bash", deploy_support.shell_path(self.backup_log)],
+            check=True,
+            timeout=30,
+        )
 
     def set_container(self, name, container_id, status="running", health="none", started=STARTED):
         """The line `docker inspect` prints for a container, in the shape the watcher's format
@@ -299,10 +327,12 @@ class WatchFixture(backup_support.BackupFixture):
         """From the `look`-th ask for a shared lock of one run on, `flock` answers `status` (1, a
         held lock, by default; 2 or 127, a broken `flock`, to test the other case): 1 is held at
         the first look, 2 is free at the first and held at the second."""
-        deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-status"),
-                                   f"{status}\n".encode())
-        deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-from"),
-                                   f"{look}\n".encode())
+        deploy_support.write_bytes(
+            os.path.join(self.stubs, "hold-shared-status"), f"{status}\n".encode()
+        )
+        deploy_support.write_bytes(
+            os.path.join(self.stubs, "hold-shared-from"), f"{look}\n".encode()
+        )
 
     def release_deploy_lock(self):
         path = os.path.join(self.stubs, "hold-shared-from")
@@ -359,11 +389,18 @@ class WatchFixture(backup_support.BackupFixture):
                 code = process.wait(timeout=backup_support.RUN_TIMEOUT)
             except subprocess.TimeoutExpired:
                 process_support.kill_tree(process)
-                raise AssertionError(f"the run did not end within {backup_support.RUN_TIMEOUT} s;"
-                                     " its processes were stopped") from None
-        return WatchResult(code, deploy_support.read_bytes(out_path).decode("utf-8", "replace"),
-                           deploy_support.read_bytes(err_path).decode("utf-8", "replace"),
-                           self._read_calls(), self.log_text(), self._pusher_inputs())
+                raise AssertionError(
+                    f"the run did not end within {backup_support.RUN_TIMEOUT} s;"
+                    " its processes were stopped"
+                ) from None
+        return WatchResult(
+            code,
+            deploy_support.read_bytes(out_path).decode("utf-8", "replace"),
+            deploy_support.read_bytes(err_path).decode("utf-8", "replace"),
+            self._read_calls(),
+            self.log_text(),
+            self._pusher_inputs(),
+        )
 
     def run_at(self, epoch, arguments=()):
         """Set the clock, then run once."""

@@ -95,7 +95,9 @@ def group_of(program):
 
 
 def add_rule(program):
-    program_rules(program).append({"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER})
+    program_rules(program).append(
+        {"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER}
+    )
     program["nextRuleId"] += 1
 
 
@@ -136,7 +138,9 @@ DIFFERING = [
     ("the condition of a group changed", BASE, edited(BASE, change_group_condition)),
 ]
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -161,6 +165,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -174,8 +179,9 @@ def drive(steps):
     built = support.built_copy()
     game = built.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-streak-program-change-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -197,13 +203,22 @@ def drive(steps):
 def after_edit(before, handed_over, paused=False, ended=False):
     """The record of the step `setProgram(handed_over)` in a map run that has passed
     STREAK_BEFORE game minutes under the program `before`."""
-    steps = [["newGame"], CREATE, ["setProgram", before], ["send", SENT, T],
-             ["advanceMinutes", STREAK_BEFORE]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", before],
+        ["send", SENT, T],
+        ["advanceMinutes", STREAK_BEFORE],
+    ]
     if paused:
         steps.append(["setPaused", True])
     if ended:
-        steps.append(["replaceRun", {"death": {"minute": STREAK_BEFORE, "cause": "cold"},
-                                     "streak": DEAD_STREAK}])
+        steps.append(
+            [
+                "replaceRun",
+                {"death": {"minute": STREAK_BEFORE, "cause": "cold"}, "streak": DEAD_STREAK},
+            ]
+        )
     steps.append(["setProgram", handed_over])
     records = drive(steps)
     return records[-2], records[-1]
@@ -214,9 +229,16 @@ def after_switch(target, paused=False):
     run sent with program 1 holding BASE that has passed STREAK_BEFORE game minutes. Program 2 is
     made by `createProgram` and holds the empty group (other rules); program 3 holds BASE, the very
     rules of the copy."""
-    steps = [["newGame"], CREATE, ["setProgram", BASE], ["programs.createProgram"],
-             ["programs.createProgram"], ["programs.editProgram", 3, BASE],
-             ["send", {**SENT, "programId": 1}, T], ["advanceMinutes", STREAK_BEFORE]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", BASE],
+        ["programs.createProgram"],
+        ["programs.createProgram"],
+        ["programs.editProgram", 3, BASE],
+        ["send", {**SENT, "programId": 1}, T],
+        ["advanceMinutes", STREAK_BEFORE],
+    ]
     if paused:
         steps.append(["setPaused", True])
     steps.append(["programs.switchProgram", target])
@@ -225,12 +247,14 @@ def after_switch(target, paused=False):
 
 
 class StreakProgramChange(unittest.TestCase):
-
     def test_precondition_the_streak_stands_at_ten_before_the_edit(self):
         before, _ = after_edit(BASE, BASE)
-        self.assertEqual(before["streak"], STREAK_BEFORE,
-                         "the map run does not hold a streak of 10 after 10 game minutes of "
-                         "exploring, so the zero below would prove nothing")
+        self.assertEqual(
+            before["streak"],
+            STREAK_BEFORE,
+            "the map run does not hold a streak of 10 after 10 game minutes of "
+            "exploring, so the zero below would prove nothing",
+        )
 
     def test_an_edit_that_changes_the_program_zeroes_the_streak(self):
         # invariant: streak-program-change
@@ -239,8 +263,7 @@ class StreakProgramChange(unittest.TestCase):
                 with self.subTest(edit=name, paused=paused):
                     before, after = after_edit(base, handed_over, paused=paused)
                     self.assertEqual(before["streak"], STREAK_BEFORE)
-                    self.assertEqual(after["streak"], 0,
-                                     f"{name}: the streak was not set to zero")
+                    self.assertEqual(after["streak"], 0, f"{name}: the streak was not set to zero")
                     self.assertEqual(after["paused"], paused, f"{name}: the pause changed")
 
     def test_control_an_edit_that_hands_back_the_same_program_leaves_the_streak(self):
@@ -250,8 +273,9 @@ class StreakProgramChange(unittest.TestCase):
             for name, base in (("the same program", BASE), ("twin rules", TWINS)):
                 with self.subTest(program=name, paused=paused):
                     _, after = after_edit(base, copy.deepcopy(base), paused=paused)
-                    self.assertEqual(after["streak"], STREAK_BEFORE,
-                                     f"{name} handed back changed the streak")
+                    self.assertEqual(
+                        after["streak"], STREAK_BEFORE, f"{name} handed back changed the streak"
+                    )
 
     def test_a_map_run_ended_in_death_keeps_its_streak(self):
         # invariant: streak-program-change
@@ -259,19 +283,26 @@ class StreakProgramChange(unittest.TestCase):
             with self.subTest(edit=name):
                 before, after = after_edit(base, handed_over, ended=True)
                 self.assertTrue(before["death"], "the map run did not end in death")
-                self.assertEqual(after["streak"], DEAD_STREAK,
-                                 f"{name}: an ended map run lost its streak")
+                self.assertEqual(
+                    after["streak"], DEAD_STREAK, f"{name}: an ended map run lost its streak"
+                )
 
     def test_a_switch_to_another_program_zeroes_the_streak(self):
         # invariant: streak-program-change
         for paused in (False, True):
-            for target, name in ((2, "a program of other rules"), (3, "a program of the same rules")):
+            for target, name in (
+                (2, "a program of other rules"),
+                (3, "a program of the same rules"),
+            ):
                 with self.subTest(program=name, paused=paused):
                     before, after = after_switch(target, paused=paused)
                     self.assertEqual(before["streak"], STREAK_BEFORE)
-                    self.assertEqual(after["streak"], 0,
-                                     f"the switch to {name} did not set the streak to zero")
-                    self.assertEqual(after["paused"], paused, f"the switch to {name} changed the pause")
+                    self.assertEqual(
+                        after["streak"], 0, f"the switch to {name} did not set the streak to zero"
+                    )
+                    self.assertEqual(
+                        after["paused"], paused, f"the switch to {name} changed the pause"
+                    )
 
 
 if __name__ == "__main__":

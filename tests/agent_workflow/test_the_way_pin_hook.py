@@ -24,13 +24,28 @@ GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
 }
-GIT_OPTIONS = ["-c", "protocol.file.allow=always", "-c", "user.name=Test",
-               "-c", "user.email=test@example.invalid", "-c", "commit.gpgsign=false"]
+GIT_OPTIONS = [
+    "-c",
+    "protocol.file.allow=always",
+    "-c",
+    "user.name=Test",
+    "-c",
+    "user.email=test@example.invalid",
+    "-c",
+    "commit.gpgsign=false",
+]
 
 
 def git(directory, *args):
-    run = subprocess.run(["git", *GIT_OPTIONS, *args], cwd=directory, env=GIT_ENVIRONMENT,
-                         capture_output=True, encoding="utf-8", check=False, timeout=60)
+    run = subprocess.run(
+        ["git", *GIT_OPTIONS, *args],
+        cwd=directory,
+        env=GIT_ENVIRONMENT,
+        capture_output=True,
+        encoding="utf-8",
+        check=False,
+        timeout=60,
+    )
     if run.returncode:
         raise AssertionError(f"git {' '.join(args)} failed: {run.stdout}{run.stderr}")
     return run.stdout.strip()
@@ -58,18 +73,26 @@ def hook_command(root):
     """The command of the hook as Claude Code starts it for the project at `root`: the
     placeholder replaced in each argument, no shell."""
     handler = declared_handler()
-    return [handler["command"], *[argument.replace(PLACEHOLDER, str(root) + os.sep)
-                                  for argument in handler["args"]]]
+    return [
+        handler["command"],
+        *[argument.replace(PLACEHOLDER, str(root) + os.sep) for argument in handler["args"]],
+    ]
 
 
 def run_hook(command, directory, environment=None):
-    return subprocess.run(command, cwd=directory, env=environment or GIT_ENVIRONMENT,
-                          stdin=subprocess.DEVNULL, capture_output=True, encoding="utf-8",
-                          check=False, timeout=60)
+    return subprocess.run(
+        command,
+        cwd=directory,
+        env=environment or GIT_ENVIRONMENT,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        encoding="utf-8",
+        check=False,
+        timeout=60,
+    )
 
 
 class TheWayPinHook(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.base = Path(tempfile.mkdtemp())
@@ -130,7 +153,9 @@ class TheWayPinHook(unittest.TestCase):
         directory = self.clone(initialized=False)
         own_commit = git(directory, "rev-parse", "HEAD")
         precondition = git(directory / ".the-way", "rev-parse", "HEAD")
-        self.assertEqual(precondition, own_commit, "git finds the repository around the empty folder")
+        self.assertEqual(
+            precondition, own_commit, "git finds the repository around the empty folder"
+        )
         run = run_hook(hook_command(directory), directory)
         self.assertEqual(run.returncode, 0, run.stderr)
         output = json.loads(run.stdout)
@@ -163,8 +188,13 @@ class TheWayPinHook(unittest.TestCase):
         directory = self.clone(initialized=True)
         git(directory / ".the-way", "checkout", "--detach", self.older)
         (directory / ".git" / "index").write_bytes(b"damaged")
-        precondition = subprocess.run(["git", "ls-files", "--stage", "--", ".the-way"], cwd=directory,
-                                      env=GIT_ENVIRONMENT, capture_output=True, check=False)
+        precondition = subprocess.run(
+            ["git", "ls-files", "--stage", "--", ".the-way"],
+            cwd=directory,
+            env=GIT_ENVIRONMENT,
+            capture_output=True,
+            check=False,
+        )
         self.assertNotEqual(precondition.returncode, 0, "git fails on the damaged index")
         run = run_hook(hook_command(directory), directory)
         self.assertEqual(run.returncode, 0, run.stderr)
@@ -178,14 +208,28 @@ class TheWayPinHook(unittest.TestCase):
         directory = self.clone(initialized=True)
         git(directory / ".the-way", "checkout", "--detach", self.older)
         fault = self.base / "fault.mjs"
-        fault.write_text("const stringify = JSON.stringify;" + NL
-                         + "let calls = 0;" + NL
-                         + "JSON.stringify = (...args) => {" + NL
-                         + "  if (calls++ === 0) throw new Error('injected failure');" + NL
-                         + "  return stringify(...args);" + NL
-                         + "};" + NL, encoding="utf-8", newline=NL)
-        command = [declared_handler()["command"], "--import", fault.as_uri(),
-                   *hook_command(directory)[1:]]
+        fault.write_text(
+            "const stringify = JSON.stringify;"
+            + NL
+            + "let calls = 0;"
+            + NL
+            + "JSON.stringify = (...args) => {"
+            + NL
+            + "  if (calls++ === 0) throw new Error('injected failure');"
+            + NL
+            + "  return stringify(...args);"
+            + NL
+            + "};"
+            + NL,
+            encoding="utf-8",
+            newline=NL,
+        )
+        command = [
+            declared_handler()["command"],
+            "--import",
+            fault.as_uri(),
+            *hook_command(directory)[1:],
+        ]
         run = run_hook(command, directory)
         self.assertEqual(run.returncode, 0, run.stderr)
         output = json.loads(run.stdout)
@@ -193,7 +237,9 @@ class TheWayPinHook(unittest.TestCase):
             self.assertIn("injected failure", message)
             self.assertIn(REPAIR, message)
 
-    def test_a_git_directory_variable_of_the_caller_does_not_send_the_check_to_another_repository(self):
+    def test_a_git_directory_variable_of_the_caller_does_not_send_the_check_to_another_repository(
+        self,
+    ):
         # decision: D-414 "At the start of a Claude Code session started in the repository root"
         directory = self.clone(initialized=True)
         environment = {**GIT_ENVIRONMENT, "GIT_DIR": str(self.origin / ".git")}
@@ -213,9 +259,11 @@ class TheWayPinHook(unittest.TestCase):
 
     def test_where_the_repository_pins_nothing_the_hook_says_nothing_and_ends_with_0(self):
         # decision: D-414 "Apart from the case where the commits agree, it prints nothing only where there is nothing to compare with"
-        cases = {"no repository at all": (False, False),
-                 "a repository with no submodule": (True, False),
-                 "a repository with no submodule beside a repository in .the-way": (True, True)}
+        cases = {
+            "no repository at all": (False, False),
+            "a repository with no submodule": (True, False),
+            "a repository with no submodule beside a repository in .the-way": (True, True),
+        }
         for name, (is_repository, has_checkout) in cases.items():
             with self.subTest(name):
                 type(self).counter += 1

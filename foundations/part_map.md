@@ -107,6 +107,7 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   requirements-quality.txt
   .gitignore
   .gitattributes
+  .git-blame-ignore-revs
   README.md
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py

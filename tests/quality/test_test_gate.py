@@ -28,7 +28,6 @@ class Meets(unittest.TestCase):
 
 
 class TestGate(unittest.TestCase):
-
     def setUp(self):
         self.gate = GateFixture(self)
 
@@ -39,11 +38,14 @@ class TestGate(unittest.TestCase):
 
     def test_python_selection_imports_sibling_helper_without_build_or_neighbours(self):
         # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests, the foundation check or the check of the instruction files"
-        self.gate.write("tests/cases/helper.py", 'VALUE = 42\n')
-        self.gate.write("tests/cases/test_selected.py", 'import unittest\n'
-                        'from helper import VALUE\n'
-                        'class Case(unittest.TestCase):\n'
-                        '    def test_value(self): self.assertEqual(VALUE, 42)\n')
+        self.gate.write("tests/cases/helper.py", "VALUE = 42\n")
+        self.gate.write(
+            "tests/cases/test_selected.py",
+            "import unittest\n"
+            "from helper import VALUE\n"
+            "class Case(unittest.TestCase):\n"
+            "    def test_value(self): self.assertEqual(VALUE, 42)\n",
+        )
         self.gate.write("tests/cases/test_other.py", 'raise RuntimeError("not selected")\n')
         self.gate.write("tests/cases/nested/__init__.py", "")
         self.gate.write("tests/cases/nested/test_selected.py", 'raise RuntimeError("nested")\n')
@@ -66,13 +68,15 @@ class TestGate(unittest.TestCase):
         # decision: D-77 "`npm test` without arguments runs the full gate"
         # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests, the foundation check and the check of the instruction files, in this order, and ends at the first stage that fails"
         # Breaking it: move the check of the instruction files before the foundation check.
-        self.gate.write("tests/passing.test.mjs",
-                        'import test from "node:test"; test("passes", () => {});\n')
+        self.gate.write(
+            "tests/passing.test.mjs", 'import test from "node:test"; test("passes", () => {});\n'
+        )
         result = self.gate.run()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual((self.gate.root / "built").read_text(encoding="utf-8"), "yes")
-        self.assertEqual(self.gate.stages_run(),
-                         ["python-stage", "foundation-stage", "instructions-stage"])
+        self.assertEqual(
+            self.gate.stages_run(), ["python-stage", "foundation-stage", "instructions-stage"]
+        )
 
     def test_an_error_of_the_check_of_the_instruction_files_stops_the_gate(self):
         # decision: D-405 "The check of the instruction files stops the gate where it reports an error, and does not where it reports only warnings"
@@ -97,14 +101,21 @@ class TestGate(unittest.TestCase):
         # names a path that is not there, 1 for one whose file names an `@` import with a mark
         # right after its path.
         check = ROOT / ".the-way/instruction-files/check_instructions.py"
-        for text, code, level in (("See `docs/missing.md`.\n", 0, "WARN"),
-                                  ("Read @docs/guide.md.\n", 1, "ERROR")):
+        for text, code, level in (
+            ("See `docs/missing.md`.\n", 0, "WARN"),
+            ("Read @docs/guide.md.\n", 1, "ERROR"),
+        ):
             with self.subTest(level=level):
                 folder = self.gate.root / f"instructions-{level.lower()}"
                 self.gate.write(f"{folder.name}/AGENTS.md", text)
-                result = subprocess.run([sys.executable, "-B", str(check), str(folder)],
-                                        capture_output=True, text=True, encoding="utf-8",
-                                        check=False, timeout=60)
+                result = subprocess.run(
+                    [sys.executable, "-B", str(check), str(folder)],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
+                    timeout=60,
+                )
                 self.assertEqual(result.returncode, code, result.stdout + result.stderr)
                 self.assertIn(level, result.stdout)
 
@@ -114,9 +125,13 @@ class TestGate(unittest.TestCase):
         # directory that does not begin until it ends, so it fails after its wait.
         self.gate.use_real_python_runner()
         for mine, theirs in (("one", "two"), ("two", "one")):
-            self.gate.write(f"tests/{mine}/test_meets.py", MEETS.format(
-                mine=json.dumps(str(self.gate.root / f"{mine}.here")),
-                theirs=json.dumps(str(self.gate.root / f"{theirs}.here"))))
+            self.gate.write(
+                f"tests/{mine}/test_meets.py",
+                MEETS.format(
+                    mine=json.dumps(str(self.gate.root / f"{mine}.here")),
+                    theirs=json.dumps(str(self.gate.root / f"{theirs}.here")),
+                ),
+            )
         self.gate.track_files()
         result = self.gate.run(timeout=120)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -129,9 +144,9 @@ class TestGate(unittest.TestCase):
             "tests/suite.test.mjs": 'import { describe } from "node:test"; describe("empty", () => {});',
             "tests/skipped.test.mjs": 'import test from "node:test"; test.skip("skip", () => {});',
             "tests/test_empty.py": "",
-            "tests/test_skipped.py": 'import unittest\nclass Case(unittest.TestCase):\n'
-                                     '    @unittest.skip("skip")\n'
-                                     '    def test_skip(self): pass\n',
+            "tests/test_skipped.py": "import unittest\nclass Case(unittest.TestCase):\n"
+            '    @unittest.skip("skip")\n'
+            "    def test_skip(self): pass\n",
         }
         for name, content in cases.items():
             with self.subTest(name=name):
@@ -145,10 +160,8 @@ class TestGate(unittest.TestCase):
         cases = {
             "tests/test_import_exit_zero.py": "raise SystemExit(0)\n",
             "tests/test_import_exit_none.py": "raise SystemExit()\n",
-            "tests/test_collect_exit_zero.py":
-                "def load_tests(loader, tests, pattern): raise SystemExit(0)\n",
-            "tests/test_collect_exit_none.py":
-                "def load_tests(loader, tests, pattern): raise SystemExit()\n",
+            "tests/test_collect_exit_zero.py": "def load_tests(loader, tests, pattern): raise SystemExit(0)\n",
+            "tests/test_collect_exit_none.py": "def load_tests(loader, tests, pattern): raise SystemExit()\n",
         }
         for name, content in cases.items():
             with self.subTest(name=name):
@@ -160,8 +173,14 @@ class TestGate(unittest.TestCase):
         # invariant: focused-test-execution
         self.gate.write("tests/helper.mjs", 'throw new Error("must not execute");\n')
         self.gate.write("tests/helper.py", 'raise RuntimeError("must not execute")\n')
-        for name in ("tests/missing.test.mjs", "tests/test_missing.py", "tests/helper.mjs",
-                     "tests/helper.py", "tests", "tests/*.test.mjs"):
+        for name in (
+            "tests/missing.test.mjs",
+            "tests/test_missing.py",
+            "tests/helper.mjs",
+            "tests/helper.py",
+            "tests",
+            "tests/*.test.mjs",
+        ):
             with self.subTest(name=name):
                 result = self.gate.run(name)
                 self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -181,9 +200,9 @@ class TestGate(unittest.TestCase):
         cases = {
             "tests/fail.test.mjs": 'import test from "node:test"; test("fails", () => { throw new Error("failed"); });',
             "tests/import.test.mjs": 'import "./absent.mjs";',
-            "tests/test_fail.py": 'import unittest\nclass Case(unittest.TestCase):\n'
-                                  '    def test_failure(self): self.fail("failed")\n',
-            "tests/test_import.py": 'import absent_module\n',
+            "tests/test_fail.py": "import unittest\nclass Case(unittest.TestCase):\n"
+            '    def test_failure(self): self.fail("failed")\n',
+            "tests/test_import.py": "import absent_module\n",
         }
         for name, content in cases.items():
             with self.subTest(name=name):

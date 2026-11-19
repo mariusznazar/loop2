@@ -26,13 +26,18 @@ sys.path.insert(0, str(ROOT / "tests" / "invariants"))
 import loop2_invariant_support as support
 from test_quality_invariants import PRETTIER_FLAGS, PRETTIER_PATTERNS
 
-SCOPE_PARTS = ("browser-view", "simulation", "account-server", "build-tools", "balance-tools",
-               "deployment")
+SCOPE_PARTS = (
+    "browser-view",
+    "simulation",
+    "account-server",
+    "build-tools",
+    "balance-tools",
+    "deployment",
+)
 SCRIPT_SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 # The directories of agent-workflow whose script files D-29 puts in the scope of ESLint besides the
 # files of SCOPE_PARTS, as plain path prefixes.
-ESLINT_DIRECTORIES = (".claude/hooks/", ".claude/skills/loop2-play/",
-                      ".agents/skills/loop2-play/")
+ESLINT_DIRECTORIES = (".claude/hooks/", ".claude/skills/loop2-play/", ".agents/skills/loop2-play/")
 # Unformatted by Prettier's default options, and valid in every language of SCRIPT_SUFFIXES.
 UNFORMATTED = "let   unformatted   =   1\n"
 # What Prettier prints about a pattern that matches no file; the made-up tree holds no HTML or CSS.
@@ -43,17 +48,21 @@ def scope_files():
     """The TypeScript and JavaScript files of the scope's parts that git tracks or would track."""
     listed = support.listed_files(support.ROOT)
     owners = support.file_owners(support.ROOT, listed)
-    return sorted(path for path in listed
-                  if path.endswith(SCRIPT_SUFFIXES) and owners[path] in SCOPE_PARTS)
+    return sorted(
+        path for path in listed if path.endswith(SCRIPT_SUFFIXES) and owners[path] in SCOPE_PARTS
+    )
 
 
 def eslint_directory_files():
     """The script files, from each of ESLINT_DIRECTORIES to the paths git tracks or would track
     under it."""
     listed = support.listed_files(support.ROOT)
-    return {directory: sorted(path for path in listed
-                              if path.startswith(directory) and path.endswith(SCRIPT_SUFFIXES))
-            for directory in ESLINT_DIRECTORIES}
+    return {
+        directory: sorted(
+            path for path in listed if path.startswith(directory) and path.endswith(SCRIPT_SUFFIXES)
+        )
+        for directory in ESLINT_DIRECTORIES
+    }
 
 
 def unmet_rules(expected, received):
@@ -79,9 +88,16 @@ def plain_output():
 def git_attributes(paths):
     """The attributes `text` and `eol` git gives each path, as a dict from (path, attribute) to
     the value."""
-    result = subprocess.run(["git", "check-attr", "-z", "text", "eol", "--stdin"],
-                            cwd=support.ROOT, input="\0".join(paths) + "\0", capture_output=True,
-                            text=True, encoding="utf-8", timeout=60, check=False)
+    result = subprocess.run(
+        ["git", "check-attr", "-z", "text", "eol", "--stdin"],
+        cwd=support.ROOT,
+        input="\0".join(paths) + "\0",
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=60,
+        check=False,
+    )
     if result.returncode:
         raise AssertionError("git check-attr failed: " + result.stderr)
     fields = result.stdout.split("\0")
@@ -101,10 +117,17 @@ class SourceToolScope(unittest.TestCase):
         self.assertEqual(empty, [], "no script file under these directories of agent-workflow")
         paths = sorted(set(scope_files()).union(*by_directory.values()))
         self.assertTrue(paths, "no TypeScript or JavaScript file found in the scope")
-        result = subprocess.run(["node", "tests/quality/eslint-rule-sets.mjs"], cwd=support.ROOT,
-                                input=json.dumps(paths), capture_output=True, text=True,
-                                encoding="utf-8", errors="backslashreplace", timeout=900,
-                                check=False)
+        result = subprocess.run(
+            ["node", "tests/quality/eslint-rule-sets.mjs"],
+            cwd=support.ROOT,
+            input=json.dumps(paths),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            timeout=900,
+            check=False,
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         report = json.loads(result.stdout)
         unmet = {}
@@ -114,17 +137,24 @@ class SourceToolScope(unittest.TestCase):
             if missing:
                 unmet[path] = f"{len(missing)} rules unmet, among them {', '.join(missing[:3])}"
         if unmet:
-            self.fail("files that do not receive the rule sets of D-29 from eslint.config.mjs:\n"
-                      + "\n".join(f"{path}: {why}" for path, why in unmet.items()))
+            self.fail(
+                "files that do not receive the rule sets of D-29 from eslint.config.mjs:\n"
+                + "\n".join(f"{path}: {why}" for path, why in unmet.items())
+            )
 
     def test_control_unmet_rules_are_found_by_severity_and_options(self):
         # invariant: eslint-source-rules
         expected = {"no-debugger": [2], "eqeqeq": [2, "always"], "no-var": [0], "no-alert": [1]}
-        full = {"no-debugger": [2], "eqeqeq": [2, "always"], "no-var": [0, {"x": 1}],
-                "no-alert": [1]}
+        full = {
+            "no-debugger": [2],
+            "eqeqeq": [2, "always"],
+            "no-var": [0, {"x": 1}],
+            "no-alert": [1],
+        }
         self.assertEqual(unmet_rules(expected, full), [])
-        self.assertEqual(unmet_rules(expected, {k: v for k, v in full.items() if k != "no-var"}),
-                         [])
+        self.assertEqual(
+            unmet_rules(expected, {k: v for k, v in full.items() if k != "no-var"}), []
+        )
         self.assertEqual(unmet_rules(expected, None), ["eqeqeq", "no-alert", "no-debugger"])
         self.assertEqual(unmet_rules(expected, {}), ["eqeqeq", "no-alert", "no-debugger"])
         self.assertEqual(unmet_rules(expected, full | {"no-debugger": [1]}), ["no-debugger"])
@@ -143,24 +173,43 @@ class SourceToolScope(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             tree = Path(temp)
             (tree / ".gitignore").write_text(
-                (ROOT / ".gitignore").read_text(encoding="utf-8"), encoding="utf-8")
+                (ROOT / ".gitignore").read_text(encoding="utf-8"), encoding="utf-8"
+            )
             for path in paths:
                 (tree / path).parent.mkdir(parents=True, exist_ok=True)
                 (tree / path).write_text(UNFORMATTED, encoding="utf-8", newline="\n")
             result = subprocess.run(
-                ["node", str(ROOT / "node_modules/prettier/bin/prettier.cjs"), *PRETTIER_FLAGS,
-                 *PRETTIER_PATTERNS], cwd=tree, capture_output=True, text=True, encoding="utf-8",
-                errors="backslashreplace", timeout=300, check=False, env=plain_output())
+                [
+                    "node",
+                    str(ROOT / "node_modules/prettier/bin/prettier.cjs"),
+                    *PRETTIER_FLAGS,
+                    *PRETTIER_PATTERNS,
+                ],
+                cwd=tree,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="backslashreplace",
+                timeout=300,
+                check=False,
+                env=plain_output(),
+            )
         lines = (result.stdout + result.stderr).splitlines()
-        other = [line for line in lines if line.startswith("[error]")
-                 and NO_FILE_FOR_PATTERN not in line]
+        other = [
+            line for line in lines if line.startswith("[error]") and NO_FILE_FOR_PATTERN not in line
+        ]
         self.assertEqual(other, [], result.stdout + result.stderr)
-        checked = {line[len("[warn] "):].replace("\\", "/") for line in lines
-                   if line.startswith("[warn] ") and not line.startswith("[warn] Code style")}
+        checked = {
+            line[len("[warn] ") :].replace("\\", "/")
+            for line in lines
+            if line.startswith("[warn] ") and not line.startswith("[warn] Code style")
+        }
         unchecked = [path for path in paths if path not in checked]
         if unchecked:
-            self.fail("files that the Prettier check of test_quality_invariants.py does not "
-                      "reach:\n" + "\n".join(unchecked))
+            self.fail(
+                "files that the Prettier check of test_quality_invariants.py does not "
+                "reach:\n" + "\n".join(unchecked)
+            )
 
     def test_gitattributes_keeps_lf_for_every_scope_file(self):
         # invariant: prettier-source-format
@@ -169,8 +218,12 @@ class SourceToolScope(unittest.TestCase):
         self.assertTrue(paths, "no TypeScript or JavaScript file found in the scope")
         attributes = git_attributes(paths)
         # `-text` stops git's line-ending conversion whatever `eol` says, so `text` must be on.
-        without_lf = [path for path in paths if attributes[(path, "eol")] != "lf"
-                      or attributes[(path, "text")] not in ("set", "auto")]
+        without_lf = [
+            path
+            for path in paths
+            if attributes[(path, "eol")] != "lf"
+            or attributes[(path, "text")] not in ("set", "auto")
+        ]
         if without_lf:
             self.fail("files that .gitattributes does not keep at LF:\n" + "\n".join(without_lf))
 

@@ -60,7 +60,7 @@ def run_script():
         raise AssertionError(f"no step named {STEP_NAME!r}")
     body = []
     start = None
-    for line in lines[names[0] + 1:]:
+    for line in lines[names[0] + 1 :]:
         if start is None:
             if re.match(r"^\s*run:\s*\|\s*$", line):
                 start = len(line) - len(line.lstrip())
@@ -76,7 +76,6 @@ def run_script():
 
 
 class CheckAddressWorkflow(unittest.TestCase):
-
     def test_triggers_are_the_schedule_and_the_manual_run_only(self):
         # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes"
         match = re.search(r"^on:\s*\n((?:[ \t]+.*\n?|\n)+)", code(), re.MULTILINE)
@@ -136,11 +135,16 @@ class CheckAddressWorkflow(unittest.TestCase):
                     self.fail(f"expression inside a run script: {stripped}")
         for line in lines:
             if "${{" in line:
-                self.assertRegex(line, r"^\s+[A-Z_][A-Z0-9_]*:\s*\$\{\{\s*inputs\.force_failure\s*\}\}\s*$")
+                self.assertRegex(
+                    line, r"^\s+[A-Z_][A-Z0-9_]*:\s*\$\{\{\s*inputs\.force_failure\s*\}\}\s*$"
+                )
 
     def test_own_concurrency_group_cancels_an_older_run(self):
         text = code()
-        self.assertRegex(text, r"(?m)^concurrency:\s*\n\s+group:\s*(?!deploy-loop2\s*$)\S+\s*\n\s+cancel-in-progress:\s*true\s*$")
+        self.assertRegex(
+            text,
+            r"(?m)^concurrency:\s*\n\s+group:\s*(?!deploy-loop2\s*$)\S+\s*\n\s+cancel-in-progress:\s*true\s*$",
+        )
 
     def test_job_is_bounded_to_five_minutes_and_has_one_step(self):
         text = code()
@@ -194,13 +198,17 @@ class RunScriptOnStandIns(unittest.TestCase):
         """Stand-ins as shell functions, defined before the run script: `curl` answers the line of
         the codes file that matches its call number, `sleep` records its argument. Functions need
         no lookup on PATH, which Git's bash does not give an extensionless script."""
-        calls, codes, sleeps = (support.shell_path(p) for p in (self.calls, self.codes, self.sleeps))
-        return ("CALLS_FILE='" + calls + "'\n"
-                "CODES_FILE='" + codes + "'\n"
-                "SLEEPS_FILE='" + sleeps + "'\n"
-                'curl() { echo call >> "$CALLS_FILE"; n=$(wc -l < "$CALLS_FILE"); '
-                'sed -n "${n}p" "$CODES_FILE"; }\n'
-                'sleep() { echo "$1" >> "$SLEEPS_FILE"; }\n')
+        calls, codes, sleeps = (
+            support.shell_path(p) for p in (self.calls, self.codes, self.sleeps)
+        )
+        return (
+            "CALLS_FILE='" + calls + "'\n"
+            "CODES_FILE='" + codes + "'\n"
+            "SLEEPS_FILE='" + sleeps + "'\n"
+            'curl() { echo call >> "$CALLS_FILE"; n=$(wc -l < "$CALLS_FILE"); '
+            'sed -n "${n}p" "$CODES_FILE"; }\n'
+            'sleep() { echo "$1" >> "$SLEEPS_FILE"; }\n'
+        )
 
     def run_step(self, answers, force_failure="false"):
         with open(self.codes, "w", encoding="utf-8", newline="\n") as handle:
@@ -212,9 +220,20 @@ class RunScriptOnStandIns(unittest.TestCase):
             "FORCE_FAILURE": force_failure,
             "HOME": support.shell_path(self.tmp),
         }
-        result = subprocess.run([self.bash, "--noprofile", "--norc", "-eo", "pipefail",
-                                 support.shell_path(self.script_path)],
-                                env=env, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(
+            [
+                self.bash,
+                "--noprofile",
+                "--norc",
+                "-eo",
+                "pipefail",
+                support.shell_path(self.script_path),
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
         calls = read(self.calls).count("call") if os.path.exists(self.calls) else 0
         sleeps = read(self.sleeps).split() if os.path.exists(self.sleeps) else []
         return result, calls, sleeps

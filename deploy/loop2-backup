@@ -124,10 +124,10 @@ on_exit() {
   trap '' HUP INT USR1 USR2 PIPE ALRM TERM
   exec 9>&-
   remove_work_directory
-  if [[ $SENT == yes ]] && (( code == 0 )); then
+  if [[ $SENT == yes ]] && ((code == 0)); then
     log "end: sent $WEEKDAY_FILE"
   else
-    (( code != 0 )) || code=1
+    ((code != 0)) || code=1
     send_notice
     log "end: failed (exit $code)"
   fi
@@ -138,7 +138,7 @@ on_exit() {
 
 check_key() {
   if [[ ! -f $ENCRYPTION_KEY_FILE || ! -s $ENCRYPTION_KEY_FILE ]] \
-      || ! { : <"$ENCRYPTION_KEY_FILE"; } 2>/dev/null; then
+    || ! { : <"$ENCRYPTION_KEY_FILE"; } 2>/dev/null; then
     fail 3 key "the encryption key cannot be read; nothing was made"
   fi
 }
@@ -153,7 +153,7 @@ take_lock() {
   fi
   flock --exclusive --wait "$LOCK_WAIT_SECONDS" 9 2>>"$LOG_FILE"
   status=$?
-  if (( status != 0 )); then
+  if ((status != 0)); then
     fail 4 lock "the lock was not free within $LOCK_WAIT_SECONDS s (flock exit $status); nothing was made"
   fi
 }
@@ -164,7 +164,7 @@ make_work_directory() {
   local status
   WORK_DIRECTORY=$(mktemp --directory --tmpdir="$TEMPORARY_ROOT" loop2-backup.XXXXXXXX 2>>"$LOG_FILE")
   status=$?
-  if (( status != 0 )) || [[ ! -d $WORK_DIRECTORY ]]; then
+  if ((status != 0)) || [[ ! -d $WORK_DIRECTORY ]]; then
     fail 5 temporary "no private temporary directory (mktemp exit $status); nothing was made"
   fi
   ENCRYPTED_FILE=$WORK_DIRECTORY/$ENCRYPTED_FILE_NAME
@@ -175,7 +175,7 @@ stream_through_age() {
   # whole one, so both stages' statuses are kept for require_whole_file.
   local statuses
   timeout --kill-after="$KILL_WAIT_SECONDS" "$STREAM_WAIT_SECONDS" \
-      docker exec "$CONTAINER_NAME" node "$BACKUP_COMMAND" "$BACKUP_WORD" 2>>"$LOG_FILE" \
+    docker exec "$CONTAINER_NAME" node "$BACKUP_COMMAND" "$BACKUP_WORD" 2>>"$LOG_FILE" \
     | timeout --kill-after="$KILL_WAIT_SECONDS" "$STREAM_WAIT_SECONDS" \
       age --encrypt --identity "$ENCRYPTION_KEY_FILE" --output "$ENCRYPTED_FILE" 2>>"$LOG_FILE"
   statuses=("${PIPESTATUS[@]}")
@@ -191,7 +191,7 @@ release_lock() {
   flock --unlock 9 2>>"$LOG_FILE"
   status=$?
   exec 9>&-
-  if (( status != 0 )); then
+  if ((status != 0)); then
     fail 4 lock "the lock could not be released (flock exit $status); nothing was sent"
   fi
 }
@@ -206,7 +206,7 @@ require_whole_file() {
   fi
   size=$(stat --format=%s -- "$ENCRYPTED_FILE" 2>>"$LOG_FILE")
   status=$?
-  if (( status != 0 )) || [[ ! $size =~ ^[1-9][0-9]*$ ]]; then
+  if ((status != 0)) || [[ ! $size =~ ^[1-9][0-9]*$ ]]; then
     fail 7 file "the encrypted file is missing or empty (stat exit $status); nothing was sent"
   fi
   ENCRYPTED_SIZE=$size
@@ -216,7 +216,7 @@ choose_weekday_file() {
   local day status
   day=$(date -u +%u 2>>"$LOG_FILE")
   status=$?
-  if (( status != 0 )) || [[ ! $day =~ ^[1-7]$ ]]; then
+  if ((status != 0)) || [[ ! $day =~ ^[1-7]$ ]]; then
     fail 9 weekday "the UTC day of the week cannot be read (date exit $status); nothing was sent"
   fi
   WEEKDAY_FILE=$WEEKDAY_FILE_PREFIX$day$WEEKDAY_FILE_SUFFIX
@@ -235,7 +235,7 @@ send_file() {
     --rsh="ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$STRYCH_KNOWN_HOSTS_FILE -o GlobalKnownHostsFile=/dev/null -o ConnectTimeout=$SEND_CONNECT_WAIT_SECONDS" \
     "$ENCRYPTED_FILE" "$STRYCH_HOST:$WEEKDAY_FILE" >/dev/null 2>&1
   status=$?
-  if (( status != 0 )); then
+  if ((status != 0)); then
     fail 8 send "rsync exit $status"
   fi
 }
@@ -244,7 +244,7 @@ send_file() {
 
 main() {
   log "start"
-  if (( $# != 0 )); then
+  if (($# != 0)); then
     fail 2 input "refused: the script takes no argument; got $#"
   fi
   check_key

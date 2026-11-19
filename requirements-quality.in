@@ -1,4 +1,5 @@
-# Local quality tools; shellcheck-py bundles the ShellCheck binary.
+# Local quality tools; shellcheck-py bundles the ShellCheck binary and shfmt-py the shfmt binary.
 --only-binary=:all:
 ruff==0.17.1
 shellcheck-py==0.11.0.1
+shfmt-py==4.2.0

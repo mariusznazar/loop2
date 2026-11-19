@@ -11,7 +11,14 @@ import scene_art_support as support
 ROOT = support.ROOT
 CLAUDE_COPY = support.SKILL
 AGENTS_COPY = os.path.join(ROOT, ".agents", "skills", "loop2-scene-art")
-SCRIPTS = ["contrast.mjs", "flashes.mjs", "grid.mjs", "preview.mjs", "recolor.mjs", "sheet-frames.mjs"]
+SCRIPTS = [
+    "contrast.mjs",
+    "flashes.mjs",
+    "grid.mjs",
+    "preview.mjs",
+    "recolor.mjs",
+    "sheet-frames.mjs",
+]
 LIBRARIES = ["cli.mjs", "colour.mjs", "image.mjs", "jpeg.mjs", "png.mjs"]
 FILES = ["SKILL.md", *SCRIPTS, *LIBRARIES]
 COMMAND = re.compile(r"node \.claude/skills/loop2-scene-art/([\w-]+\.mjs)(.*)")
@@ -34,7 +41,7 @@ def description(directory):
     values = [line for line in match.group(1).splitlines() if line.startswith("description:")]
     if len(values) != 1:
         raise AssertionError("the frontmatter must hold exactly one description line")
-    return values[0][len("description:"):].strip()
+    return values[0][len("description:") :].strip()
 
 
 def commands_of_the_text():
@@ -52,7 +59,6 @@ def commands_of_the_text():
 
 
 class Loop2SceneArtSkill(unittest.TestCase):
-
     def test_both_copies_hold_the_same_files(self):
         self.assertEqual(sorted(os.listdir(CLAUDE_COPY)), sorted(FILES))
         self.assertEqual(sorted(os.listdir(AGENTS_COPY)), sorted(FILES))

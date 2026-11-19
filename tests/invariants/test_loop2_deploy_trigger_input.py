@@ -66,7 +66,7 @@ REFUSED_INPUTS = {
     "and-list": "0123456789abcdef0123456789abcdef01234567&&id",
     "redirection": "0123456789abcdef0123456789abcdef01234567>/tmp/loop2-pwned",
     "single quote": "'0123456789abcdef0123456789abcdef01234567'",
-    "double quote": "\"0123456789abcdef0123456789abcdef01234567\"",
+    "double quote": '"0123456789abcdef0123456789abcdef01234567"',
     "glob": "0123456789abcdef0123456789abcdef0123456*",
     "two words": "0123456789abcdef0123456789abcdef01234567 0123456789abcdef0123456789abcdef01234567",
     "a branch name": "main",
@@ -79,12 +79,17 @@ EXIT_INPUT_REFUSED = 2
 EXIT_COMMIT_REFUSED = 3
 # The only docker call the script makes before the commit stage: the read-only revision label of
 # the running loop2 container.
-READ_RUNNING_REVISION = ["inspect", "--type", "container", "--format",
-                         '{{ index .Config.Labels "org.opencontainers.image.revision" }}', "loop2"]
+READ_RUNNING_REVISION = [
+    "inspect",
+    "--type",
+    "container",
+    "--format",
+    '{{ index .Config.Labels "org.opencontainers.image.revision" }}',
+    "loop2",
+]
 
 
 class ForcedCommandRefusesMalformedInput(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.fixture = support.DeployFixture()
@@ -98,8 +103,9 @@ class ForcedCommandRefusesMalformedInput(unittest.TestCase):
         self.assertEqual(result.code, EXIT_INPUT_REFUSED, result)
         self.assertEqual(result.calls["docker"], [], result)
         self.assertNotIn("fetch", result.git_trace, result.git_trace)
-        self.assertEqual(self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
-                         self.head_before)
+        self.assertEqual(
+            self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"), self.head_before
+        )
 
     def test_each_crafted_value_refused(self):
         # invariant: loop2-deploy-trigger-input
@@ -109,15 +115,19 @@ class ForcedCommandRefusesMalformedInput(unittest.TestCase):
 
     def test_both_inputs_at_once_refused(self):
         # invariant: loop2-deploy-trigger-input
-        self.assert_refused_before_anything(self.fixture.run(
-            arguments=["0123456789abcdef0123456789abcdef01234567"],
-            ssh_original_command="0123456789abcdef0123456789abcdef01234567"))
+        self.assert_refused_before_anything(
+            self.fixture.run(
+                arguments=["0123456789abcdef0123456789abcdef01234567"],
+                ssh_original_command="0123456789abcdef0123456789abcdef01234567",
+            )
+        )
 
     def test_both_inputs_at_once_refused_with_a_real_commit(self):
         # invariant: loop2-deploy-trigger-input
         first = self.fixture.first
-        self.assert_refused_before_anything(self.fixture.run(arguments=[first],
-                                                             ssh_original_command=first))
+        self.assert_refused_before_anything(
+            self.fixture.run(arguments=[first], ssh_original_command=first)
+        )
 
     def test_no_command_from_the_client_refused(self):
         # invariant: loop2-deploy-trigger-input
@@ -133,7 +143,6 @@ class ForcedCommandRefusesMalformedInput(unittest.TestCase):
 
 
 class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -155,8 +164,9 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         # invariant: loop2-deploy-trigger-input
         # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
-        self.assert_commit_refused(self.fixture.run(ssh_original_command=feature),
-                                   self.fixture.first)
+        self.assert_commit_refused(
+            self.fixture.run(ssh_original_command=feature), self.fixture.first
+        )
 
     def test_commit_of_another_branch_the_clone_already_holds_refused(self):
         # A human run fetched the other branch, so the clone holds the commit and a
@@ -164,11 +174,18 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         # invariant: loop2-deploy-trigger-input
         # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
-        self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
-                         "+refs/heads/*:refs/remotes/origin/*")
+        self.fixture.git(
+            "-C",
+            self.fixture.checkout,
+            "fetch",
+            "--quiet",
+            "origin",
+            "+refs/heads/*:refs/remotes/origin/*",
+        )
         self.assertIn("refs/remotes/origin/feature", self.fixture.clone_refs())
-        self.assert_commit_refused(self.fixture.run(ssh_original_command=feature),
-                                   self.fixture.first)
+        self.assert_commit_refused(
+            self.fixture.run(ssh_original_command=feature), self.fixture.first
+        )
 
     def test_commit_main_no_longer_holds_refused(self):
         # The clone fetched `main` while it held the commit; then `main` was moved back on
@@ -176,13 +193,21 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         # invariant: loop2-deploy-trigger-input
         # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         dropped = self.fixture.commit("main", "dropped from main later")
-        self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
-                         "+refs/heads/main:refs/remotes/origin/main")
+        self.fixture.git(
+            "-C",
+            self.fixture.checkout,
+            "fetch",
+            "--quiet",
+            "origin",
+            "+refs/heads/main:refs/remotes/origin/main",
+        )
         self.assertEqual(self.fixture.clone_refs().get("refs/remotes/origin/main"), dropped)
-        self.fixture.git("-C", self.fixture.github, "update-ref", "refs/heads/main",
-                         self.fixture.first)
-        self.assert_commit_refused(self.fixture.run(ssh_original_command=dropped),
-                                   self.fixture.first)
+        self.fixture.git(
+            "-C", self.fixture.github, "update-ref", "refs/heads/main", self.fixture.first
+        )
+        self.assert_commit_refused(
+            self.fixture.run(ssh_original_command=dropped), self.fixture.first
+        )
 
     def test_ancestor_of_main_passes(self):
         # invariant: loop2-deploy-trigger-input

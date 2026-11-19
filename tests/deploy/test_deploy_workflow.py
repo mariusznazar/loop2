@@ -71,7 +71,6 @@ def script_expressions(text):
 
 
 class DeployWorkflow(unittest.TestCase):
-
     def test_triggers_on_push_to_main_only(self):
         # decision: D-09 "A push to the deploy branch starts an automation"
         # decision: D-11 "The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the test server without anyone starting it by hand"
@@ -88,7 +87,10 @@ class DeployWorkflow(unittest.TestCase):
     def test_concurrency_never_cancels_a_running_deployment(self):
         # decision: D-11 "The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the test server without anyone starting it by hand, deployed itself or within a later commit of `main` that contains it"
         text = code()
-        self.assertRegex(text, r"(?m)^concurrency:\s*\n\s+group:\s*deploy-loop2\s*\n\s+cancel-in-progress:\s*false\s*$")
+        self.assertRegex(
+            text,
+            r"(?m)^concurrency:\s*\n\s+group:\s*deploy-loop2\s*\n\s+cancel-in-progress:\s*false\s*$",
+        )
 
     def test_no_token_permissions(self):
         self.assertRegex(code(), r"(?m)^permissions:\s*\{\s*\}\s*$")
@@ -153,12 +155,15 @@ class DeployWorkflow(unittest.TestCase):
         match = re.search(r"(?m)^(\s*)ssh\b[^\n]*$", text)
         self.assertIsNotNone(match)
         ssh_line = match.group(0)
-        after = text[match.end():]
+        after = text[match.end() :]
         if re.search(r"\|\|\s*(\w+)=\$\?\s*$", ssh_line):
             variable = re.search(r"\|\|\s*(\w+)=\$\?\s*$", ssh_line).group(1)
             # a captured status must end the step: a test of it followed by `exit` with it
-            self.assertRegex(after, r'if \[ "\$%s" -ne 0 \]; then[^\n]*\n(?:[^\n]*\n)*?\s*exit "\$%s"'
-                             % (variable, variable))
+            self.assertRegex(
+                after,
+                r'if \[ "\$%s" -ne 0 \]; then[^\n]*\n(?:[^\n]*\n)*?\s*exit "\$%s"'
+                % (variable, variable),
+            )
         else:
             self.assertNotRegex(ssh_line, r"\|\||;|&")
             self.assertRegex(text, r"set -[a-z]*e")
@@ -168,7 +173,9 @@ class DeployWorkflow(unittest.TestCase):
         text = code()
         self.assertNotRegex(text, r"ForwardAgent|\s-A\s|\s-[a-zA-Z]*A[a-zA-Z]*\s")
         match = re.search(r"(?<![\w./-])ssh\s[^\n]*", text)
-        self.assertRegex(match.group(0), r'"\$SSH_USER@\$SSH_HOST" "\$DEPLOY_SHA"(?: \|\| \w+=\$\?)?\s*$')
+        self.assertRegex(
+            match.group(0), r'"\$SSH_USER@\$SSH_HOST" "\$DEPLOY_SHA"(?: \|\| \w+=\$\?)?\s*$'
+        )
         self.assertIn("LogLevel=ERROR", match.group(0))
 
     def test_decoded_key_is_never_printed(self):
@@ -189,7 +196,9 @@ class DeployWorkflow(unittest.TestCase):
     def test_public_address_declared_once_and_probed(self):
         # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/`"
         text = code()
-        declared = re.findall(r"(?m)^\s*(\w*LOOP2\w*):\s*https://loop2\.mariusznazar\.com/\s*$", text)
+        declared = re.findall(
+            r"(?m)^\s*(\w*LOOP2\w*):\s*https://loop2\.mariusznazar\.com/\s*$", text
+        )
         self.assertEqual(len(declared), 1)
         self.assertIn("https://kantarion.bieda.it/", text)
         self.assertRegex(text, r"\$\{?" + declared[0] + r"\}?api/")
@@ -203,7 +212,10 @@ class DeployWorkflow(unittest.TestCase):
     def test_no_ipv6_and_no_other_host(self):
         # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository"
         text = code()
-        self.assertNotRegex(text, r"\[[0-9a-fA-F:]*:[0-9a-fA-F:]+\]|(?<![\w.])(?:[0-9a-fA-F]{1,4}:){3,}[0-9a-fA-F]{0,4}")
+        self.assertNotRegex(
+            text,
+            r"\[[0-9a-fA-F:]*:[0-9a-fA-F:]+\]|(?<![\w.])(?:[0-9a-fA-F]{1,4}:){3,}[0-9a-fA-F]{0,4}",
+        )
         hosts = set(re.findall(r"https?://([A-Za-z0-9.-]+)", text))
         self.assertLessEqual(hosts, ALLOWED_HOSTS)
 

@@ -15,7 +15,9 @@ FILES = [
     "references/troubleshooting.md",
 ]
 
-IPV6_LITERAL = re.compile(r"(?<![0-9A-Za-z:])(?:[0-9A-Fa-f]{1,4}:){2,7}[0-9A-Fa-f]{0,4}(?![0-9A-Za-z])|::")
+IPV6_LITERAL = re.compile(
+    r"(?<![0-9A-Za-z:])(?:[0-9A-Fa-f]{1,4}:){2,7}[0-9A-Fa-f]{0,4}(?![0-9A-Za-z])|::"
+)
 MIKRUS_NAME = re.compile(r"\b[a-z]+\d+\.mikrus\.(?:cloud|xyz|pl)\b|\bmikr\.us\b", re.IGNORECASE)
 
 
@@ -28,7 +30,9 @@ def listing(directory):
     found = []
     for folder, _dirs, names in os.walk(directory):
         for name in names:
-            found.append(os.path.relpath(os.path.join(folder, name), directory).replace(os.sep, "/"))
+            found.append(
+                os.path.relpath(os.path.join(folder, name), directory).replace(os.sep, "/")
+            )
     return sorted(found)
 
 
@@ -41,11 +45,10 @@ def description(directory):
     values = [line for line in lines if line.startswith("description:")]
     if len(values) != 1:
         raise AssertionError("the frontmatter must hold exactly one description line")
-    return values[0][len("description:"):].strip()
+    return values[0][len("description:") :].strip()
 
 
 class Loop2DeploySkill(unittest.TestCase):
-
     def test_both_copies_hold_the_same_files(self):
         self.assertEqual(listing(CLAUDE_COPY), sorted(FILES))
         self.assertEqual(listing(AGENTS_COPY), sorted(FILES))

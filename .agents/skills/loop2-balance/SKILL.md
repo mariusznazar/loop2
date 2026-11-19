@@ -16,7 +16,7 @@ Run every command in the repository's root with:
 npm run --silent balance -- <command> [flags]
 ```
 
-The npm script builds the whole game first, so each call takes a few seconds more than the
+The npm script builds the whole game first, so each call takes about two seconds more than the
 measurement itself. Use `--silent`: without it npm puts two banner lines on standard output, and
 with it standard output holds the result alone.
 
@@ -142,4 +142,4 @@ Every map goes through this check before a package is defined.
 
 A `sweep` of 500 seeds takes a few seconds; `check-map` for one overlay takes about 55 seconds, and
 two narrowed rows about 6 seconds. Each call also builds the game, so a short measurement costs about
-a second more.
+two seconds more.

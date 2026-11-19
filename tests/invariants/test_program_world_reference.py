@@ -118,68 +118,145 @@ def program_from_groups(groups):
         for each in rules:
             rule_id += 1
             identified.append({**each, "id": rule_id})
-        built.append({"id": index + 1, "name": f"Group {index + 1}", "condition": condition,
-                      "rules": identified})
-    return {"groups": built, "tripPlan": {"take": [], "bring": []},
-            "nextGroupId": len(groups) + 1, "nextRuleId": rule_id + 1}
+        built.append(
+            {
+                "id": index + 1,
+                "name": f"Group {index + 1}",
+                "condition": condition,
+                "rules": identified,
+            }
+        )
+    return {
+        "groups": built,
+        "tripPlan": {"take": [], "bring": []},
+        "nextGroupId": len(groups) + 1,
+        "nextRuleId": rule_id + 1,
+    }
 
 
 BASE = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
 
 LEGIT = (
     program_from_rules([rule(ALWAYS, walk("stick")), rule(ALWAYS, {"kind": "explore"})]),
-    program_from_rules([rule(below("berry", 0), walk("moss")), rule(below("fiber", 50), walk("berry")),
-               rule(below("stick", 7), {"kind": "wander"}), rule(ALWAYS, walk("fiber"))]),
+    program_from_rules(
+        [
+            rule(below("berry", 0), walk("moss")),
+            rule(below("fiber", 50), walk("berry")),
+            rule(below("stick", 7), {"kind": "wander"}),
+            rule(ALWAYS, walk("fiber")),
+        ]
+    ),
     program_from_rules([]),
-    program_from_rules([rule(colder_than(36.5), walk("moss")), rule(colder_than(30), {"kind": "explore"}),
-                        rule(colder_than(37), {"kind": "wander"})]),
-    program_from_rules([rule(stock_below("berry", 8), walk("berry")),
-                        rule(stock_below("stick", 0), {"kind": "explore"}),
-                        rule(stock_below("fiber", 50), walk("fiber")),
-                        rule(stock_below("moss", 3), {"kind": "wander"})]),
-    program_from_groups([(colder_than(35.5), [rule(ALWAYS, walk("stick"))]),
-                         (stock_below("moss", 5), [rule(below("berry", 2), walk("berry"))])]),
+    program_from_rules(
+        [
+            rule(colder_than(36.5), walk("moss")),
+            rule(colder_than(30), {"kind": "explore"}),
+            rule(colder_than(37), {"kind": "wander"}),
+        ]
+    ),
+    program_from_rules(
+        [
+            rule(stock_below("berry", 8), walk("berry")),
+            rule(stock_below("stick", 0), {"kind": "explore"}),
+            rule(stock_below("fiber", 50), walk("fiber")),
+            rule(stock_below("moss", 3), {"kind": "wander"}),
+        ]
+    ),
+    program_from_groups(
+        [
+            (colder_than(35.5), [rule(ALWAYS, walk("stick"))]),
+            (stock_below("moss", 5), [rule(below("berry", 2), walk("berry"))]),
+        ]
+    ),
 )
 
 NAMING = (
-    ("walkTo with a coordinate pair", program_from_rules([rule(ALWAYS, walk("stick", at={"q": 1, "r": 1}))])),
+    (
+        "walkTo with a coordinate pair",
+        program_from_rules([rule(ALWAYS, walk("stick", at={"q": 1, "r": 1}))]),
+    ),
     ("walkTo with a tile's number", program_from_rules([rule(ALWAYS, walk("stick", tile=5))])),
-    ("walkTo with a column and row", program_from_rules([rule(ALWAYS, walk("berry", col=1, row=2))])),
-    ("walkTo with a target position", program_from_rules([rule(ALWAYS,
-                                                      walk("berry", target={"col": 2, "row": 2}))])),
-    ("walkTo with an index of a tile", program_from_rules([rule(ALWAYS, walk("moss", tileIndex=3))])),
+    (
+        "walkTo with a column and row",
+        program_from_rules([rule(ALWAYS, walk("berry", col=1, row=2))]),
+    ),
+    (
+        "walkTo with a target position",
+        program_from_rules([rule(ALWAYS, walk("berry", target={"col": 2, "row": 2}))]),
+    ),
+    (
+        "walkTo with an index of a tile",
+        program_from_rules([rule(ALWAYS, walk("moss", tileIndex=3))]),
+    ),
     ("walkTo with a number of its own", program_from_rules([rule(ALWAYS, walk("moss", id=7))])),
     ("walkTo with a resource by its index", program_from_rules([rule(ALWAYS, walk(0))])),
-    ("walkTo with a resource as a tile's label", program_from_rules([rule(ALWAYS, walk("(1, 1)"))])),
+    (
+        "walkTo with a resource as a tile's label",
+        program_from_rules([rule(ALWAYS, walk("(1, 1)"))]),
+    ),
     ("walkTo with a resource as a tile's key", program_from_rules([rule(ALWAYS, walk("1,1"))])),
-    ("walkTo with the tile alone", program_from_rules([rule(ALWAYS, {"kind": "walkTo",
-                                                            "at": {"q": 2, "r": 0}})])),
-    ("hereBelow with a coordinate pair", program_from_rules([rule(below("stick", 3, at={"q": 0, "r": 0}),
-                                                         {"kind": "explore"})])),
-    ("hereBelow with a tile's number", program_from_rules([rule(below("fiber", 3, tile=2),
-                                                       {"kind": "wander"})])),
-    ("temperatureBelow with a coordinate pair", program_from_rules([rule(
-        colder_than(36.5, at={"q": 0, "r": 1}), {"kind": "explore"})])),
-    ("temperatureBelow with a tile's number", program_from_rules([rule(
-        colder_than(33.5, tile=4), {"kind": "wander"})])),
-    ("itemBelow with a coordinate pair", program_from_rules([rule(
-        stock_below("stick", 3, at={"q": 2, "r": 1}), {"kind": "explore"})])),
-    ("itemBelow with a tile's number", program_from_rules([rule(
-        stock_below("berry", 3, tile=2), {"kind": "wander"})])),
-    ("itemBelow with an item by its index", program_from_rules([rule(
-        stock_below(0, 3), {"kind": "explore"})])),
-    ("itemBelow with an item as a tile's label", program_from_rules([rule(
-        stock_below("(1, 1)", 3), {"kind": "explore"})])),
-    ("a group under temperatureBelow with a position", program_from_groups([(
-        colder_than(36.5, target={"col": 1, "row": 2}), [rule(ALWAYS, walk("stick"))])])),
-    ("a group under itemBelow with a tile's number", program_from_groups([(
-        stock_below("moss", 5, tile=1), [rule(ALWAYS, walk("stick"))])])),
-    ("a rule with a position", program_from_rules([dict(rule(ALWAYS, walk("stick")),
-                                               at={"q": 1, "r": 0})])),
-    ("a program with a position", {**program_from_rules([rule(ALWAYS, walk("stick"))]), "target": {"q": 3, "r": 1}}),
+    (
+        "walkTo with the tile alone",
+        program_from_rules([rule(ALWAYS, {"kind": "walkTo", "at": {"q": 2, "r": 0}})]),
+    ),
+    (
+        "hereBelow with a coordinate pair",
+        program_from_rules([rule(below("stick", 3, at={"q": 0, "r": 0}), {"kind": "explore"})]),
+    ),
+    (
+        "hereBelow with a tile's number",
+        program_from_rules([rule(below("fiber", 3, tile=2), {"kind": "wander"})]),
+    ),
+    (
+        "temperatureBelow with a coordinate pair",
+        program_from_rules([rule(colder_than(36.5, at={"q": 0, "r": 1}), {"kind": "explore"})]),
+    ),
+    (
+        "temperatureBelow with a tile's number",
+        program_from_rules([rule(colder_than(33.5, tile=4), {"kind": "wander"})]),
+    ),
+    (
+        "itemBelow with a coordinate pair",
+        program_from_rules(
+            [rule(stock_below("stick", 3, at={"q": 2, "r": 1}), {"kind": "explore"})]
+        ),
+    ),
+    (
+        "itemBelow with a tile's number",
+        program_from_rules([rule(stock_below("berry", 3, tile=2), {"kind": "wander"})]),
+    ),
+    (
+        "itemBelow with an item by its index",
+        program_from_rules([rule(stock_below(0, 3), {"kind": "explore"})]),
+    ),
+    (
+        "itemBelow with an item as a tile's label",
+        program_from_rules([rule(stock_below("(1, 1)", 3), {"kind": "explore"})]),
+    ),
+    (
+        "a group under temperatureBelow with a position",
+        program_from_groups(
+            [(colder_than(36.5, target={"col": 1, "row": 2}), [rule(ALWAYS, walk("stick"))])]
+        ),
+    ),
+    (
+        "a group under itemBelow with a tile's number",
+        program_from_groups([(stock_below("moss", 5, tile=1), [rule(ALWAYS, walk("stick"))])]),
+    ),
+    (
+        "a rule with a position",
+        program_from_rules([dict(rule(ALWAYS, walk("stick")), at={"q": 1, "r": 0})]),
+    ),
+    (
+        "a program with a position",
+        {**program_from_rules([rule(ALWAYS, walk("stick"))]), "target": {"q": 3, "r": 1}},
+    ),
 )
 
-DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + HELD_PROGRAMS_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -211,6 +288,7 @@ for (const program of offers) {
 }
 writeFileSync(outPath, JSON.stringify(results));
 """
+)
 
 
 def node():
@@ -233,8 +311,16 @@ def drive(programs):
         with open(script, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(DRIVER)
         with open(offers_path, "w", encoding="utf-8", newline="\n") as handle:
-            json.dump({"base": BASE, "sent": SENT, "realMs": T, "advance": ADVANCE,
-                       "offers": list(programs)}, handle)
+            json.dump(
+                {
+                    "base": BASE,
+                    "sent": SENT,
+                    "realMs": T,
+                    "advance": ADVANCE,
+                    "offers": list(programs),
+                },
+                handle,
+            )
         code, output = support.run([node(), script, game, offers_path, out_path], directory)
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
@@ -242,7 +328,7 @@ def drive(programs):
             results = json.load(handle)
     finally:
         shutil.rmtree(directory, ignore_errors=True)
-    return [results[i:i + 2] for i in range(0, len(results), 2)]
+    return [results[i : i + 2] for i in range(0, len(results), 2)]
 
 
 def naming(program):
@@ -252,13 +338,21 @@ def naming(program):
     # Flat fixtures remain readable until the grouped production contract replaces them.
     children = {
         ("program", "tripPlan"): "trip-plan",
-        ("trip-plan", "take"): "trip-list", ("trip-plan", "bring"): "trip-list",
-        ("program", "groups"): "groups", ("program", "rules"): "flat-rules",
-        ("group", "rules"): "rules", ("group", "condition"): "condition",
-        ("rule", "condition"): "condition", ("flat-rule", "condition"): "condition",
+        ("trip-plan", "take"): "trip-list",
+        ("trip-plan", "bring"): "trip-list",
+        ("program", "groups"): "groups",
+        ("program", "rules"): "flat-rules",
+        ("group", "rules"): "rules",
+        ("group", "condition"): "condition",
+        ("rule", "condition"): "condition",
+        ("flat-rule", "condition"): "condition",
     }
-    members = {"groups": "group", "rules": "rule", "flat-rules": "flat-rule",
-               "trip-list": "trip-entry"}
+    members = {
+        "groups": "group",
+        "rules": "rule",
+        "flat-rules": "flat-rule",
+        "trip-list": "trip-entry",
+    }
 
     def visit(value, path, position=None):
         if isinstance(value, bool) or value is None:
@@ -280,16 +374,20 @@ def naming(program):
             return
         if isinstance(value, dict):
             for name, item in value.items():
-                identity = ((position == "program" and name in ("nextGroupId", "nextRuleId"))
-                            or (position in ("group", "rule") and name == "id"))
+                identity = (position == "program" and name in ("nextGroupId", "nextRuleId")) or (
+                    position in ("group", "rule") and name == "id"
+                )
                 if identity and type(item) is int and item > 0:
                     continue
                 if position == "trip-entry" and name == "count" and type(item) is int and item > 0:
                     continue
                 if position == "group" and name == "name" and isinstance(item, str):
                     continue
-                compares = (position == "condition" and name == "value"
-                            and value.get("kind") in COMPARES_QUANTITY)
+                compares = (
+                    position == "condition"
+                    and name == "value"
+                    and value.get("kind") in COMPARES_QUANTITY
+                )
                 if compares and isinstance(item, (int, float)):
                     continue
                 if name in ("resource", "item") and not isinstance(item, str):
@@ -307,8 +405,9 @@ def findings(label, pair):
     found = []
     for result in pair:
         where = "during a map run" if result["withRun"] else "outside a map run"
-        for moment, held in zip(("taken in", "after a send", f"after {ADVANCE} minutes"),
-                                result["held"]):
+        for moment, held in zip(
+            ("taken in", "after a send", f"after {ADVANCE} minutes"), result["held"]
+        ):
             for index, program in enumerate(held["all"]):
                 for item in naming(program):
                     found.append(f"{label} ({where}), {moment}, program {index}: {item}")
@@ -316,20 +415,22 @@ def findings(label, pair):
 
 
 class ProgramWorldReference(unittest.TestCase):
-
     def test_held_programs_name_things_only_by_kind(self):
         # invariant: program-world-reference
         pairs = drive([p for p in LEGIT] + [p for _, p in NAMING])
-        for program, pair in zip(LEGIT, pairs[:len(LEGIT)]):
+        for program, pair in zip(LEGIT, pairs[: len(LEGIT)]):
             for result in pair:
                 self.assertIsNone(result["threw"], f"a valid program was refused: {program}")
-                self.assertEqual(result["held"][0]["program"], program,
-                                 "a valid program is not held as offered, so the offers do not "
-                                 "reach the program the simulation holds")
+                self.assertEqual(
+                    result["held"][0]["program"],
+                    program,
+                    "a valid program is not held as offered, so the offers do not "
+                    "reach the program the simulation holds",
+                )
         found = []
-        for program, pair in zip(LEGIT, pairs[:len(LEGIT)]):
+        for program, pair in zip(LEGIT, pairs[: len(LEGIT)]):
             found += findings(json.dumps(program), pair)
-        for (label, _program), pair in zip(NAMING, pairs[len(LEGIT):]):
+        for (label, _program), pair in zip(NAMING, pairs[len(LEGIT) :]):
             found += findings(label, pair)
         self.assertEqual(found, [])
 
@@ -337,21 +438,36 @@ class ProgramWorldReference(unittest.TestCase):
         # invariant: program-world-reference
         # Ids identify groups and rules; a group name is player text.
         grouped = {
-            "nextGroupId": 9, "nextRuleId": 15,
+            "nextGroupId": 9,
+            "nextRuleId": 15,
             "groups": [
-                {"id": 2, "name": "Grupa 2", "condition": {"kind": "always"},
-                 "rules": [{"id": 4, "condition": {"kind": "hereBelow", "resource": "stick",
-                                                 "value": 0},
-                            "action": {"kind": "walkTo", "resource": "moss"}}]},
-                {"id": 8, "name": "Route 1,2", "condition": {"kind": "hereBelow",
-                                                             "resource": "berry", "value": 50},
-                 "rules": [{"id": 14, "condition": {"kind": "always"},
-                            "action": {"kind": "explore"}}]},
+                {
+                    "id": 2,
+                    "name": "Grupa 2",
+                    "condition": {"kind": "always"},
+                    "rules": [
+                        {
+                            "id": 4,
+                            "condition": {"kind": "hereBelow", "resource": "stick", "value": 0},
+                            "action": {"kind": "walkTo", "resource": "moss"},
+                        }
+                    ],
+                },
+                {
+                    "id": 8,
+                    "name": "Route 1,2",
+                    "condition": {"kind": "hereBelow", "resource": "berry", "value": 50},
+                    "rules": [
+                        {"id": 14, "condition": {"kind": "always"}, "action": {"kind": "explore"}}
+                    ],
+                },
             ],
         }
         self.assertEqual(naming(grouped), [])
-        grouped["tripPlan"] = {"take": [{"item": "stick", "count": 5}],
-                               "bring": [{"item": "berry", "count": 10}]}
+        grouped["tripPlan"] = {
+            "take": [{"item": "stick", "count": 5}],
+            "bring": [{"item": "berry", "count": 10}],
+        }
         self.assertEqual(naming(grouped), [])
         # The same spelling in an action, condition or unexpected container is not metadata.
         intrusions = (
@@ -384,16 +500,42 @@ class ProgramWorldReference(unittest.TestCase):
 
     def test_control_the_reading_flags_numbers_and_positions(self):
         # invariant: program-world-reference
-        self.assertEqual(naming({"rules": [rule(below("stick", 0), walk("moss")),
-                                           rule(below("berry", 50), walk("fiber")),
-                                           rule(ALWAYS, {"kind": "explore"})]}), [])
-        self.assertEqual(naming({"rules": [rule(colder_than(30), walk("moss")),
-                                           rule(colder_than(36.5), walk("fiber")),
-                                           rule(colder_than(37), {"kind": "explore"})]}), [])
-        self.assertEqual(naming({"rules": [rule(stock_below("stick", 0), walk("moss")),
-                                           rule(stock_below("berry", 8), walk("fiber")),
-                                           rule(stock_below("fiber", 50), {"kind": "explore"})]}),
-                         [])
+        self.assertEqual(
+            naming(
+                {
+                    "rules": [
+                        rule(below("stick", 0), walk("moss")),
+                        rule(below("berry", 50), walk("fiber")),
+                        rule(ALWAYS, {"kind": "explore"}),
+                    ]
+                }
+            ),
+            [],
+        )
+        self.assertEqual(
+            naming(
+                {
+                    "rules": [
+                        rule(colder_than(30), walk("moss")),
+                        rule(colder_than(36.5), walk("fiber")),
+                        rule(colder_than(37), {"kind": "explore"}),
+                    ]
+                }
+            ),
+            [],
+        )
+        self.assertEqual(
+            naming(
+                {
+                    "rules": [
+                        rule(stock_below("stick", 0), walk("moss")),
+                        rule(stock_below("berry", 8), walk("fiber")),
+                        rule(stock_below("fiber", 50), {"kind": "explore"}),
+                    ]
+                }
+            ),
+            [],
+        )
         held = {
             "a coordinate pair": {"rules": [rule(ALWAYS, walk("stick", at={"q": 1, "r": 1}))]},
             "a tile's number": {"rules": [rule(ALWAYS, walk("stick", tile=5))]},
@@ -401,20 +543,26 @@ class ProgramWorldReference(unittest.TestCase):
             "a resource by its index": {"rules": [rule(ALWAYS, walk(0))]},
             "a tile's label": {"rules": [rule(ALWAYS, walk("(1, 1)"))]},
             "a number at a rule's level": {"rules": [dict(rule(ALWAYS, walk("moss")), tile=3)]},
-            "a compared number on a position": {"rules": [rule(
-                below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]},
-            "a value of a condition that compares no quantity": {"rules": [rule(
-                {"kind": "always", "value": 4}, walk("moss"))]},
-            "a temperature on a position": {"rules": [rule(
-                colder_than(36.5, at={"q": 0, "r": 0}), walk("moss"))]},
-            "a temperature on a tile's number": {"rules": [rule(
-                colder_than(36.5, tile=3), walk("moss"))]},
-            "an item stock on a position": {"rules": [rule(
-                stock_below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]},
+            "a compared number on a position": {
+                "rules": [rule(below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]
+            },
+            "a value of a condition that compares no quantity": {
+                "rules": [rule({"kind": "always", "value": 4}, walk("moss"))]
+            },
+            "a temperature on a position": {
+                "rules": [rule(colder_than(36.5, at={"q": 0, "r": 0}), walk("moss"))]
+            },
+            "a temperature on a tile's number": {
+                "rules": [rule(colder_than(36.5, tile=3), walk("moss"))]
+            },
+            "an item stock on a position": {
+                "rules": [rule(stock_below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]
+            },
             "an item by its index": {"rules": [rule(stock_below(0, 3), walk("moss"))]},
             "an item as a tile's label": {"rules": [rule(stock_below("(1, 1)", 3), walk("moss"))]},
-            "an item that is no identifier": {"rules": [rule(
-                stock_below("tile", 3), walk("moss"))]},
+            "an item that is no identifier": {
+                "rules": [rule(stock_below("tile", 3), walk("moss"))]
+            },
         }
         action_id = copying.deepcopy(BASE)
         program_rules(action_id)[0]["action"]["id"] = 7

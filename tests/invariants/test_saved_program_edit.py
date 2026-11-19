@@ -84,7 +84,9 @@ def group_of(program):
 
 
 def add_rule(program):
-    program_rules(program).append({"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER})
+    program_rules(program).append(
+        {"id": program["nextRuleId"], "condition": ALWAYS, "action": WANDER}
+    )
     program["nextRuleId"] += 1
 
 
@@ -124,7 +126,9 @@ DIFFERING = [
     ("the condition of a group changed", edited(BASE, change_group_condition), {"1": 0, "2": 1}),
 ]
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -151,6 +155,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
+)
 
 
 def node():
@@ -164,8 +169,9 @@ def drive(steps):
     built = support.built_copy()
     game = built.file(GAME_MODULE)
     if not os.path.isfile(game):
-        raise AssertionError(f"`npm run build` placed no {GAME_MODULE}, so the simulation "
-                             "cannot be driven")
+        raise AssertionError(
+            f"`npm run build` placed no {GAME_MODULE}, so the simulation cannot be driven"
+        )
     directory = tempfile.mkdtemp(prefix="loop2-saved-program-edit-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -188,8 +194,14 @@ def after_edit(edit_step, paused=False):
     """The records of the step before `edit_step` and of `edit_step`, in a map run that has passed
     STREAK_BEFORE game minutes sent with program 1 holding BASE; program 2 is made by
     `createProgram` and holds the empty group."""
-    steps = [["newGame"], CREATE, ["setProgram", BASE], ["programs.createProgram"],
-             ["send", SENT, T], ["advanceMinutes", STREAK_BEFORE]]
+    steps = [
+        ["newGame"],
+        CREATE,
+        ["setProgram", BASE],
+        ["programs.createProgram"],
+        ["send", SENT, T],
+        ["advanceMinutes", STREAK_BEFORE],
+    ]
     if paused:
         steps.append(["setPaused", True])
     steps.append(edit_step)
@@ -198,31 +210,42 @@ def after_edit(edit_step, paused=False):
 
 
 class SavedProgramEdit(unittest.TestCase):
-
     def test_precondition_the_map_run_stands_at_ten_with_its_counts(self):
         before, _ = after_edit(["programs.editProgram", 1, BASE])
-        self.assertEqual(before["streak"], STREAK_BEFORE,
-                         "the map run does not hold a streak of 10 after 10 game minutes of "
-                         "exploring, so what is left unchanged below would prove nothing")
+        self.assertEqual(
+            before["streak"],
+            STREAK_BEFORE,
+            "the map run does not hold a streak of 10 after 10 game minutes of "
+            "exploring, so what is left unchanged below would prove nothing",
+        )
         self.assertEqual(before["counts"], COUNTS_BEFORE)
         self.assertEqual(before["copy"]["programId"], 1)
 
     def test_an_edit_of_a_saved_program_leaves_the_copy_the_streak_and_the_counts(self):
         # invariant: saved-program-edit
         for paused in (False, True):
-            for program_id, owner in ((1, "the program the copy came from"), (2, "another program")):
+            for program_id, owner in (
+                (1, "the program the copy came from"),
+                (2, "another program"),
+            ):
                 for name, handed_over, _ in DIFFERING:
                     with self.subTest(program=owner, edit=name, paused=paused):
-                        before, after = after_edit(["programs.editProgram", program_id, handed_over],
-                                                   paused=paused)
+                        before, after = after_edit(
+                            ["programs.editProgram", program_id, handed_over], paused=paused
+                        )
                         self.assertEqual(before["streak"], STREAK_BEFORE)
                         self.assertEqual(after["copy"], before["copy"], f"{name}: the copy changed")
-                        self.assertEqual(after["streak"], STREAK_BEFORE,
-                                         f"{name}: the streak changed")
-                        self.assertEqual(after["defeatedAttacks"], before["defeatedAttacks"],
-                                         f"{name}: the beaten attacks changed")
-                        self.assertEqual(after["counts"], COUNTS_BEFORE,
-                                         f"{name}: the firing counts changed")
+                        self.assertEqual(
+                            after["streak"], STREAK_BEFORE, f"{name}: the streak changed"
+                        )
+                        self.assertEqual(
+                            after["defeatedAttacks"],
+                            before["defeatedAttacks"],
+                            f"{name}: the beaten attacks changed",
+                        )
+                        self.assertEqual(
+                            after["counts"], COUNTS_BEFORE, f"{name}: the firing counts changed"
+                        )
                         self.assertEqual(after["paused"], paused, f"{name}: the pause changed")
 
     def test_control_the_edit_was_made_to_the_saved_program(self):
@@ -231,10 +254,16 @@ class SavedProgramEdit(unittest.TestCase):
             for name, handed_over, _ in DIFFERING:
                 with self.subTest(program=program_id, edit=name):
                     before, after = after_edit(["programs.editProgram", program_id, handed_over])
-                    self.assertNotEqual(after["saved"][program_id - 1], before["saved"][program_id - 1],
-                                        f"{name}: the saved program did not change")
-                    self.assertEqual(after["saved"][2 - program_id], before["saved"][2 - program_id],
-                                     f"{name}: the other saved program changed")
+                    self.assertNotEqual(
+                        after["saved"][program_id - 1],
+                        before["saved"][program_id - 1],
+                        f"{name}: the saved program did not change",
+                    )
+                    self.assertEqual(
+                        after["saved"][2 - program_id],
+                        before["saved"][2 - program_id],
+                        f"{name}: the other saved program changed",
+                    )
 
     def test_control_the_edit_of_the_copy_zeroes_the_streak_and_restarts_changed_counts(self):
         # invariant: saved-program-edit
@@ -243,8 +272,12 @@ class SavedProgramEdit(unittest.TestCase):
                 with self.subTest(edit=name, paused=paused):
                     before, after = after_edit(["setProgram", handed_over], paused=paused)
                     self.assertEqual(before["streak"], STREAK_BEFORE)
-                    self.assertEqual(after["streak"], 0, f"{name}: the edit of the copy kept the streak")
-                    self.assertEqual(after["counts"], counts, f"{name}: the counts after the edit of the copy")
+                    self.assertEqual(
+                        after["streak"], 0, f"{name}: the edit of the copy kept the streak"
+                    )
+                    self.assertEqual(
+                        after["counts"], counts, f"{name}: the counts after the edit of the copy"
+                    )
                     self.assertNotEqual(after["copy"], before["copy"])
 
 

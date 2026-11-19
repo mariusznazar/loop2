@@ -66,8 +66,13 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import (HELD_PROGRAMS_JS, KNOWING_GAME_JS, SAVED_DOCUMENT_JS,
-                             program_from_rules, program_rules)
+from program_fixture import (
+    HELD_PROGRAMS_JS,
+    KNOWING_GAME_JS,
+    SAVED_DOCUMENT_JS,
+    program_from_rules,
+    program_rules,
+)
 
 GAME_MODULE = "dist/browser/sim/game.js"
 BUILT_DATA = "dist/browser/sim/data"
@@ -79,17 +84,48 @@ SENT = {"mapId": "forest", "characterId": 1}
 LOOPED = {"mapId": "forestEdge", "characterId": 1}
 T = 1760000000000
 # Where an offer of `setProgram` is made, and where a program is written into a saved document.
-WHERES = {"outside": "outside a map run", "run": "during a map run", "loop": "during an earning loop"}
-PLACES = {"list": "the player's list", "copy": "the copy of a map run",
-          "base": "the base of the copy of a map run", "loop": "an earning loop"}
+WHERES = {
+    "outside": "outside a map run",
+    "run": "during a map run",
+    "loop": "during an earning loop",
+}
+PLACES = {
+    "list": "the player's list",
+    "copy": "the copy of a map run",
+    "base": "the base of the copy of a map run",
+    "loop": "an earning loop",
+}
 
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
 # (actions.ts).
-CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "natureEnergyBelow",
-                   "itemBelow", "campfireLeftBelow", "awayFromCampfire", "healthBelow",
-                   "opponentHealthBelow")
-ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "patrol", "craftCampfire",
-                "lightCampfire", "lightItem", "feedCampfire", "eat", "strikeWithStick", "kick", "dodge")
+CONDITION_KINDS = (
+    "always",
+    "hereBelow",
+    "temperatureBelow",
+    "satietyBelow",
+    "natureEnergyBelow",
+    "itemBelow",
+    "campfireLeftBelow",
+    "awayFromCampfire",
+    "healthBelow",
+    "opponentHealthBelow",
+)
+ACTION_KINDS = (
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    "patrol",
+    "craftCampfire",
+    "lightCampfire",
+    "lightItem",
+    "feedCampfire",
+    "eat",
+    "strikeWithStick",
+    "kick",
+    "dodge",
+)
 
 ALWAYS = {"kind": "always"}
 
@@ -102,45 +138,92 @@ def rule(condition, action):
 BASE = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
 
 # A program holding every listed kind, each with valid fields.
-VALID = program_from_rules([
-    rule(ALWAYS, {"kind": "explore"}),
-    rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
-    rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-    rule({"kind": "temperatureBelow", "value": 36.5}, {"kind": "wander"}),
-    rule({"kind": "satietyBelow", "value": 50}, {"kind": "wander"}),
-    rule({"kind": "natureEnergyBelow", "value": 30}, {"kind": "wander"}),
-    rule({"kind": "itemBelow", "item": "berry", "value": 8}, {"kind": "wander"}),
-    rule({"kind": "campfireLeftBelow", "value": 20}, {"kind": "wander"}),
-    rule({"kind": "awayFromCampfire"}, {"kind": "wander"}),
-    rule(ALWAYS, {"kind": "gather", "resource": "moss"}),
-    rule(ALWAYS, {"kind": "patrol", "resource": "berry"}),
-    rule(ALWAYS, {"kind": "walkToCampfire"}),
-    rule(ALWAYS, {"kind": "craftCampfire"}),
-    rule(ALWAYS, {"kind": "lightCampfire"}),
-    rule(ALWAYS, {"kind": "lightItem"}),
-    rule(ALWAYS, {"kind": "feedCampfire"}),
-    rule(ALWAYS, {"kind": "eat"}),
-    rule({"kind": "healthBelow", "value": 50}, {"kind": "strikeWithStick"}),
-    rule({"kind": "opponentHealthBelow", "value": 10}, {"kind": "kick"}),
-    rule(ALWAYS, {"kind": "dodge"}),
-])
+VALID = program_from_rules(
+    [
+        rule(ALWAYS, {"kind": "explore"}),
+        rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
+        rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+        rule({"kind": "temperatureBelow", "value": 36.5}, {"kind": "wander"}),
+        rule({"kind": "satietyBelow", "value": 50}, {"kind": "wander"}),
+        rule({"kind": "natureEnergyBelow", "value": 30}, {"kind": "wander"}),
+        rule({"kind": "itemBelow", "item": "berry", "value": 8}, {"kind": "wander"}),
+        rule({"kind": "campfireLeftBelow", "value": 20}, {"kind": "wander"}),
+        rule({"kind": "awayFromCampfire"}, {"kind": "wander"}),
+        rule(ALWAYS, {"kind": "gather", "resource": "moss"}),
+        rule(ALWAYS, {"kind": "patrol", "resource": "berry"}),
+        rule(ALWAYS, {"kind": "walkToCampfire"}),
+        rule(ALWAYS, {"kind": "craftCampfire"}),
+        rule(ALWAYS, {"kind": "lightCampfire"}),
+        rule(ALWAYS, {"kind": "lightItem"}),
+        rule(ALWAYS, {"kind": "feedCampfire"}),
+        rule(ALWAYS, {"kind": "eat"}),
+        rule({"kind": "healthBelow", "value": 50}, {"kind": "strikeWithStick"}),
+        rule({"kind": "opponentHealthBelow", "value": 10}, {"kind": "kick"}),
+        rule(ALWAYS, {"kind": "dodge"}),
+    ]
+)
 
 # Kinds no data file lists: made-up kinds, letter-case variants, names every JavaScript object
 # answers to, the other list's kinds, the empty string, and kinds that are no string.
 MISSING = "__missing__"
-UNLISTED_CONDITION_KINDS = ("never", "hereAbove", "hereAtLeast", "stockBelow", "Always", "ALWAYS",
-                            "herebelow", "", "toString", "constructor", "__proto__",
-                            "hasOwnProperty", "explore", "wander", "walkTo", "gather", MISSING,
-                            None, 0, ["always"])
-UNLISTED_ACTION_KINDS = ("collect", "gatherAll", "Gather", "rest", "walkToTile", "goTo", "Explore",
-                         "WANDER", "walkto", "craft", "light", "feed", "Eat", "lightcampfire",
-                         "walkToFire", "",
-                         "toString", "constructor", "__proto__", "valueOf", "always",
-                         "hereBelow", MISSING, None, 1, ["explore"])
+UNLISTED_CONDITION_KINDS = (
+    "never",
+    "hereAbove",
+    "hereAtLeast",
+    "stockBelow",
+    "Always",
+    "ALWAYS",
+    "herebelow",
+    "",
+    "toString",
+    "constructor",
+    "__proto__",
+    "hasOwnProperty",
+    "explore",
+    "wander",
+    "walkTo",
+    "gather",
+    MISSING,
+    None,
+    0,
+    ["always"],
+)
+UNLISTED_ACTION_KINDS = (
+    "collect",
+    "gatherAll",
+    "Gather",
+    "rest",
+    "walkToTile",
+    "goTo",
+    "Explore",
+    "WANDER",
+    "walkto",
+    "craft",
+    "light",
+    "feed",
+    "Eat",
+    "lightcampfire",
+    "walkToFire",
+    "",
+    "toString",
+    "constructor",
+    "__proto__",
+    "valueOf",
+    "always",
+    "hereBelow",
+    MISSING,
+    None,
+    1,
+    ["explore"],
+)
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.
 PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3}
 
-DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + SAVED_DOCUMENT_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + HELD_PROGRAMS_JS
+    + SAVED_DOCUMENT_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -213,6 +296,7 @@ writeFileSync(outPath, JSON.stringify({
   conditionKinds: Object.keys(CONDITIONS), actionKinds: Object.keys(ACTIONS), results, loaded,
 }));
 """
+)
 
 
 def node():
@@ -235,13 +319,21 @@ def offers():
     for kind in UNLISTED_CONDITION_KINDS:
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(with_kind(kind, fields), {"kind": "explore"})
-            found.append((f"condition kind {kind!r} with fields {fields}",
-                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
+            found.append(
+                (
+                    f"condition kind {kind!r} with fields {fields}",
+                    program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]]),
+                )
+            )
     for kind in UNLISTED_ACTION_KINDS:
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(ALWAYS, with_kind(kind, fields))
-            found.append((f"action kind {kind!r} with fields {fields}",
-                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
+            found.append(
+                (
+                    f"action kind {kind!r} with fields {fields}",
+                    program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]]),
+                )
+            )
     return found
 
 
@@ -263,10 +355,20 @@ def drive(programs, written=()):
         with open(script, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(DRIVER)
         with open(offers_path, "w", encoding="utf-8", newline="\n") as handle:
-            json.dump({"base": BASE, "sent": SENT, "looped": LOOPED, "realMs": T,
-                       "offers": listed, "loads": loads}, handle)
-        code, output = support.run([node(), script, game, copy.file(BUILT_DATA), offers_path,
-                                    out_path], directory)
+            json.dump(
+                {
+                    "base": BASE,
+                    "sent": SENT,
+                    "looped": LOOPED,
+                    "realMs": T,
+                    "offers": listed,
+                    "loads": loads,
+                },
+                handle,
+            )
+        code, output = support.run(
+            [node(), script, game, copy.file(BUILT_DATA), offers_path, out_path], directory
+        )
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
@@ -286,38 +388,52 @@ def taken_in(result):
 
 
 def refusal_findings(label, pairs):
-    return [f"{label} ({WHERES[where]}): taken in as {json.dumps(result['program'])}"
-            for where, result in pairs if taken_in(result)]
+    return [
+        f"{label} ({WHERES[where]}): taken in as {json.dumps(result['program'])}"
+        for where, result in pairs
+        if taken_in(result)
+    ]
 
 
 def acceptance_findings(pairs, expected):
-    return [f"the valid program was not taken in as offered ({WHERES[where]}): "
-            f"{json.dumps(result)}"
-            for where, result in pairs
-            if result["threw"] or result["program"] != expected]
+    return [
+        f"the valid program was not taken in as offered ({WHERES[where]}): {json.dumps(result)}"
+        for where, result in pairs
+        if result["threw"] or result["program"] != expected
+    ]
 
 
 def load_refusal_findings(label, loaded):
-    return [f"{label} written into a saved document at {PLACES[place]}: loaded as "
-            f"{json.dumps(result['program'])}"
-            for place, result in loaded if result["ok"]]
+    return [
+        f"{label} written into a saved document at {PLACES[place]}: loaded as "
+        f"{json.dumps(result['program'])}"
+        for place, result in loaded
+        if result["ok"]
+    ]
 
 
 def load_acceptance_findings(loaded, expected):
-    return [f"the valid program written into a saved document at {PLACES[place]} was not loaded "
-            f"as offered: {json.dumps(result)}"
-            for place, result in loaded if not result["ok"] or result["program"] != expected]
+    return [
+        f"the valid program written into a saved document at {PLACES[place]} was not loaded "
+        f"as offered: {json.dumps(result)}"
+        for place, result in loaded
+        if not result["ok"] or result["program"] != expected
+    ]
 
 
 def tripwire(condition_kinds, action_kinds):
     found = []
     if sorted(condition_kinds) != sorted(CONDITION_KINDS):
-        found.append(f"the data lists the condition kinds {sorted(condition_kinds)}, the check "
-                     f"writes out {sorted(CONDITION_KINDS)}: update CONDITION_KINDS through a "
-                     "foundation step")
+        found.append(
+            f"the data lists the condition kinds {sorted(condition_kinds)}, the check "
+            f"writes out {sorted(CONDITION_KINDS)}: update CONDITION_KINDS through a "
+            "foundation step"
+        )
     if sorted(action_kinds) != sorted(ACTION_KINDS):
-        found.append(f"the data lists the action kinds {sorted(action_kinds)}, the check writes "
-                     f"out {sorted(ACTION_KINDS)}: update ACTION_KINDS through a foundation step")
+        found.append(
+            f"the data lists the action kinds {sorted(action_kinds)}, the check writes "
+            f"out {sorted(ACTION_KINDS)}: update ACTION_KINDS through a foundation step"
+        )
     return found
 
 
@@ -326,21 +442,24 @@ def group_programs():
     hold an unlisted kind in the condition of its fourth group instead)."""
     valid = {
         "tripPlan": {"take": [], "bring": []},
-        "nextGroupId": 11, "nextRuleId": 1,
+        "nextGroupId": 11,
+        "nextRuleId": 1,
         "groups": [
             {"id": index + 1, "name": "Group", "condition": condition, "rules": []}
-            for index, condition in enumerate([
-                ALWAYS,
-                {"kind": "hereBelow", "resource": "stick", "value": 3},
-                {"kind": "temperatureBelow", "value": 36.5},
-                {"kind": "satietyBelow", "value": 50},
-                {"kind": "itemBelow", "item": "berry", "value": 8},
-                {"kind": "campfireLeftBelow", "value": 20},
-                {"kind": "awayFromCampfire"},
-                {"kind": "healthBelow", "value": 50},
-                {"kind": "opponentHealthBelow", "value": 10},
-                {"kind": "natureEnergyBelow", "value": 30},
-            ])
+            for index, condition in enumerate(
+                [
+                    ALWAYS,
+                    {"kind": "hereBelow", "resource": "stick", "value": 3},
+                    {"kind": "temperatureBelow", "value": 36.5},
+                    {"kind": "satietyBelow", "value": 50},
+                    {"kind": "itemBelow", "item": "berry", "value": 8},
+                    {"kind": "campfireLeftBelow", "value": 20},
+                    {"kind": "awayFromCampfire"},
+                    {"kind": "healthBelow", "value": 50},
+                    {"kind": "opponentHealthBelow", "value": 10},
+                    {"kind": "natureEnergyBelow", "value": 30},
+                ]
+            )
         ],
     }
     invalid = []
@@ -353,24 +472,23 @@ def group_programs():
 
 
 class ProgramClosedLists(unittest.TestCase):
-
     def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
         # invariant: program-closed-lists
         valid, invalid = group_programs()
         _, _, pairs, _ = drive([valid, *invalid])
-        self.assertEqual(acceptance_findings(pairs[:len(WHERES)], valid), [])
-        self.assertEqual(refusal_findings("unlisted group condition", pairs[len(WHERES):]), [])
+        self.assertEqual(acceptance_findings(pairs[: len(WHERES)], valid), [])
+        self.assertEqual(refusal_findings("unlisted group condition", pairs[len(WHERES) :]), [])
 
     def test_programs_with_unlisted_kinds_are_refused(self):
         # invariant: program-closed-lists
         labelled = offers()
         condition_kinds, action_kinds, pairs, _ = drive([VALID] + [p for _, p in labelled])
         self.assertEqual(tripwire(condition_kinds, action_kinds), [])
-        self.assertEqual(acceptance_findings(pairs[:len(WHERES)], VALID), [])
+        self.assertEqual(acceptance_findings(pairs[: len(WHERES)], VALID), [])
         found = []
         width = len(WHERES)
         for index, (label, _program) in enumerate(labelled):
-            found += refusal_findings(label, pairs[width * (1 + index):width * (2 + index)])
+            found += refusal_findings(label, pairs[width * (1 + index) : width * (2 + index)])
         self.assertEqual(found, [])
 
     def test_a_saved_game_state_holding_a_program_with_an_unlisted_kind_is_not_loaded(self):
@@ -381,47 +499,81 @@ class ProgramClosedLists(unittest.TestCase):
         _, _, _, loaded = drive([], programs)
         width = len(PLACES)
         self.assertEqual(load_acceptance_findings(loaded[:width], VALID), [])
-        self.assertEqual(load_acceptance_findings(loaded[width:2 * width], valid_groups), [])
+        self.assertEqual(load_acceptance_findings(loaded[width : 2 * width], valid_groups), [])
         found = []
         for index, (label, _program) in enumerate(labelled):
-            found += load_refusal_findings(label, loaded[width * (2 + index):width * (3 + index)])
-        found += load_refusal_findings("unlisted group condition",
-                                       loaded[width * (2 + len(labelled)):])
+            found += load_refusal_findings(label, loaded[width * (2 + index) : width * (3 + index)])
+        found += load_refusal_findings(
+            "unlisted group condition", loaded[width * (2 + len(labelled)) :]
+        )
         self.assertEqual(found, [])
 
     def test_control_the_comparison_and_the_tripwire_flag_breaks(self):
         # invariant: program-closed-lists
         bad = program_from_rules([rule({"kind": "never"}, {"kind": "explore"})])
-        self.assertTrue(refusal_findings("made up", [("run", {"threw": False, "program": bad})]),
-                        "an unlisted kind taken in goes unseen")
-        self.assertTrue(refusal_findings("made up", [("loop", {
-            "threw": False, "program": copying.deepcopy(BASE), "loopProgram": bad})]),
-                        "an unlisted kind taken into the program of an earning loop goes unseen")
-        self.assertEqual(refusal_findings("made up", [("run", {"threw": True, "error": "x"}),
-                                                      ("outside", {"threw": False,
-                                                                   "program": copying.deepcopy(BASE)}),
-                                                      ("loop", {"threw": False,
-                                                                "program": copying.deepcopy(BASE),
-                                                                "loopProgram": copying.deepcopy(BASE)})]),
-                         [])
-        self.assertTrue(acceptance_findings([("outside", {"threw": True, "error": "x"})], VALID),
-                        "a refused valid program goes unseen")
-        self.assertTrue(acceptance_findings([("loop", {"threw": False, "program": BASE})], VALID),
-                        "a valid program left out goes unseen")
-        self.assertTrue(load_refusal_findings("made up", [("loop", {"ok": True, "program": bad})]),
-                        "an unlisted kind loaded goes unseen")
-        self.assertEqual(load_refusal_findings("made up", [("list", {"ok": False,
-                                                                     "reason": "shape"})]), [])
-        self.assertTrue(load_acceptance_findings([("copy", {"ok": False, "reason": "shape"})], VALID),
-                        "a refused load of the valid program goes unseen")
-        self.assertTrue(load_acceptance_findings([("base", {"ok": True, "program": BASE})], VALID),
-                        "a valid program changed by the load goes unseen")
-        self.assertEqual(load_acceptance_findings([("list", {"ok": True, "program": VALID})], VALID),
-                         [])
-        self.assertTrue(tripwire(list(CONDITION_KINDS) + ["hereAbove"], ACTION_KINDS),
-                        "a condition kind added to the data goes unseen")
-        self.assertTrue(tripwire(CONDITION_KINDS, [k for k in ACTION_KINDS if k != "wander"]),
-                        "an action kind taken out of the data goes unseen")
+        self.assertTrue(
+            refusal_findings("made up", [("run", {"threw": False, "program": bad})]),
+            "an unlisted kind taken in goes unseen",
+        )
+        self.assertTrue(
+            refusal_findings(
+                "made up",
+                [("loop", {"threw": False, "program": copying.deepcopy(BASE), "loopProgram": bad})],
+            ),
+            "an unlisted kind taken into the program of an earning loop goes unseen",
+        )
+        self.assertEqual(
+            refusal_findings(
+                "made up",
+                [
+                    ("run", {"threw": True, "error": "x"}),
+                    ("outside", {"threw": False, "program": copying.deepcopy(BASE)}),
+                    (
+                        "loop",
+                        {
+                            "threw": False,
+                            "program": copying.deepcopy(BASE),
+                            "loopProgram": copying.deepcopy(BASE),
+                        },
+                    ),
+                ],
+            ),
+            [],
+        )
+        self.assertTrue(
+            acceptance_findings([("outside", {"threw": True, "error": "x"})], VALID),
+            "a refused valid program goes unseen",
+        )
+        self.assertTrue(
+            acceptance_findings([("loop", {"threw": False, "program": BASE})], VALID),
+            "a valid program left out goes unseen",
+        )
+        self.assertTrue(
+            load_refusal_findings("made up", [("loop", {"ok": True, "program": bad})]),
+            "an unlisted kind loaded goes unseen",
+        )
+        self.assertEqual(
+            load_refusal_findings("made up", [("list", {"ok": False, "reason": "shape"})]), []
+        )
+        self.assertTrue(
+            load_acceptance_findings([("copy", {"ok": False, "reason": "shape"})], VALID),
+            "a refused load of the valid program goes unseen",
+        )
+        self.assertTrue(
+            load_acceptance_findings([("base", {"ok": True, "program": BASE})], VALID),
+            "a valid program changed by the load goes unseen",
+        )
+        self.assertEqual(
+            load_acceptance_findings([("list", {"ok": True, "program": VALID})], VALID), []
+        )
+        self.assertTrue(
+            tripwire(list(CONDITION_KINDS) + ["hereAbove"], ACTION_KINDS),
+            "a condition kind added to the data goes unseen",
+        )
+        self.assertTrue(
+            tripwire(CONDITION_KINDS, [k for k in ACTION_KINDS if k != "wander"]),
+            "an action kind taken out of the data goes unseen",
+        )
         self.assertEqual(tripwire(CONDITION_KINDS, ACTION_KINDS), [])
 
 

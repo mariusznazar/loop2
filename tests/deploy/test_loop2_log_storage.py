@@ -16,17 +16,19 @@ LOCAL_DRIVER_ONLY = ["driver: local"]
 LOGROTATE_HEADER = "/var/log/loop2-app.log {"
 # Weekly, or sooner past 100 MiB; four rotated files; copy and truncate, so the file stays where
 # the deployment appends to it; no `create` and no user name in the file (D-13).
-LOGROTATE_DIRECTIVES = sorted([
-    "weekly",
-    "maxsize 100M",
-    "rotate 4",
-    "compress",
-    "delaycompress",
-    "missingok",
-    "notifempty",
-    "copytruncate",
-    "su root root",
-])
+LOGROTATE_DIRECTIVES = sorted(
+    [
+        "weekly",
+        "maxsize 100M",
+        "rotate 4",
+        "compress",
+        "delaycompress",
+        "missingok",
+        "notifempty",
+        "copytruncate",
+        "su root root",
+    ]
+)
 
 
 def read_lines(path):
@@ -66,7 +68,6 @@ def service_logging(lines):
 
 
 class ComposeLogDriver(unittest.TestCase):
-
     def setUp(self):
         self.lines = read_lines(COMPOSE)
 
@@ -76,20 +77,28 @@ class ComposeLogDriver(unittest.TestCase):
         for service in SERVICES:
             with self.subTest(service=service):
                 self.assertIn(service, logging, f"{COMPOSE} has no service {service}")
-                self.assertEqual(logging[service], LOCAL_DRIVER_ONLY,
-                                 f"service {service} does not log to the `local` driver alone")
+                self.assertEqual(
+                    logging[service],
+                    LOCAL_DRIVER_ONLY,
+                    f"service {service} does not log to the `local` driver alone",
+                )
 
     def test_no_other_logging_key_in_the_compose_file(self):
         # decision: D-355 "Just before a deployment replaces the containers of the game, it appends the whole log of the application and of the tunnel connector to `/var/log/loop2-app.log` on the test server, and when that append fails it says so in the deploy log and goes on; both services run under the `local` log driver of Docker with its default rotation, which bounds the log of a running container at about 100 MB"
-        keys = [line for line in self.lines if is_code(line)
-                and re.match(r"\s*(logging|log_driver|log_opt)\s*:", line)]
-        self.assertEqual(len(keys), len(SERVICES),
-                         f"{COMPOSE} holds {len(keys)} logging keys, not one per service")
+        keys = [
+            line
+            for line in self.lines
+            if is_code(line) and re.match(r"\s*(logging|log_driver|log_opt)\s*:", line)
+        ]
+        self.assertEqual(
+            len(keys),
+            len(SERVICES),
+            f"{COMPOSE} holds {len(keys)} logging keys, not one per service",
+        )
         self.assertNotIn("log_driver", "\n".join(self.lines))
 
 
 class LogrotateStanza(unittest.TestCase):
-
     def setUp(self):
         self.lines = [line.strip() for line in read_lines(LOGROTATE) if is_code(line)]
 

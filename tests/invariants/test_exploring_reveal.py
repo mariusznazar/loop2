@@ -57,7 +57,7 @@ T = 1760000000000
 T_OTHER = 1760000123456
 
 ENTRANCE = {"q": 1, "r": 1}  # maps.js: forest entrance, column 1, row 1
-EXPLORE_MINUTES = 20         # actions.js: explore
+EXPLORE_MINUTES = 20  # actions.js: explore
 
 ALWAYS = {"kind": "always"}
 EXPLORE = {"kind": "explore"}
@@ -70,11 +70,18 @@ def rule(condition, action):
 
 P_ONLY = program_from_rules([rule(ALWAYS, EXPLORE)])
 P_ROAM = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)])
-P_GO = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                           rule(ALWAYS, WANDER)])
+P_GO = program_from_rules(
+    [
+        rule(ALWAYS, EXPLORE),
+        rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+        rule(ALWAYS, WANDER),
+    ]
+)
 LONG_MINUTES = 240
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = (
+    KNOWING_GAME_JS
+    + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -89,6 +96,7 @@ for (const [name, ...args] of steps) {
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
+)
 
 
 def node():
@@ -100,8 +108,9 @@ def node():
 
 def drive(program, minutes, real_ms=T):
     """The map run after the send and after each of `minutes` game minutes, by minute."""
-    steps = ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
-             + [["advanceMinutes", 1]] * minutes)
+    steps = [["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]] + [
+        ["advanceMinutes", 1]
+    ] * minutes
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
         raise AssertionError(f"`npm run build` placed no {GAME_MODULE}")
@@ -157,16 +166,18 @@ def violations(runs):
         explorings += 1
         before, at_end = runs[end - 1], runs[end]
         if not tile_at(at_end, at_end["character"]["at"])["revealed"]:
-            found.append(f"minute {end}: the exploring from {minute} ends with the tile under "
-                         "the character not revealed")
+            found.append(
+                f"minute {end}: the exploring from {minute} ends with the tile under "
+                "the character not revealed"
+            )
         if tile_at(before, before["character"]["at"])["revealed"]:
-            found.append(f"minute {end - 1}: the exploring from {minute} revealed the tile "
-                         "before its end")
+            found.append(
+                f"minute {end - 1}: the exploring from {minute} revealed the tile before its end"
+            )
     return found, explorings, refused
 
 
 class ExploringReveal(unittest.TestCase):
-
     def test_exploring_at_the_entrance(self):
         # invariant: exploring-reveal
         runs = drive(P_ONLY, 25)
@@ -174,14 +185,20 @@ class ExploringReveal(unittest.TestCase):
         self.assertTrue(is_exploring(runs[0]["current"]))
         self.assertEqual(runs[0]["current"]["startMinute"], 0)
         self.assertEqual(runs[0]["current"]["endMinute"], EXPLORE_MINUTES)
-        self.assertFalse(tile_at(runs[19], ENTRANCE)["revealed"],
-                         "the entrance is revealed before the exploring ends")
-        self.assertTrue(tile_at(runs[20], ENTRANCE)["revealed"],
-                        "the exploring ended without revealing the entrance")
+        self.assertFalse(
+            tile_at(runs[19], ENTRANCE)["revealed"],
+            "the entrance is revealed before the exploring ends",
+        )
+        self.assertTrue(
+            tile_at(runs[20], ENTRANCE)["revealed"],
+            "the exploring ended without revealing the entrance",
+        )
         for minute in range(20, 26):
             self.assertEqual(runs[minute]["character"]["at"], ENTRANCE)
-            self.assertFalse(is_exploring(runs[minute]["current"]),
-                             f"minute {minute}: exploring again on the revealed entrance")
+            self.assertFalse(
+                is_exploring(runs[minute]["current"]),
+                f"minute {minute}: exploring again on the revealed entrance",
+            )
             self.assertEqual(runs[minute]["current"]["activity"], {"kind": "wait"})
 
     def test_long_runs(self):
@@ -206,8 +223,12 @@ class ExploringReveal(unittest.TestCase):
         tile_at(early[19], ENTRANCE)["revealed"] = True
         self.assertTrue(violations(early)[0], "a reveal before the end goes unseen")
         again = copying.deepcopy(runs)
-        again[20]["current"] = {"activity": {"kind": "rule", "action": EXPLORE},
-                                "startMinute": 20, "endMinute": 40, "stepTo": None}
+        again[20]["current"] = {
+            "activity": {"kind": "rule", "action": EXPLORE},
+            "startMinute": 20,
+            "endMinute": 40,
+            "stepTo": None,
+        }
         again[20]["character"]["at"] = ENTRANCE
         self.assertTrue(violations(again)[0], "exploring on a revealed tile goes unseen")
 

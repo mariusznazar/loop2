@@ -35,7 +35,6 @@ REFUSED_VALUES = {
 
 
 class InputRefusedBeforeGitOrDocker(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.fixture = support.DeployFixture()
@@ -49,8 +48,9 @@ class InputRefusedBeforeGitOrDocker(unittest.TestCase):
         self.assertEqual(result.code, 2, result)
         self.assertEqual(result.stub_calls(), {}, result)
         self.assertEqual(result.git_trace, "", f"git ran:\n{result.git_trace}")
-        self.assertEqual(self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"),
-                         self.head_before)
+        self.assertEqual(
+            self.fixture.git("-C", self.fixture.checkout, "rev-parse", "HEAD"), self.head_before
+        )
         self.assertIn("input", self.fixture.log_text().splitlines()[-1])
 
     def test_forced_path_refuses_each_malformed_value(self):
@@ -94,17 +94,20 @@ class SeamDeliversInputAndSeesGit(unittest.TestCase):
         cls.fixture.remove()
 
     def test_arguments_and_ssh_original_command_arrive_byte_exact(self):
-        probe = ("#!/bin/bash\n"
-                 "printf '%s\\0' \"$#\" \"$@\"\n"
-                 "if [[ -v SSH_ORIGINAL_COMMAND ]]; then printf 'set\\0%s\\0' "
-                 "\"$SSH_ORIGINAL_COMMAND\"; else printf 'unset\\0'; fi\n")
+        probe = (
+            "#!/bin/bash\n"
+            'printf \'%s\\0\' "$#" "$@"\n'
+            "if [[ -v SSH_ORIGINAL_COMMAND ]]; then printf 'set\\0%s\\0' "
+            "\"$SSH_ORIGINAL_COMMAND\"; else printf 'unset\\0'; fi\n"
+        )
         values = list(REFUSED_VALUES.values())
-        result = self.fixture.run_script_as_probe(probe, arguments=values,
-                                                  ssh_original_command=REFUSED_VALUES[
-                                                      "embedded newline"])
+        result = self.fixture.run_script_as_probe(
+            probe, arguments=values, ssh_original_command=REFUSED_VALUES["embedded newline"]
+        )
         parts = result.stdout.split("\0")[:-1]
-        self.assertEqual(parts, [str(len(values))] + values
-                         + ["set", REFUSED_VALUES["embedded newline"]])
+        self.assertEqual(
+            parts, [str(len(values))] + values + ["set", REFUSED_VALUES["embedded newline"]]
+        )
         result = self.fixture.run_script_as_probe(probe, ssh_original_command="")
         self.assertEqual(result.stdout.split("\0")[:-1], ["0", "set", ""])
         result = self.fixture.run_script_as_probe(probe)

@@ -54,8 +54,8 @@ NOT_RUN = 3
 LEFT_BEHIND = 4
 INTERRUPTED = 130
 
-LAUNCHER_TIMEOUT = 240   # seconds for one run of the launcher
-APPEARS_TIMEOUT = 120    # seconds for the launcher's first container to appear before an interrupt
+LAUNCHER_TIMEOUT = 240  # seconds for one run of the launcher
+APPEARS_TIMEOUT = 120  # seconds for the launcher's first container to appear before an interrupt
 
 
 def launch(arguments, password, path_dirs=None, timeout=60, docker_standin=None):
@@ -64,17 +64,27 @@ def launch(arguments, password, path_dirs=None, timeout=60, docker_standin=None)
     `docker_standin`, the settings of the stand-in, that stand-in answers in place of `docker`."""
     environment = dict(os.environ)
     if path_dirs is not None:
-        environment = {"PATH": os.pathsep.join(path_dirs),
-                       "SystemRoot": os.environ.get("SystemRoot", "")}
+        environment = {
+            "PATH": os.pathsep.join(path_dirs),
+            "SystemRoot": os.environ.get("SystemRoot", ""),
+        }
     node = [NODE]
     if docker_standin is not None:
         environment["LOOP2_DOCKER_STANDIN"] = json.dumps(docker_standin)
         node += ["--import", DOCKER_STANDIN]
-    result = subprocess.run([*node, LAUNCHER, *arguments], input=password.encode("utf-8"),
-                            capture_output=True, timeout=timeout, env=environment,
-                            cwd=support.ROOT)
-    return (result.returncode, result.stdout.decode("utf-8", "replace"),
-            result.stderr.decode("utf-8", "replace"))
+    result = subprocess.run(
+        [*node, LAUNCHER, *arguments],
+        input=password.encode("utf-8"),
+        capture_output=True,
+        timeout=timeout,
+        env=environment,
+        cwd=support.ROOT,
+    )
+    return (
+        result.returncode,
+        result.stdout.decode("utf-8", "replace"),
+        result.stderr.decode("utf-8", "replace"),
+    )
 
 
 def arguments_of(image="loop2-check:1", database=None, marker=MARKER, email=EMAIL):
@@ -113,7 +123,7 @@ class WithoutDocker(unittest.TestCase):
             arguments = arguments_of(database=self.database)
             index = arguments.index(name)
             with self.subTest(missing=name):
-                self.assert_refused(arguments[:index] + arguments[index + 2:])
+                self.assert_refused(arguments[:index] + arguments[index + 2 :])
 
     def test_an_option_given_twice_or_without_a_value_is_refused(self):
         base = arguments_of(database=self.database)
@@ -129,8 +139,13 @@ class WithoutDocker(unittest.TestCase):
         for marker in ("", "   ", "line\nbreak", "x" * 201):
             with self.subTest(marker=marker[:12]):
                 self.assert_refused(arguments_of(database=self.database, marker=marker))
-        for email in ("", "not-an-address", "two@@example.com", "spa ce@example.com",
-                      "a@b.c" + "x" * 300):
+        for email in (
+            "",
+            "not-an-address",
+            "two@@example.com",
+            "spa ce@example.com",
+            "a@b.c" + "x" * 300,
+        ):
             with self.subTest(email=email[:12]):
                 self.assert_refused(arguments_of(database=self.database, email=email))
 
@@ -145,14 +160,17 @@ class WithoutDocker(unittest.TestCase):
             handle.write(b"age-encryption.org/v1\n-> X25519 " + b"A" * 60)
         empty = os.path.join(self.directory, "empty.sqlite")
         open(empty, "wb").close()
-        for database in (os.path.join(self.directory, "absent.sqlite"), self.directory,
-                         encrypted, empty):
+        for database in (
+            os.path.join(self.directory, "absent.sqlite"),
+            self.directory,
+            encrypted,
+            empty,
+        ):
             with self.subTest(database=os.path.basename(database)):
                 self.assert_refused(arguments_of(database=database))
 
     def test_valid_input_without_docker_fails_without_a_verdict_and_shows_no_secret(self):
-        code, out, err = launch(arguments_of(database=self.database), PASSWORD,
-                                [self.empty_path])
+        code, out, err = launch(arguments_of(database=self.database), PASSWORD, [self.empty_path])
         shown = out + err
         self.assertEqual(code, NOT_RUN, shown)
         self.assertIn("FAIL", shown)
@@ -180,8 +198,12 @@ class EndOfAPassingTrial(unittest.TestCase):
 
     def finish(self, **settings):
         """(exit code, standard output, standard error) of a trial on the stand-in."""
-        return launch(arguments_of(database=self.database), PASSWORD, [self.empty_path],
-                      docker_standin={"log": self.log, **settings})
+        return launch(
+            arguments_of(database=self.database),
+            PASSWORD,
+            [self.empty_path],
+            docker_standin={"log": self.log, **settings},
+        )
 
     def commands_called(self):
         with open(self.log, encoding="utf-8") as handle:
@@ -237,12 +259,16 @@ class PasswordReading(unittest.TestCase):
     def clean(self, text):
         """(exit code, standard output) of `cleanPassword(text)`; the output is the JSON of the
         result, or the message of the refusal."""
-        script = ("import(process.argv[1]).then(m => { try { console.log(JSON.stringify("
-                  "m.cleanPassword(JSON.parse(process.argv[2])))) } catch (e) { "
-                  "console.log('refused: ' + e.message); process.exitCode = 5 } })")
+        script = (
+            "import(process.argv[1]).then(m => { try { console.log(JSON.stringify("
+            "m.cleanPassword(JSON.parse(process.argv[2])))) } catch (e) { "
+            "console.log('refused: ' + e.message); process.exitCode = 5 } })"
+        )
         result = subprocess.run(
             [NODE, "-e", script, "file:///" + LAUNCHER.replace(os.sep, "/"), json.dumps(text)],
-            capture_output=True, timeout=30)
+            capture_output=True,
+            timeout=30,
+        )
         return result.returncode, result.stdout.decode("utf-8").strip()
 
     def test_a_byte_order_mark_that_a_console_put_before_the_password_is_dropped(self):
@@ -263,13 +289,17 @@ class PasswordReading(unittest.TestCase):
 
 
 class SettingsAreProductions(unittest.TestCase):
-
     def test_the_launcher_runs_the_database_and_secrets_where_compose_yaml_puts_them(self):
         path, mount = storage.compose_account_storage()
-        script = ("import(process.argv[1]).then(m => console.log(JSON.stringify("
-                  "m.PRODUCTION_ENVIRONMENT)))")
-        result = subprocess.run([NODE, "-e", script, "file:///" + LAUNCHER.replace(os.sep, "/")],
-                                capture_output=True, timeout=30)
+        script = (
+            "import(process.argv[1]).then(m => console.log(JSON.stringify("
+            "m.PRODUCTION_ENVIRONMENT)))"
+        )
+        result = subprocess.run(
+            [NODE, "-e", script, "file:///" + LAUNCHER.replace(os.sep, "/")],
+            capture_output=True,
+            timeout=30,
+        )
         self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", "replace"))
         environment = json.loads(result.stdout.decode("utf-8"))
         self.assertEqual(environment["LOOP2_DATABASE_PATH"], path)
@@ -277,8 +307,13 @@ class SettingsAreProductions(unittest.TestCase):
         _top, services = compose.compose_outline(compose.read_required("compose.yaml"))
         app = services["app"]
         expected = compose._yaml_mapping(app["environment"].block, app["environment"].line + 1)
-        for key in ("LOOP2_DATABASE_PATH", "LOOP2_SESSION_SECRET_FILE", "LOOP2_PUBLIC_ORIGIN",
-                    "LOOP2_PROXY_MODE", "LOOP2_SMTP_PASSWORD_FILE"):
+        for key in (
+            "LOOP2_DATABASE_PATH",
+            "LOOP2_SESSION_SECRET_FILE",
+            "LOOP2_PUBLIC_ORIGIN",
+            "LOOP2_PROXY_MODE",
+            "LOOP2_SMTP_PASSWORD_FILE",
+        ):
             self.assertEqual(environment[key], expected[key].value, key)
 
 
@@ -302,8 +337,12 @@ def leftovers():
     names = []
     for listing in (["ps", "-a"], ["volume", "ls"]):
         _code, output = storage.docker_run(
-            *listing, "--filter", "name=" + PREFIX, "--format",
-            "{{.Names}}" if listing[0] == "ps" else "{{.Name}}")
+            *listing,
+            "--filter",
+            "name=" + PREFIX,
+            "--format",
+            "{{.Names}}" if listing[0] == "ps" else "{{.Name}}",
+        )
         names += output.split()
     return names
 
@@ -316,24 +355,42 @@ def remove_leftovers():
 
 
 class RunOnARealBackup(unittest.TestCase):
-
     def request(self, name, path, body):
-        spec = {"path": path, "body": body, "cookie": None, "origin": storage.ORIGIN,
-                "name": storage.COOKIE}
+        spec = {
+            "path": path,
+            "body": body,
+            "cookie": None,
+            "origin": storage.ORIGIN,
+            "name": storage.COOKIE,
+        }
         script = storage.REQUEST_PROBE.replace("SPEC", json.dumps(json.dumps(spec)), 1)
-        result = subprocess.run([storage.docker(), "exec", "-i", name, "node", "-"],
-                                input=script.encode("utf-8"), capture_output=True,
-                                timeout=storage.COMMAND_TIMEOUT)
+        result = subprocess.run(
+            [storage.docker(), "exec", "-i", name, "node", "-"],
+            input=script.encode("utf-8"),
+            capture_output=True,
+            timeout=storage.COMMAND_TIMEOUT,
+        )
         self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", "replace"))
         return json.loads(result.stdout.decode("utf-8").strip().splitlines()[-1])
 
     def wait_until_serving(self, name):
         deadline = time.monotonic() + storage.SERVE_WAIT
-        while subprocess.run(
-                [storage.docker(), "exec", name, "node", "-e",
-                 "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.status === 200 ? 0 "
-                 ": 1), () => process.exit(1))"],
-                capture_output=True, timeout=storage.COMMAND_TIMEOUT).returncode != 0:
+        while (
+            subprocess.run(
+                [
+                    storage.docker(),
+                    "exec",
+                    name,
+                    "node",
+                    "-e",
+                    "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.status === 200 ? 0 "
+                    ": 1), () => process.exit(1))",
+                ],
+                capture_output=True,
+                timeout=storage.COMMAND_TIMEOUT,
+            ).returncode
+            != 0
+        ):
             self.assertLess(time.monotonic(), deadline, f"{name} does not serve")
             time.sleep(1)
 
@@ -343,19 +400,45 @@ class RunOnARealBackup(unittest.TestCase):
         name = "loop2-restore-source-" + uuid.uuid4().hex[:8]
         support.start_application(self, tag, name, data_volume, secret_volume)
         self.wait_until_serving(name)
-        created = self.request(name, "/api/accounts", {
-            "email": EMAIL, "password": PASSWORD, "passwordConfirmation": PASSWORD})
+        created = self.request(
+            name,
+            "/api/accounts",
+            {"email": EMAIL, "password": PASSWORD, "passwordConfirmation": PASSWORD},
+        )
         self.assertEqual(created["status"], 201, created["body"])
         written = subprocess.run(
-            [storage.docker(), "exec", "-i", "-e", "CHECK_ID=" + created["body"]["id"],
-             "-e", "CHECK_MARKER=" + MARKER, "-e", "CHECK_TEXT=" + OTHER_GAME_TEXT,
-             name, "node", "-"],
-            input=WRITE_SAVE.encode("utf-8"), capture_output=True, timeout=storage.COMMAND_TIMEOUT)
+            [
+                storage.docker(),
+                "exec",
+                "-i",
+                "-e",
+                "CHECK_ID=" + created["body"]["id"],
+                "-e",
+                "CHECK_MARKER=" + MARKER,
+                "-e",
+                "CHECK_TEXT=" + OTHER_GAME_TEXT,
+                name,
+                "node",
+                "-",
+            ],
+            input=WRITE_SAVE.encode("utf-8"),
+            capture_output=True,
+            timeout=storage.COMMAND_TIMEOUT,
+        )
         self.assertEqual(written.returncode, 0, written.stderr.decode("utf-8", "replace"))
         backup = subprocess.run(
-            [storage.docker(), "exec", name, "node", "dist/server/account-backup.js",
-             "--to-standard-output"],
-            stdin=subprocess.DEVNULL, capture_output=True, timeout=storage.COMMAND_TIMEOUT)
+            [
+                storage.docker(),
+                "exec",
+                name,
+                "node",
+                "dist/server/account-backup.js",
+                "--to-standard-output",
+            ],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=storage.COMMAND_TIMEOUT,
+        )
         self.assertEqual(backup.returncode, 0, backup.stderr.decode("utf-8", "replace"))
         path = os.path.join(directory, "accounts.sqlite")
         with open(path, "wb") as handle:
@@ -371,16 +454,25 @@ class RunOnARealBackup(unittest.TestCase):
     def test_pass_fail_on_wrong_password_fail_on_absent_marker_and_interruption(self):
         # decision: D-228 "A completed, consistent backup of the account and save database is stored outside the game server host, so the accounts and saved game states can be restored"
         # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
-        docker_gate.require_daemon(self, "whether the launcher restores a backup, judges it and "
-                                         "removes its container and volumes stays unchecked")
+        docker_gate.require_daemon(
+            self,
+            "whether the launcher restores a backup, judges it and "
+            "removes its container and volumes stays unchecked",
+        )
         tag = "loop2-restore-trial-check:" + uuid.uuid4().hex[:12]
         self.addCleanup(storage.docker_run, "image", "rm", "-f", tag)
         self.addCleanup(remove_leftovers)
         directory = tempfile.mkdtemp(prefix="restore-trial-run-")
         self.addCleanup(shutil.rmtree, directory, True)
-        code, output = storage.docker_run("build", "--build-arg",
-                                          "LOOP2_COMMIT=restore-trial-check", "-t", tag, ".",
-                                          timeout=storage.BUILD_TIMEOUT)
+        code, output = storage.docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=restore-trial-check",
+            "-t",
+            tag,
+            ".",
+            timeout=storage.BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         database = self.make_backup(tag, directory)
         with open(database, "rb") as handle:
@@ -388,8 +480,7 @@ class RunOnARealBackup(unittest.TestCase):
         self.assertEqual(leftovers(), [], "the preparation left a container or a volume")
 
         with self.subTest("the right password and the marker"):
-            code, out, err = launch(arguments_of(tag, database), PASSWORD,
-                                    timeout=LAUNCHER_TIMEOUT)
+            code, out, err = launch(arguments_of(tag, database), PASSWORD, timeout=LAUNCHER_TIMEOUT)
             self.assertEqual(code, 0, out + err)
             self.assertRegex(out, r"(?m)^Node\.js v\d+\.\d+\.\d+$")
             self.assertRegex(out, r"(?m)^login status: 200$")
@@ -400,8 +491,9 @@ class RunOnARealBackup(unittest.TestCase):
             self.assert_clean(out + err)
 
         with self.subTest("a wrong password"):
-            code, out, err = launch(arguments_of(tag, database), PASSWORD + "x",
-                                    timeout=LAUNCHER_TIMEOUT)
+            code, out, err = launch(
+                arguments_of(tag, database), PASSWORD + "x", timeout=LAUNCHER_TIMEOUT
+            )
             self.assertEqual(code, FAILED, out + err)
             self.assertRegex(out, r"(?m)^login status: 401$")
             self.assertRegex(out, r"(?m)^FAIL")
@@ -410,8 +502,11 @@ class RunOnARealBackup(unittest.TestCase):
             self.assert_clean(out + err)
 
         with self.subTest("a marker the saved game state does not hold"):
-            code, out, err = launch(arguments_of(tag, database, marker=MARKER + "-absent"),
-                                    PASSWORD, timeout=LAUNCHER_TIMEOUT)
+            code, out, err = launch(
+                arguments_of(tag, database, marker=MARKER + "-absent"),
+                PASSWORD,
+                timeout=LAUNCHER_TIMEOUT,
+            )
             self.assertEqual(code, FAILED, out + err)
             self.assertRegex(out, r"(?m)^login status: 200$")
             self.assertRegex(out, r"(?m)^save revision: 1$")
@@ -422,10 +517,14 @@ class RunOnARealBackup(unittest.TestCase):
 
         with self.subTest("an interruption"):
             flags = subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
-            process = subprocess.Popen([NODE, LAUNCHER, *arguments_of(tag, database)],
-                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, cwd=support.ROOT,
-                                       creationflags=flags)
+            process = subprocess.Popen(
+                [NODE, LAUNCHER, *arguments_of(tag, database)],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=support.ROOT,
+                creationflags=flags,
+            )
             self.addCleanup(process.kill)
             process.stdin.write(PASSWORD.encode("utf-8"))
             process.stdin.close()

@@ -28,7 +28,6 @@ MEMINFO = "MemTotal:        4456448 kB\nMemFree:          200000 kB\nMemAvailabl
 
 
 class DeployBuildTestCase(unittest.TestCase):
-
     def setUp(self):
         self.fixture = support.DeployFixture()
         self.addCleanup(self.fixture.remove)
@@ -40,8 +39,11 @@ class DeployBuildTestCase(unittest.TestCase):
         return self.fixture.run(ssh_original_command=sha)
 
     def compose_calls(self, result, subcommand):
-        return [call for call in result.calls["docker"]
-                if call[:1] == ["compose"] and subcommand in call]
+        return [
+            call
+            for call in result.calls["docker"]
+            if call[:1] == ["compose"] and subcommand in call
+        ]
 
     def log_lines(self):
         return self.fixture.log_text().splitlines()
@@ -54,7 +56,6 @@ class DeployBuildTestCase(unittest.TestCase):
 
 
 class InstalledScriptComparison(DeployBuildTestCase):
-
     def test_installed_copy_equal_to_the_source_gives_no_warning(self):
         # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
         # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
@@ -94,31 +95,51 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertEqual(result.code, 7, result)
         warning = [line for line in result.stdout.splitlines() if "warning" in line]
         self.assertEqual(len(warning), 6, result)
-        for line, source in zip(warning, ("deploy/loop2-deploy ", "deploy/loop2-backup ",
-                                          "deploy/loop2-backup.cron ", "deploy/loop2-watch ",
-                                          "deploy/loop2-watch.cron ",
-                                          "deploy/loop2-app.logrotate ")):
+        for line, source in zip(
+            warning,
+            (
+                "deploy/loop2-deploy ",
+                "deploy/loop2-backup ",
+                "deploy/loop2-backup.cron ",
+                "deploy/loop2-watch ",
+                "deploy/loop2-watch.cron ",
+                "deploy/loop2-app.logrotate ",
+            ),
+        ):
             self.assertIn(source, line)
             self.assertIn("missing", line)
         self.assertEqual(self.compose_calls(result, "up"), [], result)
         self.assertIn("build", self.log_lines()[-1])
         self.assertIn("(exit 7)", self.log_lines()[-1])
 
-
     def test_each_new_pair_differing_warns_once_and_continues(self):
         # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         cases = {
-            "backup script": ({"backup": support.read_bytes(support.BACKUP_SCRIPT) + b"# x\n"},
-                              "deploy/loop2-backup at", "/usr/local/bin/loop2-backup"),
-            "backup schedule": ({"schedule": b'MAILTO=""\n'}, "deploy/loop2-backup.cron at",
-                                "/etc/cron.d/loop2-backup"),
-            "watcher script": ({"watch": support.WATCH_SCRIPT_BYTES + b"# x\n"},
-                               "deploy/loop2-watch at", "/usr/local/bin/loop2-watch"),
-            "watcher schedule": ({"watch_schedule": b'MAILTO=""\n'},
-                                 "deploy/loop2-watch.cron at", "/etc/cron.d/loop2-watch"),
-            "logrotate file": ({"logrotate": support.read_bytes(support.LOGROTATE_FILE)
-                                + b"# x\n"},
-                               "deploy/loop2-app.logrotate at", "/etc/logrotate.d/loop2-app"),
+            "backup script": (
+                {"backup": support.read_bytes(support.BACKUP_SCRIPT) + b"# x\n"},
+                "deploy/loop2-backup at",
+                "/usr/local/bin/loop2-backup",
+            ),
+            "backup schedule": (
+                {"schedule": b'MAILTO=""\n'},
+                "deploy/loop2-backup.cron at",
+                "/etc/cron.d/loop2-backup",
+            ),
+            "watcher script": (
+                {"watch": support.WATCH_SCRIPT_BYTES + b"# x\n"},
+                "deploy/loop2-watch at",
+                "/usr/local/bin/loop2-watch",
+            ),
+            "watcher schedule": (
+                {"watch_schedule": b'MAILTO=""\n'},
+                "deploy/loop2-watch.cron at",
+                "/etc/cron.d/loop2-watch",
+            ),
+            "logrotate file": (
+                {"logrotate": support.read_bytes(support.LOGROTATE_FILE) + b"# x\n"},
+                "deploy/loop2-app.logrotate at",
+                "/etc/logrotate.d/loop2-app",
+            ),
         }
         for name, (installed, source, path) in cases.items():
             with self.subTest(pair=name):
@@ -143,8 +164,13 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
     def test_unreadable_installed_copy_warns_for_that_pair_only_and_continues(self):
         # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
-        for name in ("installed_backup", "installed_schedule", "installed_watch",
-                     "installed_watch_schedule", "installed_logrotate"):
+        for name in (
+            "installed_backup",
+            "installed_schedule",
+            "installed_watch",
+            "installed_watch_schedule",
+            "installed_logrotate",
+        ):
             with self.subTest(missing=name):
                 self.fixture = support.DeployFixture()
                 self.addCleanup(self.fixture.remove)
@@ -172,7 +198,6 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
 
 class ResourceGate(DeployBuildTestCase):
-
     def assert_gate_refused(self, result):
         self.assertEqual(result.code, 5, result)
         self.assertEqual([c for c in result.calls["docker"] if c[:1] == ["compose"]], [], result)
@@ -236,14 +261,15 @@ class ResourceGate(DeployBuildTestCase):
     def test_unreadable_values_exit_5(self):
         # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         cases = {
-            "docker info fails": lambda: self.fixture.answer("docker", exit_code=1,
-                                                             match="info *"),
-            "docker root not a path": lambda: self.fixture.answer("docker", stdout="\n",
-                                                                  match="info *"),
+            "docker info fails": lambda: self.fixture.answer("docker", exit_code=1, match="info *"),
+            "docker root not a path": lambda: self.fixture.answer(
+                "docker", stdout="\n", match="info *"
+            ),
             "df fails": lambda: self.fixture.answer("df", exit_code=1),
             "df not a number": lambda: self.fixture.answer("df", stdout="Avail\n12G\n"),
-            "no MemAvailable": lambda: support.write_bytes(self.fixture.meminfo,
-                                                           b"MemTotal: 4456448 kB\n"),
+            "no MemAvailable": lambda: support.write_bytes(
+                self.fixture.meminfo, b"MemTotal: 4456448 kB\n"
+            ),
         }
         for name, make_unreadable in cases.items():
             with self.subTest(case=name):
@@ -264,12 +290,11 @@ class ResourceGate(DeployBuildTestCase):
         result = self.deploy(sha)
         self.assertEqual(result.code, 0, result)
         lines = self.log_lines()
-        after_build = lines[self.index_of("build of"):]
+        after_build = lines[self.index_of("build of") :]
         self.assertTrue(any("MemAvailable" in line for line in after_build), lines)
 
 
 class Build(DeployBuildTestCase):
-
     def test_build_command_and_commit(self):
         # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
         # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
@@ -280,25 +305,50 @@ class Build(DeployBuildTestCase):
         result = self.deploy(sha)
         self.assertEqual(result.code, 0, result)
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
-        builds = [(call, env) for call, env in result.calls_with_env("docker")
-                  if call[:1] == ["compose"] and "build" in call]
-        self.assertEqual(builds, [(["compose", "--project-name", "loop2", "-f", compose_file,
-                                    "build", "app", "cloudflared"], sha)], result)
+        builds = [
+            (call, env)
+            for call, env in result.calls_with_env("docker")
+            if call[:1] == ["compose"] and "build" in call
+        ]
+        self.assertEqual(
+            builds,
+            [
+                (
+                    [
+                        "compose",
+                        "--project-name",
+                        "loop2",
+                        "-f",
+                        compose_file,
+                        "build",
+                        "app",
+                        "cloudflared",
+                    ],
+                    sha,
+                )
+            ],
+            result,
+        )
         docker = result.calls["docker"]
-        self.assertLess(docker.index(builds[0][0]), docker.index(self.compose_calls(result,
-                                                                                    "up")[0]))
+        self.assertLess(
+            docker.index(builds[0][0]), docker.index(self.compose_calls(result, "up")[0])
+        )
 
     def test_failed_build_exits_7_never_calls_up_and_logs_the_old_game(self):
         # Compose reports either image's preparation error through the combined build.
-        for failure in ("app: npm run typecheck failed", "cloudflared: base pull failed",
-                        "cloudflared: build failed"):
+        for failure in (
+            "app: npm run typecheck failed",
+            "cloudflared: base pull failed",
+            "cloudflared: build failed",
+        ):
             with self.subTest(failure=failure):
                 self.fixture = support.DeployFixture()
                 self.addCleanup(self.fixture.remove)
                 sha = self.fixture.deployable_commit()
                 self.fixture.install()
-                self.fixture.answer("docker", exit_code=1, stdout=failure + "\n",
-                                    match="compose * build *")
+                self.fixture.answer(
+                    "docker", exit_code=1, stdout=failure + "\n", match="compose * build *"
+                )
                 self.fixture.answer_passing_run()
                 result = self.deploy(sha)
                 self.assertEqual(result.code, 7, result)

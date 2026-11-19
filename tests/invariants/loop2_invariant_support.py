@@ -29,9 +29,9 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 HOST = "127.0.0.1"
 
 COMMAND_TIMEOUT = 300  # seconds for one npm command (ci, build, typecheck)
-START_TIMEOUT = 30     # seconds for the started server to report ready
-START_ATTEMPTS = 2     # a start whose free port another process took in the meantime runs once more
-HTTP_TIMEOUT = 10      # seconds for one HTTP request
+START_TIMEOUT = 30  # seconds for the started server to report ready
+START_ATTEMPTS = 2  # a start whose free port another process took in the meantime runs once more
+HTTP_TIMEOUT = 10  # seconds for one HTTP request
 
 # Paths of the working tree left out of a copy: the-way's own checkout and run records.
 COPY_LEFT_OUT = (".the-way", ".runs")
@@ -53,7 +53,9 @@ def listed_files(root=ROOT):
     """Relative paths, with '/', of the files git tracks or would track in the working tree."""
     result = subprocess.run(
         ["git", "-C", root, "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-        capture_output=True, timeout=60)
+        capture_output=True,
+        timeout=60,
+    )
     if result.returncode != 0:
         raise AssertionError("git ls-files failed: " + result.stderr.decode("utf-8", "replace"))
     paths = [p for p in result.stdout.decode("utf-8", "surrogateescape").split("\0") if p]
@@ -94,16 +96,30 @@ def file_owners(root, tracked):
             handle.write("".join(patterns))
         pointer = attributes.replace(os.sep, "/")
         result = subprocess.run(
-            ["git", "-c", f"core.attributesFile={pointer}",
-             "-c", "core.ignorecase=false", "check-attr", "-z", "--all", "--stdin"], cwd=root,
-            input="\0".join(sorted(tracked)) + "\0", capture_output=True,
-            text=True, encoding="utf-8", timeout=60)
+            [
+                "git",
+                "-c",
+                f"core.attributesFile={pointer}",
+                "-c",
+                "core.ignorecase=false",
+                "check-attr",
+                "-z",
+                "--all",
+                "--stdin",
+            ],
+            cwd=root,
+            input="\0".join(sorted(tracked)) + "\0",
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=60,
+        )
         if result.returncode:
             raise AssertionError("git check-attr failed: " + result.stderr)
     fields = result.stdout.split("\0")
     owners = dict.fromkeys(tracked, "unspecified")
     for index in range(0, len(fields) - 2, 3):
-        path, attribute, owner = fields[index:index + 3]
+        path, attribute, owner = fields[index : index + 3]
         if not attribute.startswith("loop2-invariant-owner-"):
             continue
         if owners[path] != "unspecified":
@@ -119,14 +135,18 @@ def _windows_descendants(root_pid, since):
     """Process ids below root_pid, created no earlier than `since` (seconds since the epoch, less
     a margin), found through each process's recorded parent id — which Windows keeps after the
     parent has exited, so a child that outlived npm is still found."""
-    script = ("Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2}' -f "
-              "$_.ProcessId, $_.ParentProcessId, "
-              "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }")
-    result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                            capture_output=True, timeout=60)
+    script = (
+        "Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2}' -f "
+        "$_.ProcessId, $_.ParentProcessId, "
+        "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }"
+    )
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+        capture_output=True,
+        timeout=60,
+    )
     if result.returncode != 0 or result.stderr.strip():
-        raise AssertionError("Get-CimInstance failed: "
-                             + result.stderr.decode("utf-8", "replace"))
+        raise AssertionError("Get-CimInstance failed: " + result.stderr.decode("utf-8", "replace"))
     children = {}
     for line in result.stdout.decode("ascii", "replace").splitlines():
         parts = line.split()
@@ -153,11 +173,19 @@ def kill_tree(process):
                 descendants = _windows_descendants(process.pid, since)
             finally:
                 if process.poll() is None:
-                    subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+                    subprocess.run(
+                        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=60,
+                    )
             for pid in descendants:
-                subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+                subprocess.run(
+                    ["taskkill", "/PID", str(pid), "/T", "/F"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
         else:
             try:
                 os.killpg(process.pid, signal.SIGKILL)  # the whole session, alive parent or not
@@ -171,14 +199,14 @@ def kill_tree(process):
                 process.kill()
 
 
-
 def popen(args, cwd, env=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
     kwargs = {}
     if os.name != "nt":
         kwargs["start_new_session"] = True
     started = time.time()
-    process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                               stdout=stdout, stderr=stderr, **kwargs)
+    process = subprocess.Popen(
+        args, cwd=cwd, env=env, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr, **kwargs
+    )
     process.loop2_started = started
     return process
 
@@ -202,6 +230,7 @@ def run(args, cwd, timeout=COMMAND_TIMEOUT):
 def _link_directory(target, link):
     if os.name == "nt":
         import _winapi
+
         _winapi.CreateJunction(target, link)
     else:
         os.symlink(target, link, target_is_directory=True)
@@ -308,14 +337,16 @@ class Server:
         self.port = None
         try:
             self._stdout, self._stderr = self._logs.enter_context(
-                _server_logs(self.stdout_path, self.stderr_path))
+                _server_logs(self.stdout_path, self.stderr_path)
+            )
             for attempt in range(1, START_ATTEMPTS + 1):
                 if self._start(extra_env):
                     break
                 if attempt == START_ATTEMPTS:
                     raise AssertionError(
                         f"`npm start` found its free port taken in each of {START_ATTEMPTS} "
-                        f"attempts:\n{self.output()}")
+                        f"attempts:\n{self.output()}"
+                    )
                 kill_tree(self.process)
                 self.process = None
         except BaseException:
@@ -334,8 +365,9 @@ class Server:
         ready = re.compile(r"(?m)^Loop: http://" + address + r"\s*$")
         occupied = re.compile(r"EADDRINUSE.*" + address + r"(?!\d)")
         before = len(self.stderr())
-        self.process = popen([npm(), "start"], self.copy.path, env=env,
-                             stdout=self._stdout, stderr=self._stderr)
+        self.process = popen(
+            [npm(), "start"], self.copy.path, env=env, stdout=self._stdout, stderr=self._stderr
+        )
         deadline = time.monotonic() + START_TIMEOUT
         while True:
             exited = self.process.poll() is not None
@@ -346,18 +378,24 @@ class Server:
                     return False
                 raise AssertionError(
                     f"`npm start` exited {self.process.returncode} before reporting ready on "
-                    f"{HOST}:{self.port}:\n{self.output()}")
+                    f"{HOST}:{self.port}:\n{self.output()}"
+                )
             if time.monotonic() > deadline:
                 raise AssertionError(
                     f"`npm start` reported no readiness on {HOST}:{self.port} within "
-                    f"{START_TIMEOUT} s:\n{self.output()}")
+                    f"{START_TIMEOUT} s:\n{self.output()}"
+                )
             time.sleep(0.2)
 
     def output(self):
         self._stdout.flush()
         self._stderr.flush()
-        return ("--- stdout ---\n" + read_text(self.stdout_path)
-                + "\n--- stderr ---\n" + read_text(self.stderr_path))
+        return (
+            "--- stdout ---\n"
+            + read_text(self.stdout_path)
+            + "\n--- stderr ---\n"
+            + read_text(self.stderr_path)
+        )
 
     def stdout(self):
         self._stdout.flush()
@@ -375,12 +413,13 @@ class Server:
             self._logs.close()
             shutil.rmtree(self.log_dir, ignore_errors=True)
             deadline = time.monotonic() + 15
-            while self.port is not None and port_in_use(self.port) and \
-                    time.monotonic() < deadline:
+            while self.port is not None and port_in_use(self.port) and time.monotonic() < deadline:
                 time.sleep(0.2)
         if report_held_port and self.port is not None and port_in_use(self.port):
-            raise AssertionError(f"port {self.port} on {HOST} is still held 15 s after the "
-                                 "server and everything it started were killed")
+            raise AssertionError(
+                f"port {self.port} on {HOST} is still held 15 s after the "
+                "server and everything it started were killed"
+            )
 
     def request(self, method, path, headers=None, body=None):
         """(status, headers as a lower-cased dict, body bytes) of one request to the server."""
@@ -399,16 +438,46 @@ class Server:
 # Names of files that deploy or run the product somewhere other than a developer's machine,
 # matched against a file's base name, or its path for the CI entries.
 DEPLOYMENT_NAME_PATTERNS = (
-    "Dockerfile", "Dockerfile.*", "*.Dockerfile", "*.dockerfile", "Containerfile",
-    "Containerfile.*", "docker-compose*.yml", "docker-compose*.yaml", "compose*.yml",
-    "compose*.yaml", ".nvmrc", ".node-version", ".tool-versions", "Procfile", "fly.toml",
-    "render.yaml", "app.yaml", "vercel.json", "netlify.toml", "railway.json", "railway.toml",
-    "nixpacks.toml", "heroku.yml", "app.json", ".gitlab-ci.yml", "azure-pipelines.yml",
-    "bitbucket-pipelines.yml", "skaffold.yaml", "Chart.yaml",
+    "Dockerfile",
+    "Dockerfile.*",
+    "*.Dockerfile",
+    "*.dockerfile",
+    "Containerfile",
+    "Containerfile.*",
+    "docker-compose*.yml",
+    "docker-compose*.yaml",
+    "compose*.yml",
+    "compose*.yaml",
+    ".nvmrc",
+    ".node-version",
+    ".tool-versions",
+    "Procfile",
+    "fly.toml",
+    "render.yaml",
+    "app.yaml",
+    "vercel.json",
+    "netlify.toml",
+    "railway.json",
+    "railway.toml",
+    "nixpacks.toml",
+    "heroku.yml",
+    "app.json",
+    ".gitlab-ci.yml",
+    "azure-pipelines.yml",
+    "bitbucket-pipelines.yml",
+    "skaffold.yaml",
+    "Chart.yaml",
 )
 DEPLOYMENT_PATH_PATTERNS = (
-    ".github/workflows/*.yml", ".github/workflows/*.yaml", ".circleci/config.yml",
-    "k8s/*", "kubernetes/*", "deploy/*", "deployment/*", "helm/*", "infra/*",
+    ".github/workflows/*.yml",
+    ".github/workflows/*.yaml",
+    ".circleci/config.yml",
+    "k8s/*",
+    "kubernetes/*",
+    "deploy/*",
+    "deployment/*",
+    "helm/*",
+    "infra/*",
 )
 
 
@@ -419,8 +488,9 @@ def deployment_files(root=ROOT):
         if relative.split("/")[0] in COPY_LEFT_OUT or relative.startswith("node_modules/"):
             continue
         base = relative.rsplit("/", 1)[-1]
-        if any(fnmatch.fnmatchcase(base, p) for p in DEPLOYMENT_NAME_PATTERNS) or \
-                any(fnmatch.fnmatchcase(relative, p) for p in DEPLOYMENT_PATH_PATTERNS):
+        if any(fnmatch.fnmatchcase(base, p) for p in DEPLOYMENT_NAME_PATTERNS) or any(
+            fnmatch.fnmatchcase(relative, p) for p in DEPLOYMENT_PATH_PATTERNS
+        ):
             found.append(relative)
     return sorted(found)
 
@@ -478,7 +548,7 @@ class DockerStage:
         self.index = index
         self.base = base
         self.name = name
-        self.instructions = []   # (keyword in upper case, arguments, heredoc body or None)
+        self.instructions = []  # (keyword in upper case, arguments, heredoc body or None)
 
     def __repr__(self):
         return f"stage {self.index} ({self.name or 'unnamed'}, FROM {self.base})"
@@ -514,8 +584,10 @@ def dockerfile_stages(text):
                     body.append(lines[index])
                     index += 1
                 if index >= len(lines):
-                    raise AssertionError(f"the heredoc `{delimiter}` of {logical.strip()!r} is "
-                                         "never closed, so the Dockerfile cannot be read")
+                    raise AssertionError(
+                        f"the heredoc `{delimiter}` of {logical.strip()!r} is "
+                        "never closed, so the Dockerfile cannot be read"
+                    )
                 index += 1
             heredoc = "\n".join(body)
         if keyword == "FROM":
@@ -596,8 +668,8 @@ def run_command(arguments):
 
 class ComposeKey:
     def __init__(self, value, block, line):
-        self.value = value      # the scalar after the colon, unquoted, or "" when a block follows
-        self.block = block      # the lines below the key, indented further
+        self.value = value  # the scalar after the colon, unquoted, or "" when a block follows
+        self.block = block  # the lines below the key, indented further
         self.line = line
 
     def __repr__(self):
@@ -614,15 +686,18 @@ def _unquote(value):
 def _yaml_mapping(lines, first_number):
     """The keys of a block-style YAML mapping whose lines are given, at their least indentation,
     as {key: ComposeKey}. Raises AssertionError for a form not read here."""
-    meaningful = [(n, l) for n, l in enumerate(lines, start=first_number)
-                  if l.strip() and not l.lstrip().startswith("#")]
+    meaningful = [
+        (n, l)
+        for n, l in enumerate(lines, start=first_number)
+        if l.strip() and not l.lstrip().startswith("#")
+    ]
     if not meaningful:
         return {}
     indent = min(len(l) - len(l.lstrip(" ")) for _n, l in meaningful)
     mapping = {}
     current = None
     for number, line in meaningful:
-        if "\t" in line[:len(line) - len(line.lstrip())]:
+        if "\t" in line[: len(line) - len(line.lstrip())]:
             raise AssertionError(f"line {number}: a tab in the indentation")
         depth = len(line) - len(line.lstrip(" "))
         if depth == indent:
@@ -635,10 +710,15 @@ def _yaml_mapping(lines, first_number):
             if key == "<<":
                 raise AssertionError(f"line {number}: a YAML merge key, not read here")
             value = _strip_comment(found.group(2) or "")
-            if value.startswith(("&", "*", "!")) or value.startswith(("{", "[")) and \
-                    key == "services":
-                raise AssertionError(f"line {number}: an anchor, alias, tag or flow mapping "
-                                     f"under `{key}`, not read here")
+            if (
+                value.startswith(("&", "*", "!"))
+                or value.startswith(("{", "["))
+                and key == "services"
+            ):
+                raise AssertionError(
+                    f"line {number}: an anchor, alias, tag or flow mapping "
+                    f"under `{key}`, not read here"
+                )
             if key in mapping:
                 raise AssertionError(f"line {number}: key `{key}` given twice")
             current = ComposeKey(_unquote(value), [], number)
@@ -673,8 +753,10 @@ def block_text(key):
 
 # Shell scripts ------------------------------------------------------------------------------
 
-_ASSIGNMENT = re.compile(r"^\s*(?:(?:readonly|export|local|declare(?:\s+-\w+)*)\s+)?"
-                         r"([A-Za-z_]\w*)=(\"[^\"$`]*\"|'[^']*'|[^\s\"'$`;|&()]*)\s*$")
+_ASSIGNMENT = re.compile(
+    r"^\s*(?:(?:readonly|export|local|declare(?:\s+-\w+)*)\s+)?"
+    r"([A-Za-z_]\w*)=(\"[^\"$`]*\"|'[^']*'|[^\s\"'$`;|&()]*)\s*$"
+)
 _HEREDOC = re.compile(r"<<-?[ \t]*(?:'([^']+)'|\"([^\"]+)\"|\\?([A-Za-z_]\w*))")
 
 
@@ -732,8 +814,10 @@ def _logical_lines(text):
         code, quote, delimiters = "", None, []
         while True:
             if index >= len(lines):
-                raise AssertionError(f"line {number}: a quote opened here is never closed, so "
-                                     "the script cannot be read")
+                raise AssertionError(
+                    f"line {number}: a quote opened here is never closed, so "
+                    "the script cannot be read"
+                )
             part, quote, found = _shell_line(lines[index], quote)
             index += 1
             delimiters += found
@@ -750,8 +834,10 @@ def _logical_lines(text):
             while index < len(lines) and lines[index].strip() != delimiter:
                 index += 1
             if index >= len(lines):
-                raise AssertionError(f"line {number}: the heredoc `{delimiter}` opened here is "
-                                     "never closed, so the script cannot be read")
+                raise AssertionError(
+                    f"line {number}: the heredoc `{delimiter}` opened here is "
+                    "never closed, so the script cannot be read"
+                )
             index += 1
         logical.append((number, code))
     return logical
@@ -775,6 +861,7 @@ def _expand(text, values):
         if name in values:
             return values[name]
         return default if default is not None else match.group(0)
+
     for _ in range(5):
         expanded = re.sub(r"\$\{([A-Za-z_]\w*)(?::?-([^}]*))?\}|\$([A-Za-z_]\w*)", replace, text)
         if expanded == text:
@@ -805,9 +892,10 @@ def _command_substitutions(line):
                     depth -= 1
                 cursor += 1
             if depth:
-                raise AssertionError(f"a `$(` is not closed on its line, so the reader cannot "
-                                     f"read it: {line!r}")
-            body = line[index + 2:cursor - 1]
+                raise AssertionError(
+                    f"a `$(` is not closed on its line, so the reader cannot read it: {line!r}"
+                )
+            body = line[index + 2 : cursor - 1]
             replaced, nested = _command_substitutions(body)
             inner += [replaced] + nested
             result.append(" __SUBSTITUTION__ ")
@@ -815,9 +903,10 @@ def _command_substitutions(line):
         elif line[index] == "`":
             end = line.find("`", index + 1)
             if end < 0:
-                raise AssertionError(f"a backquote is not closed on its line, so the reader "
-                                     f"cannot read it: {line!r}")
-            replaced, nested = _command_substitutions(line[index + 1:end])
+                raise AssertionError(
+                    f"a backquote is not closed on its line, so the reader cannot read it: {line!r}"
+                )
+            replaced, nested = _command_substitutions(line[index + 1 : end])
             inner += [replaced] + nested
             result.append(" __SUBSTITUTION__ ")
             index = end + 1
@@ -828,8 +917,23 @@ def _command_substitutions(line):
 
 
 SEPARATORS = (";", ";;", "&", "&&", "|", "||", "|&", "(", ")", "{", "}")
-KEYWORDS = ("if", "then", "else", "elif", "fi", "do", "done", "while", "until", "!", "time",
-            "{", "}", "exec", "command")
+KEYWORDS = (
+    "if",
+    "then",
+    "else",
+    "elif",
+    "fi",
+    "do",
+    "done",
+    "while",
+    "until",
+    "!",
+    "time",
+    "{",
+    "}",
+    "exec",
+    "command",
+)
 
 
 def _tokens(line, number):
@@ -891,7 +995,7 @@ def shell_commands(text):
     cannot read raises AssertionError."""
     values = shell_assignments(text)
     commands = []
-    outer_cases = []   # per open `case`: "pattern" while its patterns are read, else "body"
+    outer_cases = []  # per open `case`: "pattern" while its patterns are read, else "body"
     for number, line in _logical_lines(text):
         outer, inner = _command_substitutions(_expand(line, values))
         for part in [outer] + inner:
@@ -909,7 +1013,7 @@ def shell_commands(text):
                         cases[-1] = "body"
                     continue
                 if _is_redirection(token):
-                    position += 1     # the target
+                    position += 1  # the target
                 elif cases and token in (";;", ";&", ";;&"):
                     if words:
                         commands.append((number, words))
@@ -925,8 +1029,9 @@ def shell_commands(text):
                     if words:
                         commands.append((number, words))
                     words = []
-                elif not words and (token in KEYWORDS
-                                    or re.fullmatch(r"[A-Za-z_]\w*=.*", token, re.DOTALL)):
+                elif not words and (
+                    token in KEYWORDS or re.fullmatch(r"[A-Za-z_]\w*=.*", token, re.DOTALL)
+                ):
                     continue
                 else:
                     words.append(token)
@@ -963,7 +1068,7 @@ def shell_functions(text):
 def _after_docker(words):
     for position, word in enumerate(words):
         if is_docker(word):
-            rest = words[position + 1:]
+            rest = words[position + 1 :]
             if word.rsplit("/", 1)[-1] == "docker-compose":
                 rest = ["compose"] + rest
             return rest
@@ -983,8 +1088,7 @@ def _wrappers(commands, functions):
 def _docker_of(commands, functions, wrappers):
     found = []
     for number, words in commands:
-        if words[0] in functions and words == [words[0]] and \
-                functions[words[0]][0] == number:
+        if words[0] in functions and words == [words[0]] and functions[words[0]][0] == number:
             continue  # the line that defines the function
         if words[0] in wrappers:
             found.append((number, wrappers[words[0]] + words[1:]))
@@ -1017,8 +1121,11 @@ def executed_docker_commands(text):
     wrappers = _wrappers(commands, functions)
 
     def owner(number):
-        holding = [(last - first, name) for name, (first, last) in functions.items()
-                   if first <= number <= last]
+        holding = [
+            (last - first, name)
+            for name, (first, last) in functions.items()
+            if first <= number <= last
+        ]
         return min(holding)[1] if holding else None
 
     bodies = {name: [] for name in functions}
@@ -1042,8 +1149,18 @@ def executed_docker_commands(text):
 
 
 # Options of `docker compose` that take a value, before its subcommand.
-COMPOSE_VALUE_OPTIONS = ("-f", "--file", "-p", "--project-name", "--project-directory",
-                         "--env-file", "--profile", "--ansi", "--progress", "--parallel")
+COMPOSE_VALUE_OPTIONS = (
+    "-f",
+    "--file",
+    "-p",
+    "--project-name",
+    "--project-directory",
+    "--env-file",
+    "--profile",
+    "--ansi",
+    "--progress",
+    "--parallel",
+)
 
 
 def compose_parts(words):
@@ -1054,7 +1171,7 @@ def compose_parts(words):
     while index < len(words):
         word = words[index]
         if not word.startswith("-"):
-            return options, word, words[index + 1:]
+            return options, word, words[index + 1 :]
         name, equals, value = word.partition("=")
         if equals:
             options.setdefault(name, []).append(value)

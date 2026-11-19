@@ -25,8 +25,10 @@ LISTING = {"--list-only"}
 
 def split_rsync(arguments):
     """(options, the other words) of an rsync call."""
-    return ([a for a in arguments if a.startswith("-")],
-            [a for a in arguments if not a.startswith("-")])
+    return (
+        [a for a in arguments if a.startswith("-")],
+        [a for a in arguments if not a.startswith("-")],
+    )
 
 
 def ssh_options(arguments):
@@ -37,7 +39,6 @@ def ssh_options(arguments):
 
 
 class WithFixture(unittest.TestCase):
-
     def fixture(self):
         fixture = support.BackupFixture()
         self.addCleanup(fixture.remove)
@@ -45,7 +46,6 @@ class WithFixture(unittest.TestCase):
 
 
 class OrderOfTheSteps(WithFixture):
-
     def test_the_lock_spans_the_pipe_and_ends_before_the_send(self):
         # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending"
         result = self.fixture().run()
@@ -93,8 +93,11 @@ class OrderOfTheSteps(WithFixture):
         fixture = self.fixture()
         fixture.set_weekday("4")
         result = fixture.run()
-        self.assertRegex(result.log_at_send,
-                         rf"loop2-accounts-4\.sqlite\.age.*\b{support.CIPHERTEXT_SIZE}\b", result)
+        self.assertRegex(
+            result.log_at_send,
+            rf"loop2-accounts-4\.sqlite\.age.*\b{support.CIPHERTEXT_SIZE}\b",
+            result,
+        )
 
     def test_an_argument_is_refused_before_anything_runs(self):
         # A hand run with `--dry-run` must not replace a backup.
@@ -104,14 +107,15 @@ class OrderOfTheSteps(WithFixture):
 
 
 class WhatEachToolIsHanded(WithFixture):
-
     def test_docker_exec_gets_the_fixed_word_and_no_terminal(self):
         # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec`"
         # decision: D-231 "That command opens only an existing database file, needs its one fixed word `--to-standard-output`"
         result = self.fixture().run()
-        self.assertEqual(result.of("docker"), [
-            ["exec", "loop2", "node", "dist/server/account-backup.js", "--to-standard-output"]],
-            result)
+        self.assertEqual(
+            result.of("docker"),
+            [["exec", "loop2", "node", "dist/server/account-backup.js", "--to-standard-output"]],
+            result,
+        )
 
     def test_pusher_gets_the_polish_notice_as_these_bytes(self):
         # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed"
@@ -194,8 +198,11 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(program, "ssh", result)
         self.assertEqual(options["BatchMode"], "yes", result)
         self.assertEqual(options["StrictHostKeyChecking"], "yes", result)
-        self.assertEqual(options["UserKnownHostsFile"],
-                         support.deploy_support.shell_path(fixture.known_hosts), result)
+        self.assertEqual(
+            options["UserKnownHostsFile"],
+            support.deploy_support.shell_path(fixture.known_hosts),
+            result,
+        )
         self.assertEqual(options["GlobalKnownHostsFile"], "/dev/null", result)
         self.assertNotIn("Port", options, result)
         self.assertNotIn("User", options, result)
@@ -223,7 +230,6 @@ class WhatEachToolIsHanded(WithFixture):
 
 
 class WhatTheLogHolds(WithFixture):
-
     def test_a_whole_run_logs_its_start_its_end_the_weekday_file_and_the_size(self):
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup"
         fixture = self.fixture()
@@ -232,8 +238,9 @@ class WhatTheLogHolds(WithFixture):
         lines = result.log.splitlines()
         self.assertRegex(lines[0], r"\bstart\b", result)
         self.assertRegex(lines[-1], r"\bend\b", result)
-        self.assertRegex(result.log, rf"loop2-accounts-2\.sqlite\.age.*\b{support.CIPHERTEXT_SIZE}\b",
-                         result)
+        self.assertRegex(
+            result.log, rf"loop2-accounts-2\.sqlite\.age.*\b{support.CIPHERTEXT_SIZE}\b", result
+        )
 
     def test_a_failed_run_logs_its_start_its_end_its_stage_and_the_exit_code(self):
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
@@ -250,13 +257,18 @@ class WhatTheLogHolds(WithFixture):
         # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed, with no player's data"
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
         fixture = self.fixture()
-        for arrange in (lambda _fixture: None,
-                        lambda fixture: fixture.answer("rsync", exit_code=12),
-                        lambda fixture: fixture.answer("age", exit_code=1)):
+        for arrange in (
+            lambda _fixture: None,
+            lambda fixture: fixture.answer("rsync", exit_code=12),
+            lambda fixture: fixture.answer("age", exit_code=1),
+        ):
             arrange(fixture)
             result = fixture.run()
-            self.assertIn(support.PLAIN_MARKER.encode(), result.age_input, "precondition: the "
-                          "marker reached age")
+            self.assertIn(
+                support.PLAIN_MARKER.encode(),
+                result.age_input,
+                "precondition: the marker reached age",
+            )
             self.assertNotIn(support.PLAIN_MARKER, result.log, result)
             self.assertNotIn(support.PLAIN_MARKER, result.stdout + result.stderr, result)
             self.assertNotIn(support.PLAIN_MARKER.encode(), result.notice_input, result)
@@ -279,32 +291,39 @@ class WhatTheLogHolds(WithFixture):
         self.assertRegex(result.log, rf"\b{support.CIPHERTEXT_SIZE}\b", result)
 
     def test_the_text_of_docker_age_and_flock_goes_to_the_log_alone(self):
-        for tool, match, exit_code in (("docker", "*", 1), ("age", "*", 1),
-                                       ("flock", "*--wait*", 1)):
+        for tool, match, exit_code in (
+            ("docker", "*", 1),
+            ("age", "*", 1),
+            ("flock", "*--wait*", 1),
+        ):
             with self.subTest(tool):
                 fixture = self.fixture()
                 text = f"text-of-{tool}-0e6d"
-                fixture.answer(tool, exit_code=exit_code, stderr=(text + "\n").encode(),
-                               match=match)
+                fixture.answer(
+                    tool, exit_code=exit_code, stderr=(text + "\n").encode(), match=match
+                )
                 result = fixture.run()
                 self.assertIn(text, result.log, result)
                 self.assertNotIn(text, result.stdout + result.stderr, result)
 
 
 class TheScheduleAsCronReadsIt(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.data = support.deploy_support.read_bytes(support.SCHEDULE)
-        cls.lines = [line for line in cls.data.decode().splitlines()
-                     if line.strip() and not line.lstrip().startswith("#")]
+        cls.lines = [
+            line
+            for line in cls.data.decode().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
 
     def test_one_line_starts_the_installed_script_at_03_17_daily_as_root(self):
         # decision: D-230 "One backup of the account and save database is made each night"
         # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout"
         schedules = [line.split() for line in self.lines if "=" not in line]
-        self.assertEqual(schedules, [["17", "3", "*", "*", "*", "root",
-                                      "/usr/local/bin/loop2-backup"]])
+        self.assertEqual(
+            schedules, [["17", "3", "*", "*", "*", "root", "/usr/local/bin/loop2-backup"]]
+        )
 
     def test_mail_is_off_before_the_schedule_line(self):
         self.assertEqual(self.lines[0], 'MAILTO=""')

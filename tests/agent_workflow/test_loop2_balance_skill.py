@@ -24,11 +24,10 @@ def description(directory):
     values = [line for line in match.group(1).splitlines() if line.startswith("description:")]
     if len(values) != 1:
         raise AssertionError("the frontmatter must hold exactly one description line")
-    return values[0][len("description:"):].strip()
+    return values[0][len("description:") :].strip()
 
 
 class Loop2BalanceSkill(unittest.TestCase):
-
     def test_both_copies_hold_the_same_files(self):
         self.assertEqual(sorted(os.listdir(CLAUDE_COPY)), sorted(FILES))
         self.assertEqual(sorted(os.listdir(AGENTS_COPY)), sorted(FILES))

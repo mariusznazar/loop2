@@ -73,7 +73,6 @@ def tree_state(copy):
 
 
 class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
-
     def setUp(self):
         self.copies = []
 
@@ -84,8 +83,10 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
     def fresh_copy(self):
         copy = support.TreeCopy()
         self.copies.append(copy)
-        self.assertFalse(os.path.exists(copy.file(OUTPUT)),
-                         "the fresh copy already holds dist, so its output would prove nothing")
+        self.assertFalse(
+            os.path.exists(copy.file(OUTPUT)),
+            "the fresh copy already holds dist, so its output would prove nothing",
+        )
         return copy
 
     def test_build_writes_no_file_of_the_page(self):
@@ -93,12 +94,18 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
-        self.assertTrue(os.path.isfile(copy.file(GAME_PAGE)),
-                        f"the build wrote no {GAME_PAGE}, so its output was not searched")
-        self.assertEqual(files_with_marker(copy, OUTPUT), [],
-                         "files `npm run build` writes hold the kitchen-sink page's marker")
-        self.assertFalse(os.path.exists(copy.file(PAGE_OUTPUT)),
-                         f"`npm run build` wrote {PAGE_OUTPUT}")
+        self.assertTrue(
+            os.path.isfile(copy.file(GAME_PAGE)),
+            f"the build wrote no {GAME_PAGE}, so its output was not searched",
+        )
+        self.assertEqual(
+            files_with_marker(copy, OUTPUT),
+            [],
+            "files `npm run build` writes hold the kitchen-sink page's marker",
+        )
+        self.assertFalse(
+            os.path.exists(copy.file(PAGE_OUTPUT)), f"`npm run build` wrote {PAGE_OUTPUT}"
+        )
 
     def test_search_finds_page_code_the_game_pulls_into_the_build(self):
         # invariant: application-build-kitchen-sink
@@ -107,9 +114,11 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
             handle.write(PROBE)
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails with {PROBE_FILE}:\n{output}")
-        self.assertIn("dist/browser/kitchen-sink/kitchen-sink.js", files_with_marker(copy, OUTPUT),
-                      "the search does not find the page's entry the game's source pulled "
-                      "into the build")
+        self.assertIn(
+            "dist/browser/kitchen-sink/kitchen-sink.js",
+            files_with_marker(copy, OUTPUT),
+            "the search does not find the page's entry the game's source pulled into the build",
+        )
 
     def test_page_command_builds_the_page_with_its_marker(self):
         # invariant: application-build-kitchen-sink
@@ -121,17 +130,24 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
         found = files_with_marker(copy, OUTPUT)
         for expected in (PAGE_HTML, PAGE_ENTRY):
             with self.subTest(file=expected):
-                self.assertIn(expected, found,
-                              f"{expected} is missing or holds no marker, so the search of "
-                              f"the build's output would not see the page")
+                self.assertIn(
+                    expected,
+                    found,
+                    f"{expected} is missing or holds no marker, so the search of "
+                    f"the build's output would not see the page",
+                )
         after = tree_state(copy)
-        written = sorted(path for path, state in after.items()
-                         if before.get(path) != state
-                         and not path.startswith(PAGE_OUTPUT + "/"))
+        written = sorted(
+            path
+            for path, state in after.items()
+            if before.get(path) != state and not path.startswith(PAGE_OUTPUT + "/")
+        )
         removed = sorted(path for path in before if path not in after)
-        self.assertEqual(written + removed, [],
-                         "`npm run kitchen-sink -- --build-only` changed files outside "
-                         f"{PAGE_OUTPUT}/")
+        self.assertEqual(
+            written + removed,
+            [],
+            f"`npm run kitchen-sink -- --build-only` changed files outside {PAGE_OUTPUT}/",
+        )
 
 
 if __name__ == "__main__":

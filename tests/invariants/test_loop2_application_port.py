@@ -30,7 +30,6 @@ def exposure_problems(text):
 
 
 class ApplicationPort(unittest.TestCase):
-
     def test_compose_exposes_no_application_port_outside_its_private_network(self):
         # invariant: loop2-application-port
         self.assertEqual(exposure_problems(support.read_required("compose.yaml")), [])

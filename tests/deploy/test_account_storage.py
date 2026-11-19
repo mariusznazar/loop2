@@ -35,9 +35,9 @@ from tests.invariants import account_container_support as support
 from tests.invariants import loop2_invariant_support as compose
 from scripts import docker_gate
 
-BUILD_TIMEOUT = 1200    # seconds for the image build
-COMMAND_TIMEOUT = 120   # seconds for any other docker command
-SERVE_WAIT = 60         # seconds for a started container to answer GET /
+BUILD_TIMEOUT = 1200  # seconds for the image build
+COMMAND_TIMEOUT = 120  # seconds for any other docker command
+SERVE_WAIT = 60  # seconds for a started container to answer GET /
 
 ORIGIN = "https://loop2.mariusznazar.com"
 EMAIL = "replacement-check@example.com"
@@ -75,8 +75,9 @@ def compose_account_storage():
     _top, services = compose.compose_outline(compose.read_required("compose.yaml"))
     app = services["app"]
     environment = compose._yaml_mapping(app["environment"].block, app["environment"].line + 1)
-    mounts = [line.strip()[2:].strip() for line in app["volumes"].block
-              if line.strip().startswith("- ")]
+    mounts = [
+        line.strip()[2:].strip() for line in app["volumes"].block if line.strip().startswith("- ")
+    ]
     destinations = [mount.split(":")[1] for mount in mounts if mount.split(":")[0] == "accounts"]
     if len(destinations) != 1:
         raise AssertionError(f"compose.yaml mounts the accounts volume {len(destinations)} times")
@@ -88,24 +89,39 @@ def docker():
 
 
 def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
-    result = subprocess.run([docker(), *arguments], cwd=support.ROOT, stdin=subprocess.DEVNULL,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    result = subprocess.run(
+        [docker(), *arguments],
+        cwd=support.ROOT,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
     return result.returncode, result.stdout.decode("utf-8", "replace")
 
 
 class AccountsSurviveContainerReplacement(unittest.TestCase):
-
     def test_replaced_container_keeps_accounts_sessions_and_saved_game_states(self):
         # invariant: account-save-durable-storage
         # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000"
         # decision: D-205 "The account and save server stores player accounts and each player's complete saved game state in a SQLite database file on persistent local storage outside the replaceable application container layer"
-        docker_gate.require_daemon(self, "whether accounts, sessions and saved game states "
-                                         "outlive a container replacement stays unchecked")
+        docker_gate.require_daemon(
+            self,
+            "whether accounts, sessions and saved game states "
+            "outlive a container replacement stays unchecked",
+        )
         suffix = uuid.uuid4().hex[:12]
         tag = "loop2-account-storage-check:" + suffix
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
-        code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=account-storage-check",
-                                  "-t", tag, ".", timeout=BUILD_TIMEOUT)
+        code, output = docker_run(
+            "build",
+            "--build-arg",
+            "LOOP2_COMMIT=account-storage-check",
+            "-t",
+            tag,
+            ".",
+            timeout=BUILD_TIMEOUT,
+        )
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
         storage = compose_account_storage()
         data_volume, secret_volume = support.create_account_volumes(self, tag)
@@ -115,22 +131,28 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         support.start_application(self, tag, first, data_volume, secret_volume, *storage)
         support.verify_account_resources(self, first, data_volume, secret_volume, *storage)
         self.wait_until_serving(first)
-        created = self.request(first, "/api/accounts", body={
-            "email": EMAIL, "password": password, "passwordConfirmation": password})
+        created = self.request(
+            first,
+            "/api/accounts",
+            body={"email": EMAIL, "password": password, "passwordConfirmation": password},
+        )
         self.assertEqual(created["status"], 201, created["body"])
         # The registration answer also carries its confirmation message's outcome
         # (D-157); the account reads that follow carry only the account's fields,
         # among them the previous-save privilege, which a new account lacks (D-400).
-        account = {key: created["body"][key]
-                   for key in ("id", "email", "emailConfirmed", "previousSaveAllowed")}
+        account = {
+            key: created["body"][key]
+            for key in ("id", "email", "emailConfirmed", "previousSaveAllowed")
+        }
         self.assertEqual(account["email"], EMAIL)
         self.assertIs(account["previousSaveAllowed"], False)
         cookie = created["cookie"]
         self.assertIsNotNone(cookie, "registration set no session cookie")
         before = self.request(first, "/api/account", cookie=cookie)
         self.assertEqual((before["status"], before["body"]), (200, account))
-        saved = self.request(first, "/api/saved-game", method="PUT", cookie=cookie,
-                             body={**SAVED_GAME, "basedOn": 0})
+        saved = self.request(
+            first, "/api/saved-game", method="PUT", cookie=cookie, body={**SAVED_GAME, "basedOn": 0}
+        )
         self.assertEqual((saved["status"], saved["body"]), (200, {"revision": 1}))
 
         code, output = docker_run("rm", "--force", first)
@@ -143,45 +165,78 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         support.verify_account_resources(self, second, data_volume, secret_volume, *storage)
         self.wait_until_serving(second)
         after = self.request(second, "/api/account", cookie=cookie)
-        self.assertEqual((after["status"], after["body"]), (200, account),
-                         "the session of the replaced container no longer names its account")
+        self.assertEqual(
+            (after["status"], after["body"]),
+            (200, account),
+            "the session of the replaced container no longer names its account",
+        )
         kept = self.request(second, "/api/saved-game", cookie=cookie)
-        self.assertEqual((kept["status"], kept["body"]),
-                         (200, {"save": {**SAVED_GAME, "revision": 1}}),
-                         "the saved game state did not outlive the replacement")
-        signed_in = self.request(second, "/api/session",
-                                 body={"email": EMAIL, "password": password})
-        self.assertEqual((signed_in["status"], signed_in["body"]), (200, account),
-                         "the account's password no longer signs in after the replacement")
-        again = self.request(second, "/api/accounts", body={
-            "email": EMAIL, "password": password, "passwordConfirmation": password})
+        self.assertEqual(
+            (kept["status"], kept["body"]),
+            (200, {"save": {**SAVED_GAME, "revision": 1}}),
+            "the saved game state did not outlive the replacement",
+        )
+        signed_in = self.request(
+            second, "/api/session", body={"email": EMAIL, "password": password}
+        )
+        self.assertEqual(
+            (signed_in["status"], signed_in["body"]),
+            (200, account),
+            "the account's password no longer signs in after the replacement",
+        )
+        again = self.request(
+            second,
+            "/api/accounts",
+            body={"email": EMAIL, "password": password, "passwordConfirmation": password},
+        )
         self.assertEqual(again["status"], 409, "the address could be registered a second time")
 
     def request(self, name, path, body=None, cookie=None, method=None):
-        spec = {"path": path, "body": body, "cookie": cookie, "origin": ORIGIN, "name": COOKIE,
-                "method": method}
+        spec = {
+            "path": path,
+            "body": body,
+            "cookie": cookie,
+            "origin": ORIGIN,
+            "name": COOKIE,
+            "method": method,
+        }
         script = REQUEST_PROBE.replace("SPEC", json.dumps(json.dumps(spec)), 1)
-        result = subprocess.run([docker(), "exec", "-i", name, "node", "-"],
-                                input=script.encode("utf-8"), capture_output=True,
-                                timeout=COMMAND_TIMEOUT)
+        result = subprocess.run(
+            [docker(), "exec", "-i", name, "node", "-"],
+            input=script.encode("utf-8"),
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
         # The probe's input holds the password and cookie; its output only the cookie.
-        self.assertEqual(result.returncode, 0,
-                         f"request {path} failed: {result.stderr.decode('utf-8', 'replace')}")
+        self.assertEqual(
+            result.returncode,
+            0,
+            f"request {path} failed: {result.stderr.decode('utf-8', 'replace')}",
+        )
         return json.loads(result.stdout.decode("utf-8").strip().splitlines()[-1])
 
     def wait_until_serving(self, name):
         deadline = time.monotonic() + SERVE_WAIT
         while True:
             result = subprocess.run(
-                [docker(), "exec", name, "node", "-e",
-                 "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.status === 200 ? 0 "
-                 ": 1), () => process.exit(1))"],
-                capture_output=True, timeout=COMMAND_TIMEOUT)
+                [
+                    docker(),
+                    "exec",
+                    name,
+                    "node",
+                    "-e",
+                    "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.status === 200 ? 0 "
+                    ": 1), () => process.exit(1))",
+                ],
+                capture_output=True,
+                timeout=COMMAND_TIMEOUT,
+            )
             if result.returncode == 0:
                 return
             if time.monotonic() > deadline:
-                self.fail(f"{name} does not serve within {SERVE_WAIT} s:\n"
-                          f"{docker_run('logs', name)[1]}")
+                self.fail(
+                    f"{name} does not serve within {SERVE_WAIT} s:\n{docker_run('logs', name)[1]}"
+                )
             time.sleep(1)
 
 
