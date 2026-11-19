@@ -281,11 +281,17 @@ The previous-save privilege is the flag the operator, or an owner from the owner
 
 - **Not:** none
 
+## operator
+
+The operator is the person who reaches the server and runs its commands, such as the block of an account, the grant of the previous-save privilege and the giving of the owner role.
+
+- **Not:** none
+
 ## owner
 
 An owner is an account whose role is `owner`, the role that lets its holder use the owner panel of the game and that only a human gives, with the command `account-role`; every other account has the role `player`.
 
-- **Not:** the person who reaches the server and runs its commands — "operator"
+- **Not:** the person who reaches the server and runs its commands — operator
 
 ## overlay
 

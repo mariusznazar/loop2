@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -439,6 +446,39 @@ function runCommand(script, args, databasePath, mode) {
   });
 }
 
+// A file or database a test makes by hand, in a directory of its own. `snapshot`
+// reads what a refused command must leave as it was: the file's bytes and the
+// names beside it, a -wal or -shm file included.
+async function handmadeFile(t, name) {
+  const directory = await mkdtemp(join(tmpdir(), "loop2-handmade-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  return {
+    path: join(directory, name),
+    async snapshot() {
+      return {
+        bytes: await readFile(join(directory, name)),
+        names: (await readdir(directory)).sort(),
+      };
+    },
+  };
+}
+
+// A database of the server whose pages after the first are garbage: it reads
+// as a database of the current version and fails on the first table it reads.
+async function makeCorruptDatabase(file) {
+  const made = new AccountDatabase(file.path);
+  made.createAccount("player@example.test", "hash");
+  made.close();
+  const bytes = await readFile(file.path);
+  await writeFile(
+    file.path,
+    Buffer.concat([
+      bytes.subarray(0, 4096),
+      Buffer.alloc(bytes.length - 4096, 255),
+    ]),
+  );
+}
+
 // A session that the command's own pruning by the real clock keeps.
 function liveSession(database, id, accountId) {
   database.saveSession(id, {
@@ -597,21 +637,22 @@ test("the role command changes nothing on a usage error, an unknown address or a
     );
 });
 
-test("a database file that is no database fails with the JSON line of the failure first, and changes nothing", async (t) => {
+test("a damaged database file fails with the JSON line of the failure first, and changes nothing", async (t) => {
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
-  const { path } = await fixture(t, { now: () => Date.now() });
-  const garbage = join(path, "..", "garbage-secret-name.sqlite");
-  await writeFile(garbage, "this is not an SQLite database at all, padding");
+  const file = await handmadeFile(t, "corrupt-secret-name.sqlite");
+  await makeCorruptDatabase(file);
+  const before = await file.snapshot();
 
   const run = await runCommand(
     roleCommand,
     ["owner", "player@example.test"],
-    garbage,
+    file.path,
   );
 
   assert.equal(run.code, 1, run.output);
-  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  assert.match(run.stderr, /Nothing changed\./);
+  assert.doesNotMatch(run.stderr, /run the command again/);
   const lines = run.stderr.split(/\r?\n/);
   assert.equal(lines[0][0], "{", "the JSON line comes first");
   const { failure, kind, code, errcode, place } = JSON.parse(lines[0]);
@@ -621,12 +662,124 @@ test("a database file that is no database fails with the JSON line of the failur
       failure: "account-role",
       kind: "Error",
       code: "ERR_SQLITE_ERROR",
-      errcode: 26,
+      errcode: 11,
       place: "account-role.change",
     },
-    "SQLite's number 26 says the file is no database",
+    "SQLite's number 11 says the file is damaged",
   );
-  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+  assert.doesNotMatch(run.output, /corrupt-secret-name|malformed/i);
+  const after = await file.snapshot();
+  assert.ok(after.bytes.equals(before.bytes), "the bytes of the file");
+});
+
+// D-410, D-112. Faults: a file the server never set up given tables by the
+// command, or refused with another code than a missing file, or reported as a
+// database failure that asks for a second run.
+test("the role command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
+  // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
+  const refusals = [];
+  for (const [label, name, prepare] of [
+    ["an empty file", "empty-secret-name.sqlite", (f) => writeFile(f.path, "")],
+    [
+      "a file that is no SQLite database",
+      "garbage-secret-name.sqlite",
+      (f) => writeFile(f.path, "this is not an SQLite database at all"),
+    ],
+    [
+      "a SQLite database with no schema version",
+      "foreign-secret-name.sqlite",
+      (f) => {
+        const raw = new DatabaseSync(f.path);
+        raw.exec("CREATE TABLE notes (text TEXT)");
+        raw.close();
+      },
+    ],
+  ]) {
+    const file = await handmadeFile(t, name);
+    await prepare(file);
+    const before = await file.snapshot();
+
+    for (const role of ["owner", "player"]) {
+      const run = await runCommand(
+        roleCommand,
+        [role, "player@example.test"],
+        file.path,
+      );
+
+      assert.equal(run.code, 3, `${label}, ${role}: ${run.output}`);
+      assert.match(
+        run.stderr,
+        /names a file that exists but holds no account database set up by the server\. Nothing changed\./,
+      );
+      assert.doesNotMatch(run.stderr, /names no existing/);
+      assert.doesNotMatch(run.stderr, /run the command again/);
+      refusals.push(run);
+    }
+    const after = await file.snapshot();
+    assert.ok(after.bytes.equals(before.bytes), `${label}: the bytes`);
+    assert.deepEqual(after.names, before.names, `${label}: no file beside it`);
+  }
+  for (const run of refusals)
+    assert.doesNotMatch(run.output, /secret-name|not a database/i);
+});
+
+// D-410. Faults: the advice to run the command again on a failure a second run
+// does not mend, or no advice where the database was only busy.
+test("the role command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  const { path, database, raw } = await fixture(t, { now: () => Date.now() });
+  const account = database.createAccount("player@example.test", "encoded-hash");
+  const unchanged = () =>
+    assert.equal(database.findAccountById(account.id).role, "player");
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runCommand(
+      roleCommand,
+      ["owner", "player@example.test"],
+      path,
+    );
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.match(busy.stderr, /busy for longer than the wait allows/);
+  assert.match(busy.stderr, /Nothing changed; run the command again\./);
+  unchanged();
+
+  const newer = await handmadeFile(t, "newer.sqlite");
+  const made = new DatabaseSync(newer.path);
+  made.exec("CREATE TABLE accounts (id TEXT); PRAGMA user_version = 7");
+  made.close();
+  const newerBefore = await newer.snapshot();
+  const damaged = await handmadeFile(t, "damaged.sqlite");
+  await makeCorruptDatabase(damaged);
+
+  for (const [label, file] of [
+    ["a newer schema", newer],
+    ["a damaged file", damaged],
+  ]) {
+    const run = await runCommand(
+      roleCommand,
+      ["owner", "player@example.test"],
+      file.path,
+    );
+
+    assert.equal(run.code, 1, `${label}: ${run.output}`);
+    assert.match(run.stderr, /Nothing changed\./);
+    assert.doesNotMatch(run.stderr, /run the command again/, label);
+    assert.match(run.stderr, /"failure":"account-role"/);
+  }
+  const newerAfter = await newer.snapshot();
+  assert.ok(
+    newerAfter.bytes.equals(newerBefore.bytes),
+    "the newer schema stays",
+  );
+  assert.deepEqual(newerAfter.names, newerBefore.names);
 });
 
 test("what no code of the role command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {

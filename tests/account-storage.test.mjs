@@ -262,7 +262,7 @@ test("opening a database of an unknown newer schema refuses it and leaves the fi
 });
 
 test("opening that may only find a database refuses a file in which the server set up no tables, writes nothing in it, and an opening of the server sets it up", async (t) => {
-  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const foreign = async (file) => {
     const raw = new DatabaseSync(file.path);
     raw.exec("CREATE TABLE notes (text TEXT); INSERT INTO notes VALUES ('x')");
@@ -356,6 +356,72 @@ test("an opening that may only find a database tells a corrupt file, a newer sch
     holder.close();
   }
   assert.equal(isDatabaseBusy(new Error("another")), false);
+});
+
+// D-430. Faults: a busy database reported with an extended result code read as
+// no busy database, so the command gives no advice to run it again and the
+// server's retry of a busy opening gives up; a code of another kind, the
+// violation of a unique key among them, read as a busy one.
+test("a busy database is told from another failure by the primary result code, whatever the extended one", async (t) => {
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  const file = await handmadeFile(t, "extended.sqlite");
+  const reader = new DatabaseSync(file.path, { timeout: 50 });
+  const writer = new DatabaseSync(file.path, { timeout: 50 });
+  try {
+    reader.exec(
+      "PRAGMA journal_mode = WAL; CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT UNIQUE)",
+    );
+    const thrown = (work) => {
+      try {
+        work();
+      } catch (error) {
+        return error;
+      }
+      throw new Error("the statement did not fail");
+    };
+
+    // SQLITE_BUSY_SNAPSHOT: a read transaction that another connection's commit
+    // has left behind cannot write.
+    reader.exec("BEGIN");
+    reader.prepare("SELECT * FROM t").all();
+    writer.exec("INSERT INTO t VALUES (1, 'a')");
+    const snapshot = thrown(() => reader.exec("INSERT INTO t VALUES (2, 'b')"));
+    reader.exec("ROLLBACK");
+    assert.equal(snapshot.errcode, 517, "precondition: an extended busy code");
+    assert.equal(isDatabaseBusy(snapshot), true, "SQLITE_BUSY_SNAPSHOT");
+
+    // The plain SQLITE_BUSY: another connection holds the write lock.
+    writer.exec("BEGIN IMMEDIATE");
+    const plain = thrown(() => reader.exec("BEGIN IMMEDIATE"));
+    writer.exec("ROLLBACK");
+    assert.equal(plain.errcode, 5, "precondition: the primary busy code");
+    assert.equal(isDatabaseBusy(plain), true, "SQLITE_BUSY");
+
+    // SQLITE_BUSY_RECOVERY needs another process recovering the write-ahead
+    // log, which a test cannot hold still, so the error is shaped.
+    assert.equal(
+      isDatabaseBusy({ errcode: 261 }),
+      true,
+      "SQLITE_BUSY_RECOVERY",
+    );
+
+    // Extended codes of other failures: a unique key violated, a locked table,
+    // a constraint, a misuse (21, whose low four bits are those of 5).
+    const unique = thrown(() => writer.exec("INSERT INTO t VALUES (3, 'a')"));
+    assert.equal(
+      unique.errcode,
+      2067,
+      "precondition: SQLITE_CONSTRAINT_UNIQUE",
+    );
+    assert.equal(isDatabaseBusy(unique), false, "SQLITE_CONSTRAINT_UNIQUE");
+    for (const errcode of [1, 6, 19, 21, 262, 2067])
+      assert.equal(isDatabaseBusy({ errcode }), false, `errcode ${errcode}`);
+    for (const value of [null, undefined, "5", { errcode: "517" }, {}])
+      assert.equal(isDatabaseBusy(value), false, String(value));
+  } finally {
+    reader.close();
+    writer.close();
+  }
 });
 
 // invariant: account-database-schema
@@ -3361,34 +3427,38 @@ test("a database failure of the operator's command adds the error's kind and cod
   assert.doesNotMatch(run.output, /corrupt-secret-name|malformed/i);
 });
 
+// The files in which the server set up no tables, each made by its `prepare`,
+// for the commands that refuse such a file.
+const filesWithNoTables = [
+  [
+    "an empty file",
+    "empty-secret-name.sqlite",
+    (file) => writeFile(file.path, ""),
+  ],
+  [
+    "a file that is no SQLite database",
+    "garbage-secret-name.sqlite",
+    (file) => writeFile(file.path, "this is not an SQLite database at all"),
+  ],
+  [
+    "a SQLite database with no schema version",
+    "foreign-secret-name.sqlite",
+    (file) => {
+      const raw = new DatabaseSync(file.path);
+      raw.exec("CREATE TABLE notes (text TEXT)");
+      raw.close();
+    },
+  ],
+];
+
 // D-137, D-112. Faults: a file the server never set up given tables by the
 // command, or refused with another code than a missing file, or reported as a
 // database failure that asks for a second run.
 test("the operator's command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
-  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const refusals = [];
-  for (const [label, name, prepare] of [
-    [
-      "an empty file",
-      "empty-secret-name.sqlite",
-      (file) => writeFile(file.path, ""),
-    ],
-    [
-      "a file that is no SQLite database",
-      "garbage-secret-name.sqlite",
-      (file) => writeFile(file.path, "this is not an SQLite database at all"),
-    ],
-    [
-      "a SQLite database with no schema version",
-      "foreign-secret-name.sqlite",
-      (file) => {
-        const raw = new DatabaseSync(file.path);
-        raw.exec("CREATE TABLE notes (text TEXT)");
-        raw.close();
-      },
-    ],
-  ]) {
+  for (const [label, name, prepare] of filesWithNoTables) {
     const file = await handmadeFile(t, name);
     await prepare(file);
     const before = await file.snapshot();
@@ -3419,7 +3489,7 @@ test("the operator's command refuses a file in which the server set up no tables
 // D-137. Faults: the advice to run the command again on a failure a second run
 // does not mend, or no advice where the database was only busy.
 test("the operator's command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
-  // decision: D-430 "When the blocking command of D-137 or the backup command of D-231 cannot open or change the database for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
   // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
   const { path, database, raw, account } = await fixture(t);
@@ -3722,24 +3792,24 @@ test("the previous-save command writes one event with the account's number for a
 });
 
 // D-252, D-354. Faults: the failure's reason left out, so the operator only hears
-// to try again; SQLite's message or the file's path in the output; a sentence
+// that it failed; SQLite's message or the file's path in the output; a sentence
 // dropped, so the operator no longer reads what happened.
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
-  const { path } = await fixture(t);
-  const garbage = join(path, "..", "garbage-secret-name.sqlite");
-  await writeFile(garbage, "this is not an SQLite database at all, padding");
+  const file = await handmadeFile(t, "corrupt-secret-name.sqlite");
+  await makeCorruptDatabase(file);
 
   const run = await runOwnerCommand(
     previousSaveCommand,
     ["grant", "player@example.test"],
-    garbage,
+    file.path,
   );
 
   assert.equal(run.code, 1, run.output);
-  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  assert.match(run.stderr, /Nothing changed\./);
+  assert.doesNotMatch(run.stderr, /run the command again/);
   const [line] = run.stderr.split(/\r?\n/).filter((text) => text[0] === "{");
   const { failure, kind, code, errcode, place } = JSON.parse(line);
   assert.deepEqual(
@@ -3748,12 +3818,108 @@ test("a database failure of the previous-save command adds the error's kind and 
       failure: "account-previous-save",
       kind: "Error",
       code: "ERR_SQLITE_ERROR",
-      errcode: 26,
+      errcode: 11,
       place: "account-previous-save.change",
     },
-    "SQLite's number 26 says the file is no database",
+    "SQLite's number 11 says the file is damaged",
   );
-  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+  assert.doesNotMatch(run.output, /corrupt-secret-name|malformed/i);
+});
+
+// D-400, D-112. Faults: a file the server never set up given tables by the
+// command, or refused with another code than a missing file, or reported as a
+// database failure that asks for a second run.
+test("the previous-save command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
+  // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
+  const refusals = [];
+  for (const [label, name, prepare] of filesWithNoTables) {
+    const file = await handmadeFile(t, name);
+    await prepare(file);
+    const before = await file.snapshot();
+
+    for (const action of ["grant", "revoke"]) {
+      const run = await runOwnerCommand(
+        previousSaveCommand,
+        [action, "player@example.test"],
+        file.path,
+      );
+
+      assert.equal(run.code, 3, `${label}, ${action}: ${run.output}`);
+      assert.match(
+        run.stderr,
+        /names a file that exists but holds no account database set up by the server\. Nothing changed\./,
+      );
+      assert.doesNotMatch(run.stderr, /names no existing/);
+      assert.doesNotMatch(run.stderr, /run the command again/);
+      refusals.push(run);
+    }
+    const after = await file.snapshot();
+    assert.ok(after.bytes.equals(before.bytes), `${label}: the bytes`);
+    assert.deepEqual(after.names, before.names, `${label}: no file beside it`);
+  }
+  for (const run of refusals)
+    assert.doesNotMatch(run.output, /secret-name|not a database/i);
+});
+
+// D-400. Faults: the advice to run the command again on a failure a second run
+// does not mend, or no advice where the database was only busy.
+test("the previous-save command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  const { path, database, raw, account } = await fixture(t);
+  const unchanged = () =>
+    assert.equal(
+      database.findAccountById(account.id).previousSaveAllowed,
+      false,
+    );
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runOwnerCommand(
+      previousSaveCommand,
+      ["grant", "player@example.test"],
+      path,
+    );
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.match(busy.stderr, /busy for longer than the wait allows/);
+  assert.match(busy.stderr, /Nothing changed; run the command again\./);
+  unchanged();
+
+  const newer = await handmadeFile(t, "newer.sqlite");
+  const made = new DatabaseSync(newer.path);
+  made.exec("CREATE TABLE accounts (id TEXT); PRAGMA user_version = 7");
+  made.close();
+  const newerBefore = await newer.snapshot();
+  const damaged = await handmadeFile(t, "damaged.sqlite");
+  await makeCorruptDatabase(damaged);
+
+  for (const [label, file] of [
+    ["a newer schema", newer],
+    ["a damaged file", damaged],
+  ]) {
+    const run = await runOwnerCommand(
+      previousSaveCommand,
+      ["grant", "player@example.test"],
+      file.path,
+    );
+
+    assert.equal(run.code, 1, `${label}: ${run.output}`);
+    assert.match(run.stderr, /Nothing changed\./);
+    assert.doesNotMatch(run.stderr, /run the command again/, label);
+    assert.match(run.stderr, /"failure":"account-previous-save"/);
+  }
+  const newerAfter = await newer.snapshot();
+  assert.ok(
+    newerAfter.bytes.equals(newerBefore.bytes),
+    "the newer schema stays",
+  );
+  assert.deepEqual(newerAfter.names, newerBefore.names);
 });
 
 // D-253. Faults: no handler of its own, so the default print writes the message

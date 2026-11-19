@@ -210,8 +210,9 @@ interface DatabaseOptions {
   onCleanupError?: (error: Error) => void;
   // An opening with this option never sets up a new database: it refuses a
   // file in which the server has set up no tables and writes nothing in it
-  // (D-112). Only the blocking and the backup commands open with it; the
-  // commands of D-400 and D-410 still set up a database in such a file.
+  // (D-112). Every command the operator runs on the server that changes or copies
+  // the account database opens with it; the check of the database at the build
+  // of the image does not, since it sets up a temporary database of its own.
   existingOnly?: boolean;
 }
 
@@ -251,12 +252,16 @@ const backupRate = 2 ** 31 - 1;
 const SQLITE_BUSY = 5;
 const RETRY_PAUSE = new Int32Array(new SharedArrayBuffer(4));
 
+// Node.js puts SQLite's extended result code in `errcode`, whose low byte is
+// the primary code: a busy database may arrive as SQLITE_BUSY itself or as an
+// extended code of it, such as 261 (recovery) or 517 (snapshot).
 export function isDatabaseBusy(error: unknown): boolean {
   return (
     typeof error === "object" &&
     error !== null &&
     "errcode" in error &&
-    error.errcode === SQLITE_BUSY
+    typeof error.errcode === "number" &&
+    (error.errcode & 0xff) === SQLITE_BUSY
   );
 }
 

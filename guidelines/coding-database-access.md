@@ -24,6 +24,12 @@ Czytaj również ogólne wytyczne kodowania.
 - **Bad:** Start resetuje istniejącą bazę, pozostawia część utworzonych tabel po błędzie albo zmienia krok przejścia, który trafił już na serwer testowy.
 
 Sprawdź wersję w transakcji inicjalizacji; odmów otwarcia nieobsługiwanej wersji.
+Wersję czytaj też raz wcześniej, przed zmianą trybu dziennika, żeby nieznany
+nowszy schemat był odrzucony, zanim plik się zmieni. Każde polecenie, które
+operator uruchamia na serwerze i które zmienia albo kopiuje bazę kont, otwiera
+ją opcją `existingOnly`, więc nową bazę zakłada tylko serwer; z nazwy wyłączone
+są, jak w decyzji, polecenie procedury odtwarzania, które tylko czyta adresy
+kont, i sprawdzenie bazy przy budowaniu obrazu (`src/server/account-database-check.ts`).
 Schemat to uporządkowana lista kroków, po jednym na wersję: nowa baza przechodzi
 wszystkie, istniejąca — kroki po swojej wersji, w tej samej transakcji, która na
 końcu zapisuje bieżącą wersję. Nowa wersja schematu dokłada jeden krok na końcu

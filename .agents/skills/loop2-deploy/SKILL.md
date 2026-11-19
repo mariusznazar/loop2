@@ -466,10 +466,15 @@ in "Blocking a player account".
   arguments print the usage line, `Usage: node dist/server/account-role.js owner|player <email address>`,
   and under it `Nothing changed.`. Exit 0 means the account now has the role asked for: made an
   owner, already an owner, made a player, or already a player. Every other exit changed nothing: 1
-  the database could not be opened or changed, for example because it stayed busy longer than the
-  wait (run the command again); 2 wrong arguments, or an address without a single `@` with text on
-  both sides; 3 `LOOP2_DATABASE_PATH` names no existing database file (the command never creates
-  one); 4 no account has that address.
+  the database could not be opened or changed. The sentence advises to run the command again only
+  where the database stayed busy longer than the wait; for any other failure of the database, a
+  newer schema or a damaged file for example, the sentence gives no such advice, since a second
+  run does not mend it; 2 wrong arguments, or an address without a single `@` with text on both
+  sides; 3 `LOOP2_DATABASE_PATH` names no existing account database file (the sentence says so
+  where there is no file), or names a file that exists but holds no account database set up by the
+  server (the sentence says that where the file is empty, is no SQLite database or is one with no
+  schema version). The command never sets up a database and writes nothing in such a file; 4 no
+  account has that address.
 - **What it touches.** It opens the account database beside the running application, makes one
   short change to the role of that account and closes it; the application keeps serving. It prints
   no password hash or session identifier, and of a database error only its kind and code. The
@@ -552,9 +557,8 @@ like a JSON line of the command pass into the file with the words the address ca
   sides; 3 `LOOP2_DATABASE_PATH` names no existing account database file (the sentence says so
   where there is no file), or names a file that exists but holds no account database set up by the
   server (the sentence says that where the file is empty, is no SQLite database or is one with no
-  schema version). The command never sets up a database and writes nothing in such a file; the
-  commands `account-previous-save` and `account-role` do not refuse such a file, and set up a new
-  database in it; 4 no account has that address.
+  schema version). The command never sets up a database and writes nothing in such a file; 4 no
+  account has that address.
 - **What it touches.** It opens the account database beside the running application, makes one
   short change and closes it; the application keeps serving. It prints no password hash or
   session identifier, and of a database error only its kind and code. The address stays in the
@@ -620,10 +624,15 @@ same as in "Blocking a player account".
   `Usage: node dist/server/account-previous-save.js grant|revoke <email address>`, and under it
   `Nothing changed.`. Exit 0 means the account is now in the state asked for: granted, already
   granted, revoked, or did not hold it. Every other exit changed nothing: 1 the database could not
-  be opened or changed, for example because it stayed busy longer than the wait (run the command
-  again); 2 wrong arguments, or an address without a single `@` with text on both sides; 3
-  `LOOP2_DATABASE_PATH` names no existing database file (the command never creates one); 4 no
-  account has that address.
+  be opened or changed. The sentence advises to run the command again only where the database
+  stayed busy longer than the wait; for any other failure of the database, a newer schema or a
+  damaged file for example, the sentence gives no such advice, since a second run does not mend
+  it; 2 wrong arguments, or an address without a single `@` with text on both sides; 3
+  `LOOP2_DATABASE_PATH` names no existing account database file (the sentence says so where there
+  is no file), or names a file that exists but holds no account database set up by the server (the
+  sentence says that where the file is empty, is no SQLite database or is one with no schema
+  version). The command never sets up a database and writes nothing in such a file; 4 no account
+  has that address.
 - **What it touches.** It opens the account database beside the running application, makes one
   short change to the privilege of that account and closes it; the application keeps serving. It
   prints no password hash or session identifier, and of a database error only its kind and code.

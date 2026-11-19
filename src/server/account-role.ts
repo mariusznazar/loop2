@@ -1,6 +1,11 @@
 import { statSync } from "node:fs";
 import { normalizeEmail } from "./account-policy.js";
-import { AccountDatabase, type RoleOutcome } from "./database.js";
+import {
+  AccountDatabase,
+  isDatabaseBusy,
+  isNotAccountDatabase,
+  type RoleOutcome,
+} from "./database.js";
 import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 
 // The operator gives or takes the owner role of one account, named by its email
@@ -11,7 +16,10 @@ import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 //
 // It opens the existing account database of LOOP2_DATABASE_PATH beside the
 // running server, with the server's own opening rules, makes one change in one
-// transaction and closes it. It ends no session and stops no emailed link. It
+// transaction and closes it. A file in which the server has set up no tables,
+// whether empty, no SQLite database or one with no schema version, is no
+// account database: the command refuses it as a missing file and writes
+// nothing in it (D-112). It ends no session and stops no emailed link. It
 // reads no other setting and prints no password hash or session identifier, and
 // of a database error its kind and code alone.
 
@@ -19,10 +27,17 @@ const usage =
   "Usage: node dist/server/account-role.js owner|player <email address>";
 
 // Exit codes: 0 the account has the requested role; otherwise nothing changed.
+// 3 stands for a path that names no account database, a missing file or a file
+// the server never set up, each with a sentence of its own; 1 for any other
+// failure of the database.
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitNoAccount = 4;
+const noFileSentence =
+  "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.";
+const noTablesSentence =
+  "LOOP2_DATABASE_PATH names a file that exists but holds no account database set up by the server. Nothing changed.";
 
 installLastResort("account-role");
 
@@ -55,25 +70,25 @@ function existingFile(path: string | undefined): string | null {
 }
 
 const path = existingFile(process.env.LOOP2_DATABASE_PATH);
-if (path === null)
-  stop(
-    exitNoDatabase,
-    "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.",
-  );
+if (path === null) stop(exitNoDatabase, noFileSentence);
 
 let result: RoleOutcome;
 try {
-  const database = new AccountDatabase(path);
+  const database = new AccountDatabase(path, { existingOnly: true });
   try {
     result = database.setAccountRole(email, role);
   } finally {
     database.close();
   }
 } catch (error) {
+  if (isNotAccountDatabase(error)) stop(exitNoDatabase, noTablesSentence);
   writeFailure("account-role", "account-role.change", error);
+  // A second run helps only where the database was busy past the wait.
   stop(
     exitDatabaseFailure,
-    "The account database could not be opened or changed, for example while it was busy for longer than the wait allows. Nothing changed; run the command again.",
+    isDatabaseBusy(error)
+      ? "The account database could not be opened or changed while it was busy for longer than the wait allows. Nothing changed; run the command again."
+      : "The account database could not be opened or changed. Nothing changed.",
   );
 }
 
