@@ -17,7 +17,7 @@ import sys
 
 DIRECTORY = ".runs/quality-venv"
 REQUIREMENTS = "requirements-quality.txt"
-TOOLS = ("ruff", "shellcheck")
+TOOLS = ("ruff", "shellcheck", "shfmt")
 MINIMUM_PYTHON = (3, 9)
 WINDOWS = sys.platform == "win32"
 KEPT_LINES = 12
@@ -48,6 +48,12 @@ def venv_python(root):
 def venv_tool(root, name):
     """The pinned tool `README.md` installs into `.runs/quality-venv`, on Windows or elsewhere."""
     return folder(root) / ("Scripts" if WINDOWS else "bin") / (name + ".exe" if WINDOWS else name)
+
+
+def shown(tool, root):
+    """The path of a tool of the environment as the command to run it by hand writes it, relative
+    to `root` and with forward slashes."""
+    return Path(tool).relative_to(root).as_posix()
 
 
 def normal(name):

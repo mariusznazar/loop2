@@ -15,16 +15,20 @@ import unittest
 import quality_environment as environment
 
 ROOT = Path(__file__).resolve().parents[2]
-PINS = "ruff==1.2.3 \\\n    --hash=sha256:aa \\\n    --hash=sha256:bb\nshellcheck_py==4.5.6.7 \\\n    --hash=sha256:cc\n"
-PINNED = [{"name": "ruff", "version": "1.2.3"}, {"name": "shellcheck-py", "version": "4.5.6.7"}]
+PINS = "ruff==1.2.3 \\\n    --hash=sha256:aa \\\n    --hash=sha256:bb\nshellcheck_py==4.5.6.7 \\\n    --hash=sha256:cc\nshfmt-py==8.9.1 \\\n    --hash=sha256:dd\n"
+PINNED = [
+    {"name": "ruff", "version": "1.2.3"},
+    {"name": "shellcheck-py", "version": "4.5.6.7"},
+    {"name": "shfmt-py", "version": "8.9.1"},
+]
+EVERYTHING = ("python", "ruff", "shellcheck", "shfmt")
 
 
 class Scenario:
     """A stand-in for the commands: what `pip list` shows, whether the install works, and the
     files that `venv` and `pip install` leave behind."""
 
-    def __init__(self, root, listed=None, install_code=0, installs=("python", "ruff", "shellcheck"),
-                 broken=None):
+    def __init__(self, root, listed=None, install_code=0, installs=EVERYTHING, broken=None):
         self.root = root
         self.broken = broken
         self.listed = PINNED if listed is None else listed
@@ -71,26 +75,28 @@ class QualityEnvironmentTests(unittest.TestCase):
         self.root = Path(folder.name)
         (self.root / "requirements-quality.txt").write_text(PINS, encoding="utf-8")
 
-    def scenario(self, present=("python", "ruff", "shellcheck"), **options):
+    def scenario(self, present=EVERYTHING, **options):
         scenario = Scenario(self.root, **options)
         scenario.touch(*present)
         return scenario
 
     def test_the_pins_are_read_by_normalised_name_whatever_follows_them(self):
-        self.assertEqual(environment.pinned(self.root),
-                         {"ruff": "1.2.3", "shellcheck-py": "4.5.6.7"})
+        self.assertEqual(
+            environment.pinned(self.root),
+            {"ruff": "1.2.3", "shellcheck-py": "4.5.6.7", "shfmt-py": "8.9.1"},
+        )
         # An empty reading would make every environment complete, so the real file is read too.
-        self.assertTrue({"ruff", "shellcheck-py"} <= set(environment.pinned(ROOT)))
+        self.assertTrue({"ruff", "shellcheck-py", "shfmt-py"} <= set(environment.pinned(ROOT)))
 
     def test_an_environment_complete_at_the_pinned_versions_is_left_as_it_is(self):
-        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
         scenario = self.scenario()
         environment.ensure_quality_environment(self.root, run=scenario, python="python")
         self.assertEqual(scenario.ran("venv"), [])
         self.assertEqual(scenario.ran("install"), [])
 
     def test_an_environment_with_a_tool_missing_is_made_again_before_it_is_taken_for_ready(self):
-        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
         scenario = self.scenario(present=("python", "ruff"))
         environment.ensure_quality_environment(self.root, run=scenario, python="python")
         order = [("venv" in command, "install" in command) for command in scenario.commands
@@ -101,18 +107,27 @@ class QualityEnvironmentTests(unittest.TestCase):
         self.assertTrue(environment.venv_tool(self.root, "shellcheck").is_file())
 
     def test_a_tool_at_the_pinned_version_that_does_not_run_is_made_again(self):
-        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
         scenario = self.scenario(broken="shellcheck")
         environment.ensure_quality_environment(self.root, run=scenario, python="python")
         self.assertEqual(len(scenario.ran("venv")), 1)
         self.assertEqual(len(scenario.ran("install")), 1)
 
+    def test_an_environment_whose_shfmt_is_missing_or_does_not_run_is_made_again(self):
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
+        for options in ({"present": ("python", "ruff", "shellcheck")}, {"broken": "shfmt"}):
+            scenario = self.scenario(**options)
+            environment.ensure_quality_environment(self.root, run=scenario, python="python")
+            self.assertEqual(len(scenario.ran("venv")), 1, options)
+            self.assertEqual(len(scenario.ran("install")), 1, options)
+        self.assertTrue(environment.venv_tool(self.root, "shfmt").is_file())
+
     def test_an_absent_directory_and_a_package_at_another_version_are_made_again(self):
-        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff, ShellCheck and shfmt whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions"
         absent = self.scenario(present=())
         environment.ensure_quality_environment(self.root, run=absent, python="python")
         self.assertEqual(len(absent.ran("install")), 1)
-        older = self.scenario(listed=[{"name": "ruff", "version": "1.2.2"}, PINNED[1]],
+        older = self.scenario(listed=[{"name": "ruff", "version": "1.2.2"}, *PINNED[1:]],
                               install_code=0)
         environment.ensure_quality_environment(self.root, run=older, python="python")
         self.assertEqual(len(older.ran("install")), 1)
