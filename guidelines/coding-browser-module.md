@@ -295,7 +295,7 @@ przy ekranie Postać: `createMenuBar({ client, onLogout, props })` zwraca `eleme
 gry), ekran, na którym jest gracz, pozycję „Wróć do przejścia” i stan wylogowania.
 
 Pasek nie zna gry ani zapisu. „Wyloguj” stoi w menu „Konto”: pasek tylko je zgłasza
-przez `onLogout`, a `app.ts` najpierw zapisuje grę, potem kończy sesję; pasek pokazuje
+przez `onLogout`, a `logOut` z `page-game-acts.ts` najpierw zapisuje grę, potem kończy sesję; pasek pokazuje
 czekanie i zdanie, które strona mu daje. Zdarzenia dokumentu menu otwartego (Escape i
 kliknięcie poza menu) są w Efekcie z listą zależności `[open]` i funkcją sprzątającą, jak
 wymaga D-267. „Wyślij ponownie” pasek wysyła sam przez `client`.
@@ -359,8 +359,15 @@ wylogowania i stanem resetu). Wartość zmienia tylko funkcja `change`, którą 
 kartę albo grę, których następna wartość nie trzyma, i rysuje z niej miejsca
 strony — nagłówek, blok główny, zdania nad grą i pasek menu. Wartości, które
 mają przeżyć przejście między rodzajami — oczekujące zdanie potwierdzenia,
-wiadomość rejestracji, sposób wejścia do gry, stan zachowany po 401, numer
-ostatniego żądania i znacznik awarii — stoją w `startApp` osobno. Strona buduje
+wiadomość rejestracji, to, czy gra zastępuje grę przegraną w konflikcie, sposób
+wejścia do gry, stan zachowany po 401, numer ostatniego żądania, znacznik awarii
+i fokus karty po odrzuconym odnośniku albo „Anuluj” — stoją osobno, w jednym
+zapisie pamięci strony `PageMemory` (typ z `page-places.ts`). `startApp` tworzy
+miejsca strony oraz ten zapis i podaje je jako parametr funkcjom strony: tym
+z `app.ts`, które sprawdzają sesję, wczytują i budują grę i stawiają kartę,
+i działaniom na stojącej grze z `page-game-acts.ts` — wylogowaniu, resetowi gry,
+wstrzymywaniu wyników zapisującego i miejscu gry; co te działania wołają
+z powrotem w `app.ts`, dostają przez ten sam parametr. Strona buduje
 przez API DOM tylko nagłówek i blok główny (w `createPagePlaces`), host każdego korzenia stawia fabryka
 tego korzenia, a panel w miejscu zdjętej karty buduje `createFailureCard`
 z `account-card.tsx`; każde miejsce, które pokazuje coś poza ekranami gry, ma
@@ -381,7 +388,7 @@ zapisu zdejmuje ze strony, razem z ich obsługą zdarzeń; moduł, który tworzy
 `dispose()`, zanim ją porzuci. Wynik zapisu
 dociera do strony wywołaniami `onConflict`, `onOutdated` i `onSignedOut`. „Wyloguj” stoi
 w menu „Konto” na pasku menu w nagłówku (`menu-bar.tsx`); pasek tylko je zgłasza, a
-`app.ts` najpierw zapisuje grę przez `saveBeforeLogout`, dopiero potem kończy sesję.
+`logOut` z `page-game-acts.ts` najpierw zapisuje grę przez `saveBeforeLogout`, dopiero potem kończy sesję.
 
 Błąd, którego nie obsłużył żaden kod gry, trafia do `installLastResort` z `last-resort.ts`,
 który `startApp` instaluje na oknie: zdarzenia `error` i `unhandledrejection` są

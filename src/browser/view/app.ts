@@ -2,12 +2,9 @@ import {
   createAccountClient,
   type Account,
   type AccountClient,
-  type AccountFailure,
-  type ConfirmationMessage,
 } from "../account-api.js";
 import { newGame } from "../sim/game.js";
 import { loadSavedGame, type SavedGameRefusal } from "../sim/saved-game.js";
-import type { GameState } from "../sim/types.js";
 import { createAccountCard, type AccountCardReset } from "./account-card.js";
 import {
   browserAddress,
@@ -18,26 +15,34 @@ import {
 } from "./email-confirmation.js";
 import {
   createGameView,
-  type GameEntry,
   type GameView,
-  type KeptGame,
   type ScreenPlace,
 } from "./game-view.js";
-import { errorWords, installLastResort } from "./last-resort.js";
-import { createPagePlaces, type Logout } from "./page-places.js";
+import {
+  errorWords,
+  installLastResort,
+  type LastResort,
+} from "./last-resort.js";
+import {
+  logOut,
+  onPlace,
+  resetGame,
+  signedOut,
+  whenNotBusy,
+  type GameActsPage,
+  type GameStart,
+} from "./page-game-acts.js";
+import {
+  createPagePlaces,
+  type PageMemory,
+  type PagePlaces,
+} from "./page-places.js";
 import type { PageSentenceValue } from "./page-sentences.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
-import {
-  GAME_STARTS_ANEW,
-  RESET_FAILED,
-  RESET_NOT_ALLOWED,
-} from "./previous-save-lines.js";
-import { screenAddress } from "./screen-address.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
 const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
 const LINK_INVALID = "Odnośnik jest nieważny albo wygasł.";
-const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
 const OTHER_VERSION =
   "Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.";
 /** The one-time sentence above a new game that replaces a refused save (D-96). */
@@ -52,16 +57,15 @@ const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
 const CHECKING_SESSION = "Sprawdzanie logowania…";
 /** What the waiting screen says while the page sends the confirmation token of its address. */
 const CONFIRMING_ADDRESS = "Potwierdzanie adresu…";
-/** The server's answer that this browser has no valid session: the player is signed out. */
-function signedOut(failure: AccountFailure): boolean {
-  return failure.kind === "refused" && failure.status === 401;
-}
 
-/** What a game is built from: its state, the revision it is based on, and a refused save. */
-type GameStart = {
-  readonly state: GameState;
-  readonly revision: number;
-  readonly refused: SavedGameRefusal | null;
+/**
+ * What the functions of the page share: the places and what they show, the page's memory, the
+ * client, the address, the last-resort handling, and the functions the acts on a standing game
+ * (`page-game-acts.ts`) call back here.
+ */
+type Page = GameActsPage & {
+  readonly address: PageAddress;
+  readonly lastResort: LastResort;
 };
 
 /** The console line of a load that met an error of the code: its kind and code, never its text. */
@@ -93,6 +97,244 @@ function startFrom(
   }
 }
 
+/** The notice to stand on the screen about to be shown, once; nothing after that. */
+function takeNotice(memory: PageMemory): ConfirmationNotice | null {
+  const notice = memory.pendingNotice;
+  memory.pendingNotice = null;
+  return notice;
+}
+
+/** The game leaves before the next is built, so that a new game finds no old one on the address. */
+function leaveGame(places: PagePlaces): void {
+  if (places.shown().kind !== "game") return;
+  places.change({
+    kind: "checking",
+    waiting: { kind: "asking", text: CHECKING_SESSION },
+  });
+}
+
+/** Puts a new card in place of the page, any card before it closed by `change` (D-262). */
+function placeCard(
+  page: Page,
+  sentence: ConfirmationNotice | null,
+  reset: AccountCardReset | null,
+): void {
+  const { memory } = page;
+  const card = createAccountCard({
+    client: page.client,
+    sentence,
+    reset,
+    signedIn(named, message): void {
+      memory.pendingMessage = message;
+      memory.entry = "sign-in";
+      enter(page, named);
+    },
+    failed: memory.failed,
+    onUncaught(error): void {
+      page.lastResort.report(error, "view/account-card.createAccountCard");
+    },
+  });
+  page.places.change({ kind: "card", card });
+}
+
+/** Gives the card the focus, where a card stands. */
+function focusCard(places: PagePlaces): void {
+  const state = places.shown();
+  if (state.kind === "card") state.card.focus();
+}
+
+/**
+ * The waiting screen while the page asks the server, the warning of a retry cleared: once a
+ * refusal was shown, „Spróbuj ponownie” waits until the waiting screen is left.
+ */
+function waitForServer(
+  places: PagePlaces,
+  text: string = CHECKING_SESSION,
+): void {
+  const state = places.shown();
+  const retrying =
+    state.kind === "checking" &&
+    (state.waiting.kind === "refused" || state.waiting.kind === "retrying");
+  places.change({
+    kind: "checking",
+    waiting: retrying ? { kind: "retrying" } : { kind: "asking", text },
+  });
+}
+
+function askingFailed(places: PagePlaces, message: string): void {
+  places.change({
+    kind: "checking",
+    waiting: { kind: "refused", sentence: message },
+  });
+}
+
+/** A load that met an error of the code: the waiting screen with its warning and its retry. */
+function loadFailed(places: PagePlaces): void {
+  askingFailed(places, LOAD_FAILED);
+}
+
+function showGame(
+  page: Page,
+  owner: Account,
+  start: GameStart,
+  saveAtOnce: boolean,
+): void {
+  const { places, memory } = page;
+  if (memory.failed) {
+    // After an error nothing handled no game is built, so no catch-up passes time and nothing is
+    // saved: the page stays at the waiting screen with the sentence of the failure (D-323).
+    places.change({ kind: "checking", waiting: { kind: "stopped" } });
+    return;
+  }
+  leaveGame(places);
+  const conflict = memory.afterConflict && start.refused === null;
+  memory.afterConflict = false;
+  memory.focusCardOnForms = false;
+  const message = memory.pendingMessage;
+  memory.pendingMessage = null;
+  // The game tells its first place while it is built, before the page holds it.
+  let building = true;
+  let first: ScreenPlace | null = null;
+  const view: GameView = createGameView({
+    client: page.client,
+    previousSaveAllowed: owner.previousSaveAllowed,
+    role: owner.role,
+    state: start.state,
+    revision: start.revision,
+    afterConflict: conflict,
+    address: page.address,
+    entry: memory.entry,
+    onScreen(next) {
+      if (building) first = next;
+      else onPlace(places, view, next);
+    },
+    ...(owner.previousSaveAllowed ? { onReset: () => resetGame(page) } : {}),
+    onConflict: () =>
+      whenNotBusy(places, view, () => reloadAfterConflict(page)),
+    onOutdated: () => {},
+    onSignedOut: () => whenNotBusy(places, view, () => expire(page)),
+  });
+  building = false;
+  const notice = takeNotice(memory);
+  const notices: PageSentenceValue[] = notice === null ? [] : [notice];
+  if (start.refused !== null)
+    notices.push({
+      text: REFUSED_LOAD[start.refused],
+      role: "refused-load",
+    });
+  places.change({
+    kind: "game",
+    view,
+    account: owner,
+    place: first,
+    notices,
+    message,
+    logout: { kind: "idle", sentence: null },
+    reset: { kind: "idle" },
+  });
+  // A refused save is replaced at once, so its sentence does not come back (D-96).
+  if (saveAtOnce || start.refused !== null) view.saveNow();
+}
+
+/**
+ * The card, with one sentence in it: `sentence` in `warning` where one is given, else the notice
+ * that waits. Both never stand: a sentence comes only from a running game, which took the notice.
+ */
+function showForms(page: Page, sentence: string | null): void {
+  const { memory } = page;
+  memory.afterConflict = false;
+  memory.pendingMessage = null;
+  const notice = takeNotice(memory);
+  placeCard(
+    page,
+    sentence === null ? notice : { text: sentence, role: "warning" },
+    null,
+  );
+  if (memory.focusCardOnForms) {
+    memory.focusCardOnForms = false;
+    focusCard(page.places);
+  }
+}
+
+/** No session for a save: the current state stays in this page for the same account (D-211). */
+function expire(page: Page): void {
+  const state = page.places.shown();
+  if (state.kind !== "game") return;
+  page.memory.kept = { ...state.view.keep(), accountId: state.account.id };
+  showForms(page, EXPIRED);
+}
+
+/**
+ * Another browser saved first: this game goes and the server's save is loaded (D-209); the game
+ * built from it stays on the screen the address names.
+ */
+function reloadAfterConflict(page: Page): void {
+  const state = page.places.shown();
+  if (state.kind !== "game") return;
+  const owner = state.account;
+  page.memory.afterConflict = true;
+  page.memory.entry = "address";
+  void loadGame(page, owner);
+}
+
+/**
+ * A named account: the state kept for it builds the game and is saved at once; otherwise the
+ * kept state, if any, is dropped and the account's saved game state is asked for. A kept state
+ * whose load met an error of the code stays for the retry, since the page holds it alone.
+ */
+function enter(page: Page, named: Account): void {
+  const { memory } = page;
+  if (memory.kept?.accountId === named.id) {
+    memory.latest += 1;
+    const start = startFrom(memory.kept.document, memory.kept.revision, named);
+    if (start === null) {
+      loadFailed(page.places);
+      return;
+    }
+    memory.kept = null;
+    showGame(page, named, start, true);
+    return;
+  }
+  memory.kept = null;
+  void loadGame(page, named);
+}
+
+async function loadGame(page: Page, owner: Account): Promise<void> {
+  const { places, memory } = page;
+  const mine = ++memory.latest;
+  waitForServer(places);
+  const result = await page.client.loadSavedGame();
+  if (mine !== memory.latest) return;
+  if (result.ok) {
+    const save = result.value;
+    const start =
+      save === null
+        ? { state: newGame(), revision: 0, refused: null }
+        : startFrom(save, save.revision, owner);
+    if (start === null) loadFailed(places);
+    else showGame(page, owner, start, false);
+  } else if (signedOut(result.failure)) {
+    showForms(page, null);
+  } else {
+    askingFailed(places, result.failure.message);
+  }
+}
+
+async function checkSession(page: Page): Promise<void> {
+  const { places, memory } = page;
+  const mine = ++memory.latest;
+  waitForServer(places);
+  const result = await page.client.currentAccount();
+  if (mine !== memory.latest) return;
+  if (result.ok) {
+    enter(page, result.value);
+  } else if (signedOut(result.failure)) {
+    showForms(page, null);
+  } else {
+    askingFailed(places, result.failure.message);
+  }
+}
+
 /**
  * Builds the page in `root`: the header with the menu bar and the place of the screen.
  * The page first asks the server whom this browser is signed in as and shows only that it is
@@ -114,6 +356,9 @@ function startFrom(
  * account, its place, its sentences, its logout and its reset — which the page changes only through
  * one function; that function closes the card or the game the next value no longer holds and draws
  * the header, the place of the screen, the page's sentences above the game and the bar from the value.
+ * What outlives a change of kind stands in one record of the page's memory, which this function
+ * makes and gives, with the places, the client and the address, to the functions of the page: those
+ * of this module and the acts on a standing game of `page-game-acts.ts`.
  *
  * The game shows one screen at a time, the one its address names (D-280, D-281); the page tells it
  * which entry built it — the sign-in form, an emailed link or the address itself — which picks the
@@ -158,32 +403,22 @@ export function startApp(
     root,
     client,
     waiting: { kind: "asking", text: CHECKING_SESSION },
-    onLogout: () => logOut(),
+    onLogout: () => logOut(page),
     onRetry: () => {
-      void checkSession();
+      void checkSession(page);
     },
   });
-  const { failureRow, change, gameOf, shown } = places;
-
-  // The result of a confirmation from the address, until the first screen shows it.
-  let pendingNotice: ConfirmationNotice | null = null;
-  // The outcome of a registration's first message, until the game it leads to is built.
-  let pendingMessage: ConfirmationMessage | null = null;
-  // The game about to be built replaces one that lost a conflict to another browser (D-209).
-  let afterConflict = false;
-  // How the page comes to build the next game, which picks its first screen; the page opens at its
-  // address, and a retry of the session check keeps the entry it had.
-  let entry: GameEntry = "address";
-  // The game state a save answered with no session left, kept in this page only (D-211).
-  let kept: (KeptGame & { readonly accountId: string }) | null = null;
-  // Each request of the page takes the next number; an answer counts only while it is the last.
-  let latest = 0;
-  // An error nothing handled came: the game takes no change and the sentence stands, until the page
-  // is reloaded (D-323).
-  let failed = false;
-  // The card that the session check shows after a refused link or „Anuluj” takes the focus, until a
-  // card or a game is shown (D-381); a retry of the check keeps it.
-  let focusCardOnForms = false;
+  // What outlives a change of kind of what the page shows; the page opens at its address.
+  const memory: PageMemory = {
+    pendingNotice: null,
+    pendingMessage: null,
+    afterConflict: false,
+    entry: "address",
+    kept: null,
+    latest: 0,
+    failed: false,
+    focusCardOnForms: false,
+  };
 
   /**
    * An error nothing handled: the page shows the sentence of the failure, stops the game and tells
@@ -191,9 +426,9 @@ export function startApp(
    * nothing: showing the row is one attribute of an element the page owns (D-323, D-407).
    */
   function onUncaught(): void {
-    failed = true;
-    failureRow.show();
-    const state = shown();
+    memory.failed = true;
+    places.failureRow.show();
+    const state = places.shown();
     if (state.kind === "game") state.view.halt();
     if (state.kind === "card") state.card.fail();
   }
@@ -214,368 +449,21 @@ export function startApp(
     onLine: reportLine,
   });
 
-  /** The notice to stand on the screen about to be shown, once; nothing after that. */
-  function takeNotice(): ConfirmationNotice | null {
-    const notice = pendingNotice;
-    pendingNotice = null;
-    return notice;
-  }
-
-  /** The game leaves before the next is built, so that a new game finds no old one on the address. */
-  function leaveGame(): void {
-    if (shown().kind !== "game") return;
-    change({
-      kind: "checking",
-      waiting: { kind: "asking", text: CHECKING_SESSION },
-    });
-  }
-
-  /** Puts a new card in place of the page, any card before it closed by `change` (D-262). */
-  function placeCard(
-    sentence: ConfirmationNotice | null,
-    reset: AccountCardReset | null,
-  ): void {
-    const card = createAccountCard({
-      client,
-      sentence,
-      reset,
-      signedIn(named, message): void {
-        pendingMessage = message;
-        entry = "sign-in";
-        enter(named);
-      },
-      failed,
-      onUncaught(error): void {
-        lastResort.report(error, "view/account-card.createAccountCard");
-      },
-    });
-    change({ kind: "card", card });
-  }
-
-  /** Gives the card the focus, where a card stands. */
-  function focusCard(): void {
-    const state = shown();
-    if (state.kind === "card") state.card.focus();
-  }
-
-  /**
-   * The waiting screen while the page asks the server, the warning of a retry cleared: once a
-   * refusal was shown, „Spróbuj ponownie” waits until the waiting screen is left.
-   */
-  function waitForServer(text: string = CHECKING_SESSION): void {
-    const state = shown();
-    const retrying =
-      state.kind === "checking" &&
-      (state.waiting.kind === "refused" || state.waiting.kind === "retrying");
-    change({
-      kind: "checking",
-      waiting: retrying ? { kind: "retrying" } : { kind: "asking", text },
-    });
-  }
-
-  function askingFailed(message: string): void {
-    change({
-      kind: "checking",
-      waiting: { kind: "refused", sentence: message },
-    });
-  }
-
-  /** A load that met an error of the code: the waiting screen with its warning and its retry. */
-  function loadFailed(): void {
-    askingFailed(LOAD_FAILED);
-  }
-
-  /** The game's place: at its first screen, while the game is being built, the page only keeps it. */
-  function onPlace(view: GameView, next: ScreenPlace): void {
-    const current = gameOf(view);
-    if (current === null) return;
-    // At a change of screen the sentences above the first screen leave (D-286).
-    const changed =
-      current.place !== null &&
-      screenAddress(current.place.screen) !== screenAddress(next.screen);
-    change({
-      ...current,
-      place: next,
-      notices: changed ? [] : current.notices,
-    });
-  }
-
-  /**
-   * An outcome of the saver acts now, after the answer to a logout under way, or, while the reset
-   * waits, only if the reset fails (D-402): the held outcome then goes through here again.
-   */
-  function whenNotBusy(view: GameView, action: () => void): void {
-    const current = gameOf(view);
-    if (current === null) return;
-    if (current.reset.kind === "waiting")
-      change({
-        ...current,
-        reset: { kind: "waiting", held: () => whenNotBusy(view, action) },
-      });
-    else if (current.logout.kind === "ending")
-      change({
-        ...current,
-        logout: { kind: "ending", held: () => whenNotBusy(view, action) },
-      });
-    else action();
-  }
-
-  function showGame(
-    owner: Account,
-    start: GameStart,
-    saveAtOnce: boolean,
-  ): void {
-    if (failed) {
-      // After an error nothing handled no game is built, so no catch-up passes time and nothing is
-      // saved: the page stays at the waiting screen with the sentence of the failure (D-323).
-      change({ kind: "checking", waiting: { kind: "stopped" } });
-      return;
-    }
-    leaveGame();
-    const conflict = afterConflict && start.refused === null;
-    afterConflict = false;
-    focusCardOnForms = false;
-    const message = pendingMessage;
-    pendingMessage = null;
-    // The game tells its first place while it is built, before the page holds it.
-    let building = true;
-    let first: ScreenPlace | null = null;
-    const view: GameView = createGameView({
-      client,
-      previousSaveAllowed: owner.previousSaveAllowed,
-      role: owner.role,
-      state: start.state,
-      revision: start.revision,
-      afterConflict: conflict,
-      address,
-      entry,
-      onScreen(next) {
-        if (building) first = next;
-        else onPlace(view, next);
-      },
-      ...(owner.previousSaveAllowed ? { onReset: () => resetGame() } : {}),
-      onConflict: () => whenNotBusy(view, () => reloadAfterConflict()),
-      onOutdated: () => {},
-      onSignedOut: () => whenNotBusy(view, () => expire()),
-    });
-    building = false;
-    const notice = takeNotice();
-    const notices: PageSentenceValue[] = notice === null ? [] : [notice];
-    if (start.refused !== null)
-      notices.push({
-        text: REFUSED_LOAD[start.refused],
-        role: "refused-load",
-      });
-    change({
-      kind: "game",
-      view,
-      account: owner,
-      place: first,
-      notices,
-      message,
-      logout: { kind: "idle", sentence: null },
-      reset: { kind: "idle" },
-    });
-    // A refused save is replaced at once, so its sentence does not come back (D-96).
-    if (saveAtOnce || start.refused !== null) view.saveNow();
-  }
-
-  /**
-   * The card, with one sentence in it: `sentence` in `warning` where one is given, else the notice
-   * that waits. Both never stand: a sentence comes only from a running game, which took the notice.
-   */
-  function showForms(sentence: string | null): void {
-    afterConflict = false;
-    pendingMessage = null;
-    const notice = takeNotice();
-    placeCard(
-      sentence === null ? notice : { text: sentence, role: "warning" },
-      null,
-    );
-    if (focusCardOnForms) {
-      focusCardOnForms = false;
-      focusCard();
-    }
-  }
-
-  /** No session for a save: the current state stays in this page for the same account (D-211). */
-  function expire(): void {
-    const state = shown();
-    if (state.kind !== "game") return;
-    kept = { ...state.view.keep(), accountId: state.account.id };
-    showForms(EXPIRED);
-  }
-
-  /**
-   * Another browser saved first: this game goes and the server's save is loaded (D-209); the game
-   * built from it stays on the screen the address names.
-   */
-  function reloadAfterConflict(): void {
-    const state = shown();
-    if (state.kind !== "game") return;
-    const owner = state.account;
-    afterConflict = true;
-    entry = "address";
-    void loadGame(owner);
-  }
-
-  /**
-   * A named account: the state kept for it builds the game and is saved at once; otherwise the
-   * kept state, if any, is dropped and the account's saved game state is asked for. A kept state
-   * whose load met an error of the code stays for the retry, since the page holds it alone.
-   */
-  function enter(named: Account): void {
-    if (kept?.accountId === named.id) {
-      latest += 1;
-      const start = startFrom(kept.document, kept.revision, named);
-      if (start === null) {
-        loadFailed();
-        return;
-      }
-      kept = null;
-      showGame(named, start, true);
-      return;
-    }
-    kept = null;
-    void loadGame(named);
-  }
-
-  async function loadGame(owner: Account): Promise<void> {
-    const mine = ++latest;
-    waitForServer();
-    const result = await client.loadSavedGame();
-    if (mine !== latest) return;
-    if (result.ok) {
-      const save = result.value;
-      const start =
-        save === null
-          ? { state: newGame(), revision: 0, refused: null }
-          : startFrom(save, save.revision, owner);
-      if (start === null) loadFailed();
-      else showGame(owner, start, false);
-    } else if (signedOut(result.failure)) {
-      showForms(null);
-    } else {
-      askingFailed(result.failure.message);
-    }
-  }
-
-  async function checkSession(): Promise<void> {
-    const mine = ++latest;
-    waitForServer();
-    const result = await client.currentAccount();
-    if (mine !== latest) return;
-    if (result.ok) {
-      enter(result.value);
-    } else if (signedOut(result.failure)) {
-      showForms(null);
-    } else {
-      askingFailed(result.failure.message);
-    }
-  }
-
-  /** Sets the logout of the game `view`, where the page still holds it. */
-  function setLogout(view: GameView, logout: Logout): void {
-    const current = gameOf(view);
-    if (current !== null) change({ ...current, logout });
-  }
-
-  /**
-   * „Wyloguj” of the menu: the page saves first, then ends the session. The bar shows the waiting
-   * and, after an uncertain end, the sentence; the failed save before a logout stays in the line of
-   * saving under the bar (D-97, D-208).
-   */
-  function logOut(): void {
-    const current = shown();
-    if (
-      current.kind !== "game" ||
-      current.logout.kind !== "idle" ||
-      current.reset.kind !== "idle"
-    )
-      return;
-    const { view } = current;
-    void (async () => {
-      const mine = ++latest;
-      change({ ...current, logout: { kind: "saving" } });
-      const save = await view.saveBeforeLogout();
-      if (mine !== latest || gameOf(view) === null) return;
-      if (save.kind === "failed") {
-        // The saver's line asks the player to log out again; its retries go on.
-        setLogout(view, { kind: "idle", sentence: null });
-        return;
-      }
-      if (save.kind === "signed-out") {
-        expire();
-        return;
-      }
-      setLogout(view, { kind: "ending", held: null });
-      const result = await client.logout();
-      const ending = gameOf(view)?.logout;
-      const later = ending?.kind === "ending" ? ending.held : null;
-      if (mine !== latest) return;
-      if (result.ok || signedOut(result.failure)) {
-        showForms(save.kind === "outdated" ? OUTDATED : null);
-        focusCard();
-        return;
-      }
-      // A reset that succeeded meanwhile built a new game: this uncertain end concerns the old one,
-      // so the new game gets neither its sentence nor a reload for the old game's lost save.
-      if (gameOf(view) === null) return;
-      // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
-      setLogout(view, { kind: "idle", sentence: result.failure.message });
-      // A save that lost to another browser leaves this game behind the server's save (D-209).
-      if (save.kind === "conflict") reloadAfterConflict();
-      else later?.();
-    })();
-  }
-
-  /**
-   * „Zacznij od zera” confirmed: the page sends no save of its own, since programs are saved right
-   * after each edit (D-207), and asks the server to move the saved game state to the previous save.
-   * While it waits the outcomes of the old game's saver are held and „Wyloguj” is not pressable
-   * (D-402). On 204 the game is replaced by a new one built as for an account with no save, with no
-   * save sent at once and one sentence above it; no session goes as for a save (D-211); a refusal of
-   * the privilege and any other failure each have a sentence beside the control, the game stays
-   * and a held outcome is acted on (D-402).
-   */
-  function resetGame(): void {
-    const current = shown();
-    if (current.kind !== "game" || current.reset.kind !== "idle") return;
-    const { view, account: owner } = current;
-    change({ ...current, reset: { kind: "waiting", held: null } });
-    void (async () => {
-      const result = await client.resetSavedGame();
-      // The game left the page meanwhile (a logout, a sign-in elsewhere): nothing here concerns it.
-      const now = gameOf(view);
-      if (now === null) return;
-      if (result.ok) {
-        pendingNotice = { text: GAME_STARTS_ANEW, role: "positive" };
-        entry = "address";
-        showGame(
-          owner,
-          { state: newGame(), revision: 0, refused: null },
-          false,
-        );
-        return;
-      }
-      if (signedOut(result.failure)) {
-        expire();
-        return;
-      }
-      const { failure } = result;
-      const forbidden =
-        failure.kind === "refused" &&
-        failure.status === 403 &&
-        failure.code === "previous-save-forbidden";
-      view.setReset({
-        waiting: false,
-        sentence: forbidden ? RESET_NOT_ALLOWED : RESET_FAILED,
-      });
-      const held = now.reset.kind === "waiting" ? now.reset.held : null;
-      change({ ...now, reset: { kind: "idle" } });
-      held?.();
-    })();
-  }
+  const page: Page = {
+    places,
+    memory,
+    client,
+    address,
+    lastResort,
+    calls: {
+      expire: () => expire(page),
+      showForms: (sentence) => showForms(page, sentence),
+      focusCard: () => focusCard(places),
+      reloadAfterConflict: () => reloadAfterConflict(page),
+      showGame: (owner, start, saveAtOnce) =>
+        showGame(page, owner, start, saveAtOnce),
+    },
+  };
 
   /**
    * The card on the form „Ustaw nowe hasło”. Its ending says how the page goes on: after a change
@@ -585,21 +473,21 @@ export function startApp(
    * Where the check shows the card, that card takes the focus, since the player stays at it (D-381).
    */
   function showReset(token: string): void {
-    placeCard(null, {
+    placeCard(page, null, {
       token,
       address,
       finished(ending: ResetEnding): void {
         if (ending === "changed") {
-          pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
-          showForms(null);
-          focusCard();
+          memory.pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
+          showForms(page, null);
+          focusCard(places);
           return;
         }
         if (ending === "refused")
-          pendingNotice = { text: LINK_INVALID, role: "warning" };
-        entry = "link";
-        focusCardOnForms = true;
-        void checkSession();
+          memory.pendingNotice = { text: LINK_INVALID, role: "warning" };
+        memory.entry = "link";
+        memory.focusCardOnForms = true;
+        void checkSession(page);
       },
     });
   }
@@ -612,17 +500,17 @@ export function startApp(
       return;
     }
     if (readConfirmationToken(address.hash()) !== null) {
-      change({
+      places.change({
         kind: "checking",
         waiting: { kind: "asking", text: CONFIRMING_ADDRESS },
       });
       const answer = await confirmFromAddress(client, address);
-      pendingNotice = answer?.notice ?? null;
+      memory.pendingNotice = answer?.notice ?? null;
       // A refused link leaves the player at the card, which takes the focus (D-381).
-      focusCardOnForms = answer?.refused ?? false;
-      entry = "link";
+      memory.focusCardOnForms = answer?.refused ?? false;
+      memory.entry = "link";
     }
-    await checkSession();
+    await checkSession(page);
   }
 
   root.append(places.header, places.main);

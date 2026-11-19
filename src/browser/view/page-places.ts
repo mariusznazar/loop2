@@ -4,7 +4,13 @@ import type {
   ConfirmationMessage,
 } from "../account-api.js";
 import type { AccountCard } from "./account-card.js";
-import type { GameView, ScreenPlace } from "./game-view.js";
+import type { ConfirmationNotice } from "./email-confirmation.js";
+import type {
+  GameEntry,
+  GameView,
+  KeptGame,
+  ScreenPlace,
+} from "./game-view.js";
 import { createFailureRow, type FailureRow } from "./header-rows.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import {
@@ -63,12 +69,44 @@ export type GamePage = {
  * The state of the start page, one value of three kinds: the waiting screen with the header, the
  * card alone on the screen (D-262), or the game. The page holds one and changes it only through
  * `change`, which closes the card or the game the next value no longer holds and draws the places of
- * the page from it. Values that outlive a change of kind stand apart in `startApp`.
+ * the page from it. Values that outlive a change of kind stand apart, in the page's memory.
  */
 export type PageState =
   | { readonly kind: "checking"; readonly waiting: Waiting }
   | { readonly kind: "card"; readonly card: AccountCard }
   | GamePage;
+
+/**
+ * The page's memory: the values that outlive a change of kind of what the page shows. `startApp`
+ * makes one record of it and gives it to the functions of the page, which change its fields.
+ */
+export type PageMemory = {
+  /** The result of a confirmation from the address, until the first screen shows it. */
+  pendingNotice: ConfirmationNotice | null;
+  /** The outcome of a registration's first message, until the game it leads to is built. */
+  pendingMessage: ConfirmationMessage | null;
+  /** The game about to be built replaces one that lost a conflict to another browser (D-209). */
+  afterConflict: boolean;
+  /**
+   * How the page comes to build the next game, which picks its first screen; the page opens at its
+   * address, and a retry of the session check keeps the entry it had.
+   */
+  entry: GameEntry;
+  /** The game state a save answered with no session left, kept in this page only (D-211). */
+  kept: (KeptGame & { readonly accountId: string }) | null;
+  /** Each request of the page takes the next number; an answer counts only while it is the last. */
+  latest: number;
+  /**
+   * An error nothing handled came: the game takes no change and the sentence stands, until the page
+   * is reloaded (D-323).
+   */
+  failed: boolean;
+  /**
+   * The card that the session check shows after a refused link or „Anuluj” takes the focus, until a
+   * card or a game is shown (D-381); a retry of the check keeps it.
+   */
+  focusCardOnForms: boolean;
+};
 
 /**
  * What the bar is given in a state: the game's name alone in every kind but a game that has told its
