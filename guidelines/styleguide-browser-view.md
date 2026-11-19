@@ -453,10 +453,10 @@ z tabeli Roles i próbki wyglądu kafelków w każdym stanie, narysowane rolami 
 nigdy rysunek gry ze stanu gry (D-04, D-45). Nowa wspólna kontrolka, nowy stan
 albo nowa rola trafia na stronę w tej samej zmianie.
 
-Źródła strony stoją w `src/browser/kitchen-sink/`. Poza swoim modułem
-wejściowym strona importuje tylko moduły, których używa gra; kod potrzebny
-tylko jej zostaje w tym module, bo w `src/browser/view/` trafiłby do wyniku
-`npm run build`.
+Źródła strony stoją w `src/browser/kitchen-sink/`. Poza tym katalogiem strona
+importuje tylko moduły, których używa gra; kod potrzebny tylko jej zostaje
+w tym katalogu, w modułach obok jej modułu wejściowego, a nie w
+`src/browser/view/`, gdzie trafiłby do wyniku `npm run build`.
 
 ### Main button, secondary action and tab
 
