@@ -210,7 +210,7 @@ interface DatabaseOptions {
   onCleanupError?: (error: Error) => void;
   // An opening with this option never sets up a new database: it refuses a
   // file in which the server has set up no tables and writes nothing in it
-  // (D-112). Every command the owner runs on the server that changes or copies
+  // (D-112). Every command the operator runs on the server that changes or copies
   // the account database opens with it; the check of the database at the build
   // of the image does not, since it sets up a temporary database of its own.
   existingOnly?: boolean;

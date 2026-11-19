@@ -427,7 +427,7 @@ test("a damaged database and a temporary directory that cannot be made each end 
 // database whose backup is whole.
 test("a file in which the server set up no tables is refused with the code of a missing file, writes nothing in it and leaves nothing on standard output", async (t) => {
   // decision: D-231 "That command opens only an existing database file"
-  // decision: D-112 "Beyond the rules above, no command that the owner runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const { temporary, directory } = await sandbox(t);
   const empty = join(directory, "empty-secret-name.sqlite");
   await writeFile(empty, "");
@@ -466,7 +466,7 @@ test("a file in which the server set up no tables is refused with the code of a 
 // D-231. Faults: the advice to run the command again on a failure a second run
 // does not mend, or no advice where the database was only busy.
 test("the backup command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
-  // decision: D-430 "When a command that the owner runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
   // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
   // decision: D-231 "That command opens only an existing database file"
   const box = await sandbox(t);

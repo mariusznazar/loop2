@@ -262,7 +262,7 @@ test("opening a database of an unknown newer schema refuses it and leaves the fi
 });
 
 test("opening that may only find a database refuses a file in which the server set up no tables, writes nothing in it, and an opening of the server sets it up", async (t) => {
-  // decision: D-112 "Beyond the rules above, no command that the owner runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const foreign = async (file) => {
     const raw = new DatabaseSync(file.path);
     raw.exec("CREATE TABLE notes (text TEXT); INSERT INTO notes VALUES ('x')");
@@ -3390,7 +3390,7 @@ const filesWithNoTables = [
 // database failure that asks for a second run.
 test("the operator's command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
-  // decision: D-112 "Beyond the rules above, no command that the owner runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const refusals = [];
   for (const [label, name, prepare] of filesWithNoTables) {
     const file = await handmadeFile(t, name);
@@ -3423,7 +3423,7 @@ test("the operator's command refuses a file in which the server set up no tables
 // D-137. Faults: the advice to run the command again on a failure a second run
 // does not mend, or no advice where the database was only busy.
 test("the operator's command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
-  // decision: D-430 "When a command that the owner runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
   // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
   const { path, database, raw, account } = await fixture(t);
@@ -3743,6 +3743,7 @@ test("a database failure of the previous-save command adds the error's kind and 
 
   assert.equal(run.code, 1, run.output);
   assert.match(run.stderr, /Nothing changed\./);
+  assert.doesNotMatch(run.stderr, /run the command again/);
   const [line] = run.stderr.split(/\r?\n/).filter((text) => text[0] === "{");
   const { failure, kind, code, errcode, place } = JSON.parse(line);
   assert.deepEqual(
@@ -3764,7 +3765,7 @@ test("a database failure of the previous-save command adds the error's kind and 
 // database failure that asks for a second run.
 test("the previous-save command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block"
-  // decision: D-112 "Beyond the rules above, no command that the owner runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const refusals = [];
   for (const [label, name, prepare] of filesWithNoTables) {
     const file = await handmadeFile(t, name);
@@ -3798,7 +3799,7 @@ test("the previous-save command refuses a file in which the server set up no tab
 // D-400. Faults: the advice to run the command again on a failure a second run
 // does not mend, or no advice where the database was only busy.
 test("the previous-save command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
-  // decision: D-430 "When a command that the owner runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
   // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
   const { path, database, raw, account } = await fixture(t);
   const unchanged = () =>

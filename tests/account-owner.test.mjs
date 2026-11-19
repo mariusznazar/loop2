@@ -652,6 +652,7 @@ test("a damaged database file fails with the JSON line of the failure first, and
 
   assert.equal(run.code, 1, run.output);
   assert.match(run.stderr, /Nothing changed\./);
+  assert.doesNotMatch(run.stderr, /run the command again/);
   const lines = run.stderr.split(/\r?\n/);
   assert.equal(lines[0][0], "{", "the JSON line comes first");
   const { failure, kind, code, errcode, place } = JSON.parse(lines[0]);
@@ -676,7 +677,7 @@ test("a damaged database file fails with the JSON line of the failure first, and
 // database failure that asks for a second run.
 test("the role command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login"
-  // decision: D-112 "Beyond the rules above, no command that the owner runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const refusals = [];
   for (const [label, name, prepare] of [
     ["an empty file", "empty-secret-name.sqlite", (f) => writeFile(f.path, "")],
@@ -726,7 +727,7 @@ test("the role command refuses a file in which the server set up no tables with 
 // D-410. Faults: the advice to run the command again on a failure a second run
 // does not mend, or no advice where the database was only busy.
 test("the role command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
-  // decision: D-430 "When a command that the owner runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "When a command that the operator runs on the server and that changes or copies the account database cannot open or change it for a reason other than a file in which the server has set up no tables"
   // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
   const { path, database, raw } = await fixture(t, { now: () => Date.now() });
   const account = database.createAccount("player@example.test", "encoded-hash");
