@@ -1,0 +1,15 @@
+MISSING in sample-parts: functionForced({state,children,}:{state:State;children:ReactNode;}){constforced=state==="hover"?"sample-hover":state==="focus"?"sample-focus":undefined;return<spanclassName={forced}>{children}</span>;}
+
+MISSING in sample-parts: functionFormFigure({name,children,}:{name:string;children:ReactNode;}){return(<figureclassName="form-sample">{children}<figcaption>{name}</figcaption></figure>);}
+
+MISSING in sample-parts: functionSection({title,children,}:{title:string;children:ReactNode;}){return(<sectionclassName="sample-section"><h2>{title}</h2>{children}</section>);}
+
+MISSING in sample-parts: constICONS=Object.values(RESOURCES).map(({icon})=>`/icons/${icon}.svg`,);
+
+BASE CHUNK NOT IN NEW: functionForced({state,children}:{state:State;children:ReactNode}){constforced=state==="hover"?"sample-hover":state==="focus"?"sample-focus":undefined;return<spanclassName={forced}>{children}</span>;}
+
+BASE CHUNK NOT IN NEW: functionFormFigure({name,children}:{name:string;children:ReactNode}){return(<figureclassName="form-sample">{children}<figcaption>{name}</figcaption></figure>);}
+
+BASE CHUNK NOT IN NEW: constICONS=Object.values(RESOURCES).map(({icon})=>`/icons/${icon}.svg`);
+
+BASE CHUNK NOT IN NEW: functionSection({title,children}:{title:string;children:ReactNode}){return(<sectionclassName="sample-section"><h2>{title}</h2>{children}</section>);}

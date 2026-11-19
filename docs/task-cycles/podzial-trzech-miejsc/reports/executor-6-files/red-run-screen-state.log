@@ -1,0 +1,57 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/run-screen-state.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a game built on an ended map run opens the window, which stands once the player is on the screen, and it opens again at each entering after „✕” (2.9635ms)
+✔ the window stands only over an ended map run (0.4641ms)
+✔ a death or a completion on the screen makes the window wait for the scene's effect, which ends the wait (0.5446ms)
+✔ the window opens at once where the system asks for less motion, where the events hold no end of the effect's kind and where the player is on another screen (0.5825ms)
+✔ leaving the screen ends the wait for the effect, and the window stands at the next entering (0.344ms)
+✔ the question closes the window, which stays closed after „Wróć” (2.4189ms)
+✔ the question remembers whether the map run went on, and which button asked it (0.6797ms)
+✔ the question goes when the copy no longer holds unsaved changes, and stays while it does (0.4454ms)
+✔ „Koniec przejścia” closes a standing question and opens the window, and does nothing over a map run that goes on (0.4034ms)
+✔ the end of the map run drops the question (0.3581ms)
+✖ after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on (1.3486ms)
+✔ a window that stands when the game is built owes the focus once, after the game stands in the page (0.3612ms)
+✔ a listener is called after each change of the question, by a method of the state and by a result taken (0.472ms)
+✔ a listener is called after each change of whether the window is shown, by a method of the state and by a result taken (0.3908ms)
+✔ a result taken that makes the window wait for the scene's effect calls the listener only when the wait ends (0.3601ms)
+✔ the snapshot is one value while the question and the window do not change, and a new one after each change (0.4758ms)
+✔ no listener is called by a method or a result that changes neither the question nor the window (0.2703ms)
+✔ a stopped listener is not called, while another one subscribed to the same screen still is (0.1708ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 17
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.3158
+
+✖ failing tests:
+
+test at tests\view\run-screen-state.test.mjs:219:1
+✖ after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on (1.3486ms)
+  AssertionError [ERR_ASSERTION]: „Koniec przejścia” opens the window „✕” closed before the error
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tests/view/run-screen-state.test.mjs:262:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

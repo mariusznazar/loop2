@@ -1,0 +1,7 @@
+﻿none : exit 0 
+entered stops at halt : exit 0 
+openWindow stops at halt : exit 1 AssertionError [ERR_ASSERTION]: „Koniec przejścia” opens the window „✕” closed before the error | generatedMessage: false,
+effectEnded stops at halt : exit 1 AssertionError [ERR_ASSERTION]: the effect has ended after the error | generatedMessage: false,
+closeWindow closes after halt : exit 1 AssertionError [ERR_ASSERTION]: „✕” does nothing | generatedMessage: false,
+question closes after halt : exit 1 AssertionError [ERR_ASSERTION]: Expected values to be strictly equal: | generatedMessage: true,
+question asked after halt : exit 1 AssertionError [ERR_ASSERTION]: Expected values to be strictly equal: | generatedMessage: true,

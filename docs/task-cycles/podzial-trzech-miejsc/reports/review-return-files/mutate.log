@@ -1,0 +1,23 @@
+none | tests/view/run-screen-state.test.mjs | exit 0 | pass 18 fail 0
+none | tests/view/end-window-game.test.mjs | exit 0 | pass 27 fail 0
+none | tests/view/end-question.test.mjs | exit 0 | pass 17 fail 0
+none | tests/view/uncaught-failure.test.mjs | exit 0 | pass 19 fail 0
+none | tests/view/state-store.test.mjs | exit 0 | pass 12 fail 0
+entered does not reopen the window at halt | tests/view/run-screen-state.test.mjs | exit 0 | pass 18 fail 0
+entered does not reopen the window at halt | tests/view/end-window-game.test.mjs | exit 0 | pass 27 fail 0
+entered does not reopen the window at halt | tests/view/end-question.test.mjs | exit 0 | pass 17 fail 0
+entered does not reopen the window at halt | tests/view/uncaught-failure.test.mjs | exit 0 | pass 19 fail 0
+entered does not reopen the window at halt | tests/view/state-store.test.mjs | exit 0 | pass 12 fail 0
+entered stops whole at halt | tests/view/run-screen-state.test.mjs | exit 1 | pass 17 fail 1 | failed: after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on
+left keeps the wait at halt | tests/view/run-screen-state.test.mjs | exit 1 | pass 17 fail 1 | failed: after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on
+left closes the question at halt | tests/view/run-screen-state.test.mjs | exit 1 | pass 17 fail 1 | failed: after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on
+page: Koniec przejscia stops at halt in run-entry | tests/view/run-screen-state.test.mjs | exit 0 | pass 18 fail 0
+page: Koniec przejscia stops at halt in run-entry | tests/view/end-window-game.test.mjs | exit 0 | pass 27 fail 0
+page: Koniec przejscia stops at halt in run-entry | tests/view/end-question.test.mjs | exit 0 | pass 17 fail 0
+page: Koniec przejscia stops at halt in run-entry | tests/view/uncaught-failure.test.mjs | exit 0 | pass 19 fail 0
+page: Koniec przejscia stops at halt in run-entry | tests/view/state-store.test.mjs | exit 0 | pass 12 fail 0
+page: end of effect stops at halt in run-entry | tests/view/run-screen-state.test.mjs | exit 0 | pass 18 fail 0
+page: end of effect stops at halt in run-entry | tests/view/end-window-game.test.mjs | exit 0 | pass 27 fail 0
+page: end of effect stops at halt in run-entry | tests/view/end-question.test.mjs | exit 0 | pass 17 fail 0
+page: end of effect stops at halt in run-entry | tests/view/uncaught-failure.test.mjs | exit 0 | pass 19 fail 0
+page: end of effect stops at halt in run-entry | tests/view/state-store.test.mjs | exit 0 | pass 12 fail 0

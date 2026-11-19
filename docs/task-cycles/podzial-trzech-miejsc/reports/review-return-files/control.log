@@ -1,0 +1,228 @@
+TAP version 13
+# Subtest: the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas
+ok 1 - the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas
+  ---
+  duration_ms: 379.4157
+  type: 'test'
+  ...
+# Subtest: the window opens at a completion too, titled by the completion text, with the way to the map it opened
+ok 2 - the window opens at a completion too, titled by the completion text, with the way to the map it opened
+  ---
+  duration_ms: 119.7007
+  type: 'test'
+  ...
+# Subtest: at a death and at a completion the window waits for the scene's effect and stands once the scene tells it has ended
+ok 3 - at a death and at a completion the window waits for the scene's effect and stands once the scene tells it has ended
+  ---
+  duration_ms: 176.4002
+  type: 'test'
+  ...
+# Subtest: under the system's setting for reduced motion the window opens at once at a death and at a completion
+ok 4 - under the system's setting for reduced motion the window opens at once at a death and at a completion
+  ---
+  duration_ms: 163.3657
+  type: 'test'
+  ...
+# Subtest: „Koniec przejścia” opens the window at once while it waits for the effect, and the effect's end later opens nothing the player closed
+not ok 5 - „Koniec przejścia” opens the window at once while it waits for the effect, and the effect's end later opens nothing the player closed
+  ---
+  duration_ms: 73.7762
+  type: 'test'
+  location: '.runs\\review-return\\tests\\view\\end-window-game.test.mjs:525:1'
+  failureType: 'testCodeFailure'
+  error: "the player's own opening does not wait: expected a true value, got undefined"
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    refuse (file:///.runs/review-return/tests/view/page-document.mjs:192:9)
+    Object.ok (file:///.runs/review-return/tests/view/page-document.mjs:249:5)
+    file:///.runs/review-return/tests/view/end-window-game.test.mjs:532:12
+    async file:///.runs/review-return/tests/view/end-window-game.test.mjs:60:7
+    async withPage (file:///.runs/review-return/tests/view/page-document.mjs:100:5)
+    async onPage (file:///.runs/review-return/tests/view/end-window-game.test.mjs:50:3)
+    async TestContext.<anonymous> (file:///.runs/review-return/tests/view/end-window-game.test.mjs:527:3)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: a return to the screen while the effect played opens the window at once
+ok 6 - a return to the screen while the effect played opens the window at once
+  ---
+  duration_ms: 72.2937
+  type: 'test'
+  ...
+# Subtest: a scene hidden while its effect runs tells the game view, and the window stands
+ok 7 - a scene hidden while its effect runs tells the game view, and the window stands
+  ---
+  duration_ms: 74.7164
+  type: 'test'
+  ...
+# Subtest: the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back
+ok 8 - the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back
+  ---
+  duration_ms: 110.4979
+  type: 'test'
+  ...
+# Subtest: a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address
+ok 9 - a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address
+  ---
+  duration_ms: 86.267
+  type: 'test'
+  ...
+# Subtest: a window open at the build takes the keyboard focus at the first reading of the clock, unless the focus already stands on a control
+ok 10 - a window open at the build takes the keyboard focus at the first reading of the clock, unless the focus already stands on a control
+  ---
+  duration_ms: 75.5029
+  type: 'test'
+  ...
+# Subtest: „Ostatnie minuty” are the last entries of the chronicle up to the entry of the death after a death on the screen, and stand nowhere after a completion or a load
+ok 11 - „Ostatnie minuty” are the last entries of the chronicle up to the entry of the death after a death on the screen, and stand nowhere after a completion or a load
+  ---
+  duration_ms: 92.8576
+  type: 'test'
+  ...
+# Subtest: „✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again
+not ok 12 - „✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again
+  ---
+  duration_ms: 49.1118
+  type: 'test'
+  location: '.runs\\review-return\\tests\\view\\end-window-game.test.mjs:727:1'
+  failureType: 'testCodeFailure'
+  error: '„Koniec przejścia” opens the window again: expected a true value, got undefined'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    refuse (file:///.runs/review-return/tests/view/page-document.mjs:192:9)
+    Object.ok (file:///.runs/review-return/tests/view/page-document.mjs:249:5)
+    file:///.runs/review-return/tests/view/end-window-game.test.mjs:754:14
+    async file:///.runs/review-return/tests/view/end-window-game.test.mjs:60:7
+    async withPage (file:///.runs/review-return/tests/view/page-document.mjs:100:5)
+    async onPage (file:///.runs/review-return/tests/view/end-window-game.test.mjs:50:3)
+    async TestContext.<anonymous> (file:///.runs/review-return/tests/view/end-window-game.test.mjs:734:3)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: the header has no „Koniec przejścia” while the map run goes on or is paused
+ok 13 - the header has no „Koniec przejścia” while the map run goes on or is paused
+  ---
+  duration_ms: 26.9795
+  type: 'test'
+  ...
+# Subtest: „Koniec przejścia” pressed while the question stands closes the question and opens the window, so the two never stand together
+not ok 14 - „Koniec przejścia” pressed while the question stands closes the question and opens the window, so the two never stand together
+  ---
+  duration_ms: 38.8377
+  type: 'test'
+  location: '.runs\\review-return\\tests\\view\\end-window-game.test.mjs:777:1'
+  failureType: 'testCodeFailure'
+  error: 'the question is gone: expected undefined, got <div class="end-question">'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    refuse (file:///.runs/review-return/tests/view/page-document.mjs:192:9)
+    Object.equal (file:///.runs/review-return/tests/view/page-document.mjs:220:5)
+    file:///.runs/review-return/tests/view/end-window-game.test.mjs:785:12
+    async file:///.runs/review-return/tests/view/end-window-game.test.mjs:60:7
+    async withPage (file:///.runs/review-return/tests/view/page-document.mjs:100:5)
+    async onPage (file:///.runs/review-return/tests/view/end-window-game.test.mjs:50:3)
+    async TestContext.<anonymous> (file:///.runs/review-return/tests/view/end-window-game.test.mjs:780:3)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: „Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused
+ok 15 - „Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused
+  ---
+  duration_ms: 63.9508
+  type: 'test'
+  ...
+# Subtest: „Restart” of the header after „✕” starts the map run again and no window stands
+ok 16 - „Restart” of the header after „✕” starts the map run again and no window stands
+  ---
+  duration_ms: 51.363
+  type: 'test'
+  ...
+# Subtest: „Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać
+ok 17 - „Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać
+  ---
+  duration_ms: 42.2929
+  type: 'test'
+  ...
+# Subtest: „Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it
+not ok 18 - „Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it
+  ---
+  duration_ms: 52.3664
+  type: 'test'
+  location: '.runs\\review-return\\tests\\view\\end-window-game.test.mjs:864:1'
+  failureType: 'testCodeFailure'
+  error: '„Koniec przejścia” opens the window: expected a true value, got undefined'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    refuse (file:///.runs/review-return/tests/view/page-document.mjs:192:9)
+    Object.ok (file:///.runs/review-return/tests/view/page-document.mjs:249:5)
+    file:///.runs/review-return/tests/view/end-window-game.test.mjs:899:12
+    async file:///.runs/review-return/tests/view/end-window-game.test.mjs:60:7
+    async withPage (file:///.runs/review-return/tests/view/page-document.mjs:100:5)
+    async onPage (file:///.runs/review-return/tests/view/end-window-game.test.mjs:50:3)
+    async TestContext.<anonymous> (file:///.runs/review-return/tests/view/end-window-game.test.mjs:870:3)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć”
+ok 19 - the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć”
+  ---
+  duration_ms: 93.9753
+  type: 'test'
+  ...
+# Subtest: „Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać
+ok 20 - „Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać
+  ---
+  duration_ms: 40.9383
+  type: 'test'
+  ...
+# Subtest: the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere
+ok 21 - the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere
+  ---
+  duration_ms: 143.9352
+  type: 'test'
+  ...
+# Subtest: after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte”
+ok 22 - after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte”
+  ---
+  duration_ms: 47.6821
+  type: 'test'
+  ...
+# Subtest: „Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel
+ok 23 - „Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel
+  ---
+  duration_ms: 57.971
+  type: 'test'
+  ...
+# Subtest: the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run
+ok 24 - the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run
+  ---
+  duration_ms: 58.5823
+  type: 'test'
+  ...
+# Subtest: a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion
+ok 25 - a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion
+  ---
+  duration_ms: 100.4356
+  type: 'test'
+  ...
+# Subtest: a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready
+ok 26 - a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready
+  ---
+  duration_ms: 147.4951
+  type: 'test'
+  ...
+# Subtest: after halt() the window's buttons change nothing
+ok 27 - after halt() the window's buttons change nothing
+  ---
+  duration_ms: 31.8686
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 23
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3356.6309

@@ -1,0 +1,27 @@
+confirm empty token / refused | started,confirmed,signedOut | calls confirmEmail(0) currentAccount | cleared 1 | focus input:
+confirm empty token / unreachable | started,confirmed,signedOut | calls confirmEmail(0) currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm empty token / confirmed | started,confirmed,signedOut | calls confirmEmail(0) currentAccount | cleared 1 | focus body:LoopCoś w grze się z
+confirm oversized token / refused | started,confirmed,signedOut | calls confirmEmail(200000) currentAccount | cleared 1 | focus input:
+confirm oversized token / unreachable | started,confirmed,signedOut | calls confirmEmail(200000) currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm oversized token / confirmed | started,confirmed,signedOut | calls confirmEmail(200000) currentAccount | cleared 1 | focus body:LoopCoś w grze się z
+confirm malformed token / refused | started,confirmed,signedOut | calls confirmEmail(12) currentAccount | cleared 1 | focus input:
+confirm malformed token / unreachable | started,confirmed,signedOut | calls confirmEmail(12) currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm malformed token / confirmed | started,confirmed,signedOut | calls confirmEmail(12) currentAccount | cleared 1 | focus body:LoopCoś w grze się z
+confirm repeated key / refused | started,confirmed,signedOut | calls confirmEmail(109) currentAccount | cleared 1 | focus input:
+confirm repeated key / unreachable | started,confirmed,signedOut | calls confirmEmail(109) currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm repeated key / confirmed | started,confirmed,signedOut | calls confirmEmail(109) currentAccount | cleared 1 | focus body:LoopCoś w grze się z
+confirm key then reset key / refused | started,confirmed,signedOut | calls confirmEmail(110) currentAccount | cleared 1 | focus input:
+confirm key then reset key / unreachable | started,confirmed,signedOut | calls confirmEmail(110) currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key then reset key / confirmed | started,confirmed,signedOut | calls confirmEmail(110) currentAccount | cleared 1 | focus body:LoopCoś w grze się z
+confirm key in other case / refused | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key in other case / unreachable | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key in other case / confirmed | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key not at start / refused | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key not at start / unreachable | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+confirm key not at start / confirmed | started,signedOut | calls currentAccount | cleared 0 | focus body:LoopCoś w grze się z
+reset empty token | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:
+reset oversized token | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:
+reset malformed token | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:
+reset repeated key | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:
+reset key then confirm key | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:
+reset with second equals | started,cancelled,signedOut | calls currentAccount | cleared 1 | focus input:

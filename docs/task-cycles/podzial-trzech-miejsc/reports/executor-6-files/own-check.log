@@ -1,0 +1,36 @@
+✔ the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas (272.9552ms)
+✔ the window opens at a completion too, titled by the completion text, with the way to the map it opened (71.757ms)
+✔ at a death and at a completion the window waits for the scene's effect and stands once the scene tells it has ended (120.1482ms)
+✔ under the system's setting for reduced motion the window opens at once at a death and at a completion (101.7176ms)
+✔ „Koniec przejścia” opens the window at once while it waits for the effect, and the effect's end later opens nothing the player closed (66.6435ms)
+✔ a return to the screen while the effect played opens the window at once (60.9993ms)
+✔ a scene hidden while its effect runs tells the game view, and the window stands (52.2946ms)
+✔ the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back (71.378ms)
+✔ a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address (76.317ms)
+✔ a window open at the build takes the keyboard focus at the first reading of the clock, unless the focus already stands on a control (51.8608ms)
+✔ „Ostatnie minuty” are the last entries of the chronicle up to the entry of the death after a death on the screen, and stand nowhere after a completion or a load (76.086ms)
+✔ „✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again (60.2545ms)
+✔ the header has no „Koniec przejścia” while the map run goes on or is paused (24.1957ms)
+✔ „Koniec przejścia” pressed while the question stands closes the question and opens the window, so the two never stand together (35.7599ms)
+✔ „Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused (38.7272ms)
+✔ „Restart” of the header after „✕” starts the map run again and no window stands (43.966ms)
+✔ „Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać (31.1905ms)
+✔ „Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it (44.6843ms)
+✔ the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć” (79.9188ms)
+✔ „Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać (34.8036ms)
+✔ the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere (108.8423ms)
+✔ after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte” (37.6ms)
+✔ „Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel (50.7962ms)
+✔ the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run (45.8935ms)
+✔ a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion (73.818ms)
+✔ a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready (120.3443ms)
+✔ after halt() the window's buttons change nothing (28.1898ms)
+✔ OWN CHECK: after halt the effect's end opens the window, and Koniec przejscia opens a window X closed before the error (69.0038ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2734.4029
