@@ -252,12 +252,16 @@ const backupRate = 2 ** 31 - 1;
 const SQLITE_BUSY = 5;
 const RETRY_PAUSE = new Int32Array(new SharedArrayBuffer(4));
 
+// Node.js puts SQLite's extended result code in `errcode`, whose low byte is
+// the primary code: a busy database may arrive as SQLITE_BUSY itself or as an
+// extended code of it, such as 261 (recovery) or 517 (snapshot).
 export function isDatabaseBusy(error: unknown): boolean {
   return (
     typeof error === "object" &&
     error !== null &&
     "errcode" in error &&
-    error.errcode === SQLITE_BUSY
+    typeof error.errcode === "number" &&
+    (error.errcode & 0xff) === SQLITE_BUSY
   );
 }
 

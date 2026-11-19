@@ -358,6 +358,72 @@ test("an opening that may only find a database tells a corrupt file, a newer sch
   assert.equal(isDatabaseBusy(new Error("another")), false);
 });
 
+// D-430. Faults: a busy database reported with an extended result code read as
+// no busy database, so the command gives no advice to run it again and the
+// server's retry of a busy opening gives up; a code of another kind, the
+// violation of a unique key among them, read as a busy one.
+test("a busy database is told from another failure by the primary result code, whatever the extended one", async (t) => {
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  const file = await handmadeFile(t, "extended.sqlite");
+  const reader = new DatabaseSync(file.path, { timeout: 50 });
+  const writer = new DatabaseSync(file.path, { timeout: 50 });
+  try {
+    reader.exec(
+      "PRAGMA journal_mode = WAL; CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT UNIQUE)",
+    );
+    const thrown = (work) => {
+      try {
+        work();
+      } catch (error) {
+        return error;
+      }
+      throw new Error("the statement did not fail");
+    };
+
+    // SQLITE_BUSY_SNAPSHOT: a read transaction that another connection's commit
+    // has left behind cannot write.
+    reader.exec("BEGIN");
+    reader.prepare("SELECT * FROM t").all();
+    writer.exec("INSERT INTO t VALUES (1, 'a')");
+    const snapshot = thrown(() => reader.exec("INSERT INTO t VALUES (2, 'b')"));
+    reader.exec("ROLLBACK");
+    assert.equal(snapshot.errcode, 517, "precondition: an extended busy code");
+    assert.equal(isDatabaseBusy(snapshot), true, "SQLITE_BUSY_SNAPSHOT");
+
+    // The plain SQLITE_BUSY: another connection holds the write lock.
+    writer.exec("BEGIN IMMEDIATE");
+    const plain = thrown(() => reader.exec("BEGIN IMMEDIATE"));
+    writer.exec("ROLLBACK");
+    assert.equal(plain.errcode, 5, "precondition: the primary busy code");
+    assert.equal(isDatabaseBusy(plain), true, "SQLITE_BUSY");
+
+    // SQLITE_BUSY_RECOVERY needs another process recovering the write-ahead
+    // log, which a test cannot hold still, so the error is shaped.
+    assert.equal(
+      isDatabaseBusy({ errcode: 261 }),
+      true,
+      "SQLITE_BUSY_RECOVERY",
+    );
+
+    // Extended codes of other failures: a unique key violated, a locked table,
+    // a constraint, a misuse (21, whose low four bits are those of 5).
+    const unique = thrown(() => writer.exec("INSERT INTO t VALUES (3, 'a')"));
+    assert.equal(
+      unique.errcode,
+      2067,
+      "precondition: SQLITE_CONSTRAINT_UNIQUE",
+    );
+    assert.equal(isDatabaseBusy(unique), false, "SQLITE_CONSTRAINT_UNIQUE");
+    for (const errcode of [1, 6, 19, 21, 262, 2067])
+      assert.equal(isDatabaseBusy({ errcode }), false, `errcode ${errcode}`);
+    for (const value of [null, undefined, "5", { errcode: "517" }, {}])
+      assert.equal(isDatabaseBusy(value), false, String(value));
+  } finally {
+    reader.close();
+    writer.close();
+  }
+});
+
 // invariant: account-database-schema
 test("a schema initialization failure rolls back every new table and version", async (t) => {
   // decision: D-114 "Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal"
