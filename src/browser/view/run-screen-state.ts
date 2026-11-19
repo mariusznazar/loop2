@@ -74,14 +74,15 @@ export type RunScreenState = {
   /** The map run ends: the question goes, whether or not the game is halted. */
   forgetQuestion(): void;
   /**
-   * „Koniec przejścia”: nothing after halt or without an ended map run; otherwise a standing question
-   * closes as `closeQuestion()` closes it, the window opens and the wait ends. Returns whether a
-   * question was closed (D-311, D-324); the screen and its panel read the change from the state.
+   * „Koniec przejścia”: nothing without an ended map run; otherwise a standing question closes as
+   * `closeQuestion()` closes it, so none closes after halt, the window opens and the wait ends, and
+   * after halt the window stays unshown while a question stands. Returns whether a question was
+   * closed (D-311, D-324, D-323); the screen and its panel read the change from the state.
    */
   openWindow(): boolean;
-  /** „✕” and Escape of the window: it closes and the wait ends; nothing after halt (D-368). */
+  /** „✕” and Escape of the window: it closes and the wait ends; nothing after halt (D-368, D-323). */
   closeWindow(): void;
-  /** The scene's effect has ended, or the scene was hidden while it ran; nothing after halt (D-322). */
+  /** The scene's effect has ended, or the scene was hidden while it ran: the window opens, after halt too (D-322, D-323). */
   effectEnded(): void;
   /** The game stands in the game view: the focus is owed where the window shows (D-368). */
   built(): void;
@@ -222,7 +223,7 @@ export function createRunScreenState(
     openWindow() {
       return settled(() => {
         const { run } = game.get();
-        if (game.halted() || run === null || !mapRunEnded(run)) return false;
+        if (run === null || !mapRunEnded(run)) return false;
         const closed = closeQuestionNow();
         windowOpen = true;
         effectPending = false;
@@ -238,7 +239,7 @@ export function createRunScreenState(
     },
     effectEnded() {
       settled(() => {
-        if (game.halted() || !effectPending) return;
+        if (!effectPending) return;
         effectPending = false;
       });
     },

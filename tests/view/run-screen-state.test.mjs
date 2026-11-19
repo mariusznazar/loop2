@@ -214,9 +214,10 @@ test("the end of the map run drops the question", () => {
   assert.equal(screen.question(), null);
 });
 
-// Catches a screen state that changes after an error nothing handled (D-323): the window, the
-// question and the wait stay as they were.
-test("after halt the question, the window and the wait change nothing, while entering and leaving go on", () => {
+// Catches a window that stays shut after an error nothing handled, at the end of the scene's effect
+// and at „Koniec przejścia”, and a question or a „✕” that changes after it (D-323).
+test("after halt the end of the effect and „Koniec przejścia” open the window, while „✕” and the question change nothing and entering and leaving go on", () => {
+  // decision: D-323 "After an error that no code of the game handled, whether the end-of-run window is open stays a memory of the page as D-371 gives it"
   const asking = screenOf(renamed(ended(going())));
   asking.screen.entered();
   asking.screen.closeWindow();
@@ -225,8 +226,17 @@ test("after halt the question, the window and the wait change nothing, while ent
   assert.notEqual(asking.screen.question(), null, "precondition: it stands");
   asking.game.halted = true;
   assert.equal(asking.screen.closeQuestion(), false);
-  assert.equal(asking.screen.openWindow(), false);
+  assert.equal(
+    asking.screen.openWindow(),
+    false,
+    "„Koniec przejścia” closes no question",
+  );
   assert.notEqual(asking.screen.question(), null, "the question stays");
+  assert.equal(
+    asking.screen.windowShown(),
+    false,
+    "the window does not stand beside the question",
+  );
   asking.screen.left();
   assert.notEqual(
     asking.screen.question(),
@@ -243,16 +253,48 @@ test("after halt the question, the window and the wait change nothing, while ent
   assert.equal(standing.screen.windowShown(), true, "„✕” does nothing");
   assert.equal(standing.screen.ask(null), null);
 
+  const closed = screenOf(ended(going()));
+  closed.screen.entered();
+  closed.screen.closeWindow();
+  assert.equal(
+    closed.screen.windowShown(),
+    false,
+    "precondition: „✕” closed it",
+  );
+  closed.game.halted = true;
+  assert.equal(closed.screen.openWindow(), false, "no question was standing");
+  assert.equal(
+    closed.screen.windowShown(),
+    true,
+    "„Koniec przejścia” opens the window „✕” closed before the error",
+  );
+  closed.screen.closeWindow();
+  assert.equal(closed.screen.windowShown(), true, "„✕” leaves it open");
+
   const waiting = screenOf(going());
   waiting.screen.entered();
   waiting.take(ended(waiting.game.state), DIED, true);
-  waiting.game.halted = true;
-  waiting.screen.effectEnded();
-  assert.equal(waiting.screen.windowShown(), false, "the wait goes on");
-  waiting.screen.left();
-  waiting.screen.entered();
   assert.equal(
     waiting.screen.windowShown(),
+    false,
+    "precondition: the window waits for the effect",
+  );
+  waiting.game.halted = true;
+  waiting.screen.effectEnded();
+  assert.equal(
+    waiting.screen.windowShown(),
+    true,
+    "the effect has ended after the error",
+  );
+
+  const away = screenOf(going());
+  away.screen.entered();
+  away.take(ended(away.game.state), DIED, true);
+  away.game.halted = true;
+  away.screen.left();
+  away.screen.entered();
+  assert.equal(
+    away.screen.windowShown(),
     true,
     "navigation goes on: leaving ended the wait and the entering opened the window",
   );

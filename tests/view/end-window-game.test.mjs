@@ -1216,7 +1216,7 @@ test("a reload of the screen of an ended map run holds the line of a death with 
   });
 });
 
-// D-323. Catches a window that still opens and closes after an error nothing handled.
+// D-323. Catches a window that still closes after an error nothing handled: „✕” leaves it standing.
 test("after halt() the window's buttons change nothing", async () => {
   await onPage(async (page) => {
     const { root } = page;
