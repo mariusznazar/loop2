@@ -366,8 +366,9 @@ zapisie pamięci strony `PageMemory` (typ z `page-places.ts`). `startApp` tworzy
 miejsca strony oraz ten zapis i podaje je jako parametr funkcjom strony: tym
 z `app.ts`, które sprawdzają sesję, wczytują i budują grę i stawiają kartę,
 i działaniom na stojącej grze z `page-game-acts.ts` — wylogowaniu, resetowi gry,
-wstrzymywaniu wyników zapisującego i miejscu gry; co te działania wołają
-z powrotem w `app.ts`, dostają przez ten sam parametr. Strona buduje
+wstrzymywaniu wyników zapisującego i miejscu gry; co wołają z powrotem w
+`app.ts` wylogowanie i reset gry, dostają przez ten sam parametr (`page.calls`),
+a wstrzymywanie wyników — jako funkcję w osobnym argumencie. Strona buduje
 przez API DOM tylko nagłówek i blok główny (w `createPagePlaces`), host każdego korzenia stawia fabryka
 tego korzenia, a panel w miejscu zdjętej karty buduje `createFailureCard`
 z `account-card.tsx`; każde miejsce, które pokazuje coś poza ekranami gry, ma

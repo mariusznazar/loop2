@@ -152,7 +152,8 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
           askToEnd(mapId);
         },
         // „Koniec przejścia” of the header opens the window; a question standing goes as „Wróć”
-        // closes it, since the window and the question never stand together (D-311).
+        // closes it, since the window and the question do not show together (D-311), except after
+        // `halt()`, when the question stays and the window waits behind it (D-323).
         openWindow() {
           screenState.openWindow();
         },
