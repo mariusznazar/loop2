@@ -51,7 +51,7 @@ jobs:
         with:
           node-version-file: package.json
       - run: npm ci
-      # The local copies of Ruff and ShellCheck that the code checks of `npm test` run.
+      # The local copies of Ruff, ShellCheck and shfmt that the code checks of `npm test` run.
       - run: python -m venv .runs/quality-venv
       - run: .runs/quality-venv/bin/python -m pip install --require-hashes -r requirements-quality.txt
       - run: npm test

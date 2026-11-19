@@ -88,14 +88,25 @@ printf '%s\n' $1
 
 ### Formatter
 
-- **Decision:** D-32
-- **Invariant:** prettier-source-format
-- **Good:** Nowy plik ma układ pozostawiany przez Prettier z ustawieniami domyślnymi i końce linii LF.
-- **Bad:** Nowy plik ma inny układ, końce linii CRLF albo komentarz `prettier-ignore`.
+- **Decision:** D-32 · D-433 · D-434
+- **Invariant:** prettier-source-format · ruff-source-format · shfmt-source-format
+- **Good:** Nowy plik ma układ pozostawiany przez formater swojego języka z ustawieniami z decyzji — Prettier dla TS/JS, Ruff dla Pythona, shfmt dla skryptu Bash z listy testu — i nie ma komentarza, który formater wyłącza.
+- **Bad:** Nowy plik ma inny układ, końce linii CRLF w pliku TS/JS albo komentarz wyłączający formater: `prettier-ignore`, `fmt: off`, `fmt: on`, `fmt: skip`, `yapf: disable` albo `yapf: enable`.
 
 Nie dodawaj opcji do `prettier.config.mjs`. Wzorce kontroli Prettiera w
 `tests/quality/test_quality_invariants.py` i reguły LF w `.gitattributes`
 obejmują każdy plik TS/JS części z zakresu D-32; pilnuje ich ten sam test.
+
+Pliki Pythona formatuj poleceniem `ruff format --config ruff.toml .` z narzędzi
+środowiska `.runs/quality-venv`, a skrypty Bash, które test ShellChecka wymienia
+z nazwy, poleceniem `shfmt` z flagami `SHFMT_FLAGS` z
+`tests/quality/format_support.py` i z `-w`. Komunikat porażki testu podaje oba
+polecenia w pełnym brzmieniu dla komputera, na którym test biegnie. Nie dodawaj
+do `ruff.toml` ustawień formatera ani komentarza, który formater wyłącza: test
+`ruff-source-format` szuka takich komentarzy w tych samych plikach Pythona, które
+czyta Ruff, więc nowy plik obejmuje bez zmiany konfiguracji. Nowy skrypt Bash
+dopisz do listy w `tests/quality/test_quality_invariants.py`, tej samej, którą
+czyta test ShellChecka. Wersje Ruffa i shfmt przypina `requirements-quality.txt`.
 
 ```good prettier-source-format tests/quality/guideline-format.mjs
 export const values = [1, 2];
@@ -103,6 +114,34 @@ export const values = [1, 2];
 
 ```bad prettier-source-format tests/quality/guideline-format.mjs
 export const values=[1,2]
+```
+
+```good ruff-source-format tests/quality/guideline_format.py
+VALUES = [1, 2]
+```
+
+```bad ruff-source-format tests/quality/guideline_format.py
+VALUES=[1,2]
+```
+
+```bad ruff-source-format tests/quality/guideline_format.py
+# fmt: off
+VALUES = [1,   2]
+# fmt: on
+```
+
+```good shfmt-source-format deploy/guideline-format
+#!/usr/bin/env bash
+if (($# != 0)); then
+  printf '%s' "$1"
+fi
+```
+
+```bad shfmt-source-format deploy/guideline-format
+#!/usr/bin/env bash
+if (( $# != 0 )); then
+    printf '%s' "$1"
+fi
 ```
 
 ### Dependency audit
@@ -269,6 +308,20 @@ testach, które to zachowanie pokrywają; dopiero potem dopisuje własny kod.
 Przegląd każdej zmiany plików części z niezmiennika pilnuje, by oczyszczony plik
 ani nowy plik nie przekroczył progu ponownie.
 
+### Reformatting commits
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Przeformatowanie kodu, na przykład po podniesieniu wersji Ruffa albo shfmt, idzie osobnym commitem z samym wynikiem formatera, a jego hash trafia do `.git-blame-ignore-revs` w kolejnym commicie.
+- **Bad:** Przeformatowanie wymieszane ze zmianą kodu albo commit przeformatowania bez wpisu w `.git-blame-ignore-revs`.
+
+Commit, który tylko przeformatowuje kod, nie zawiera żadnej innej zmiany, a jego
+hash dopisujesz do `.git-blame-ignore-revs` w późniejszym commicie, bo hash nie
+może stać w commicie, który nazywa; inaczej `git blame` przy niemal każdej linii
+wskazuje commit formatowania zamiast autora zmiany. Plik czyta GitHub, a
+lokalnie jedno polecenie na klon, `git config blame.ignoreRevsFile
+.git-blame-ignore-revs`, każe `git blame` pomijać wpisane commity.
+
 ## Examples
 
 ### PLW1510
@@ -333,12 +386,11 @@ na `min`.
 
 Zagnieżdżone warunki mogą pokazywać dwa osobne etapy sprawdzania.
 
-### Odłożone rodzaje i formatowanie
+### Odłożone rodzaje kodu
 
 Zasady testowania, wzorce według poziomów i przykład jawnego czasu określa
 `guidelines/testing.md`.
-Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
-budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone.
+Osobne wzorce budowania, wdrożenia, punktów uruchomienia, HTML i CSS są odłożone.
 Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 `mail-sending` w tabeli rodzajów.
 
@@ -352,8 +404,11 @@ Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 - `requirements-quality.txt`
 - `ruff.toml`
 - `.gitattributes`
+- `.git-blame-ignore-revs`
 - `scripts/audit_dependencies.py`
 - `tests/quality/test_quality_invariants.py`
+- `tests/quality/format_support.py`
+- `tests/quality/test_format_support.py`
 - `tests/quality/test_source_tool_scope.py`
 - `tests/quality/eslint-rule-sets.mjs`
 - `tests/quality/eslint-size-rules.mjs`

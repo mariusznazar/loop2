@@ -115,7 +115,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_ruff_source_format(self):
         # invariant: ruff-source-format
-        # decision: D-433 "Every `.py` and `.pyi` file Ruff finds in browser-view, simulation, account-server, build-tools, deployment, agent-workflow and test-helpers stands as local pinned Ruff 0.17.1 leaves it with `ruff format` run with `--config ruff.toml`, where `ruff.toml` sets the line width 100, leaves every other setting of the formatter at its default and leaves Markdown out."
+        # decision: D-433 "Every `.py` and `.pyi` file Ruff finds in browser-view, simulation, account-server, build-tools, deployment, agent-workflow and test-helpers stands as local pinned Ruff 0.17.1 leaves it with `ruff format` run with `--config ruff.toml`"
         # data: ruff.toml
         ruff = venv_tool("ruff")
         fix = [quality_environment.shown(ruff, ROOT), "format", "--config", "ruff.toml", "."]
@@ -134,7 +134,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_no_python_file_carries_a_comment_that_switches_the_formatter(self):
         # invariant: ruff-source-format
-        # decision: D-433 "A comment `fmt: off`, `fmt: on`, `fmt: skip`, `yapf: disable` or `yapf: enable` stands in no such file."
+        # decision: D-433 "No such file carries a comment `fmt: off`, `fmt: on`, `fmt: skip`, `yapf: disable` or `yapf: enable`."
         # data: ruff.toml
         found = []
         for path in format_support.python_sources(ROOT, venv_tool("ruff")):
@@ -146,7 +146,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_shfmt_source_format(self):
         # invariant: shfmt-source-format
-        # decision: D-434 "Every standalone Bash script the test of D-31 names stands as local pinned shfmt 3.14.1 leaves it, run on it by name with `-i 2 -bn -ci -ln bash`: two spaces of indent, `&&` and `||` at the start of a continued line, indented `case` branches and Bash as the language, with those flags in place of any `.editorconfig`."
+        # decision: D-434 "Every standalone Bash script that D-31 has ShellCheck check by name stands as local pinned shfmt 3.14.1 leaves it, run on it by name with `-i 2 -bn -ci -ln bash`"
         shfmt = venv_tool("shfmt")
         fix = [
             quality_environment.shown(shfmt, ROOT),

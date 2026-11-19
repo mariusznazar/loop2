@@ -1,0 +1,6 @@
+# Commits that only reformat code, with nothing else changed in them. git blame skips them
+# where the setting blame.ignoreRevsFile names this file, and so does GitHub.
+# A hash is added in a later commit than the one it names.
+
+# Python by Ruff 0.17.1 at line width 100, Bash by shfmt 3.14.1 with -i 2 -bn -ci -ln bash
+7d091cd99e3f678543deda624adc5cb8efbfb6a4

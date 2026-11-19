@@ -445,6 +445,26 @@ Every TypeScript and JavaScript file of browser-view, simulation, account-server
 - **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment
 - **Violated:** no
 
+## ruff-source-format
+
+Every `.py` and `.pyi` file Ruff 0.17.1 finds under `ruff.toml` stands as `ruff format` with that configuration leaves it and carries no comment `fmt: off`, `fmt: on`, `fmt: skip`, `yapf: disable` or `yapf: enable`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-433
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
+- **Violated:** no
+
+## shfmt-source-format
+
+Every Bash script the test of this invariant names stands as shfmt 3.14.1 leaves it with the flags `-i 2 -bn -ci -ln bash`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-434
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Violated:** no
+
 ## introduced-npm-vulnerabilities
 
 The npm audit of `package-lock.json` reports no advisory of low, moderate, high or critical severity that the audit of its version at {fork-point} does not report, as the npm/GitHub Advisory Database stands when the check runs.
