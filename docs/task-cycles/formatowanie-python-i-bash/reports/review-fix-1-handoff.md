@@ -1,0 +1,16 @@
+# Handoff: review of the fix of round 1
+
+You are the reviewer of the whole change, resumed to review the fix of your findings (method `review-change`, variant "the fix of a review's findings"; read `fix.md` beside the `SKILL.md` as its step says).
+
+- Worktree: `the root of the task's worktree`. Fix range: `2d3b33c8b8cf036a2c653a17514421f6f8ab4647..c00c0057` (one commit `c00c0057`; confirm `git rev-parse HEAD`).
+- Findings file given to the fix: `reports/fix-1-findings.md` (in `.runs/task-cycles/formatowanie-python-i-bash/`), your own words of the findings. Fix report: `.runs/task-cycles/formatowanie-python-i-bash/reports/fix-1-report.md`.
+- Handling of your findings by the orchestrator:
+  - M-1: fixed by the author in `c00c0057` (judge it).
+  - M-2: not fixed, as you advised; the request will name it.
+  - I-1 (blocking): no code change. The orchestrator will carry it in the request description as a human step after the merge, with the request opened as a blocked draft (step 4 of the cycle: an effect outside the product repository, which the task document does not name, is listed for the human to place). The text it will carry, for you to judge as the fix of I-1: 
+
+    > **Human step after the merge (outside the cycle).** The commit that only reformats changes the bytes of `deploy/loop2-deploy`, `deploy/loop2-backup` and `deploy/loop2-watch`. The deployment that the merge starts, and every one after it, logs three warnings "the installed … differs from deploy/… at commit …; this run goes on with the installed copy", because the deploy script compares each installed copy byte for byte with the repository's file. The reinstall is a formality, not urgent: the installed copies and the reformatted files have the same syntax tree by `shfmt --to-json`, so the scripts do the same thing either way (what differs is spaces in arithmetic expressions, the place of `&&` at a line break and the indent of `case` branches). To remove the warnings, reinstall `/usr/local/bin/loop2-deploy`, `/usr/local/bin/loop2-backup` and `/usr/local/bin/loop2-watch` from the merge commit as "Installing a script from an exact commit" in `.claude/skills/loop2-deploy/references/setup_and_secrets.md` gives, and check each with `cmp` against the file of that commit.
+
+  Say in your report whether this text, as the request's carrying of I-1, resolves the finding, or what is missing or wrong in it (check the named skill section and the claims: the exact warning wording and the `cmp` comparison in `deploy/loop2-deploy`, the three syntax-tree equalities you already ran, the list of what differs).
+- The fix's review is bounded by `fix.md`: a new Critical or Important finding in the fix counts as one that remains; a Minor one does not block. Do not re-review the whole change.
+- Directory for your working copies: `.runs/review-fix-1/` (the same rule as in your first handoff: only there, removed before you return, remainders named with full path and reason). Report path: `.runs/task-cycles/formatowanie-python-i-bash/reports/review-fix-1-report.md` (first line `PASS <sha>` or `FAIL <sha>`), with **Unread material**, **Searches not found or unclear**, checks with command and exit code. Do not run the product's whole gate.

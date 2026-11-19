@@ -1,0 +1,8 @@
+# Handoff: review of the fix of the correction's review findings (round 1)
+
+You are the reviewer of the whole change, resumed, to review the fix of your findings on correction 1 (method `review-change`, variant "the fix of a review's findings"; `fix.md` bounds it).
+
+- Worktree: `the root of the task's worktree`. Fix range: `57c25292e98c36a556142cf86924233e5b8ac24d..767c9c7f` (one commit `767c9c7f`, `foundations/decisions.md` +1/−1; confirm the head with `git rev-parse`).
+- Findings file given to the fix: `.runs/task-cycles/formatowanie-python-i-bash/reports/correction-1-fix-findings.md` (your own words of the blocking finding on remark 3 (a)); the remarks: `reports/correction-1-remarks.md`; the fix's report: `reports/correction-1-fix-report.md`.
+- Judge: remark 3 (a) is now made: the binding sentence of D-434 says where `&&` and `||` stand inside `[[ … ]]`, true of shfmt 3.14.1 (check yourself in `.runs/review-correction-1-fix/`); the `decision:` quotation in the tests still stands (`python -B .the-way/elements/common/foundation_check.py`); the fix breaks nothing else. A new Critical or Important finding in the fix fails the review; a Minor one does not block.
+- Directory for your copies: `.runs/review-correction-1-fix/` (only there; removed before you return; remainders named with full path and reason). Report path: `.runs/task-cycles/formatowanie-python-i-bash/reports/review-correction-1-fix-report.md` (first line `PASS <sha>` or `FAIL <sha>`), with **Unread material**, **Searches not found or unclear**, checks with command and exit code. Do not run the product's whole gate.
