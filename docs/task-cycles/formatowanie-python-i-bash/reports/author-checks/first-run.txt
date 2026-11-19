@@ -1,0 +1,8 @@
+3:FAIL: test_ruff_source_format (test_quality_invariants.QualityInvariants.test_ruff_source_format)
+14:AssertionError: 1 != 0 : unformatted: File would be reformatted
+16645:Format the files with: .runs/quality-venv/Scripts/ruff.exe format --config ruff.toml .
+16648:FAIL: test_shfmt_source_format (test_quality_invariants.QualityInvariants.test_shfmt_source_format)
+16659:AssertionError: 1 != 0 : diff deploy/loop2-deploy.orig deploy/loop2-deploy
+17104:Format the files with: .runs/quality-venv/Scripts/shfmt.exe -i 2 -bn -ci -ln bash -w deploy/loop2-deploy deploy/loop2-backup deploy/loop2-watch
+17107:Ran 3 tests in 1.242s
+17109:FAILED (failures=2)
