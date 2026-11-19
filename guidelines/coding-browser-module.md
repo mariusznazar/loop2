@@ -208,8 +208,9 @@ stan kontrolki dostaje w nim przypadek w tej samej zmianie.
 
 Żaden ekran nie powstaje przez API DOM. Strona (`src/browser/view/app.ts`)
 i fabryki jej korzeni budują przez nie tylko miejsca, w których montują się
-korzenie Reacta — nagłówek i blok główny stawia strona, a host każdego korzenia
-jego fabryka — oraz panel, który staje w miejscu karty zdjętej przez React
+korzenie Reacta — nagłówek i blok główny stawia fabryka miejsc strony,
+`createPagePlaces` z `src/browser/view/page-places.ts`, którą woła `startApp`,
+a host każdego korzenia jego fabryka — oraz panel, który staje w miejscu karty zdjętej przez React
 (reguła _Wspólna kontrolka w jednej postaci_) i który buduje `createFailureCard`
 z `src/browser/view/account-card.tsx`; wszystko, co ma pokazać, rysuje korzeń
 Reacta, osobny dla każdego miejsca (D-407).
@@ -287,8 +288,8 @@ Nowy ekran kopiuje ten wpis i dopisuje jeden wiersz w tabeli rejestru w `game-vi
 ### Pasek menu w Reactcie
 
 `src/browser/view/menu-bar.tsx` jest paskiem menu w Reactcie, który stoi w nagłówku strony.
-`app.ts` tworzy go w `startApp` i wkłada jego element (`bar.element`) do nagłówka jako
-pierwszy; linia zapisu (`saveLine`) stoi w nagłówku pod nim. Granica ma ten sam kształt co
+`createPagePlaces` z `page-places.ts`, wołana z `startApp` w `app.ts`, tworzy go
+i wkłada jego element (`bar.element`) do nagłówka jako pierwszy; linia zapisu (`saveLine`) stoi w nagłówku pod nim. Granica ma ten sam kształt co
 przy ekranie Postać: `createMenuBar({ client, onLogout, props })` zwraca `element`,
 `update(props)` i `dispose()`. Strona daje pasku konto albo `null` (wtedy stoi sama nazwa
 gry), ekran, na którym jest gracz, pozycję „Wróć do przejścia” i stan wylogowania.
@@ -304,8 +305,8 @@ wymaga D-267. „Wyślij ponownie” pasek wysyła sam przez `client`.
 `src/browser/view/waiting-screen.tsx` jest ekranem oczekiwania w korzeniu Reacta,
 który rysuje tylko on. `createWaitingScreen` zwraca element `session-check`
 do umieszczenia na stronie, `update(waiting)`, `focusRetry()` i `dispose()`;
-pierwsze rysowanie jest synchroniczne. `app.ts` tworzy ekran w `startApp` raz,
-a przy zmianie stanu strony woła `update` ze stanem `asking`, `refused`,
+pierwsze rysowanie jest synchroniczne. `createPagePlaces` z `page-places.ts`, wołana z `startApp` w `app.ts`, tworzy
+ekran raz, a `change` przy zmianie stanu strony woła `update` ze stanem `asking`, `refused`,
 `retrying` albo `stopped`, zamiast budować ekran od nowa: tekst „Sprawdzanie
 logowania…”, ostrzeżenie i przycisk „Spróbuj ponownie” stoją w komponencie na
 stałych miejscach, więc przycisk w stanach `refused` i `retrying` jest tym
@@ -351,16 +352,16 @@ przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
 (D-211), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
 (D-209).
 
-To, co strona pokazuje, jest jedną wartością `PageState` z danymi właściwymi dla
+To, co strona pokazuje, jest jedną wartością `PageState` (typ z `page-places.ts`) z danymi właściwymi dla
 jej rodzaju: `checking` (ekran oczekiwania i jego stan `Waiting`), `card` (karta
 logowania) albo `game` (gra z kontem, miejscem, zdaniami nad grą, stanem
-wylogowania i stanem resetu). Wartość zmienia tylko funkcja `change`: zamyka
+wylogowania i stanem resetu). Wartość zmienia tylko funkcja `change`, którą daje `createPagePlaces`: zamyka
 kartę albo grę, których następna wartość nie trzyma, i rysuje z niej miejsca
 strony — nagłówek, blok główny, zdania nad grą i pasek menu. Wartości, które
 mają przeżyć przejście między rodzajami — oczekujące zdanie potwierdzenia,
 wiadomość rejestracji, sposób wejścia do gry, stan zachowany po 401, numer
 ostatniego żądania i znacznik awarii — stoją w `startApp` osobno. Strona buduje
-przez API DOM tylko nagłówek i blok główny, host każdego korzenia stawia fabryka
+przez API DOM tylko nagłówek i blok główny (w `createPagePlaces`), host każdego korzenia stawia fabryka
 tego korzenia, a panel w miejscu zdjętej karty buduje `createFailureCard`
 z `account-card.tsx`; każde miejsce, które pokazuje coś poza ekranami gry, ma
 korzeń Reacta: pasek menu,
