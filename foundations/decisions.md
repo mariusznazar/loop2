@@ -872,7 +872,7 @@ No such file carries a comment `fmt: off`, `fmt: on`, `fmt: skip`, `yapf: disabl
 
 ### D-434 — How are the Bash scripts formatted?
 
-Every standalone Bash script that D-31 has ShellCheck check by name stands as local pinned shfmt 3.14.1 leaves it, run on it by name with `-i 2 -bn -ci -ln bash`: two spaces of indent, `&&` and `||` of a command list at the start of a continued line, indented `case` branches and Bash as the language. Those flags make shfmt read no EditorConfig file, so the result depends on no file outside the repository, and shfmt 3.14.1 comes from the package `shfmt-py` 4.2.0, installed with the other quality tools by D-424. Changing a flag or the version of shfmt takes a human-accepted change of this decision.
+Every standalone Bash script that D-31 has ShellCheck check by name stands as local pinned shfmt 3.14.1 leaves it, run on it by name with `-i 2 -bn -ci -ln bash`: two spaces of indent, `&&` and `||` of a command list at the start of a continued line and, inside `[[ … ]]`, at the end of the line before it, indented `case` branches and Bash as the language. Those flags make shfmt read no EditorConfig file, so the result depends on no file outside the repository, and shfmt 3.14.1 comes from the package `shfmt-py` 4.2.0, installed with the other quality tools by D-424. Changing a flag or the version of shfmt takes a human-accepted change of this decision.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** shfmt-py-bundled-version · shfmt-editorconfig-and-flags
