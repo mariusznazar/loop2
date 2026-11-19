@@ -5,8 +5,7 @@ ESLint with the two size rules alone, apart from the run on `eslint.config.mjs`,
 what it prints and decides nothing about sizes itself.
 
 The first case runs the script on the repository. The control case runs the same script on a tree of
-made-up files, so that a script that prints nothing because it is broken cannot pass as the expected
-failure of the first case.
+made-up files, so that a script that prints nothing because it is broken cannot pass the first case.
 """
 
 from pathlib import Path
@@ -139,13 +138,6 @@ class FunctionAndFileSize(unittest.TestCase):
     """A function or a file over a threshold fails the first case and is named with its place and its
     size; the control case shows that the script that finds them finds them."""
 
-    # Expected failure while code stands over a threshold (the invariant reads Violated: yes). Once
-    # the change that brought this rule is finished, the code that keeps it failing is: the function
-    # `startApp` in `src/browser/view/app.ts`, the function `createProgramsEntry` and its method
-    # `build` in `src/browser/view/programs-entry.ts`, and the file
-    # `src/browser/kitchen-sink/kitchen-sink.tsx`. Clearing them takes this marking off and the
-    # invariant's *Violated* to `no`. The control case below is not marked.
-    @unittest.expectedFailure
     def test_no_function_and_no_file_is_over_a_threshold(self):
         # invariant: function-and-file-size
         # decision: D-425 "A function holds at most 200 lines of code and a file at most 800"

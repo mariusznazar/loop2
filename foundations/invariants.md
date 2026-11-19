@@ -1413,7 +1413,7 @@ No function and no file of the code the rule of size covers is longer than the t
 - **Rests on:** none
 - **Derives from:** D-425
 - **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
-- **Violated:** yes
+- **Violated:** no
 
 ## instrument-game-agreement
 
