@@ -5887,26 +5887,28 @@ map that start falls on a solved map, so the state at the start decides for a re
 other manual map run.
 *Rejected:* unknown
 
-### D-215 — Where does the player read that a manual run of a solved map pays and takes nothing?
+### D-215 — Where does the player read that a manual run of a solved map pays no practice?
 
 On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”,
 below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest
-już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” stands in `text-secondary`.
+już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde
+inne.” stands in `text-secondary`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-214
 - **Verification:** tests: on a manual run of a solved map, from its start, after a completion and
-  after a death, the line „Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze
-  skrzynki.” in the world area, right under the body row and above „Wprawa w tym przejściu”, and no
-  such line on a map run that pays. For the role of the line, an agent compares a change with the
-  part no test holds:
+  after a death, the line „Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze
+  skrzynki i wynosi do niej jak każde inne.” in the world area, right under the body row and above
+  „Wprawa w tym przejściu”, and no such line on a map run that pays. For the role of the line, an
+  agent compares a change with the part no test holds:
   - complies: the line in `text-secondary`
   - violates: the line in `text` or in `warning`
 - **Origin:** none
 
 *Rationale:* the player tuning a program on a solved map reads from the start of the map run that
-the attempt earns nothing. Accepted with it: one more line on the screen.
+the attempt pays no practice, and that it takes its supplies from the chest and carries its loot
+back to it as every other map run does (D-189). Accepted with it: one more line on the screen.
 *Rejected:* no such line — the player may tune a program believing that it earns.
 
 ### D-388 — What numbers do the maps Las and Las — głębiej have?
@@ -6238,43 +6240,55 @@ The used uses return one at a time on one clock: a death that uses up a use of a
 ### D-216 — Where does the player read what a death took and what a completion renewed?
 
 After a character's death, in the section of the end-of-run window (D-368) saying what it cost,
-until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego
-przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla
-całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.” in
-`text-secondary` when the death used up the resurrection, the hours coming from the balance data,
-„Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie
-{n}.” in `danger` when no resurrection was ready, and „Postać nie miała jeszcze wprawy, więc śmierć nie
-zużyła wskrzeszenia drużyny.” in `text-secondary` when the character had no practice yet, in place
-of the two lines above. After the first completion of a map that made a used-up resurrection ready,
-in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and
-after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in
-`text-secondary`; a completion that finds the resurrection ready shows none.
+until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia
+drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci
+zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy
+pierwszym rozwiązaniu nowej mapy.” in `text-secondary` when the death used up a use of the
+resurrection, the count {c} and the span {r} coming from the balance data and the uses left {u}
+being that count less the uses spent that the settlement of the death holds, read when the window is
+drawn, „Wskrzeszenie drużyny nie miało żadnego użycia: postać straciła całą wprawę i wykupione
+stopnie. Teraz to pokolenie {n}.” in `danger` when no use was left, and „Postać nie miała jeszcze
+wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.” in `text-secondary` when the
+character had no practice yet, in place of the two lines above. The span {r} reads „co godzinę”,
+„co 2 godziny” or „co 5 godzin” where it is a whole number of hours, declined by the number as the
+other counters of the game are, and otherwise „co {g} godz. {m} min”, below one hour „co {m} min”,
+in the form of the time reading of D-217.
+
+After the first completion of a map that returned a use of the resurrection, in the section saying
+what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the
+line „Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.” stands in
+`text-secondary`; a completion that finds the stock of uses full shows none.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
 - **Verification:** tests: after a death, in the part of the end-of-run window saying what the end
-  cost, the line of a resurrection used up, with the hours of the balance data, in
-  `text-secondary`, the line of none ready, with the generation number that death gave, in
+  cost, the line of a use spent, with the uses left that the settlement of the death leaves against
+  the count of the balance data and the span of the balance data in the form of its hours, in
+  `text-secondary`, the line of no use left, with the generation number that death gave, in
   `danger`, and the line of a character with no practice in `text-secondary` in place of both,
-  none while the death is unsettled, and each after a load too; after a first completion that made
-  a used-up resurrection ready, the renewal line in `text-secondary` below the deposit line, after
-  a load too, and none where the completion found the resurrection ready.
+  none while the death is unsettled, and each after a load too; after a first completion that
+  returned a use, the line of the returned use in `text-secondary` below the deposit line, after
+  a load too, and none where the completion found the stock full.
 - **Origin:** none
 
 *Rationale:* the player learns what the death took before pressing „Restart”, in words that agree
 with what the player reads afterwards at the character: the practice of this map run is gone and the
 earlier practice stays, and the hours are real ones. A manual map run pays practice only at a
-solving, and a death with a ready resurrection leaves the skills of the character as they were before
-the map run, so the practice of this map run is gone and the earlier practice stays. The first text names the span of the renewal
-rather than the time left, which after a load could be false, and the second stands in `danger`
+solving, and a death with a use of the resurrection left leaves the skills of the character as they were before
+the map run, so the practice of this map run is gone and the earlier practice stays. The first text names the span of the return
+rather than the time left, which after a load could be false, and the uses left that the death left,
+which the window computes from the count in the data and the uses the settlement holds spent, so the
+number describes the moment of the death for as long as the count in the data stays as it was, while
+the line at the character gives the number of the moment of reading; the second text stands in `danger`
 because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
 game state remembers how each death was settled, and how the first completion of a map was.
-The first text says that the next resurrection is the whole team's and that a new map brings it, so
-the player reads the sharing and the renewal at the moment the wait begins. The line of a character with no
+The first text says that the resurrection is the whole team's, that its used uses return one at a
+time and that a new map brings one at once, so the player reads the sharing and the return at the
+moment the wait begins. The line of a character with no
 practice yet tells that the death spared the resurrection, so the player need not open a character
-to know whether it went. The renewal line stands where the completion's other line stands and is
-told only where the renewal was needed, so that a success that changed nothing says nothing.
+to know whether a use went. The line of the returned use stands where the completion's other line stands and is
+told only where a use was returned, so that a success that changed nothing says nothing.
 Accepted with it: one text more; the word „drużyny” is to be thought over once a player may hold more than one team.
 *Rejected:* „wprawa i wykupione stopnie zostają” with no word of the practice of this map run — the
 player sees it gone and takes the game for a liar; the same in the header —
@@ -6286,24 +6300,25 @@ the resurrection is the whole team's only from the lines at the characters.
 
 ### D-217 — What does the game show of a character's resurrection?
 
-The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
 - **Verification:** tests: at the card of a character on Siedziba, on the screen Postać and at each
-  character in „Kto idzie”, the line of the time left in `danger` while the resurrection is not
-  ready, minutes alone below an hour, and „Wskrzeszenie drużyny gotowe” out of `danger` from the
-  moment of readiness and in a new game, rewritten at each reading of the clock; the minutes
-  rounded up to a whole minute before the split into hours and minutes. For the role of the line of
-  a ready resurrection, an agent compares a change with the part no test holds:
-  - complies: „Wskrzeszenie drużyny gotowe” in `text-secondary` at a character on Siedziba, on the
+  character in „Kto idzie”, the line of the uses with the count of the balance data, in `danger`
+  at zero uses alone and out of `danger` while a use is left, the time to the next return in it
+  while the stock is not full and none while it is full, minutes alone below an hour, in a new game
+  with the stock full, rewritten at each reading of the clock; the minutes
+  rounded up to a whole minute before the split into hours and minutes. For the role of the line
+  while a use is left, an agent compares a change with the part no test holds:
+  - complies: „Wskrzeszenie drużyny: użycia 3 z 3” in `text-secondary` at a character on Siedziba, on the
     screen Postać and in „Kto idzie”
-  - violates: „Wskrzeszenie drużyny gotowe” in `text` or in `positive`
+  - violates: that line in `text` or in `positive`, or „Wskrzeszenie drużyny: użycia 1 z 3, następne za 3 godz. 10 min czasu realnego” in `danger`
 - **Origin:** none
 
-*Rationale:* the player sees the stake before paying it, that the resurrection is the whole team's before a death shows it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”; and the word „drużyny” to be thought over once a player may hold more than one team.
-*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; the lines at the characters unchanged, with the sharing told only by the window of the end — the player learns of it only after a first death, as with the line after the first death; the lines unchanged and the sharing read only from the characters counting down together; a bare ready or not ready — the player does not know how long to wait, and the code hardly shrinks; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes; at the character in „Kto idzie” only a row in `danger` when the resurrection is not ready — the same row shown two ways in two places, for less text when all are ready; no row at the character in „Kto idzie” — a player sending the character would not see the risk that the player saw beside „Wyślij” when this was decided, so sending would get worse than it was.
+*Rationale:* the player sees the stake before paying it, that the resurrection is the whole team's before a death shows it, how many uses of it are left, how long the next return has and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The line stands in `danger` only at zero uses, because only a death with no use left takes the practice and the bought ranks. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „następne za 8 godz. 0 min”, 59 min 30 s reads „następne za 1 godz. 0 min”, and exactly 59 min reads „następne za 59 min”; and the word „drużyny” to be thought over once a player may hold more than one team.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; the lines at the characters unchanged, with the sharing told only by the window of the end — the player learns of it only after a first death, as with the line after the first death; the lines unchanged and the sharing read only from the characters counting down together; a bare ready or not ready — the player does not know how long to wait, and the code hardly shrinks; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes; at the character in „Kto idzie” only a row in `danger` when the resurrection is not ready — the same row shown two ways in two places, for less text when all are ready; no row at the character in „Kto idzie” — a player sending the character would not see the risk that the player saw beside „Wyślij” when this was decided, so sending would get worse than it was; each use called a resurrection — no cost to the product known; the line in `danger` already at the last use — no cost to the product known.
 
 ### D-218 — How does the headquarters show a character's generation number?
 
@@ -9010,32 +9025,6 @@ this decision a pause and the screens after an end would have held every earning
 *Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
 result holds up what they earn.
 
-### D-251 — How does the card of a map mark a rehearsal the earning loop cannot repeat?
-
-At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its
-program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest,
-„Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under
-„Wejdź” in the role `warning`.
-
-- **Scope:** browser-view · simulation
-- **Based on:** none
-- **Relations:** derives from D-188 · derives from D-189
-- **Verification:** tests: the line, word for word, at a character in „Kto idzie” of a solved map
-  alone, under its „Wejdź”, where an item of the take list, clipped by carrying capacity and the
-  map's entry cap in the order of the list, exceeds the stock in the chest, and none where the chest
-  holds it. For the role of the line, an agent compares a change with the part no test holds:
-  - complies: a program taking three pieces of an item the chest holds two of showing the line under
-    „Wejdź” at Las in `warning`
-  - violates: the line in a role other than `warning`
-- **Origin:** none
-
-*Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
-where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
-player starts. It stands where the line of D-188 stands, in the same role. The mark uses the name of the
-earning loop on the screen.
-*Rejected:* the mark brought in before the earning loop — the game speaks of an earning loop it does not have
-yet; another text, given by the human.
-
 ### D-409 — Where does an act of the player that depends on time catch up the time?
 
 An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation. A new character and the purchase of a branch rank do not catch up time.
@@ -9899,16 +9888,15 @@ At each character in the section „Kto idzie” stand, from the top, the name a
 - **Verification:** tests: at each character in „Kto idzie”, the characters in the order of their
   creation, from the top: the name as a link to its screen Postać, the line of the resurrection,
   the line of the earning loop at a character in an earning loop alone, „Program:” with its list,
-  „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” with the
-  warning of a rehearsal under it and „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside
-  it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
+  „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and
+  „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
   the sentence of a team with no character in the section. For the role „Wejdzie: …” is drawn in,
   an agent compares a change with the part no test holds:
   - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`
   - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped
 - **Origin:** none
 
-*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
+*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
 *Rejected:* „Wejdzie: …” only where less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters, and with a plan that enters whole the words of D-180 „the card of a map shows what of it enters” and of D-325 „what enters from the trip plan” would not hold; the rest as it stands but with no sentence for a team with no character — the section would have its heading alone, an empty area with no hint where to make a character.
 
 ### D-330 — What is the first of the three clicks from Siedziba to the first map run?
@@ -11721,6 +11709,7 @@ The results of the measurements of the balance instrument do not enter the repos
 | Identifier | Why | Successors |
 |---|---|---|
 | D-80 | withdrawn: it repeated, for a game parameter, the rule of the testing guidelines that D-73 adopts and D-82 supplies, that an expectation never comes from what the code gives today; the rule stands in `guidelines/testing.md`, in "Where the expected value comes from" | none |
+| D-251 | withdrawn: a manual run of a solved map takes its equipment from the chest and brings its loot out to it as an earning loop does (D-189), so no rehearsal takes a supply the earning loop would not get, and the card of a map has nothing to mark | none |
 | D-254 | withdrawn when it was taken for an instruction to the agent; its question, how an agent operates the game as a player does, is answered again by D-417 | D-417 |
 | D-357 | withdrawn when it was taken for an instruction to the agent; its question, where the screenshots a task cycle shows the human lie and how the request embeds them, is answered again by D-418 | D-418 |
 | D-358 | withdrawn when it was taken for an instruction to the agent; its question, who puts a screenshot into the repository for screenshots, is answered again by D-419 | D-419 |
