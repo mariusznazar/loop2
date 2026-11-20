@@ -5,6 +5,7 @@
 // invariant `resurrection-renewal`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { programFromRules } from "./program-fixture.mjs";
 import {
   advanceMinutes,
@@ -371,6 +372,35 @@ test("the uses return one at a time, each the renewal after the clock started or
       expected[0] > 0,
       `at T0 + ${at - T0}`,
     );
+  }
+});
+
+// invariant: resurrection-renewal
+test("the renewal is read from the data of the game when it is used: a renewal set after the module was loaded starts the clock of a death and times every return", () => {
+  // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
+  const renewalMinutes = BALANCE.resurrectionRenewalRealMinutes;
+  const R = 3_600_000; // the overlaid renewal, 60 real minutes
+  try {
+    BALANCE.resurrectionRenewalRealMinutes = 60;
+    let { team } = withUses(bothPractised(), 0, null);
+    team = dies(team, 0, T0).team;
+    assert.equal(
+      team.resurrectionNextReturnAtMs,
+      T0 + R,
+      "the clock of a death",
+    );
+    team = dies(team, 1, T0 + 1).team;
+    team = dies(team, 0, T0 + 2).team;
+    for (const [at, expected] of [
+      [T0 + R - 1, [0, T0 + R]],
+      [T0 + R, [1, T0 + 2 * R]],
+      [T0 + 2 * R, [2, T0 + 3 * R]],
+      [T0 + 3 * R, [USES, null]],
+    ]) {
+      assert.deepEqual(stock(team, at), expected, `at T0 + ${at - T0}`);
+    }
+  } finally {
+    BALANCE.resurrectionRenewalRealMinutes = renewalMinutes;
   }
 });
 

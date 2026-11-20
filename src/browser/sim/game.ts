@@ -73,7 +73,10 @@ function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
 }
 
-const RENEWAL_MS = BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE;
+/** The real span in which one spent use of the resurrection returns, read from the data of the game where it is used. */
+function renewalMs(): number {
+  return BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE;
+}
 
 /** The part of the team that holds its resurrection's uses. */
 type Uses = Pick<Team, "resurrectionUsesSpent" | "resurrectionNextReturnAtMs">;
@@ -99,11 +102,12 @@ function usesAt(team: Uses, nowMs: number): UsesAt {
   const spent = team.resurrectionUsesSpent;
   const next = team.resurrectionNextReturnAtMs;
   if (next === null || next > nowMs) return { spent, nextReturnMs: next };
-  const back = Math.min(spent, 1 + Math.floor((nowMs - next) / RENEWAL_MS));
+  const renewal = renewalMs();
+  const back = Math.min(spent, 1 + Math.floor((nowMs - next) / renewal));
   const left = spent - back;
   return {
     spent: left,
-    nextReturnMs: left === 0 ? null : momentAfter(next, back * RENEWAL_MS),
+    nextReturnMs: left === 0 ? null : momentAfter(next, back * renewal),
   };
 }
 
@@ -642,7 +646,7 @@ export function teamAfterDeath(
         ...team,
         resurrectionUsesSpent: spent + 1,
         resurrectionNextReturnAtMs:
-          nextReturnMs ?? momentAfter(nowMs, RENEWAL_MS),
+          nextReturnMs ?? momentAfter(nowMs, renewalMs()),
       },
       settlement: {
         kind: "resurrectionUsed",
