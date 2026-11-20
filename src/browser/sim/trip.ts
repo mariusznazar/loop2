@@ -36,17 +36,14 @@ export function clipTrip(
 /**
  * The entries a send takes into a manual map run, the one rule every start uses (D-189, D-214): the
  * take list is cut by the chest's stock, the carrying capacity and the map's entry cap in list
- * order. A `null` chest, which only the view's line for a solved map passes, takes the take list
- * from nowhere, cut by the carrying capacity and the entry cap only; the simulation's starts always
- * pass the chest.
+ * order. A solved map takes the same way (D-189).
  */
 export function sendTake(
   plan: TripPlan,
-  chest: Chest | null,
+  chest: Chest,
   capacity: number,
   map: MapDef,
 ): TripEntry[] {
-  if (chest === null) return clippedTake(plan, capacity, map);
   return clipTrip(
     plan.take,
     chest.pieces,
@@ -72,39 +69,6 @@ export function takeTrip(
     backpack[item] = count;
   }
   return { chest: { pieces }, backpack };
-}
-
-/**
- * The take list cut by the carrying capacity and the map's entry cap in list order, the list's own
- * counts standing in for the stock; no start of a map run uses it now (D-189), the view's line of a
- * solved map does. Pure.
- */
-export function clippedTake(
-  plan: TripPlan,
-  capacity: number,
-  map: MapDef,
-): TripEntry[] {
-  return clipTrip(
-    plan.take,
-    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
-    Math.min(capacity, map.carryIn ?? Infinity),
-  );
-}
-
-/**
- * The take list taken from nowhere, the list's own counts standing in for the stock, clipped only by
- * the carrying capacity and the map's entry cap. No start of a map run and no view calls it now
- * (D-189); only the tests do, until the slice that removes it.
- */
-export function takeFromNowhere(
-  plan: TripPlan,
-  capacity: number,
-  map: MapDef,
-): Backpack {
-  const backpack = newBackpack();
-  for (const { item, count } of sendTake(plan, null, capacity, map))
-    backpack[item] = count;
-  return backpack;
 }
 
 /**

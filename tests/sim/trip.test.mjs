@@ -27,8 +27,6 @@ import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   clipTrip,
-  clippedTake,
-  takeFromNowhere,
   takeTrip,
   tripLoot,
   tripEntryCut,
@@ -620,51 +618,6 @@ test("a manual run of a solved map takes its take list from the chest, cut by it
   assert.equal(sent(greedy).team.chest.pieces.berry, 0);
 });
 
-test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
-  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-64 "The backpack's cap counts the pieces of all items together"
-  // invariant: solved-map-manual-run
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
-  const before = structuredClone(plan);
-  assert.deepEqual(
-    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
-    { stick: 0, berry: 0, moss: 4, fiber: 0 },
-  );
-  assert.deepEqual(takeFromNowhere(plan, 12, MAPS.forest), {
-    stick: 0,
-    berry: 3,
-    moss: 9,
-    fiber: 0,
-  });
-  assert.equal(
-    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 0 }).moss,
-    0,
-  );
-  assert.deepEqual(plan, before);
-});
-
-// D-251: the mark on the card of the map and the run read one cut. Catches a cut that spends the budget
-// out of list order, drops a partial row, or ignores the entry cap of the map.
-test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
-  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
-  const before = structuredClone(plan);
-  // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
-  assert.deepEqual(clippedTake(plan, 12, MAPS.forest), [
-    entry("moss", 9),
-    entry("berry", 3),
-  ]);
-  // The entry cap 4 is below the capacity: moss takes all of it and berry gets nothing.
-  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 4 }), [
-    entry("moss", 4),
-  ]);
-  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 0 }), []);
-  assert.deepEqual(clippedTake({ take: [], bring: [] }, 15, MAPS.forest), []);
-  assert.deepEqual(plan, before);
-});
-
 test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
   // invariant: solved-map-manual-run
   // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from the chest and pays no practice."
@@ -784,10 +737,9 @@ test("a death on a manual run of a solved map takes what the character carried a
   assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });
 
-// What a send takes is one function (D-189): every start passes the chest, and the cases with
-// no chest (`null`) are the view's line of a solved map, which reads the list without one. The
-// expected entries below are worked out by hand from the chest or the list, the carrying capacity
-// and the map's entry cap, in list order.
+// What a send takes is one function (D-189): every start, a solved map's included, passes the chest.
+// The expected entries below are worked out by hand from the chest, the carrying capacity and the
+// map's entry cap, in list order.
 
 test("sendTake at an unsolved map takes each entry cut by the chest's stock, then by the carrying capacity", () => {
   // Chest stick 5, berry 10; capacity 15, no entry cap. Stick: min(8, 5, 15) = 5, room 10 left.
@@ -819,37 +771,4 @@ test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the 
   assert.deepEqual(sendTake(plan, chest, 15, { ...MAPS.forest, carryIn: 4 }), [
     entry("stick", 4),
   ]);
-});
-
-test("sendTake with no chest, the view's solved-map line, cuts the take list by capacity 12 only", () => {
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  // Null chest: the list's own counts stand in for the stock. Stick: min(8, 8, 12) = 8, room 4.
-  // Berry: min(9, 9, 4) = 4.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  assert.deepEqual(sendTake(plan, null, 12, MAPS.forest), [
-    entry("stick", 8),
-    entry("berry", 4),
-  ]);
-});
-
-test("sendTake at a solved map is not cut by any chest's stock, as no chest is an argument there", () => {
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  // Capacity 15: stick min(8, 8, 15) = 8, room 7. Berry: min(9, 9, 7) = 7. The chest is not an
-  // argument, so its stock cannot cut the list.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  assert.deepEqual(sendTake(plan, null, 15, MAPS.forest), [
-    entry("stick", 8),
-    entry("berry", 7),
-  ]);
-});
-
-test("takeFromNowhere gives the entries of a list cut by capacity and entry cap, with no chest", () => {
-  // decision: D-64 "The backpack's cap counts the pieces of all items together"
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  const backpack = takeFromNowhere(plan, 12, MAPS.forest);
-  assert.equal(backpack.stick, 8);
-  assert.equal(backpack.berry, 4);
-  assert.equal(backpack.moss, 0);
 });
