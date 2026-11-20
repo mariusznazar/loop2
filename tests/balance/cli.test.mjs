@@ -21,6 +21,7 @@ import {
   sweep,
 } from "../../balance/engine.mjs";
 import { loopSweep } from "../../balance/loop.mjs";
+import { applyOverlay } from "../../balance/overlay.mjs";
 import {
   measureProgression,
   renderProgression,
@@ -52,6 +53,21 @@ function overlayFile(name) {
 }
 
 const SWEEP_FLAGS = ["--map", "forest", "--program", "forestBest"];
+
+/**
+ * Runs `work` with a renewal of one use longer than any run, so no spent use returns in it and the
+ * spent start differs from the full start for a death with practice; the overlay is restored after.
+ */
+function withNoReturn(work) {
+  const restore = applyOverlay({
+    BALANCE: { resurrectionRenewalRealMinutes: 1e9 },
+  });
+  try {
+    return work();
+  } finally {
+    restore();
+  }
+}
 
 test("seeds are read as a range, a list, one number, or a list that holds ranges, and nothing else", () => {
   assert.deepEqual(parseSeeds("1-5"), [1, 2, 3, 4, 5]);
@@ -465,27 +481,29 @@ test("a loop command gives the readings the loop gives for the same flags, and -
       skills,
       ...flags,
     }).perCheckpoint;
-  assert.notDeepEqual(
-    direct({}),
-    direct({ resurrectionReady: false }),
-    "precondition: the resurrection changes this loop's readings",
-  );
-  assert.deepEqual(run({}).perCheckpoint, direct({}));
-  assert.deepEqual(
-    run({ resurrection: false }).perCheckpoint,
-    direct({ resurrectionReady: false }),
-  );
-  assert.notDeepEqual(
-    run({}).perCheckpoint,
-    loopSweep({
-      mapId: "forest",
-      program: forestBest,
-      seeds,
-      checkpoints: [8, 24],
-    }).perCheckpoint,
-    "precondition: the practice changes this loop's readings",
-  );
-  assert.deepEqual(run({}).header.hours, [8, 24]);
+  withNoReturn(() => {
+    assert.notDeepEqual(
+      direct({}),
+      direct({ resurrectionReady: false }),
+      "precondition: the resurrection changes this loop's readings",
+    );
+    assert.deepEqual(run({}).perCheckpoint, direct({}));
+    assert.deepEqual(
+      run({ resurrection: false }).perCheckpoint,
+      direct({ resurrectionReady: false }),
+    );
+    assert.notDeepEqual(
+      run({}).perCheckpoint,
+      loopSweep({
+        mapId: "forest",
+        program: forestBest,
+        seeds,
+        checkpoints: [8, 24],
+      }).perCheckpoint,
+      "precondition: the practice changes this loop's readings",
+    );
+    assert.deepEqual(run({}).header.hours, [8, 24]);
+  });
 });
 
 test("a campaign command plays the player a description names, by its identifier in the instrument's own list", () => {
