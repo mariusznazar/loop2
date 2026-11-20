@@ -28,7 +28,12 @@ import { newSkills } from "../dist/browser/sim/skills.js";
 import { takeTrip, tripLoot } from "../dist/browser/sim/trip.js";
 
 /** A map run still open after this many game minutes ends as a run at the cap. */
-const DEFAULT_CAP_MINUTES = 4000;
+export const DEFAULT_CAP_MINUTES = 4000;
+
+/** How a map run stands: `solved` after its completion, `death` after its death, else `cap`, still open. */
+export function outcomeOf(run) {
+  return run.completion ? "solved" : run.death ? "death" : "cap";
+}
 
 /** An Understanding that holds everything the data lists, so nothing is discovered in a map run. */
 export function fullUnderstanding() {
@@ -225,7 +230,7 @@ export function runOnce(options) {
     run = stepMinute(run, map, reduced).run;
     observeMinute(observation, before, run);
   }
-  const outcome = run.completion ? "solved" : run.death ? "death" : "cap";
+  const outcome = outcomeOf(run);
   const entrance = run.tiles.find(
     (tile) =>
       tile.at.q === started.run.character.at.q &&
@@ -286,6 +291,15 @@ export function meanOf(records, read) {
       Math.round((value / records.length) * 100) / 100,
     ]),
   );
+}
+
+/** The mean of `read` over the list, two decimals, or null for an empty list. */
+export function meanNumber(list, read) {
+  return list.length === 0
+    ? null
+    : Math.round(
+        (list.reduce((sum, item) => sum + read(item), 0) / list.length) * 100,
+      ) / 100;
 }
 
 /** The deaths of the results by cause, each with its count and the distribution of its minutes. */

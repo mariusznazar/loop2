@@ -10,10 +10,14 @@ import { CREATURES } from "../dist/browser/sim/data/creatures.js";
 import { ITEMS } from "../dist/browser/sim/data/items.js";
 import { RESOURCES } from "../dist/browser/sim/data/resources.js";
 import { mapRunEnded, stepMinute } from "../dist/browser/sim/run.js";
-import { buildSkills, makeState, prerequisitesOf, startOf } from "./engine.mjs";
-
-/** A map run still open after this many game minutes ends as a run at the cap. */
-const DEFAULT_CAP_MINUTES = 4000;
+import {
+  DEFAULT_CAP_MINUTES,
+  buildSkills,
+  makeState,
+  outcomeOf,
+  prerequisitesOf,
+  startOf,
+} from "./engine.mjs";
 
 /** The line of one game minute: its number, the body, the energy, the streak, fire, pack, place and text. */
 function lineOf(run, text) {
@@ -118,7 +122,7 @@ export function trace(options) {
   }
   return {
     lines,
-    outcome: run.completion ? "solved" : run.death ? "death" : "cap",
+    outcome: outcomeOf(run),
     minute: run.minute,
     cause: run.death?.cause ?? null,
   };
