@@ -25,7 +25,8 @@ import {
 export const LOOP_START_MS = 1760000000000;
 const MS_PER_HOUR = 60 * 60 * 1000;
 export const MS_PER_MINUTE = 60 * 1000;
-const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
+/** The real span of one loop minute, as the game's catch-up reads it: the one place the instrument keeps it. */
+export const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
 
 /** `numerator / denominator` in percent, one decimal, or null for no denominator. */
 function percent(numerator, denominator) {

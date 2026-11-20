@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { newGame } from "../../dist/browser/sim/game.js";
-import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   campaignSweep,
   comeBack,
@@ -12,15 +12,12 @@ import {
   playCampaign,
   programsOf,
 } from "../../balance/campaign.mjs";
-import { makeState } from "../../balance/engine.mjs";
 import { LOOP_START_MS } from "../../balance/loop.mjs";
 import best from "../../balance/players/edge-daily-best.json" with { type: "json" };
 import decent from "../../balance/players/edge-daily-decent.json" with { type: "json" };
 import stock from "../../balance/players/edge-daily-decent-stock.json" with { type: "json" };
-import {
-  REFERENCE_PROGRAMS,
-  emptyProgram,
-} from "../sim/reference-programs.mjs";
+import { emptyLoopContext, minutesOfAnEmptyRun } from "./campaign-fixture.mjs";
+import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
 
 // The campaign of a player over many days, checked against relations the campaign code does not
 // compute: the first map is solved before any loop starts, no purchase is made that the points do
@@ -256,48 +253,6 @@ test("a player who waits for the resurrection tries its next map while one use i
   assert.equal(dueWith(3), undefined, "all three uses spent");
 });
 
-/**
- * The campaign's one character on the loop of the empty program at Skraj lasu from the loop's start:
- * the mage has practice, so a death is covered by a use while one is left, and the program does
- * nothing, so every map run of the loop ends in a death.
- */
-function emptyLoopContext() {
-  const [skills] = makeState().team.characters.map(
-    (character) => character.skills,
-  );
-  const state = makeState({
-    program: emptyProgram,
-    skills: { ...skills, eating: { practice: 20, ranks: {} } },
-    solvedMaps: [FIRST_MAP],
-  });
-  const [character] = state.team.characters;
-  const started = startLoop(
-    { ...state, lastSeed: 1 },
-    { mapId: FIRST_MAP, characterId: character.id },
-    LOOP_START_MS,
-  ).state;
-  return {
-    player: { days: 0, attempts: [] },
-    state: { ...started, saveTimeMs: LOOP_START_MS },
-    characterId: character.id,
-    clock: { ms: LOOP_START_MS },
-    horizonMs: LOOP_START_MS + 2 * 24 * 60 * 60 * 1000,
-    nextDayMark: 1,
-    log: {
-      resurrectionsUsed: 0,
-      loopCompletions: 0,
-      progressLost: 0,
-      daily: [],
-    },
-  };
-}
-
-/** The game minutes the map run of the empty loop lasts before the mage dies, read from the game. */
-function minutesOfAnEmptyRun() {
-  const { state, characterId } = emptyLoopContext();
-  return advanceLoopRun(state, characterId, 100000).passed;
-}
-
 test("one return that covers several deaths counts every use spent, and the loop it leaves alive counts no death as a completion", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice"
   // A map run of the empty program ends in 243 game minutes, so the 24 hours of this return hold the
@@ -329,4 +284,38 @@ test("a loop that stops after covered deaths counts each of the uses spent and n
   } finally {
     BALANCE.resurrectionRenewalRealMinutes = renewalMinutes;
   }
+});
+
+test("a loop minute that an overlay shortens after the instrument is loaded changes no step of a return: the campaign takes the loop minute from the instrument's loop file, as the game's catch-up does, and the return ends with the same count", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice"
+  // The return is run in a process of its own with a limit of time, for a campaign that steps by a
+  // loop minute other than the game's makes no progress and never ends.
+  const fixture = new URL("./campaign-fixture.mjs", import.meta.url).href;
+  const campaign = new URL("../../balance/campaign.mjs", import.meta.url).href;
+  const balance = new URL(
+    "../../dist/browser/sim/data/balance.js",
+    import.meta.url,
+  ).href;
+  const script = `
+    import { comeBack } from "${campaign}";
+    import { BALANCE } from "${balance}";
+    import { emptyLoopContext } from "${fixture}";
+    const ctx = emptyLoopContext();
+    BALANCE.loopMinuteRealSeconds = 30;
+    comeBack(ctx, 24);
+    console.log(JSON.stringify(ctx.log));
+  `;
+  const result = spawnSync(
+    process.execPath,
+    ["--input-type=module", "--eval", script],
+    { encoding: "utf8", timeout: 20_000 },
+  );
+  assert.equal(result.error, undefined, "the return ended within its limit");
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    resurrectionsUsed: 5,
+    loopCompletions: 0,
+    progressLost: 0,
+    daily: [],
+  });
 });

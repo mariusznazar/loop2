@@ -62,7 +62,12 @@ import {
   outcomeOf,
   quantile,
 } from "./engine.mjs";
-import { LOOP_START_MS, MS_PER_MINUTE, earnedPoints } from "./loop.mjs";
+import {
+  LOOP_START_MS,
+  MS_PER_LOOP_MINUTE,
+  MS_PER_MINUTE,
+  earnedPoints,
+} from "./loop.mjs";
 
 const MS_PER_SECOND = 1000;
 const MS_PER_DAY = 24 * 60 * MS_PER_MINUTE;
@@ -358,17 +363,16 @@ function markDays(ctx) {
  */
 function passAway(ctx, now) {
   const { characterId } = ctx;
-  const minuteMs = BALANCE.loopMinuteRealSeconds * MS_PER_SECOND;
   const completedBefore = ctx.state.loops[characterId]?.completed ?? 0;
   let state = ctx.state;
   let completed = completedBefore;
   let usesSpent = 0;
   while (state.loops[characterId]) {
-    const minutes = Math.floor((now - state.saveTimeMs) / minuteMs);
+    const minutes = Math.floor((now - state.saveTimeMs) / MS_PER_LOOP_MINUTE);
     if (minutes <= 0) break;
     const { passed } = advanceLoopRun(state, characterId, minutes);
     if (passed === 0) break;
-    const moment = state.saveTimeMs + passed * minuteMs;
+    const moment = state.saveTimeMs + passed * MS_PER_LOOP_MINUTE;
     const caught = catchUp(state, moment);
     if (caught.events.length > 0)
       usesSpent +=
