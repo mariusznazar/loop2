@@ -42,10 +42,17 @@ function withCharacter(state, id, fields) {
   };
 }
 
-/** `state` with the team's one resurrection ready from the real moment `readyAtMs` on. */
-const withResurrection = (state, readyAtMs) => ({
+/**
+ * `state` with `spent` uses of the team's one resurrection not yet returned, the next of them
+ * returning at the real moment `nextMs`.
+ */
+const withResurrection = (state, spent, nextMs) => ({
   ...state,
-  team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  team: {
+    ...state.team,
+    resurrectionUsesSpent: spent,
+    resurrectionNextReturnAtMs: nextMs,
+  },
 });
 
 const withChest = (state, pieces) => ({
@@ -255,28 +262,31 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
 
 // Catches a resurrection line drawn once and left, a line that loses `danger` late or early, and a
 // line rebuilt as a new element at every reading, which would drop what stands on it (D-217).
-test("the resurrection line follows the clock's moment in the very same element, in danger until ready", async () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+test("the resurrection line follows the clock's moment in the very same element, in danger at zero uses", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses"
   await withPage(async (page) => {
-    const readyAt = NOW + 8 * HOUR;
-    const state = withResurrection(teamOf(1), readyAt);
+    const nextAt = NOW + 8 * HOUR;
+    const state = withResurrection(teamOf(1), 3, nextAt);
     const { screen } = await mount(page, propsOf(state));
     const [line] = all(page.root, ".team-member-resurrection");
     assert.equal(
       line.textContent,
-      `Wskrzeszenie drużyny za 8 godz. 0 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny: użycia 0 z 3, następne za 8 godz. 0 min czasu realnego${WARNING}`,
     );
     assert.ok(line.classList.contains("danger"));
 
-    await inAct(() => screen.update(propsOf(state, readyAt - 30 * MINUTE)));
+    await inAct(() => screen.update(propsOf(state, nextAt - 30 * MINUTE)));
     assert.equal(
       line.textContent,
-      `Wskrzeszenie drużyny za 30 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny: użycia 0 z 3, następne za 30 min czasu realnego${WARNING}`,
     );
     assert.ok(line.classList.contains("danger"));
 
-    await inAct(() => screen.update(propsOf(state, readyAt)));
-    assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
+    await inAct(() => screen.update(propsOf(state, nextAt)));
+    assert.equal(
+      line.textContent,
+      "Wskrzeszenie drużyny: użycia 1 z 3, następne za 4 godz. 0 min czasu realnego",
+    );
     assert.equal(line.classList.contains("danger"), false);
     assert.equal(all(page.root, ".team-member-resurrection")[0], line);
   });

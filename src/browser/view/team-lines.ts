@@ -1,3 +1,4 @@
+import { BALANCE } from "../sim/data/balance.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
@@ -67,23 +68,26 @@ export type ResurrectionLine = {
 
 /**
  * The resurrection line that stands at each character, from the team's one resurrection at the real
- * moment `nowMs` (D-217): „Wskrzeszenie drużyny gotowe” once ready, else a warning with the time
- * left, „za {g} godz. {m} min czasu realnego” and below an hour „za {m} min czasu realnego”. The
- * time left is rounded up to whole minutes first, then divided into hours and minutes, so the line
- * never promises sooner than the real time. A clock set back gives more time left. Pure.
+ * moment `nowMs` (D-217): „Wskrzeszenie drużyny: użycia {u} z {c}” with the count from the balance
+ * data, and once a use is spent „, następne za {g} godz. {m} min czasu realnego” (below an hour
+ * „, następne za {m} min czasu realnego”). At zero uses the line stands in `danger` and ends with the
+ * warning about the practice and the bought ranks. The time left is rounded up to whole minutes
+ * first, then divided into hours and minutes, so the line never promises sooner than the real time.
+ * A clock set back gives more time left. Pure.
  */
 export function resurrectionLine(team: Team, nowMs: number): ResurrectionLine {
   const { usesLeft, nextReturnMs } = resurrectionAt(team, nowMs);
-  if (usesLeft > 0 || nextReturnMs === null)
-    return { text: "Wskrzeszenie drużyny gotowe", danger: false };
+  const stock = `Wskrzeszenie drużyny: użycia ${usesLeft} z ${BALANCE.resurrectionUses}`;
+  if (nextReturnMs === null) return { text: stock, danger: false };
   const minutes = Math.ceil((nextReturnMs - nowMs) / MS_PER_MINUTE);
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
-  const left =
+  const next =
     hours === 0
-      ? `za ${minutes} min czasu realnego`
-      : `za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
+      ? `następne za ${minutes} min czasu realnego`
+      : `następne za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
+  if (usesLeft > 0) return { text: `${stock}, ${next}`, danger: false };
   return {
-    text: `Wskrzeszenie drużyny ${left} — śmierć zabierze wprawę i wykupione stopnie`,
+    text: `${stock}, ${next} — śmierć zabierze wprawę i wykupione stopnie`,
     danger: true,
   };
 }
