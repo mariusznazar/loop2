@@ -115,7 +115,9 @@ wyjątku.
 Wczytanie sprawdza też wobec danych: dopuszczalne tempa, szerokość i wysokość
 planszy każdej mapy (liczbę pól), identyfikatory map, zasobów, przedmiotów,
 stworzeń, rodzajów działań i warunków, umiejętności postaci i gałęzi ich
-drzew, górną granicę energii natury, pojemność skrzyni, predyspozycje
+drzew, górną granicę energii natury, pojemność skrzyni, liczbę użyć
+wskrzeszenia drużyny (zużytych użyć nie może być więcej, a po śmierci, która
+zużyła użycie, zostaje ich mniej niż ta liczba), predyspozycje
 archetypu postaci, liczbę cen każdej gałęzi (najwyższą rangę) oraz progi
 wprawy, od których zależą punkty do wydania na rangi. Zmiana którejś
 z tych rzeczy nie podnosi wersji sama (poza dodaniem albo usunięciem zwykłej czynności, które ją podnosi), ale dokumenty bieżącej wersji, które

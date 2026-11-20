@@ -283,19 +283,21 @@ export type MapRun = {
 };
 
 /**
- * How a death was settled: the resurrection it used up, everything it took, with the generation
- * number the death gave the character, which stays the number of that death however the character
- * goes on, or nothing besides what the character carried, the character having no practice yet, so
- * that the team's resurrection and the character stay as the death found them.
+ * How a death was settled: the use of the resurrection it spent, with the uses left after it (from 0
+ * up to one below the data's count), which stay the uses of that death however the team goes on;
+ * everything it took, with the generation number the death gave the character, which stays the number
+ * of that death however the character goes on; or nothing besides what the character carried, the
+ * character having no practice yet, so that the team's resurrection and the character stay as the
+ * death found them.
  */
 export type DeathSettlement =
-  | { kind: "resurrectionUsed" }
+  | { kind: "resurrectionUsed"; usesLeft: number }
   | { kind: "progressLost"; generation: number }
   | { kind: "noPractice" };
 
 /**
  * How the first completion of a map the account had not solved was settled at the real moment of its
- * reading: the team's used-up resurrection it made ready, or the ready one it found, which stays.
+ * reading: the use of the team's resurrection it returned, or the full stock it found, which stays.
  */
 export type CompletionSettlement =
   { kind: "resurrectionRenewed" } | { kind: "resurrectionReady" };
@@ -405,7 +407,7 @@ export type CharacterId = number;
 
 /**
  * A character of the player's team; its traits are made when it is created and saved with it. The
- * generation number is 1 at creation and grows at a death with no resurrection ready, of a
+ * generation number is 1 at creation and grows at a death with no use of the resurrection left, of a
  * character with practice.
  */
 export type Character = {
@@ -422,13 +424,17 @@ export type Chest = { pieces: Partial<Record<ItemId, number>> };
 
 /**
  * The player's one team: its characters in the order they were created, its chest and its one
- * resurrection, shared by all the characters: ready from the real moment `resurrectionReadyAtMs`
- * on, and from the start of a new game at 0.
+ * resurrection, shared by all the characters: the uses of it spent and not yet returned, and the
+ * real moment the next one returns, which stands exactly while that count is above zero. A new game
+ * starts with the count at 0 and no moment. The state holds the uses as they stood when a death or a
+ * first solving last settled; a use whose moment has passed since still counts as returned, and
+ * `resurrectionAt` gives the uses as they stand at a real moment.
  */
 export type Team = {
   characters: Character[];
   chest: Chest;
-  resurrectionReadyAtMs: number;
+  resurrectionUsesSpent: number;
+  resurrectionNextReturnAtMs: number | null;
 };
 
 export type GameState = {

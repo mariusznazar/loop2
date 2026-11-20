@@ -79,7 +79,7 @@ import type {
  * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
  * record of a manual map run: a new action or a removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 7;
+export const SAVED_GAME_VERSION = 8;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -498,15 +498,38 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
 }
 
 /**
- * The team: its characters, numbers each once and below the next one, its chest and the moment its
- * one resurrection is ready.
+ * The uses of the team's one resurrection that are spent, at most the data's count, and the moment
+ * the next one returns: no moment with none spent, and a moment with some spent.
+ */
+function resurrectionUses(
+  spentValue: unknown,
+  nextValue: unknown,
+): Pick<Team, "resurrectionUsesSpent" | "resurrectionNextReturnAtMs"> {
+  const spent = count(spentValue);
+  if (spent > BALANCE.resurrectionUses) refuse();
+  if ((nextValue === null) !== (spent === 0)) refuse();
+  return {
+    resurrectionUsesSpent: spent,
+    // Any safe integer: the moment is real time of a past death, and no clock is read here (D-386).
+    resurrectionNextReturnAtMs: nextValue === null ? null : integer(nextValue),
+  };
+}
+
+/**
+ * The team: its characters, numbers each once and below the next one, its chest and the uses of its
+ * one resurrection that are spent, with the moment the next returns.
  */
 function team(
   value: unknown,
   nextCharacterId: CharacterId,
   trees: readonly SkillId[],
 ): Team {
-  const read = fields(value, ["characters", "chest", "resurrectionReadyAtMs"]);
+  const read = fields(value, [
+    "characters",
+    "chest",
+    "resurrectionUsesSpent",
+    "resurrectionNextReturnAtMs",
+  ]);
   const ids = new Set<CharacterId>();
   const characters = list(read.characters).map((item): Character => {
     const character = fields(item, [
@@ -533,9 +556,10 @@ function team(
   return {
     characters,
     chest: chest(read.chest),
-    // Any safe integer: the moment is real time of a past death or first solving, and no clock is
-    // read here (D-386).
-    resurrectionReadyAtMs: integer(read.resurrectionReadyAtMs),
+    ...resurrectionUses(
+      read.resurrectionUsesSpent,
+      read.resurrectionNextReturnAtMs,
+    ),
   };
 }
 
@@ -808,8 +832,12 @@ const SETTLEMENTS: {
   ) => DeathSettlement;
 } = {
   resurrectionUsed: (value) => {
-    fields(value, ["kind"]);
-    return { kind: "resurrectionUsed" };
+    const read = fields(value, ["kind", "usesLeft"]);
+    // A death spends one use of a stock that holds at most the data's count, so at most one is
+    // left after it.
+    const usesLeft = count(read.usesLeft);
+    if (usesLeft >= BALANCE.resurrectionUses) refuse();
+    return { kind: "resurrectionUsed", usesLeft };
   },
   progressLost: (value, currentGeneration) => {
     const read = fields(value, ["kind", "generation"]);
