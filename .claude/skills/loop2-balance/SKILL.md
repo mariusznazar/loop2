@@ -96,9 +96,9 @@ Every map goes through this check before a package is defined.
    with `--out <path>` outside the tracked files.
 3. The columns are: the map's name in the game's data, the program's label, the share solved on
    seeds 1-500, the median game minutes of the solved runs, the deaths by cause and the runs at the
-   cap, and the earning loop over 24 real hours on seeds 1-100, the loop starting with the full number of uses of the resurrection: pieces taken
-   from the chest per map run, pieces put into it per map run, and the share of map runs that end in
-   death. The label is `P1`, `P2`... : the program's number in the list that `programs` prints, the
+   cap, and the earning loop over 24 real hours on seeds 1-100, the loop starting with the full
+   number of uses of the resurrection: pieces taken from the chest per map run, pieces put into it
+   per map run, and the share of map runs that end in death. The label is `P1`, `P2`... : the program's number in the list that `programs` prints, the
    same whichever programs `--programs` narrows to. The table shows no condition, action, rule or
    identifier of any program, because an identifier can state the rules of its program in other
    words: the person who plays the game gets this table, and the programs and the key from label to
@@ -148,7 +148,13 @@ the maps before it pay, each by the best program of that map (the median of its 
 along the maps that open it); the ranks bought from that practice, as far as its points reach, of
 the branches the measured program needs (those that open an action its rules use); and the stock of
 the program's take list, brought out by manual runs of the solved maps before it within the chest's
-capacity, counted. The first map has no map before it, so a program that takes from the chest goes
+capacity, counted. Each of those manual runs is made with the best program of the map it is made on,
+so the stock is what that program brings out of the map, not what a player with another program
+could bring; where it brings out none of an item the measured program takes, the stock ends "not
+gathered in full" after 100 runs, and the row is measured with less than a generous state, so a
+failure on it does not yet say the map needs a loop. The character that brings out the stock and
+the character that is measured buy ranks from the same practice, so its points are spent twice,
+once for each. The first map has no map before it, so a program that takes from the chest goes
 in with none of it. A manual run pays no practice and its death is not settled. A branch that a
 program needs without opening an action of its rules, as a reference program's comment may name, is
 not bought: read such a row as measured without it.

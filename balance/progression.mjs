@@ -6,9 +6,11 @@
 // before it pay, each by the best program of that map (the median of its solved map runs, summed along
 // the chain of maps that open the map); the ranks of the branches the measured program needs, bought
 // from that practice with the game's `buyBranch` as far as its points reach; and the stock of the
-// program's take list, brought out by manual runs of the solved maps before it with the game's `send`
-// and `advanceMinutes`, so that the chest takes and keeps by the rules of the game, counted. Each map
-// run of the measurement itself is stepped by the engine, so it ends as it ends in the game (invariant
+// program's take list, brought out by manual runs of the solved maps before it, each run with the best
+// program of the map it is made on, with the game's `send` and `advanceMinutes`, so that the chest
+// takes and keeps by the rules of the game, counted. The character that brings out the stock and the
+// one measured buy ranks from the same practice, so its points are spent twice. Each map run of the
+// measurement itself is stepped by the engine, so it ends as it ends in the game (invariant
 // instrument-game-agreement). The result is data, and its table names no program by more than a
 // label (D-428); the file is written by `balance/cli.mjs` alone.
 
@@ -18,7 +20,7 @@ import { MAPS } from "../dist/browser/sim/data/maps.js";
 import { advanceMinutes, end, send } from "../dist/browser/sim/game.js";
 import { buyBranch } from "../dist/browser/sim/skills.js";
 import { REFERENCE_PROGRAMS } from "../tests/sim/reference-programs.mjs";
-import { renderTable } from "./check-map.mjs";
+import { LOOP_COLUMN_COUNT, renderTable } from "./check-map.mjs";
 import { programLabels } from "./describe.mjs";
 import {
   DEFAULT_CAP_MINUTES,
@@ -37,8 +39,6 @@ export const PROGRESSION_SEEDS = seedRange(1, 500);
 export const MAX_STOCK_RUNS = 100;
 /** The share of the seeds, in percent, from which a map counts as solvable by its best program. */
 export const SOLVABLE_SHARE = 20;
-/** The columns the map check's table ends with that belong to the earning loop, which this table lacks. */
-const LOOP_COLUMN_COUNT = 3;
 
 /**
  * The branches a program needs: those whose effect opens an action the program's rules use. A
