@@ -977,7 +977,7 @@ An action shortened by bought branches lasts at least one game minute.
 
 ## trip-transfer
 
-Outside a manual run of a solved map, at each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room, while a manual run of a solved map leaves the chest as it was at its start and at its completion.
+At each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room.
 
 - **Method:** test
 - **Rests on:** none
@@ -987,7 +987,7 @@ Outside a manual run of a solved map, at each map-run start equipment is removed
 
 ## trip-run-end
 
-Death, ending or restarting an unfinished map run, or stopping the earning loop it belongs to, returns none of its carried items to the chest, while completion deposits the frozen bring list's clipped contents, on a manual run of a solved map nothing, and leaves the remaining items unavailable to subsequent runs.
+Death, ending or restarting an unfinished map run, or stopping the earning loop it belongs to, returns none of its carried items to the chest, while completion deposits the frozen bring list's clipped contents and leaves the remaining items unavailable to subsequent runs.
 
 - **Method:** test
 - **Rests on:** none
@@ -1057,7 +1057,7 @@ The game loads no data from a saved game state whose version differs from the ga
 
 ## solved-map-manual-run
 
-A manual map run of a map already solved when the map run starts leaves the chest as it was and adds no practice to any character skill.
+A manual map run of a map already solved when the map run starts adds no practice to any character skill.
 
 - **Method:** test
 - **Rests on:** none
@@ -1067,7 +1067,7 @@ A manual map run of a map already solved when the map run starts leaves the ches
 
 ## resurrection-renewal
 
-The account's resurrection used up by a death is ready again at the real moment of that death plus the renewal time in the balance data, the first completion of a map the account has not solved, and no later completion of it, makes a used-up resurrection ready at the real moment of its settling and leaves a ready one as it stood, a death with no resurrection ready or of a character with no practice leaves that moment as it stood, and a moment equal to the moment of readiness counts as ready.
+The account's resurrection holds a number of uses, the death of a character with practice uses up one while any is left, the death that uses up a use of a full stock sets the moment of the next return at its own real moment plus the renewal time in the balance data, a death that uses up a use at any other time leaves that moment as it stood, at that moment one use returns and, while the stock is then not full, the moment moves on by the renewal time, the first completion of a map the account has not solved, and no later completion of it, returns one use at the real moment of its settling while the stock is not full and leaves that moment as it stood unless the stock is then full, a death with no use left or of a character with no practice leaves the uses and that moment as they stood, and a moment equal to the moment of the next return counts as returned.
 
 - **Method:** test
 - **Rests on:** none

@@ -20,6 +20,21 @@ import {
 // and its figures. The table holds no text of a program's rules, and each row is the measurement of
 // its map and program, checked on a few seeds where a full run would take minutes.
 
+/**
+ * Runs `work` with a renewal of one use longer than any run, so no spent use returns in it and the
+ * spent start differs from the full start for a death with practice; the overlay is restored after.
+ */
+function withNoReturn(work) {
+  const restore = applyOverlay({
+    BALANCE: { resurrectionRenewalRealMinutes: 1e9 },
+  });
+  try {
+    return work();
+  } finally {
+    restore();
+  }
+}
+
 const BASIS = { sweep: "seeds 1-500", loop: "24 real hours, seeds 1-100" };
 
 function overlayFile(name) {
@@ -197,7 +212,8 @@ test("a row of one map and one program with few seeds comes from the measurement
   assert.equal(Math.round((row.runs * row.solvedShare) / 100), summary.solved);
 });
 
-test("the earning loop of a row starts with the resurrection ready, which changes its balance for this program and these seeds", () => {
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection"
+test("the earning loop of a row starts with the full number of uses of the resurrection, which changes its balance for this program and these seeds", () => {
   const skills = buildSkills({ practice: { smallItemGathering: 80 } });
   const loopSeeds = seedRange(1, 10);
   const loopOf = (resurrectionReady) =>
@@ -210,22 +226,24 @@ test("the earning loop of a row starts with the resurrection ready, which change
       chest: chestOf(forestLoopWithStock),
       resurrectionReady,
     }).summary;
-  const ready = loopOf(true);
-  const spent = loopOf(false);
+  const ready = withNoReturn(() => loopOf(true));
+  const spent = withNoReturn(() => loopOf(false));
   assert.notEqual(
     ready.deathShare,
     spent.deathShare,
     "precondition: the flag changes the balance",
   );
-  const row = measureRow({
-    mapId: "forest",
-    programLabel: "P6",
-    program: forestLoopWithStock,
-    skills,
-    sweepSeeds: seedRange(1, 2),
-    loopSeeds,
-    hours: 12,
-  });
+  const row = withNoReturn(() =>
+    measureRow({
+      mapId: "forest",
+      programLabel: "P6",
+      program: forestLoopWithStock,
+      skills,
+      sweepSeeds: seedRange(1, 2),
+      loopSeeds,
+      hours: 12,
+    }),
+  );
   assert.equal(row.takenPerMapRun, ready.takenPerMapRun);
   assert.equal(row.putPerMapRun, ready.putPerMapRun);
   assert.equal(row.deathShare, ready.deathShare);

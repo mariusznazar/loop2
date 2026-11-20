@@ -334,7 +334,6 @@ function takeEnd(
       {
         bringPlan: loop.program.tripPlan.bring,
         character: run.character,
-        solvedMapRun: false,
       },
       chest,
       MAPS[run.mapId],
@@ -375,12 +374,13 @@ function takeEnd(
  * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
  * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
  * to the earning loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
- * settled at `nowMs` as a manual one is, by the team's one resurrection (`teamAfterDeath`): the
+ * settled at `nowMs` as a manual one is, by the uses of the team's resurrection (`teamAfterDeath`): the
  * practice gathered at the earning loop counts as the character's practice. A character with no practice
- * leaves the resurrection as it was, ready or not, and the earning loop goes on; otherwise, with it ready it
- * is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; without one the
- * character loses its practice and ranks and the earning loop is dropped with what it gathered. The carried
- * items go with the run and the chest stays as it stood. One `loopRunEnded` event follows for the end.
+ * leaves the uses as they were, whether one is left or not, and the earning loop goes on; otherwise, with a
+ * use left one is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; with
+ * none left the character loses its practice and ranks and the earning loop is dropped with what it
+ * gathered. The carried items go with the run and the chest stays as it stood. One `loopRunEnded` event
+ * follows for the end.
  * With no earning loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
  * `nowMs` that is no safe integer is a RangeError.
  */
@@ -551,8 +551,9 @@ export function passLoops(
  * The catch-up (D-240, D-247): the whole minutes from the save time to `nowMs`, one character at a
  * time in the team's order, each through the whole span and the chest as the one before left it. It
  * reads neither the manual map run nor the pause, and an earning loop that stops does not stop the others.
- * The team's one resurrection goes by the same order: the death of each character finds it as the
- * characters earlier on the list left it, even when they died later in real time (D-240).
+ * The uses of the team's resurrection and the clock of their return go by the same order: the death of
+ * each character finds them as the characters earlier on the list left them, even when they died later
+ * in real time (D-240).
  * Each character's turn is written into the report: its minutes, its own change of the chest, and
  * a covered death or a stop; the practice its earning loop gathered is read from the earning loop (D-246). With
  * no earning loop, no whole minute or no save time, the very state is returned.

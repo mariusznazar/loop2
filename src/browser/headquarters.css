@@ -176,7 +176,7 @@
   color: var(--text-secondary);
 }
 
-/* The resurrection line, on a row of its own: ready in `text-secondary`, not ready in `danger` (D-39, D-40). */
+/* The resurrection line, on a row of its own: in `text-secondary`, at zero uses in `danger` (D-217, D-39, D-40). */
 .team-member-resurrection {
   flex-basis: 100%;
   margin: 0;

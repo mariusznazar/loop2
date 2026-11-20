@@ -15,7 +15,10 @@ import {
   withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
-import { savedGame } from "../../dist/browser/sim/saved-game.js";
+import {
+  SAVED_GAME_VERSION,
+  savedGame,
+} from "../../dist/browser/sim/saved-game.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 import {
   CHECK_FAILED,
@@ -545,8 +548,8 @@ test("an unreadable document, and one with no program, give the sentence of no r
   // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read"
   const sentence = pullResultLine({ ok: false }).text;
   for (const document of [
-    previous([item(1, "Las", LAS)], 8),
-    { ok: true, value: { version: 7, game: {} } },
+    previous([item(1, "Las", LAS)], SAVED_GAME_VERSION + 1),
+    { ok: true, value: { version: SAVED_GAME_VERSION - 1, game: {} } },
     previous([]),
   ]) {
     await onPage(async () => {

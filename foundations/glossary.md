@@ -210,13 +210,13 @@ A trip plan is two ordered lists with counts: what a character takes into a map 
 
 ## resurrection
 
-A resurrection is what the account has, one for all its characters, ready or not at the moment of the death of a character with practice, and what then protects that practice, its bought ranks and its generation number, the map run ending in death with a resurrection ready too; the death of a character with no practice uses none up.
+A resurrection is what the account has, one for all its characters, with a number of uses, of which the death of a character with practice uses up one while any is left, the use then protecting that practice, its bought ranks and its generation number, the map run ending in death with a use left too; the death of a character with no practice uses none up.
 
-- **Not:** none
+- **Not:** one of its uses — "use"
 
 ## generation number
 
-A generation number is a count kept at a character that grows by one at a death that takes the character's practice because no resurrection is ready, and at no other, the death of a character with no practice included, the character staying the same character with the number the game gave it at its creation (D-56).
+A generation number is a count kept at a character that grows by one at a death that takes the character's practice because no use of the resurrection is left, and at no other, the death of a character with no practice included, the character staying the same character with the number the game gave it at its creation (D-56).
 
 - **Not:** the number the game gives a character at its creation (D-56) — "character's number"
 

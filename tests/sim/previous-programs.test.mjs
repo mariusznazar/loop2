@@ -6,10 +6,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readPreviousPrograms } from "../../dist/browser/sim/previous-programs.js";
+import { SAVED_GAME_VERSION } from "../../dist/browser/sim/saved-game.js";
 
 const ALWAYS = { kind: "always" };
 
-/** A program of versions 3 to 7: one rule group under „Zawsze” with a trip plan. */
+/** A program of versions 3 to 8: one rule group under „Zawsze” with a trip plan. */
 const EXPLORE = {
   groups: [
     {
@@ -69,7 +70,7 @@ const LAS = {
 
 /** The document of the current version, written out with every kind of program it can hold. */
 const DOCUMENT = {
-  version: 7,
+  version: SAVED_GAME_VERSION,
   game: {
     programs: [
       { id: 1, name: "Program", program: EXPLORE },
@@ -127,9 +128,9 @@ function deepFreeze(value) {
   return value;
 }
 
-// Versions 1 and 2 have programs with no trip plan; versions 3 to 7 have the trip plan, and 7 is
+// Versions 1 and 2 have programs with no trip plan; versions 3 to 8 have the trip plan, and 8 is
 // the current version, so the bound of the readable versions is read in as well.
-test("a document of each version from 1 to 7, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
+test("a document of each version from 1 to 8, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
   // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
   // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   const documents = {
@@ -193,7 +194,21 @@ test("a document of each version from 1 to 7, the current one included, gives it
         ],
       },
     },
+    8: {
+      version: 8,
+      game: {
+        programs: [
+          { id: 1, name: "Program", program: EXPLORE },
+          { id: 2, name: "Las nocą", program: LAS },
+        ],
+      },
+    },
   };
+  assert.equal(
+    SAVED_GAME_VERSION,
+    8,
+    "precondition: the last document of the table is the current version",
+  );
   assert.deepEqual(readPreviousPrograms(documents[1]), {
     ok: true,
     items: [
@@ -226,7 +241,7 @@ test("a document of each version from 1 to 7, the current one included, gives it
       { kind: "read", name: "Las nocą", program: LAS },
     ],
   });
-  for (const version of [6, 7]) {
+  for (const version of [6, 7, 8]) {
     assert.deepEqual(readPreviousPrograms(documents[version]), {
       ok: true,
       items: [
@@ -414,7 +429,17 @@ test("a program naming an action, a resource or an item the data lacks is skippe
 test("a document of another version or with no whole version is unreadable", () => {
   // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one"
   const programs = [{ id: 1, name: "Las", program: EXPLORE }];
-  for (const version of [8, 0, 1.5, -1, "5", 2 ** 53, null, undefined]) {
+  // The first version above the current one is unreadable: the reader admits versions up to the current.
+  for (const version of [
+    SAVED_GAME_VERSION + 1,
+    0,
+    1.5,
+    -1,
+    "5",
+    2 ** 53,
+    null,
+    undefined,
+  ]) {
     assert.deepEqual(
       readPreviousPrograms({ version, game: { programs } }),
       { ok: false },

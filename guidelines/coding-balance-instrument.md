@@ -21,6 +21,7 @@ kodowania.
 | `balance/describe.mjs`     | copy     | —        |
 | `balance/loop.mjs`         | copy     | —        |
 | `balance/overlay.mjs`      | copy     | —        |
+| `balance/progression.mjs`  | copy     | —        |
 | `balance/trace.mjs`        | copy     | —        |
 
 ## Rules

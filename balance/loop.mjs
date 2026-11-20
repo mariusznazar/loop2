@@ -25,7 +25,8 @@ import {
 export const LOOP_START_MS = 1760000000000;
 const MS_PER_HOUR = 60 * 60 * 1000;
 export const MS_PER_MINUTE = 60 * 1000;
-const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
+/** The real span of one loop minute, as the game's catch-up reads it: the one place the instrument keeps it. */
+export const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
 
 /** `numerator / denominator` in percent, one decimal, or null for no denominator. */
 function percent(numerator, denominator) {
@@ -45,7 +46,8 @@ export function earnedPoints(skills) {
 /**
  * The state the earning loop starts from: one character with the program, skills, chest and the maps
  * that open `mapId` solved, the loop started on `mapId` at the loop clock's start with the seed given.
- * With `resurrectionReady` false the team's resurrection is used up at the start.
+ * With `resurrectionReady` false every use of the team's resurrection is spent at the start, and the
+ * clock of the returns starts at the loop's start, so the uses return as in the game from there.
  */
 function startState({
   mapId,
@@ -66,7 +68,8 @@ function startState({
       ...state,
       team: {
         ...state.team,
-        resurrectionReadyAtMs:
+        resurrectionUsesSpent: BALANCE.resurrectionUses,
+        resurrectionNextReturnAtMs:
           LOOP_START_MS +
           BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
       },

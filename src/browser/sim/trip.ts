@@ -34,18 +34,16 @@ export function clipTrip(
 }
 
 /**
- * The entries a send takes into a manual map run, the one rule both starts use.
- * At a map not solved the take list is cut by the chest's stock, the carrying capacity and the
- * map's entry cap in list order. A manual run of a solved map has no chest (`null`) and takes the
- * take list from nowhere, cut by the carrying capacity and the entry cap only (D-189, D-214).
+ * The entries a send takes into a manual map run, the one rule every start uses (D-189, D-214): the
+ * take list is cut by the chest's stock, the carrying capacity and the map's entry cap in list
+ * order. A solved map takes the same way (D-189).
  */
 export function sendTake(
   plan: TripPlan,
-  chest: Chest | null,
+  chest: Chest,
   capacity: number,
   map: MapDef,
 ): TripEntry[] {
-  if (chest === null) return clippedTake(plan, capacity, map);
   return clipTrip(
     plan.take,
     chest.pieces,
@@ -74,47 +72,15 @@ export function takeTrip(
 }
 
 /**
- * The take list as a run of a solved map takes it (D-189): each entry cut by the carrying capacity
- * and the map's entry cap in list order, the list's own counts standing in for the stock. Pure.
- */
-export function clippedTake(
-  plan: TripPlan,
-  capacity: number,
-  map: MapDef,
-): TripEntry[] {
-  return clipTrip(
-    plan.take,
-    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
-    Math.min(capacity, map.carryIn ?? Infinity),
-  );
-}
-
-/**
- * Equipment of a marked run (a manual map run of a solved map): the take list taken from nowhere,
- * the list's own counts standing in for the stock, clipped only by the carrying capacity and the
- * map's entry cap. The chest is not an argument, so nothing leaves it.
- */
-export function takeFromNowhere(
-  plan: TripPlan,
-  capacity: number,
-  map: MapDef,
-): Backpack {
-  const backpack = newBackpack();
-  for (const { item, count } of sendTake(plan, null, capacity, map))
-    backpack[item] = count;
-  return backpack;
-}
-
-/**
- * The same clipped snapshot drives both the live preview and the eventual deposit. A marked run
- * deposits nothing, so its list is empty.
+ * The same clipped snapshot drives both the live preview and the eventual deposit, for every run:
+ * a manual run of a solved map brings its loot out as any other run does (D-189), so the list does
+ * not read the run's mark `solvedMapRun`, which only stops the practice.
  */
 export function tripLoot(
-  run: Pick<GameMapRun, "bringPlan" | "character" | "solvedMapRun">,
+  run: Pick<GameMapRun, "bringPlan" | "character">,
   chest: Chest,
   map: MapDef,
 ): TripEntry[] {
-  if (run.solvedMapRun) return [];
   return clipTrip(
     run.bringPlan,
     run.character.backpack,

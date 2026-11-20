@@ -1,16 +1,9 @@
 /*
- * The stylesheet of the screen Mapy (D-421): the list of maps, the card of a map, the section „Kto
- * idzie” with its characters, and the mark of a rehearsal that stands under „Wejdź”. The columns of
- * the two areas stand in styles.css with those of Programy and Wiedza. The page links it after
- * styles.css, and it reads each value of appearance from the design tokens of tokens.css by var(--…).
+ * The stylesheet of the screen Mapy (D-421): the list of maps, the card of a map and the section „Kto
+ * idzie” with its characters. The columns of the two areas stand in styles.css with those of Programy
+ * and Wiedza. The page links it after styles.css, and it reads each value of appearance from the design
+ * tokens of tokens.css by var(--…).
  */
-
-/* The mark of a rehearsal the earning loop cannot repeat, under „Wejdź”, in `warning` as the line of D-188 (D-251). */
-.rehearsal-mark {
-  flex-basis: 100%;
-  margin: 0;
-  color: var(--warning);
-}
 
 /*
  * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
@@ -124,10 +117,9 @@
  * The section „Kto idzie” under the card (D-329): its name in `text-label` and, at each character,
  * the lines from the top. A divider tells one character from the next and the section from the card
  * (D-40). The name is a name, so `text-strong`; the resurrection line is `text-secondary`, in
- * `danger` when not ready (D-217); the earning loop's line is `text` (D-244); „Wejdzie: …” is
+ * `danger` at zero uses (D-217); the earning loop's line is `text` (D-244); „Wejdzie: …” is
  * `text-secondary`; the sentence of a waiting map run is `text-secondary` as in Siedziba (D-287);
- * the clipped-plan line and the rehearsal mark are the `warning` lines `trip-warning` and
- * `rehearsal-mark` draw (D-188, D-251).
+ * the clipped-plan line is the `warning` line `trip-warning` draws (D-188).
  */
 .maps-who {
   border-top: var(--frame-width) solid var(--divider);
@@ -219,7 +211,7 @@
   color: var(--text-label);
 }
 
-/* „Wejdź” with the rehearsal mark under it. */
+/* „Wejdź” at its character, in its own column. */
 .maps-who-enter {
   display: flex;
   flex-direction: column;

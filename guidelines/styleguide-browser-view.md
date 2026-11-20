@@ -646,7 +646,7 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-134 · D-188 · D-217 · D-244 · D-251 · D-274 · D-287 · D-39 · D-40
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-39 · D-40
 - **Invariant:** none
 - **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`.
 - **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie.
@@ -671,16 +671,15 @@ listę otwartych map, po prawej kartę wybranej mapy.
   Części, której mapa nie ma, nie rysuje się wcale.
 - Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`. Przy
   każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
-  `text-strong`; wiersz wskrzeszenia w `text-secondary`, a gdy wskrzeszenie
-  nie jest gotowe, w `danger` (D-217); przy postaci w pętli zarobkowej wiersz
+  `text-strong`; wiersz wskrzeszenia w `text-secondary`, a przy zerze użyć
+  w `danger` (D-217); przy postaci w pętli zarobkowej wiersz
   pętli w `text` z „Zatrzymaj” (D-244); „Program:” w `text-label` z listą
   programów; „Wejdzie: …” i „Wejdzie: nic” w `text-secondary`; ostrzeżenie
   o przyciętym planie w `warning` (D-188); „Wejdź” w głównym wyglądzie (D-274);
-  pod nim „Próba weźmie zapas, …” w `warning` (D-251); „Puść w pętlę” zwykłym
-  przyciskiem, a obok „Pętla nic nie zarobi do skrzynki” w `warning`, gdy
-  lista „Wynieś” jest pusta (D-326); zdanie o przejściu ręcznym, które czeka
-  albo się skończyło, pod wyłączonymi przyciskami każdej postaci, w
-  `text-secondary` (D-287).
+  „Puść w pętlę” zwykłym przyciskiem, a obok „Pętla nic nie zarobi do
+  skrzynki” w `warning`, gdy lista „Wynieś” jest pusta (D-326); zdanie
+  o przejściu ręcznym, które czeka albo się skończyło, pod wyłączonymi
+  przyciskami każdej postaci, w `text-secondary` (D-287).
 - Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
   w `text-secondary`.
 
@@ -1047,7 +1046,7 @@ nowej roli ani wartości:
   oddziela linia w `divider`. Treść sekcji jest w `text`, numer reguły w „Nie
   zadziałały ani razu” w `text-label`.
 - Wiersz tego, co koniec dał albo kosztował, jest w `text-secondary`, a w
-  `danger`, gdy wskrzeszenie nie było gotowe (D-185, D-216). Odkrycie stoi w
+  `danger`, gdy wskrzeszenie nie miało żadnego użycia (D-185, D-216). Odkrycie stoi w
   `discovery` z belką w kolorze tego tekstu (D-279), jak pasek odkrycia, i ze
   wspólnymi przyciskami (D-122, D-313).
 - „Ostatnie minuty” i akapit ostatniego starcia stoją czcionką Geist Mono jak

@@ -61,7 +61,7 @@ function minutes(counts) {
 const DIED = withRun(RUNNING, {
   minute: 312,
   death: { minute: 312, cause: "cold" },
-  deathSettlement: { kind: "resurrectionUsed" },
+  deathSettlement: { kind: "resurrectionUsed", usesSpent: 1 },
   longestStreak: 116,
 });
 
@@ -231,7 +231,7 @@ test("nothing is drawn for a state without an ended map run", async () => {
 test("the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line", async () => {
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
   // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-313 "The same button stands in the end-of-run window"
@@ -260,7 +260,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
     const cost = body.querySelector(".end-window-cost");
     assert.equal(
       cost.textContent,
-      "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
+      "Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia 2 z 3; zużyte wracają po kolei, jedno co 4 godziny czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.",
     );
     assert.equal(cost.classList.contains("danger"), false);
     const order = [streak, discovery, cost].map((element) =>
@@ -282,7 +282,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
 test("a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
   // decision: D-313 "Where the copy holds no rule group, the button is disabled"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, SOLVED);
@@ -308,7 +308,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
     const cost = container.querySelector(".end-window-cost");
     assert.equal(
       cost.textContent,
-      "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+      "Wskrzeszenie drużyny nie miało żadnego użycia: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 3.",
     );
     assert.equal(cost.classList.contains("danger"), true);
     const noGroups = {
@@ -331,18 +331,18 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
 
 // Catches a death of a character with no practice shown as a resurrection used or a loss, and the
 // renewal line of a first completion missing, in the wrong role, before the deposit line, or standing
-// where the resurrection was found ready (D-216, D-185, D-190, D-39).
+// where the stock of uses was found full (D-216, D-185, D-190, D-39).
 test("the window shows the line of a death with no practice, and the renewal line after the deposit line of a first completion that renewed", async () => {
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
-  // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
+  // decision: D-216 "After the first completion of a map that returned a use of the resurrection, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the stock of uses full shows none."
   await withPage(async ({ document }) => {
     const bare = withRun(DIED, { deathSettlement: { kind: "noPractice" } });
     const { container, show } = await draw(document, bare);
     const cost = container.querySelector(".end-window-cost");
     assert.equal(
       cost.textContent,
-      "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+      "Postać nie miała jeszcze wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.",
     );
     assert.equal(cost.classList.contains("danger"), false);
     assert.equal(container.querySelectorAll(".end-window-cost").length, 1);
@@ -356,7 +356,7 @@ test("the window shows the line of a death with no practice, and the renewal lin
       lines.map((line) => line.textContent),
       [
         "Do skrzynki: patyk 3.",
-        "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+        "Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.",
       ],
     );
     assert.equal(lines[1].classList.contains("danger"), false);
@@ -390,7 +390,7 @@ test("after a death the sections of „why” stand in order: the last minutes, 
     const died = withRun(state, {
       minute: 312,
       death: { minute: 312, cause: "cold" },
-      deathSettlement: { kind: "resurrectionUsed" },
+      deathSettlement: { kind: "resurrectionUsed", usesSpent: 1 },
       lastCombat: WOLF,
       tiles: FIVE_REVEALED,
       enteredWith: [{ item: "stick", count: 3 }],

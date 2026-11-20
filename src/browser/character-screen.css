@@ -7,8 +7,8 @@
 
 /*
  * The screen Postać (D-199, D-217, D-244, D-245): the name in `text-strong`, the generation and the
- * archetype in `text-secondary` (D-40, D-218), the resurrection line ready in `text-secondary` and not
- * ready in `danger` (D-217), the earning loop's line in `text` (D-244), the stopped line in `text-secondary`
+ * archetype in `text-secondary` (D-40, D-218), the resurrection line in `text-secondary` and at zero
+ * uses in `danger` (D-217), the earning loop's line in `text` (D-244), the stopped line in `text-secondary`
  * (D-245) and the section „Umiejętności” with its name in `text-label`. As wide as the content under
  * the menu bar, at most 1344 px (D-280).
  */

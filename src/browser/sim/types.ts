@@ -283,19 +283,22 @@ export type MapRun = {
 };
 
 /**
- * How a death was settled: the resurrection it used up, everything it took, with the generation
- * number the death gave the character, which stays the number of that death however the character
- * goes on, or nothing besides what the character carried, the character having no practice yet, so
- * that the team's resurrection and the character stay as the death found them.
+ * How a death was settled: the use of the resurrection it spent, with the uses spent after it (from 1
+ * up to the data's count; the uses left are the count less these), which stay the uses of that death
+ * however the team goes on;
+ * everything it took, with the generation number the death gave the character, which stays the number
+ * of that death however the character goes on; or nothing besides what the character carried, the
+ * character having no practice yet, so that the team's resurrection and the character stay as the
+ * death found them.
  */
 export type DeathSettlement =
-  | { kind: "resurrectionUsed" }
+  | { kind: "resurrectionUsed"; usesSpent: number }
   | { kind: "progressLost"; generation: number }
   | { kind: "noPractice" };
 
 /**
  * How the first completion of a map the account had not solved was settled at the real moment of its
- * reading: the team's used-up resurrection it made ready, or the ready one it found, which stays.
+ * reading: the use of the team's resurrection it returned, or the full stock it found, which stays.
  */
 export type CompletionSettlement =
   { kind: "resurrectionRenewed" } | { kind: "resurrectionReady" };
@@ -330,12 +333,16 @@ export type GameMapRun = MapRun & {
   copy: ProgramCopy;
   /** Bound at entry; editing or switching the copy leaves this snapshot intact. */
   bringPlan: TripEntry[];
-  /** Actual deposit at completion; null until then, `[]` for a marked run. Retained with the frozen end screen. */
+  /**
+   * Actual deposit at completion, the bring list clipped as the completion finds it; null until a
+   * completion, and `[]` where the clipped list is empty. Retained with the frozen end screen.
+   */
   deposited: TripEntry[] | null;
   /**
-   * Whether the map was solved when this map run started (D-189): a marked run takes its equipment
-   * from nowhere, deposits nothing and pays no practice. Bound at the start and carried unchanged to
-   * the run's end, the saved document and back; a restart binds it anew.
+   * Whether the map was solved when this map run started (D-189, D-214): a marked run takes its
+   * equipment from the chest and deposits its bring list as any run does, but pays no practice.
+   * Bound at the start and carried unchanged to the run's end, the saved document and back; a restart
+   * binds it anew.
    */
   solvedMapRun: boolean;
   /**
@@ -401,7 +408,7 @@ export type CharacterId = number;
 
 /**
  * A character of the player's team; its traits are made when it is created and saved with it. The
- * generation number is 1 at creation and grows at a death with no resurrection ready, of a
+ * generation number is 1 at creation and grows at a death with no use of the resurrection left, of a
  * character with practice.
  */
 export type Character = {
@@ -418,13 +425,18 @@ export type Chest = { pieces: Partial<Record<ItemId, number>> };
 
 /**
  * The player's one team: its characters in the order they were created, its chest and its one
- * resurrection, shared by all the characters: ready from the real moment `resurrectionReadyAtMs`
- * on, and from the start of a new game at 0.
+ * resurrection, shared by all the characters: the uses of it spent and not yet returned, and the
+ * real moment the next one returns, which stands exactly while that count is above zero. A new game
+ * starts with the count at 0 and no moment. The state holds the uses as they stood when a death or a
+ * first solving last settled; a use whose moment has passed since still counts as returned, and
+ * `resurrectionAt` gives the uses as they stand at a real moment. A saved document holds them as they
+ * stand at its save time (`withSaveTime`), so its count is the one not yet returned at that moment.
  */
 export type Team = {
   characters: Character[];
   chest: Chest;
-  resurrectionReadyAtMs: number;
+  resurrectionUsesSpent: number;
+  resurrectionNextReturnAtMs: number | null;
 };
 
 export type GameState = {

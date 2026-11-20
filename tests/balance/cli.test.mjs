@@ -21,6 +21,11 @@ import {
   sweep,
 } from "../../balance/engine.mjs";
 import { loopSweep } from "../../balance/loop.mjs";
+import { applyOverlay } from "../../balance/overlay.mjs";
+import {
+  measureProgression,
+  renderProgression,
+} from "../../balance/progression.mjs";
 import {
   REFERENCE_PROGRAMS,
   always,
@@ -48,6 +53,21 @@ function overlayFile(name) {
 }
 
 const SWEEP_FLAGS = ["--map", "forest", "--program", "forestBest"];
+
+/**
+ * Runs `work` with a renewal of one use longer than any run, so no spent use returns in it and the
+ * spent start differs from the full start for a death with practice; the overlay is restored after.
+ */
+function withNoReturn(work) {
+  const restore = applyOverlay({
+    BALANCE: { resurrectionRenewalRealMinutes: 1e9 },
+  });
+  try {
+    return work();
+  } finally {
+    restore();
+  }
+}
 
 test("seeds are read as a range, a list, one number, or a list that holds ranges, and nothing else", () => {
   assert.deepEqual(parseSeeds("1-5"), [1, 2, 3, 4, 5]);
@@ -431,6 +451,7 @@ test("a trace prints the lines of the engine's map run and ends in the outcome t
   );
 });
 
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection, the switch `--no-resurrection` starts the loop with every use spent and the clock of the returns started at the start of the loop"
 test("a loop command gives the readings the loop gives for the same flags, and --practice and --no-resurrection reach the loop", () => {
   const seeds = seedRange(1, 10);
   const given = parseArgs([
@@ -460,27 +481,29 @@ test("a loop command gives the readings the loop gives for the same flags, and -
       skills,
       ...flags,
     }).perCheckpoint;
-  assert.notDeepEqual(
-    direct({}),
-    direct({ resurrectionReady: false }),
-    "precondition: the resurrection changes this loop's readings",
-  );
-  assert.deepEqual(run({}).perCheckpoint, direct({}));
-  assert.deepEqual(
-    run({ resurrection: false }).perCheckpoint,
-    direct({ resurrectionReady: false }),
-  );
-  assert.notDeepEqual(
-    run({}).perCheckpoint,
-    loopSweep({
-      mapId: "forest",
-      program: forestBest,
-      seeds,
-      checkpoints: [8, 24],
-    }).perCheckpoint,
-    "precondition: the practice changes this loop's readings",
-  );
-  assert.deepEqual(run({}).header.hours, [8, 24]);
+  withNoReturn(() => {
+    assert.notDeepEqual(
+      direct({}),
+      direct({ resurrectionReady: false }),
+      "precondition: the resurrection changes this loop's readings",
+    );
+    assert.deepEqual(run({}).perCheckpoint, direct({}));
+    assert.deepEqual(
+      run({ resurrection: false }).perCheckpoint,
+      direct({ resurrectionReady: false }),
+    );
+    assert.notDeepEqual(
+      run({}).perCheckpoint,
+      loopSweep({
+        mapId: "forest",
+        program: forestBest,
+        seeds,
+        checkpoints: [8, 24],
+      }).perCheckpoint,
+      "precondition: the practice changes this loop's readings",
+    );
+    assert.deepEqual(run({}).header.hours, [8, 24]);
+  });
 });
 
 test("a campaign command plays the player a description names, by its identifier in the instrument's own list", () => {
@@ -530,4 +553,70 @@ test("the programs command prints every reference program in the game's words, a
       one,
     );
   assert.equal(byPath[path.join(directory, "programs.md")], plain.printed);
+});
+
+test("the progression command reads its own flags alone, and its seeds default to 1-500 in the measurement, not in the flags", () => {
+  const { command, options } = parseArgs([
+    "progression",
+    "--seeds",
+    "1-4",
+    "--maps",
+    "forest,forestDeep",
+    "--programs",
+    "forestBest,forestDeepBest",
+    "--out",
+    "table.md",
+  ]);
+  assert.equal(command, "progression");
+  assert.deepEqual(options.seeds, [1, 2, 3, 4]);
+  assert.deepEqual(options.maps, ["forest", "forestDeep"]);
+  assert.deepEqual(options.programs, ["forestBest", "forestDeepBest"]);
+  assert.equal(options.out, "table.md");
+  assert.equal(parseArgs(["progression"]).options.seeds, undefined);
+  for (const flag of ["--map", "--chest", "--overlay", "--hours"])
+    assert.throws(
+      () => parseArgs(["progression", flag, "forest"]),
+      new RegExp(flag),
+      flag,
+    );
+});
+
+// decision: D-429 "The instrument prints each result, or writes it to the file that a flag of its command names, and writes no file into the repository of its own accord"
+test("the progression command prints the measurement's table and sentence, and with --out hands them over as the one file to write", () => {
+  const given = parseArgs([
+    "progression",
+    "--seeds",
+    "1-6",
+    "--maps",
+    "forest",
+    "--programs",
+    "forestBest,emptyProgram",
+  ]).options;
+  const plain = runCommand("progression", given);
+  assert.deepEqual(plain.files, []);
+  const expected = renderProgression(
+    measureProgression({
+      mapIds: ["forest"],
+      seeds: seedRange(1, 6),
+      programIds: ["forestBest", "emptyProgram"],
+    }),
+  );
+  assert.equal(plain.printed, expected);
+  assert.ok(plain.printed.startsWith("| Map | Program |"));
+  const target = path.join("somewhere", "progression.md");
+  const written = runCommand("progression", { ...given, out: target });
+  assert.equal(written.printed, "");
+  assert.deepEqual(written.files, [{ path: target, content: expected }]);
+});
+
+test("the progression command refuses a map the game lacks and a program that is no reference program before any measurement", () => {
+  const base = parseArgs(["progression"]).options;
+  assert.throws(
+    () => runCommand("progression", { ...base, maps: ["noSuchMap"] }),
+    /--maps.*noSuchMap/,
+  );
+  assert.throws(
+    () => runCommand("progression", { ...base, programs: ["noSuchProgram"] }),
+    /--programs.*noSuchProgram/,
+  );
 });

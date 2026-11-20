@@ -1,7 +1,7 @@
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { sameData } from "../sim/programs.js";
-import { clippedTake, sendTake, tripEntryCut, tripLoot } from "../sim/trip.js";
+import { sendTake, tripEntryCut, tripLoot } from "../sim/trip.js";
 import type { Chest, GameState, TripEntry, TripPlan } from "../sim/types.js";
 
 /** A map cuts the requested equipment below what the character could carry. */
@@ -15,39 +15,14 @@ export function tripWarning(
     : null;
 }
 
-/** The mark of a rehearsal an earning loop cannot repeat (D-251). */
-export const REHEARSAL_MARK =
-  "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
-
 /**
- * The mark under „Wejdź” at a map: a solved map where an item of the take list, cut by the
- * carrying capacity and the map's entry cap, is more than the chest holds, since a manual run of a
- * solved map takes from nowhere and an earning loop takes from the chest (D-251); null otherwise.
- * Pure.
- */
-export function rehearsalMark(
-  solved: boolean,
-  plan: TripPlan,
-  capacity: number,
-  map: MapDef,
-  chest: Chest,
-): string | null {
-  const short =
-    solved &&
-    clippedTake(plan, capacity, map).some(
-      ({ item, count }) => count > (chest.pieces[item] ?? 0),
-    );
-  return short ? REHEARSAL_MARK : null;
-}
-
-/**
- * The line above „Wejdź” at a character (D-329): what the send takes, from the function
- * the send takes through, „Wejdzie: patyk 6, jagoda 4”, or „Wejdzie: nic” when it takes none. The
- * chest is `null` at a solved map, which takes from nowhere (D-189). Pure.
+ * The line above „Wejdź” at a character (D-329): what the send takes from the team's chest, from the
+ * function the send takes through, „Wejdzie: patyk 6, jagoda 4”, or „Wejdzie: nic” when it takes
+ * none. Every map takes from the chest, a solved one included (D-189). Pure.
  */
 export function entersLine(
   plan: TripPlan,
-  chest: Chest | null,
+  chest: Chest,
   capacity: number,
   map: MapDef,
 ): string {
@@ -99,9 +74,9 @@ export function tripTexts(state: GameState): {
 }
 
 const SOLVED_RUN_TEXT =
-  "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.";
+  "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.";
 
-/** The line of a run on a solved map, whatever its moment; null for any other run. */
+/** The line of a run on a solved map, whatever its moment (D-215); null for any other run. */
 export function solvedRunText(state: GameState): string | null {
   return state.run?.solvedMapRun ? SOLVED_RUN_TEXT : null;
 }

@@ -16,7 +16,8 @@
 //   loopMapAfter  the place of the loop once the last map of `attempts` is solved (optional)
 //   buyOrder      branch ids in the order of buying; a repeated id is its next rank
 //   attempts      the maps tried after the first one, in order: { map, program, needChest,
-//                 needResurrection }, `program` naming a role of `programs`
+//                 needResurrection }, `program` naming a role of `programs`; a needResurrection
+//                 attempt waits until one use of the resurrection is left
 //   programs      the roles `first`, `loop`, `loopAfter` (optional) and those the attempts name,
 //                 each an identifier of a program
 //   knowing       whether the account starts with every Understanding (optional, true)
@@ -30,13 +31,15 @@ import {
   createCharacter,
   end,
   newGame,
-  resurrectionReady,
+  resurrectionAt,
+  resurrectionHasUse,
   send,
   setPaused,
   settleCompletion,
   settleDeath,
 } from "../dist/browser/sim/game.js";
 import {
+  advanceLoopRun,
   catchUp,
   closeAwayReport,
   startLoop,
@@ -59,7 +62,12 @@ import {
   outcomeOf,
   quantile,
 } from "./engine.mjs";
-import { LOOP_START_MS, MS_PER_MINUTE, earnedPoints } from "./loop.mjs";
+import {
+  LOOP_START_MS,
+  MS_PER_LOOP_MINUTE,
+  MS_PER_MINUTE,
+  earnedPoints,
+} from "./loop.mjs";
 
 const MS_PER_SECOND = 1000;
 const MS_PER_DAY = 24 * 60 * MS_PER_MINUTE;
@@ -346,37 +354,63 @@ function markDays(ctx) {
 }
 
 /**
- * The player comes back after `hours`: the game's catch-up passes the time away, the report of the
- * away time is read and closed, and the record learns what the loop did meanwhile.
+ * The game's catch-up from the save time to `now`, passed in steps that each end at the end of a map
+ * run of the earning loop, so that every end is seen alone: the game's `advanceLoopRun` says how many
+ * loop minutes the map run going on still lasts, and the catch-up passes up to that minute. The uses of
+ * the resurrection a death spent are the uses the game reads as left before the end less those it
+ * reads after it, both at the moment of the end (`resurrectionAt` counts the uses that returned up
+ * to it). Sets the state the catch-up leaves, and gives the uses spent and the map runs completed.
  */
-function comeBack(ctx, hours) {
-  const { log, characterId } = ctx;
+function passAway(ctx, now) {
+  const { characterId } = ctx;
+  const completedBefore = ctx.state.loops[characterId]?.completed ?? 0;
+  let state = ctx.state;
+  let completed = completedBefore;
+  let usesSpent = 0;
+  while (state.loops[characterId]) {
+    const minutes = Math.floor((now - state.saveTimeMs) / MS_PER_LOOP_MINUTE);
+    if (minutes <= 0) break;
+    const { passed } = advanceLoopRun(state, characterId, minutes);
+    if (passed === 0) break;
+    const moment = state.saveTimeMs + passed * MS_PER_LOOP_MINUTE;
+    const caught = catchUp(state, moment);
+    if (caught.events.length > 0)
+      usesSpent +=
+        resurrectionAt(state.team, moment).usesLeft -
+        resurrectionAt(caught.state.team, moment).usesLeft;
+    completed = caught.state.loops[characterId]?.completed ?? completed;
+    state = { ...caught.state, saveTimeMs: caught.clockMs };
+  }
+  ctx.state = state.loops[characterId] ? state : { ...state, saveTimeMs: now };
+  return { usesSpent, completions: completed - completedBefore };
+}
+
+/**
+ * The player comes back after `hours`: the game's catch-up passes the time away, the report of the
+ * away time is closed, and the record learns what the loop did meanwhile: each use of the
+ * resurrection a covered death spent, and each map run the loop completed.
+ */
+export function comeBack(ctx, hours) {
+  const { log } = ctx;
   const now = Math.min(
     ctx.horizonMs,
     ctx.clock.ms + Math.round(hours * 60 * MS_PER_MINUTE),
   );
-  const completedBefore = ctx.state.loops[characterId]?.completed ?? 0;
   const generationBefore = characterOf(ctx).generation;
-  const passed = catchUp(ctx.state, now);
-  ctx.state = { ...passed.state, saveTimeMs: passed.clockMs };
+  const { usesSpent, completions } = passAway(ctx, now);
   ctx.clock.ms = now;
-  const used = ctx.state.awayReport.some((line) => line.resurrectionUsed);
-  if (used) log.resurrectionsUsed += 1;
+  log.resurrectionsUsed += usesSpent;
   ctx.state = closeAwayReport(ctx.state).state;
-  const loop = ctx.state.loops[characterId];
-  const ended = passed.events.filter(
-    (event) => event.kind === "loopRunEnded",
-  ).length;
-  // A loop that stopped ended its last run in a death, and one more where a resurrection covered it.
-  log.loopCompletions += loop
-    ? loop.completed - completedBefore
-    : Math.max(0, ended - 1 - (used ? 1 : 0));
+  log.loopCompletions += completions;
   if (characterOf(ctx).generation > generationBefore) log.progressLost += 1;
   markDays(ctx);
 }
 
-/** The first attempt not yet solved, when the road to it is open and the player has what it asks for. */
-function dueAttempt(ctx) {
+/**
+ * The first attempt not yet solved, when the road to it is open and the player has what it asks for;
+ * an attempt that waits for the resurrection is due while the team has one use of it left.
+ */
+export function dueAttempt(ctx) {
   const attempt = ctx.player.attempts.find(
     (each) => !ctx.state.solvedMaps.includes(each.map),
   );
@@ -385,7 +419,7 @@ function dueAttempt(ctx) {
     canSendMap(ctx.state.solvedMaps, attempt.map) &&
     hasAll(ctx.state.team.chest, attempt.needChest) &&
     (!attempt.needResurrection ||
-      resurrectionReady(ctx.state.team, ctx.clock.ms));
+      resurrectionHasUse(ctx.state.team, ctx.clock.ms));
   return ready ? attempt : undefined;
 }
 

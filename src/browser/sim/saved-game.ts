@@ -79,7 +79,7 @@ import type {
  * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
  * record of a manual map run: a new action or a removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 7;
+export const SAVED_GAME_VERSION = 8;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -498,15 +498,40 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
 }
 
 /**
- * The team: its characters, numbers each once and below the next one, its chest and the moment its
- * one resurrection is ready.
+ * The uses of the team's one resurrection that are spent, at most the data's count, and the moment
+ * the next one returns: no moment with none spent, and a moment with some spent. The game writes the
+ * count as it stands at the save time (`withSaveTime`), so the check against the data's count refuses
+ * a document only for the uses it has spent at its own moment (D-386); the load itself repairs nothing.
+ */
+function resurrectionUses(
+  spentValue: unknown,
+  nextValue: unknown,
+): Pick<Team, "resurrectionUsesSpent" | "resurrectionNextReturnAtMs"> {
+  const spent = count(spentValue);
+  if (spent > BALANCE.resurrectionUses) refuse();
+  if ((nextValue === null) !== (spent === 0)) refuse();
+  return {
+    resurrectionUsesSpent: spent,
+    // Any safe integer: the moment is real time of a past death, and no clock is read here (D-386).
+    resurrectionNextReturnAtMs: nextValue === null ? null : integer(nextValue),
+  };
+}
+
+/**
+ * The team: its characters, numbers each once and below the next one, its chest and the uses of its
+ * one resurrection that are spent, with the moment the next returns.
  */
 function team(
   value: unknown,
   nextCharacterId: CharacterId,
   trees: readonly SkillId[],
 ): Team {
-  const read = fields(value, ["characters", "chest", "resurrectionReadyAtMs"]);
+  const read = fields(value, [
+    "characters",
+    "chest",
+    "resurrectionUsesSpent",
+    "resurrectionNextReturnAtMs",
+  ]);
   const ids = new Set<CharacterId>();
   const characters = list(read.characters).map((item): Character => {
     const character = fields(item, [
@@ -533,9 +558,10 @@ function team(
   return {
     characters,
     chest: chest(read.chest),
-    // Any safe integer: the moment is real time of a past death or first solving, and no clock is
-    // read here (D-386).
-    resurrectionReadyAtMs: integer(read.resurrectionReadyAtMs),
+    ...resurrectionUses(
+      read.resurrectionUsesSpent,
+      read.resurrectionNextReturnAtMs,
+    ),
   };
 }
 
@@ -766,14 +792,13 @@ function copy(value: unknown, records: Records): ProgramCopy {
 
 /**
  * What completion put in the chest: none before a completion, and at one the frozen bring plan's
- * entries in its order, each at most the count it plans (D-179, D-189); at the completion of a
- * marked run an empty list, since such a run deposits nothing.
+ * entries in its order, each at most the count it plans (D-179, D-189). A manual run of a solved map
+ * completes by the same rule: it brings its loot out as every other map run does (D-189).
  */
 function deposited(
   value: unknown,
   bringPlan: readonly TripEntry[],
   completed: boolean,
-  marked: boolean,
 ): TripEntry[] | null {
   if (value === null) {
     if (completed) refuse();
@@ -781,7 +806,6 @@ function deposited(
   }
   if (!completed) refuse();
   const put = tripList(value);
-  if (marked && put.length > 0) refuse();
   let from = 0;
   for (const entry of put) {
     const at = bringPlan.findIndex(
@@ -810,8 +834,13 @@ const SETTLEMENTS: {
   ) => DeathSettlement;
 } = {
   resurrectionUsed: (value) => {
-    fields(value, ["kind"]);
-    return { kind: "resurrectionUsed" };
+    const read = fields(value, ["kind", "usesSpent"]);
+    // From one, as the death spent one, up to the data's count: a count lowered later refuses only a
+    // save with more spent than the new count, the settlement of a death with fewer spent loading as
+    // it stands.
+    const usesSpent = integer(read.usesSpent, 1);
+    if (usesSpent > BALANCE.resurrectionUses) refuse();
+    return { kind: "resurrectionUsed", usesSpent };
   },
   progressLost: (value, currentGeneration) => {
     const read = fields(value, ["kind", "generation"]);
@@ -1063,12 +1092,7 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     ...record(read, run),
     copy: copy(read.copy, records),
     bringPlan,
-    deposited: deposited(
-      read.deposited,
-      bringPlan,
-      run.completion !== null,
-      solvedMapRun,
-    ),
+    deposited: deposited(read.deposited, bringPlan, run.completion !== null),
     solvedMapRun,
     deathSettlement: deathSettlement(
       read.deathSettlement,
@@ -1244,7 +1268,7 @@ const GAME_KEYS = [
  * The game state of a document, every key read and checked. The counts stand beside the rules of
  * the copy during a map run and beside the rules of the program they name after „Zakończ”, and are
  * none otherwise; without a map run nothing is paused, held as a discovery or carried. The save time
- * is a safe integer of any sign, as a moment of readiness is: every document is stamped, and a device
+ * is a safe integer of any sign, as the moment the next use returns is: every document is stamped, and a device
  * clock set before 1970 is the player's own, so a save the game wrote is never refused for it. The
  * Understanding holds at least what a new game's holds (D-118): a document whose Understanding lacks
  * the condition „Zawsze” or the action „Eksploruj” is of a shape the game does not admit.

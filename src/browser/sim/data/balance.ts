@@ -35,11 +35,14 @@ export const BALANCE = {
     /** Regained a minute in which the character is neither chilled nor starving. */
     healthRegain: 0.05,
   },
+  /** Uses of the team's resurrection a full stock holds, and a new game starts with. */
+  resurrectionUses: 3,
   /**
-   * Real minutes after a death that used the resurrection up until it is ready again. Counted by the
-   * real clock, not the game's: a game minute can be made to pass at will (D-219).
+   * Real minutes until one spent use of the resurrection returns: after the clock started, and after
+   * the use before it returned. Counted by the real clock, not the game's: a game minute can be made
+   * to pass at will (D-219).
    */
-  resurrectionRenewalRealMinutes: 480,
+  resurrectionRenewalRealMinutes: 240,
   /** The mage's nature energy, with which spells are paid. */
   natureEnergy: {
     /** The cap, which is also the energy every map run starts with. */

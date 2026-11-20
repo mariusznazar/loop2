@@ -23,6 +23,7 @@ import {
   settleDeath,
 } from "../../dist/browser/sim/game.js";
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { TileTable } from "../../dist/browser/view/tile-table.js";
 import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
@@ -88,11 +89,19 @@ const completed = (state) =>
     1,
   ).state;
 
-/** The map run played on to the character's death and settled; the team's resurrection is ready at `readyAtMs`. */
-function died(state, readyAtMs) {
+/**
+ * The state's run played on to the character's death and settled at the real moment 1_000, with
+ * `usesSpent` uses of the team's resurrection spent before the death; a spent use returns at the
+ * moment 9_000_000, after the settlement (D-190).
+ */
+function died(state, usesSpent) {
   let dying = {
     ...state,
-    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: usesSpent,
+      resurrectionNextReturnAtMs: usesSpent > 0 ? 9_000_000 : null,
+    },
   };
   for (let round = 0; round < 50 && !mapRunEnded(dying.run); round += 1)
     dying = advanceMinutes(setPaused(dying, false).state, 5000).state;
@@ -198,7 +207,7 @@ const rowOf = (container, key) =>
 // part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
 // the world area, which the window of the end holds (D-185, D-216, D-311).
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
-  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
+  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.” stands in `text-secondary`"
   // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
   // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
@@ -233,10 +242,12 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     );
     assert.equal(
       parts[4][1],
-      "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
+      "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.",
     );
     assert.equal(parts[5][1], "Wprawa w tym przejściu: Eksploracja +12");
-    assert.equal(parts[6][1], "Wyniesie: nic");
+    // A run going on on a solved map shows the preview of what it brings out, as any map run does (D-186,
+    // D-189): the three sticks the bring list asks for.
+    assert.equal(parts[6][1], "Wyniesie: patyk 3");
 
     // Completed: no deposit line under „Potem” (D-185: the window holds it); the solved line stays,
     // and the preview is gone.
@@ -253,19 +264,19 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     const ended = partsOf(container);
     assert.equal(
       ended[4][1],
-      "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
+      "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.",
     );
     assert.ok(
       ended.every(([, text]) => !text.includes("Do skrzynki")),
       "the deposit stands nowhere in the world area",
     );
 
-    // Dead, the resurrection not ready: no settlement line in the world area (D-216: the window
-    // holds it, in its section about what the death cost); the practice of the run stays after the
-    // death (D-201).
-    const notReady = died(sent(), 9_000_000);
-    assert.equal(notReady.run.deathSettlement.kind, "progressLost");
-    await show(withRun(notReady, { lastCombat: WOLF }));
+    // Dead, with no use of the resurrection left: no settlement line in the world area (D-216: the
+    // window holds it, in its section about what the death cost); the practice of the run stays after
+    // the death (D-201).
+    const usedUp = died(sent(), BALANCE.resurrectionUses);
+    assert.equal(usedUp.run.deathSettlement.kind, "progressLost");
+    await show(withRun(usedUp, { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",
@@ -280,11 +291,11 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "the settlement stands nowhere in the world area",
     );
 
-    // Dead with no practice yet, the resurrection ready or not: the window's line of it
-    // („Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.”) stands
-    // nowhere in the world area either.
-    for (const readyAtMs of [0, 9_000_000]) {
-      const bare = died(sent(PLAN, false), readyAtMs);
+    // Dead with no practice yet, a use of the resurrection left or none: the window's line of it
+    // („Postać nie miała jeszcze wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.”)
+    // stands nowhere in the world area either.
+    for (const usesSpent of [0, BALANCE.resurrectionUses]) {
+      const bare = died(sent(PLAN, false), usesSpent);
       assert.deepEqual(bare.run.deathSettlement, { kind: "noPractice" });
       await show(withRun(bare, { lastCombat: WOLF }));
       assert.ok(
@@ -720,7 +731,7 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 
     // The real thing: a map run played to a death on the default program and settled. It ends in
     // cold with the body below both thresholds, so both notes stand in danger.
-    const dead = died(sent(), 9_000_000);
+    const dead = died(sent(), BALANCE.resurrectionUses);
     assert.equal(dead.run.death.cause, "cold", "precondition: died of cold");
     assert.ok(dead.run.body.temperature < 35 && dead.run.body.satiety < 30);
     await show(dead);

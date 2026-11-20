@@ -1,6 +1,6 @@
 import { newTraits } from "./character.js";
 import { hasNoPractice, newSkills, paidPractice } from "./skills.js";
-import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
+import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
@@ -73,15 +73,67 @@ function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
 }
 
+/** The real span in which one spent use of the resurrection returns, read from the data of the game where it is used. */
+function renewalMs(): number {
+  return BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE;
+}
+
+/** The part of the team that holds its resurrection's uses. */
+type Uses = Pick<Team, "resurrectionUsesSpent" | "resurrectionNextReturnAtMs">;
+
+/** The uses spent and the moment the next returns, as they stand at one real moment. */
+type UsesAt = { spent: number; nextReturnMs: number | null };
+
+/** The real moment `spanMs` after `momentMs`; one that is no safe integer is a RangeError (D-386). */
+function momentAfter(momentMs: number, spanMs: number): number {
+  const moment = momentMs + spanMs;
+  if (!Number.isSafeInteger(moment)) {
+    throw new RangeError(`${String(moment)} is not a safe integer moment`);
+  }
+  return moment;
+}
+
 /**
- * Whether the team's resurrection, the one all its characters share, is ready at the real moment
- * `nowMs`: from the moment of readiness on, that moment included.
+ * The uses the team holds as spent at the real moment `nowMs`: each use whose moment has come, that
+ * moment included, is returned, the next one after the renewal from the moment of the one before it,
+ * and the clock stops once none is spent.
  */
-export function resurrectionReady(
-  team: Pick<Team, "resurrectionReadyAtMs">,
-  nowMs: number,
-): boolean {
-  return team.resurrectionReadyAtMs <= nowMs;
+function usesAt(team: Uses, nowMs: number): UsesAt {
+  const spent = team.resurrectionUsesSpent;
+  const next = team.resurrectionNextReturnAtMs;
+  if (next === null || next > nowMs) return { spent, nextReturnMs: next };
+  const renewal = renewalMs();
+  const back = Math.min(spent, 1 + Math.floor((nowMs - next) / renewal));
+  const left = spent - back;
+  return {
+    spent: left,
+    nextReturnMs: left === 0 ? null : momentAfter(next, back * renewal),
+  };
+}
+
+/**
+ * Whether the team's resurrection, the one all its characters share, has at least one use left at the
+ * real moment `nowMs`: the uses whose moment has come count as returned, that moment included. It
+ * does not say the stock is full: the settlement kind `resurrectionReady` of a completion names a
+ * stock found full, while this holds for a stock with a use spent as well.
+ */
+export function resurrectionHasUse(team: Uses, nowMs: number): boolean {
+  return usesAt(team, nowMs).spent < BALANCE.resurrectionUses;
+}
+
+/** The team's resurrection at a real moment: the uses left, and the moment the next missing one returns. */
+export type ResurrectionStock = {
+  usesLeft: number;
+  nextReturnMs: number | null;
+};
+
+/**
+ * The team's resurrection at the real moment `nowMs`: the uses left, and the moment the next missing
+ * use returns, `null` where none is missing. Pure.
+ */
+export function resurrectionAt(team: Uses, nowMs: number): ResurrectionStock {
+  const { spent, nextReturnMs } = usesAt(team, nowMs);
+  return { usesLeft: BALANCE.resurrectionUses - spent, nextReturnMs };
 }
 
 /** Whether a map's prerequisite maps are all in this game's solved-map record. */
@@ -266,7 +318,9 @@ function nowLine(run: GameMapRun): NowLine {
 
 /**
  * A new map run at minute 0 carrying out `copy`, every count of the copy's rules starting from
- * zero; events mapRunStarted, activityStarted.
+ * zero; its equipment leaves the chest as it stands, as every start does (D-179, D-189), and the
+ * state of the map at the start marks a run of a solved map, which pays no practice (D-214); events
+ * mapRunStarted, activityStarted.
  */
 function startRun(
   state: GameState,
@@ -276,23 +330,14 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
-  // The state of the map at this start settles whether the run pays and takes (D-189).
+  // The state of the map at this start settles whether the run pays practice (D-189, D-214).
   const solvedMapRun = state.solvedMaps.includes(mapId);
-  const equipment = solvedMapRun
-    ? {
-        chest: state.team.chest,
-        backpack: takeFromNowhere(
-          copy.program.tripPlan,
-          traits.carryingCapacity,
-          mapOf(mapId),
-        ),
-      }
-    : takeTrip(
-        copy.program.tripPlan,
-        state.team.chest,
-        traits.carryingCapacity,
-        mapOf(mapId),
-      );
+  const equipment = takeTrip(
+    copy.program.tripPlan,
+    state.team.chest,
+    traits.carryingCapacity,
+    mapOf(mapId),
+  );
   const skills =
     state.run?.character.skills ??
     state.team.characters.find((character) => character.id === characterId)!
@@ -333,7 +378,7 @@ function startRun(
 /**
  * The game as it stands before anything is done: program 1, „Program”, with the empty rule group
  * „Program” under „Zawsze” and the next program number 2, a team with no character, an empty chest
- * and its resurrection ready, no map run.
+ * and its resurrection with every use left, no map run.
  */
 export function newGame(): GameState {
   return {
@@ -345,7 +390,12 @@ export function newGame(): GameState {
     understanding: newUnderstanding(),
     ruleCounts: null,
     countsProgram: null,
-    team: { characters: [], chest: { pieces: {} }, resurrectionReadyAtMs: 0 },
+    team: {
+      characters: [],
+      chest: { pieces: {} },
+      resurrectionUsesSpent: 0,
+      resurrectionNextReturnAtMs: null,
+    },
     nextCharacterId: 1,
     run: null,
     lastSeed: INITIAL_SEED,
@@ -574,11 +624,15 @@ export function setPace(state: GameState, pace: Pace): GameResult {
  * a manual map run and an earning loop settle by; `gathered` is the practice gathered at the
  * character's earning loop, `{}` where it has none. A character with no practice yet — none in any
  * skill, no rank bought, none in `gathered` — loses nothing the resurrection would have guarded, so
- * its death leaves the team as it is, the resurrection ready or not. Otherwise, with the team's
- * resurrection ready it is used up: it is ready again the renewal after `nowMs`, and the character
- * stays as it is. With none ready the character loses all its practice and ranks and its generation
- * number grows by one, the moment of readiness unchanged. `nowMs` is taken as a safe integer; the
- * caller checks it.
+ * its death leaves the team as it is, the uses and their moment as they stood. Otherwise the uses that
+ * returned up to `nowMs`, that moment included, count first. With one left it is spent and the
+ * character stays as it is: a death with every use left starts the clock, the next use returning the
+ * renewal after `nowMs`, and a death with the clock running leaves its moment as it runs, which a
+ * death settled at an earlier real moment after another never moves back (D-240); the settlement
+ * holds the uses spent after it. With none left the character loses all its practice and ranks and its
+ * generation number grows by one, the uses and their moment unchanged. `nowMs` is taken as a safe
+ * integer; the caller checks it. A safe `nowMs` that carries a moment of the clock beyond the safe
+ * integers is still a RangeError (D-386).
  */
 export function teamAfterDeath(
   team: Team,
@@ -588,14 +642,19 @@ export function teamAfterDeath(
 ): { team: Team; settlement: DeathSettlement } {
   if (hasNoPractice(died.skills, gathered))
     return { team, settlement: { kind: "noPractice" } };
-  if (resurrectionReady(team, nowMs))
+  const { spent, nextReturnMs } = usesAt(team, nowMs);
+  if (spent < BALANCE.resurrectionUses)
     return {
       team: {
         ...team,
-        resurrectionReadyAtMs:
-          nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
+        resurrectionUsesSpent: spent + 1,
+        resurrectionNextReturnAtMs:
+          nextReturnMs ?? momentAfter(nowMs, renewalMs()),
       },
-      settlement: { kind: "resurrectionUsed" },
+      settlement: {
+        kind: "resurrectionUsed",
+        usesSpent: spent + 1,
+      },
     };
   const generation = died.generation + 1;
   const lost: Character = {
@@ -618,12 +677,13 @@ export function teamAfterDeath(
  * Settles the death of the map run at the real moment `nowMs`, once. Called by whoever knows real
  * time, never by the functions that pass game time. It settles as `teamAfterDeath` does, a manual map
  * run's character having no earning loop and so no practice gathered at one: a character with no
- * practice leaves the team and itself as they were; otherwise, with the team's resurrection ready it
- * is used up, ready again the renewal after `nowMs`, and with none ready the character loses all its
- * practice and ranks and its generation number grows by one. The map run holds how it went; its own
+ * practice leaves the team and itself as they were; otherwise, with a use of the team's resurrection
+ * left it is spent, and with none left the character loses all its practice and ranks and its
+ * generation number grows by one. The map run holds how it went; its own
  * skills, the chest, the programs, the Understanding and the solved maps are out of reach, and the
  * mark of a solved map plays no part. With no map run, no death or a death settled, returns the very
- * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
+ * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer, or whose
+ * moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function settleDeath(state: GameState, nowMs: number): GameResult {
   const run = state.run;
@@ -650,11 +710,12 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
 /**
  * Settles the completion of the map run at the real moment `nowMs`, once, as `settleDeath` settles a
  * death: called by whoever knows real time, never by the functions that pass game time. A completion
- * of a map the account had not solved when the run started (the run is not marked, D-189) makes the
- * team's resurrection ready at `nowMs` where it was not ready then, and leaves a ready one as it is;
- * the run holds which it was. With no map run, no completion, a completion of a solved map or a
+ * of a map the account had not solved when the run started (the run is not marked, D-189) returns one
+ * use of the team's resurrection where one is spent at `nowMs`, the uses that returned up to `nowMs`
+ * counting first, the clock running on as it was and stopping when the stock is then full, and leaves
+ * a full stock as it is; the run holds which it was. With no map run, no completion, a completion of a solved map or a
  * completion settled, returns the very state it got, without reading `nowMs`; otherwise a `nowMs`
- * that is no safe integer is a RangeError.
+ * that is no safe integer, or whose moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function settleCompletion(state: GameState, nowMs: number): GameResult {
   const run = state.run;
@@ -665,12 +726,17 @@ export function settleCompletion(state: GameState, nowMs: number): GameResult {
       `settleCompletion: ${String(nowMs)} is not a safe integer moment`,
     );
   }
-  const renewed = !resurrectionReady(state.team, nowMs);
+  const { spent, nextReturnMs } = usesAt(state.team, nowMs);
+  const renewed = spent > 0;
   return {
     state: {
       ...state,
       team: renewed
-        ? { ...state.team, resurrectionReadyAtMs: nowMs }
+        ? {
+            ...state.team,
+            resurrectionUsesSpent: spent - 1,
+            resurrectionNextReturnAtMs: spent === 1 ? null : nextReturnMs,
+          }
         : state.team,
       run: {
         ...run,
@@ -684,10 +750,16 @@ export function settleCompletion(state: GameState, nowMs: number): GameResult {
 }
 
 /**
- * A copy of the state holding the real moment `nowMs` as its save time (D-248). Whoever saves applies
- * it on the way to the saved document only, so the state the view holds stays the very value it was
- * and a comparison by identity sees no change in a save. A `nowMs` that is no safe integer is a
- * RangeError.
+ * A copy of the state holding the real moment `nowMs` as its save time (D-248), with the uses of the
+ * team's resurrection brought up to date at that moment: each spent use whose moment has come, that
+ * moment included, is stored as returned and the moment of the next recomputed, none stored when none
+ * is spent (D-386). The document then holds the count the game reckons at the saved moment, not the
+ * one the last settled death or first solving left, so a count lowered in the data later refuses only
+ * a save with more uses spent at its own moment than the new count; from `nowMs` on the game reckons
+ * the same uses from the copy as from the state (`resurrectionAt`), by the one clock of D-190. Whoever
+ * saves applies it on the way to the saved document only, so the state the view holds stays the very
+ * value it was and a comparison by identity sees no change in a save. A `nowMs` that is no safe
+ * integer, or whose moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function withSaveTime(state: GameState, nowMs: number): GameState {
   if (!Number.isSafeInteger(nowMs)) {
@@ -695,7 +767,16 @@ export function withSaveTime(state: GameState, nowMs: number): GameState {
       `withSaveTime: ${String(nowMs)} is not a safe integer moment`,
     );
   }
-  return { ...state, saveTimeMs: nowMs };
+  const { spent, nextReturnMs } = usesAt(state.team, nowMs);
+  const team =
+    spent === state.team.resurrectionUsesSpent
+      ? state.team
+      : {
+          ...state.team,
+          resurrectionUsesSpent: spent,
+          resurrectionNextReturnAtMs: nextReturnMs,
+        };
+  return { ...state, team, saveTimeMs: nowMs };
 }
 
 /**
@@ -741,9 +822,10 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
- * events, no program rule is picked and the map is added to the solved maps; the completion pays
- * practice and deposits the bring list only for a run not marked `solvedMapRun`, and a death pays
- * nothing; where the minute of a completion or of a death is
+ * events, no program rule is picked and the map is added to the solved maps; the completion deposits
+ * the bring list clipped as every completion does, for every run (D-189), and pays practice only for
+ * a run not marked `solvedMapRun`, and a death pays nothing; where the minute of a completion or of
+ * a death is
  * also a discovery's, the game holds the discovery and is not paused (D-122). A map run that has ended
  * changes nothing. A death stays unsettled here: this function knows no real time, and whoever
  * passes it game time then calls `settleDeath`, as a saved document holding a death unsettled is

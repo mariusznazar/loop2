@@ -27,8 +27,6 @@ import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   clipTrip,
-  clippedTake,
-  takeFromNowhere,
   takeTrip,
   tripLoot,
   tripEntryCut,
@@ -68,9 +66,9 @@ function sent(state = equipped()) {
 
 // Catches a merge losing the skill snapshot, equipment, or either completion payment.
 test("a bought branch acts on entry equipment and completion pays practice and loot once", () => {
-  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
-  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from the chest and pays no practice."
+  // decision: D-189 "A manual map run that first solves its map pays practice once per map for the player, whichever character completes it; a manual run of a solved map pays no practice; every run pays loot only on completion, an earning-loop run included; a run that ends in death pays neither loot nor practice."
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
@@ -116,14 +114,14 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   assert.equal(completed.team.chest.pieces.berry, 9);
   assert.deepEqual(advanceMinutes(completed, 10).state, completed);
   // The completion solved the map, so the restart is a manual run of a solved map (D-214): it
-  // takes its three berries from nowhere and leaves the chest at 9, not 6.
+  // takes its three berries from the chest, which holds 9, and leaves it at 6; it pays no practice.
   const restarted = restart(completed).state;
   assert.deepEqual(restarted.run.practice, {});
   assert.equal(restarted.run.character.skills.eating.practice, 15);
   assert.equal(restarted.team.characters[0].skills.eating.practice, 16);
   assert.equal(restarted.run.current.endMinute, 4);
   assert.equal(restarted.run.character.backpack.berry, 3);
-  assert.equal(restarted.team.chest.pieces.berry, 9);
+  assert.equal(restarted.team.chest.pieces.berry, 6);
   assert.deepEqual(restarted.run.bringPlan, [entry("berry", 3)]);
 });
 // Each expected clipping is hand-counted from the rules of D-179 and D-187.
@@ -360,7 +358,7 @@ test("saved plan edits stay out of the copy; saves and overwrite detection inclu
 
 test("switching programs retains the entry snapshot, including on solved-map runs", () => {
   // invariant: trip-transfer
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   let state = equipped();
   state = { ...state, solvedMaps: ["forestEdge", "forest"] };
   state = createProgram(state).state;
@@ -369,8 +367,8 @@ test("switching programs retains the entry snapshot, including on solved-map run
     { mapId: "forest", characterId: 1, programId: 1 },
     23,
   ).state;
-  // A run of a solved map takes from nowhere (D-189): the chest keeps its ten sticks.
-  assert.equal(state.team.chest.pieces.stick, 10);
+  // A run of a solved map takes from the chest like any run (D-189): the chest keeps its two sticks.
+  assert.equal(state.team.chest.pieces.stick, 2);
   assert.equal(state.run.character.backpack.stick, 8);
   const switched = switchProgram(state, 2).state;
   assert.deepEqual(switched.run.copy.program.tripPlan, { take: [], bring: [] });
@@ -383,8 +381,12 @@ test("switching programs retains the entry snapshot, including on solved-map run
     1,
   ).state;
   assert.ok(finished.run.completion);
-  // The marked run deposits nothing (D-189), so the chest is as it was.
-  assert.deepEqual(finished.run.deposited, []);
+  // The marked run deposits its bring list as any completion does (D-189): berry 7 and stick 8 out of
+  // its backpack, so the chest's sticks go from 2 to 10.
+  assert.deepEqual(finished.run.deposited, [
+    entry("berry", 7),
+    entry("stick", 8),
+  ]);
   assert.equal(finished.team.chest.pieces.stick, 10);
 });
 
@@ -579,11 +581,11 @@ function aboutToComplete(state) {
   return { ...state, run: { ...state.run, streak: 479 } };
 }
 
-test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
+test("a manual run of a solved map takes its take list from the chest, cut by its stock and the capacity, as any run does", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
-  // invariant: solved-map-manual-run
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  const capacity = equipped().team.characters[0].traits.carryingCapacity;
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
+  // The chest of `equipped` holds stick 10, berry 10, moss 2; the take list asks stick 8 and berry 9,
+  // so the chest keeps stick 2 and berry 3, as in the unsolved case above.
   const started = sent(solvedForest());
   assert.deepEqual(started.run.character.backpack, {
     stick: 8,
@@ -592,74 +594,32 @@ test("a manual run of a solved map takes its take list from nowhere, cut by capa
     fiber: 0,
   });
   assert.deepEqual(started.team.chest.pieces, {
-    stick: 10,
-    berry: 10,
+    stick: 2,
+    berry: 3,
     moss: 2,
   });
+  // The chest holds no stick, so a take of 5 sticks gets none and leaves the other stock alone.
   const scarce = solvedForest();
   const absent = editProgram(
     { ...scarce, team: { ...scarce.team, chest: { pieces: { berry: 1 } } } },
     1,
     { ...emptyProgram(), tripPlan: { take: [entry("stick", 5)], bring: [] } },
   ).state;
-  const fromNowhere = sent(absent);
-  assert.equal(fromNowhere.run.character.backpack.stick, 5);
-  assert.deepEqual(fromNowhere.team.chest.pieces, { berry: 1 });
+  const fromChest = sent(absent);
+  assert.equal(fromChest.run.character.backpack.stick, 0);
+  assert.deepEqual(fromChest.team.chest.pieces, { berry: 1 });
+  // The chest holds 10 berries, fewer than the capacity of 15 that the take of 40 is cut by.
   const greedy = editProgram(solvedForest(), 1, {
     ...emptyProgram(),
     tripPlan: { take: [entry("berry", 40)], bring: [] },
   }).state;
-  assert.equal(sent(greedy).run.character.backpack.berry, capacity);
-});
-
-test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
-  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-64 "The backpack's cap counts the pieces of all items together"
-  // invariant: solved-map-manual-run
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
-  const before = structuredClone(plan);
-  assert.deepEqual(
-    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
-    { stick: 0, berry: 0, moss: 4, fiber: 0 },
-  );
-  assert.deepEqual(takeFromNowhere(plan, 12, MAPS.forest), {
-    stick: 0,
-    berry: 3,
-    moss: 9,
-    fiber: 0,
-  });
-  assert.equal(
-    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 0 }).moss,
-    0,
-  );
-  assert.deepEqual(plan, before);
-});
-
-// D-251: the mark on the card of the map and the run read one cut. Catches a cut that spends the budget
-// out of list order, drops a partial row, or ignores the entry cap of the map.
-test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
-  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
-  const before = structuredClone(plan);
-  // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
-  assert.deepEqual(clippedTake(plan, 12, MAPS.forest), [
-    entry("moss", 9),
-    entry("berry", 3),
-  ]);
-  // The entry cap 4 is below the capacity: moss takes all of it and berry gets nothing.
-  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 4 }), [
-    entry("moss", 4),
-  ]);
-  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 0 }), []);
-  assert.deepEqual(clippedTake({ take: [], bring: [] }, 15, MAPS.forest), []);
-  assert.deepEqual(plan, before);
+  assert.equal(sent(greedy).run.character.backpack.berry, 10);
+  assert.equal(sent(greedy).team.chest.pieces.berry, 0);
 });
 
 test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
   // invariant: solved-map-manual-run
-  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from the chest and pays no practice."
   const unsolved = sent();
   assert.equal(unsolved.run.solvedMapRun, false);
   assert.equal(sent(solvedForest()).run.solvedMapRun, true);
@@ -669,10 +629,17 @@ test("a run records at its start whether its map was solved, and a restart after
   assert.equal(completed.run.solvedMapRun, false, "the mark holds to the end");
   const restarted = restart(completed).state;
   assert.equal(restarted.run.solvedMapRun, true);
-  assert.deepEqual(restarted.team.chest, completed.team.chest);
+  // The restart takes from the chest as it stands after the completion, which holds stick 10,
+  // berry 10, moss 2. The take asks 8 sticks and 9 berries; capacity 15 leaves room for 7 berries,
+  // so 8 sticks and 7 berries go out.
+  assert.deepEqual(restarted.team.chest.pieces, {
+    stick: 2,
+    berry: 3,
+    moss: 2,
+  });
 });
 
-test("completing a manual run of a solved map pays no practice and deposits nothing, and the practice stays with the run", () => {
+test("completing a manual run of a solved map pays no practice and deposits its bring list, and the practice stays with the run", () => {
   // invariant: solved-map-manual-run
   // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
   const started = sent(solvedForest());
@@ -690,8 +657,17 @@ test("completing a manual run of a solved map pays no practice and deposits noth
   const before = structuredClone(fixture);
   const completed = advanceMinutes(fixture, 1).state;
   assert.ok(completed.run.completion);
-  assert.deepEqual(completed.run.deposited, []);
-  assert.deepEqual(completed.team.chest, fixture.team.chest);
+  // The bring list goes to the chest as at any completion (D-189): berry 7 and stick 8 out of the
+  // backpack, the moss in it not on the list. The chest then holds stick 10, berry 10, moss 2.
+  assert.deepEqual(completed.run.deposited, [
+    entry("berry", 7),
+    entry("stick", 8),
+  ]);
+  assert.deepEqual(completed.team.chest.pieces, {
+    stick: 10,
+    berry: 10,
+    moss: 2,
+  });
   assert.deepEqual(completed.team.characters, fixture.team.characters);
   assert.deepEqual(completed.run.practice, { smallItemGathering: 7 });
   assert.deepEqual(completed.solvedMaps, ["forestEdge", "forest"]);
@@ -726,15 +702,17 @@ test("a run started before another character solved the map still pays practice 
   );
 });
 
-test("the preview of a marked run is empty whatever its backpack and the chest hold", () => {
-  // invariant: solved-map-manual-run
+test("the preview of a marked run is its bring list clipped as of any run, whatever the chest holds", () => {
+  // invariant: trip-transfer
   // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
+  // The backpack holds stick 8 and berry 7; the bring list asks berry 9 and stick 8, so berry 7 and stick 8 leave it.
   const run = sent(solvedForest()).run;
-  assert.deepEqual(tripLoot(run, { pieces: {} }, MAPS.forest), []);
-  assert.deepEqual(
-    tripLoot({ ...run, solvedMapRun: false }, { pieces: {} }, MAPS.forest),
-    [entry("berry", 7), entry("stick", 8)],
-  );
+  assert.deepEqual(tripLoot(run, { pieces: {} }, MAPS.forest), [
+    entry("berry", 7),
+    entry("stick", 8),
+  ]);
+  // A chest with no room left (60 pieces, the chest's cap, D-184) clips the whole list.
+  assert.deepEqual(tripLoot(run, { pieces: { moss: 60 } }, MAPS.forest), []);
 });
 
 test("a death on a manual run of a solved map takes what the character carried and pays nothing", () => {
@@ -758,9 +736,9 @@ test("a death on a manual run of a solved map takes what the character carried a
   assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });
 
-// What a send takes is one function for both kinds of start (D-189): an unsolved map
-// takes from the chest, a solved one from nowhere. The expected entries below are worked out by hand
-// from the chest, the carrying capacity and the map's entry cap, in list order.
+// What a send takes is one function (D-189): every start, a solved map's included, passes the chest.
+// The expected entries below are worked out by hand from the chest, the carrying capacity and the
+// map's entry cap, in list order.
 
 test("sendTake at an unsolved map takes each entry cut by the chest's stock, then by the carrying capacity", () => {
   // Chest stick 5, berry 10; capacity 15, no entry cap. Stick: min(8, 5, 15) = 5, room 10 left.
@@ -792,37 +770,4 @@ test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the 
   assert.deepEqual(sendTake(plan, chest, 15, { ...MAPS.forest, carryIn: 4 }), [
     entry("stick", 4),
   ]);
-});
-
-test("sendTake at a solved map takes the take list from nowhere, clipped by capacity 12 only", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // Null chest: the list's own counts stand in for the stock. Stick: min(8, 8, 12) = 8, room 4.
-  // Berry: min(9, 9, 4) = 4.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  assert.deepEqual(sendTake(plan, null, 12, MAPS.forest), [
-    entry("stick", 8),
-    entry("berry", 4),
-  ]);
-});
-
-test("sendTake at a solved map is not cut by any chest's stock, as no chest is an argument there", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // Capacity 15: stick min(8, 8, 15) = 8, room 7. Berry: min(9, 9, 7) = 7. The chest is not an
-  // argument, so its stock cannot cut the list.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  assert.deepEqual(sendTake(plan, null, 15, MAPS.forest), [
-    entry("stick", 8),
-    entry("berry", 7),
-  ]);
-});
-
-test("the backpack of a solved map's run is the entries sendTake gives from nowhere", () => {
-  // decision: D-64 "The backpack's cap counts the pieces of all items together"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
-  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
-  const backpack = takeFromNowhere(plan, 12, MAPS.forest);
-  assert.equal(backpack.stick, 8);
-  assert.equal(backpack.berry, 4);
-  assert.equal(backpack.moss, 0);
 });

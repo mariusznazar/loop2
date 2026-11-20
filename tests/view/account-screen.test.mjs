@@ -39,7 +39,10 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
-import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
+import {
+  loadSavedGame,
+  SAVED_GAME_VERSION,
+} from "../../dist/browser/sim/saved-game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { createAccountCard } from "../../dist/browser/view/account-card.js";
 import {
@@ -1891,9 +1894,9 @@ const OTHER_ACCOUNT = {
 };
 
 /** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 7;
-/** The version before `VERSION`, which D-206 makes another version: the save of a game whose characters each held a resurrection. */
-const OLDER_VERSION = 6;
+const VERSION = SAVED_GAME_VERSION;
+/** The version before `VERSION`, which D-206 makes another version: the save of a game whose team held its one resurrection as a moment of readiness. */
+const OLDER_VERSION = SAVED_GAME_VERSION - 1;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
 const SAVED_MS = CLOCK_MS - 60_000;
 /** A new game with Ala in its team. */
@@ -2740,7 +2743,7 @@ test("each act of the player that changes the game state is saved at once, and o
 });
 
 // --- the character's row: starting, watching and stopping an earning loop --------------------
-// D-243, D-244, D-245, D-251.
+// D-243, D-244, D-245.
 
 /** The row of the character named `name` in the headquarters under `root`. */
 function rowOf(root, name) {
@@ -3123,53 +3126,6 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
   });
 });
 
-// D-251. Catches a mark in the wrong place, a mark at a map not yet solved,
-// and a mark that ignores the chest.
-test("the mark of a rehearsal the earning loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
-  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
-  const MARK =
-    "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
-  /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
-  const holding = (held) => {
-    const solved = { ...twoPrograms(), solvedMaps: ["forestEdge", "forest"] };
-    const stocked = {
-      ...solved,
-      team: { ...solved.team, chest: { pieces: { stick: held } } },
-    };
-    return editProgram(stocked, 1, {
-      ...stocked.programs[0].program,
-      tripPlan: { take: [{ item: "stick", count: 3 }], bring: [] },
-    }).state;
-  };
-  await onPage(async ({ root }) => {
-    const address = fakeAddress("#/mapy/forest");
-    const { view } = await viewOf(holding(2), address);
-    const who = whoOf(root, "Ala");
-    const marks = byClass(who, "rehearsal-mark");
-    assert.equal(marks.length, 1, "one under „Wejdź”");
-    assert.ok(shown(marks[0]));
-    assert.equal(marks[0].textContent, MARK);
-    assertInOrder(root, [
-      buttonLabelled(who, "Wejdź: Ala, mapa Las"),
-      marks[0],
-    ]);
-    await follow(address, "#/mapy/forestDeep");
-    assert.equal(
-      byClass(whoOf(root, "Ala"), "rehearsal-mark").length,
-      0,
-      "the map not yet solved has no mark",
-    );
-    await inAct(() => view.dispose());
-  });
-  await onPage(async ({ root }) => {
-    const { view } = await viewOf(holding(3), fakeAddress("#/mapy/forest"));
-    assert.equal(byClass(whoOf(root, "Ala"), "rehearsal-mark").length, 0);
-    await inAct(() => view.dispose());
-  });
-});
-
 /** A game whose map run passes one game minute before Ala, who has practice, dies of cold. */
 function lastMinute() {
   const bare = passing();
@@ -3226,16 +3182,22 @@ test("a game minute that ends the map run in a death is saved at once, settled",
       const [sent] = argsOf(held, "saveGame");
       assert.equal(sent.basedOn, 5);
       assert.equal(sent.game.run.death.cause, "cold");
+      // A new team holds every use, so this death spends the first.
       assert.deepEqual(sent.game.run.deathSettlement, {
         kind: "resurrectionUsed",
+        usesSpent: 1,
       });
+      assert.equal(sent.game.team.resurrectionUsesSpent, 1);
     } finally {
       Object.defineProperty(globalThis, "performance", saved);
     }
   });
 });
 
-/** Ala at generation 2 at the headquarters, the team's resurrection ready `left` ms after `at`. */
+/**
+ * Ala at generation 2 at the headquarters, the team's resurrection with all three of its uses spent,
+ * the first returning `left` ms after `at`.
+ */
 function renewing(at, left) {
   const state = withCharacter();
   const [ala] = state.team.characters;
@@ -3244,7 +3206,8 @@ function renewing(at, left) {
     team: {
       ...state.team,
       characters: [{ ...ala, generation: 2 }],
-      resurrectionReadyAtMs: at + left,
+      resurrectionUsesSpent: 3,
+      resurrectionNextReturnAtMs: at + left,
     },
   };
 }
@@ -3254,7 +3217,7 @@ function renewing(at, left) {
 // the saver would send. The screen is drawn in React, so the writes of the line are counted as the
 // changes of its text the page's document records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
@@ -3266,13 +3229,13 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       const held = heldClient();
       await startPage(held);
       await held.answer("currentAccount", ACCOUNT);
-      // 59 min 30 s left at the clock's start: rounded up, one whole hour.
+      // Every use spent, the first 59 min 30 s away at the clock's start: rounded up, one whole hour.
       await held.answer("loadSavedGame", saveOf(renewing(T, 3_570_000), 4));
       const [line] = byClass(root, "team-member-resurrection");
       const warning = " — śmierć zabierze wprawę i wykupione stopnie";
       assert.equal(
         line.textContent,
-        `Wskrzeszenie drużyny za 1 godz. 0 min czasu realnego${warning}`,
+        `Wskrzeszenie drużyny: użycia 0 z 3, następne za 1 godz. 0 min czasu realnego${warning}`,
       );
       assert.ok(line.classList.contains("danger"));
       const [label] = byClass(root, "team-member-generation");
@@ -3304,7 +3267,7 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       assert.equal(await writes(), 1);
       assert.equal(
         line.textContent,
-        `Wskrzeszenie drużyny za 59 min czasu realnego${warning}`,
+        `Wskrzeszenie drużyny: użycia 0 z 3, następne za 59 min czasu realnego${warning}`,
       );
       await inAct(() => mock.timers.tick(200));
       assert.equal(
@@ -3312,10 +3275,20 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
         0,
         "a tick in the same minute writes nothing",
       );
-      // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
+      // At the moment the first use returns the line shows one use, within one tick, loses `danger`,
+      // and counts the next return four hours on.
       current = T + 3_570_000;
       await inAct(() => mock.timers.tick(200));
-      assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
+      assert.equal(
+        line.textContent,
+        "Wskrzeszenie drużyny: użycia 1 z 3, następne za 4 godz. 0 min czasu realnego",
+      );
+      assert.ok(!line.classList.contains("danger"));
+      assert.equal(await writes(), 1);
+      // Eight hours after it the other two have returned: the stock is full and no return is named.
+      current = T + 3_570_000 + 2 * 14_400_000;
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(line.textContent, "Wskrzeszenie drużyny: użycia 3 z 3");
       assert.ok(!line.classList.contains("danger"));
       assert.equal(await writes(), 1);
       watcher.disconnect();
@@ -5146,12 +5119,12 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
 // show, also while a manual map run waits. Catches the lines refreshed only without a map run, a
 // screen that draws its line at the moment it was built, and a tick that saves.
 test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, and saves nothing", async () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   const T = 1_760_000_000_000;
   const warning = " — śmierć zabierze wprawę i wykupione stopnie";
-  /** Ala at generation 2 with a paused map run, her resurrection 59 min 30 s away at `T`. */
+  /** Ala at generation 2 with a paused map run, the first of her team's three spent uses 59 min 30 s away at `T`. */
   const waiting = () => ({
     ...passing(),
     team: renewing(T, 3_570_000).team,
@@ -5172,19 +5145,23 @@ test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of
         assert.ok(shown(line), hash);
         assert.equal(
           line.textContent,
-          `Wskrzeszenie drużyny za 1 godz. 0 min czasu realnego${warning}`,
+          `Wskrzeszenie drużyny: użycia 0 z 3, następne za 1 godz. 0 min czasu realnego${warning}`,
           hash,
         );
         current = T + 31_000;
         await inAct(() => mock.timers.tick(200));
         assert.equal(
           line.textContent,
-          `Wskrzeszenie drużyny za 59 min czasu realnego${warning}`,
+          `Wskrzeszenie drużyny: użycia 0 z 3, następne za 59 min czasu realnego${warning}`,
           hash,
         );
         current = T + 3_570_000;
         await inAct(() => mock.timers.tick(200));
-        assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe", hash);
+        assert.equal(
+          line.textContent,
+          "Wskrzeszenie drużyny: użycia 1 z 3, następne za 4 godz. 0 min czasu realnego",
+          hash,
+        );
         assert.ok(!line.classList.contains("danger"), hash);
         await inAct(() => mock.timers.tick(60_000));
         assert.deepEqual(waitingCalls(held), [], `${hash}: nothing is saved`);

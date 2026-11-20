@@ -1084,7 +1084,7 @@ test("the window stands in no game state and no saved document: closing and open
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
@@ -1116,7 +1116,7 @@ test("a reload of the screen of an ended map run opens the window with its longe
     run.longestStreak = 116;
     assert.deepEqual(await lines(diedDocument, root), {
       streak: "najdłuższa passa 116/480",
-      cost: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
+      cost: "Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia 2 z 3; zużyte wracają po kolei, jedno co 4 godziny czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.",
     });
 
     const start = completed(going());
@@ -1157,12 +1157,12 @@ async function costLinesAfterReload(document, root) {
 }
 
 // D-190, D-216, D-185. Catches the line of a death of a character with no practice, or of a renewal at
-// a first completion, that is missing after a load, stands where the resurrection was found ready, or
+// a first completion, that is missing after a load, stands where the stock of uses was found full, or
 // stands with the line of a resurrection used.
-test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready", async () => {
+test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the stock of uses was found full", async () => {
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
-  // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
+  // decision: D-216 "After the first completion of a map that returned a use of the resurrection, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the stock of uses full shows none."
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   await onPage(async (page) => {
     const { root } = page;
@@ -1173,7 +1173,7 @@ test("a reload of the screen of an ended map run holds the line of a death with 
     await inAct(() => bare.view.dispose());
     pageDocument().body.replaceChildren();
     assert.deepEqual(await costLinesAfterReload(bareDocument, root), [
-      "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+      "Postać nie miała jeszcze wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.",
     ]);
 
     // A completion of a map the account had not solved, settled as the clock settles it: the same
@@ -1188,7 +1188,7 @@ test("a reload of the screen of an ended map run holds the line of a death with 
         { kind: "resurrectionRenewed" },
         [
           "Do skrzynki nic nie trafiło.",
-          "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+          "Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.",
         ],
       ],
       [{ kind: "resurrectionReady" }, ["Do skrzynki nic nie trafiło."]],

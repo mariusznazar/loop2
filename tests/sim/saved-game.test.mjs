@@ -55,10 +55,15 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // The document of version 6 is that of version 5 with Skraj lasu among the solved maps, where Las
 // is, since Skraj lasu opens Las (D-149); the game refuses it as another version since version 7.
 //
-// The document of the current version, version 7, is that of version 6 with the one resurrection of
-// the team: its moment of readiness stands in the team and no longer in each character, and the map
-// run holds `completionSettlement`, null on that map run, which goes on (D-190, D-206). It fills every optional branch of
-// the game state: a map run with a
+// The document of version 7 is that of version 6 with the one resurrection of the team: its moment of
+// readiness stands in the team and no longer in each character, and the map run holds
+// `completionSettlement`, null on that map run, which goes on (D-190, D-206); the game refuses it as
+// another version since version 8.
+//
+// The document of the current version, version 8, is that of version 7 with the team's resurrection
+// held as the uses spent, two of the data's three, and the real moment the next one returns: the keys
+// `resurrectionUsesSpent` and `resurrectionNextReturnAtMs` replace `resurrectionReadyAtMs` (D-190).
+// It fills every optional branch of the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -674,12 +679,11 @@ const DOCUMENT_V6 = {
 };
 
 /**
- * The document of the current version: version 6 with the one resurrection of the team, its moment
- * of readiness moved from each character to the team (Ala's used one of 2025, the moment the
- * document of version 2 gave her), and the mark `completionSettlement` in the map run, null on that
- * map run, which goes on.
+ * The document of version 7: version 6 with the one resurrection of the team, its moment of readiness
+ * moved from each character to the team (Ala's used one of 2025, the moment the document of version 2
+ * gave her), and the mark `completionSettlement` in the map run, null on that map run, which goes on.
  */
-const DOCUMENT = {
+const DOCUMENT_V7 = {
   version: 7,
   game: {
     ...DOCUMENT_V6.game,
@@ -699,11 +703,30 @@ const DOCUMENT = {
 };
 
 /**
+ * The document of the current version, version 8: version 7 with the team's resurrection held as two
+ * uses spent of the data's three and the moment the next one returns, which is the moment of Ala's
+ * used resurrection of 2025 that version 7 gave.
+ */
+const DOCUMENT = {
+  version: 8,
+  game: {
+    ...DOCUMENT_V7.game,
+    team: {
+      characters: DOCUMENT_V7.game.team.characters,
+      chest: DOCUMENT_V7.game.team.chest,
+      resurrectionUsesSpent: 2,
+      resurrectionNextReturnAtMs: 1760000028800000,
+    },
+  },
+};
+
+/**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
- * earning loop whose map run is in a combat going on.
+ * earning loop whose map run is in a combat going on, and the team's resurrection with no use spent
+ * and no moment of the next return.
  */
 const HEADQUARTERS = {
-  version: 7,
+  version: 8,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -731,7 +754,8 @@ const HEADQUARTERS = {
         },
       ],
       chest: { pieces: {} },
-      resurrectionReadyAtMs: 0,
+      resurrectionUsesSpent: 0,
+      resurrectionNextReturnAtMs: null,
     },
     nextCharacterId: 2,
     run: null,
@@ -783,13 +807,13 @@ test("the server's save of the current version loads into the game it holds, its
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const save = {
-    version: 7,
+    version: 8,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 7 is the current version since the raise, so 8 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 8 }), {
+  // D-206: 8 is the current version since the raise, so 7 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 7 }), {
     ok: false,
     reason: "version",
   });
@@ -808,10 +832,15 @@ function solvingItsMap(document) {
 }
 
 /**
- * The document's map run ended in a death in its game minute, settled as `settlement` gives; the
- * game no longer holds what only a map run going on holds.
+ * The document's map run ended in a death in its game minute, settled as `settlement` gives; by
+ * default the death spent the third of the data's three uses, the document holding two spent before
+ * it, so three are spent after it and none is left (D-190). The game no longer holds what only a map
+ * run going on holds.
  */
-function dead(document, settlement = { kind: "resurrectionUsed" }) {
+function dead(
+  document,
+  settlement = { kind: "resurrectionUsed", usesSpent: 3 },
+) {
   document.game.paused = false;
   document.game.discovery = null;
   document.game.realMsCarry = 0;
@@ -990,21 +1019,21 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 });
 
 // invariant: save-version
-test("the team's moment of readiness below zero loads, as it is a safe integer of any sign", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+test("the team's moment of the next return below zero loads, as it is a safe integer of any sign", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const before = changed((document) => {
-    document.game.team.resurrectionReadyAtMs = -1500;
+    document.game.team.resurrectionNextReturnAtMs = -1500;
   });
   const loaded = loadSavedGame(before);
   assert.equal(loaded.ok, true);
-  assert.equal(loaded.state.team.resurrectionReadyAtMs, -1500);
+  assert.equal(loaded.state.team.resurrectionNextReturnAtMs, -1500);
 });
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
-  // D-206: 7 is the current version since the raise, so 8 stands in for another one.
-  for (const version of [0, 8, -1]) {
+  // D-206: 8 is the current version since the raise, so 7 and 9 stand in for another one.
+  for (const version of [0, 7, 9, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -1012,14 +1041,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 8 of another shape",
-    { version: 8, game: "Las" },
+    "version 9 of another shape",
+    { version: 9, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 8 with an archetype absent from the data",
+    "version 9 with an archetype absent from the data",
     changed((document) => {
-      document.version = 8;
+      document.version = 9;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -1109,7 +1138,55 @@ test("the document of version 6 is refused as version, whatever its game holds",
     { ...structuredClone(DOCUMENT), version: 6 },
     "version",
   );
-  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V6.version + 1);
+});
+
+// invariant: save-version
+// D-206: the document of version 7 is discarded whole, whatever it holds, though its game state has
+// the shape of the version before the team's uses: its team holds the moment of readiness the
+// version before gave, and the current version is the one after it.
+test("the document of version 7 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V7.version, 7);
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V7.version + 1);
+  assertRefused(
+    "the document of version 7",
+    structuredClone(DOCUMENT_V7),
+    "version",
+  );
+  assertRefused(
+    "the document of version 7 with the team of the current version",
+    { ...structuredClone(DOCUMENT), version: 7 },
+    "version",
+  );
+});
+
+// invariant: save-version
+test("the team's uses spent load at their edges: none with no moment, and all of the data's three with one", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters, held as numbers of the account, no item of any backpack, equipment or chest: a number of uses and the span of real time after which one used use returns, both set in the balance data, 3 uses and 4 hours to start."
+  const none = changed((document) => {
+    document.game.team.resurrectionUsesSpent = 0;
+    document.game.team.resurrectionNextReturnAtMs = null;
+  });
+  assert.deepEqual(loadSavedGame(none), { ok: true, state: none.game });
+  const all = changed((document) => {
+    document.game.team.resurrectionUsesSpent = 3;
+    document.game.team.resurrectionNextReturnAtMs = 1760000028800000;
+  });
+  assert.deepEqual(loadSavedGame(all), { ok: true, state: all.game });
+});
+
+// invariant: save-version
+test("a death that spent a use keeps the uses spent after it, from one up to the data's count, and each loads", () => {
+  // decision: D-190 "The death of a character with practice uses up one use while any is left, and a death of a character with practice with none left stops its earning loop."
+  for (const usesSpent of [1, 2, 3]) {
+    const loaded = changed((document) =>
+      dead(document, { kind: "resurrectionUsed", usesSpent }),
+    );
+    assert.deepEqual(
+      loadSavedGame(loaded),
+      { ok: true, state: loaded.game },
+      `uses spent ${usesSpent}`,
+    );
+  }
 });
 
 // invariant: save-version
@@ -1216,12 +1293,64 @@ const CRAFTED = {
   "a character without its generation": (document) =>
     delete document.game.team.characters[0].generation,
   // The one resurrection is the team's: a character that still holds its own moment is of the
-  // shape of the version before, and the team without its moment lacks a key.
+  // shape of the version before, and the team keeps exactly its uses spent and its moment of the next
+  // return, not the one moment of version 7.
   "a character still holding a moment of readiness": (document) =>
     (document.game.team.characters[1].resurrectionReadyAtMs = 0),
-  "a team without its moment of readiness": (document) =>
-    delete document.game.team.resurrectionReadyAtMs,
+  "the team with the moment of version 7 beside the new keys": (document) =>
+    (document.game.team.resurrectionReadyAtMs = 1760000028800000),
+  "the team with the moment of version 7 instead of the new keys": (
+    document,
+  ) => {
+    delete document.game.team.resurrectionUsesSpent;
+    delete document.game.team.resurrectionNextReturnAtMs;
+    document.game.team.resurrectionReadyAtMs = 1760000028800000;
+  },
+  "a team without its uses spent": (document) =>
+    delete document.game.team.resurrectionUsesSpent,
+  "a team without its moment of the next return": (document) =>
+    delete document.game.team.resurrectionNextReturnAtMs,
   "a key added to the team": (document) => (document.game.team.reserve = 1),
+  // The uses spent are a whole count from 0 up to the data's count of three (D-190).
+  "uses spent fractional": (document) =>
+    (document.game.team.resurrectionUsesSpent = 1.5),
+  "uses spent below 0": (document) =>
+    (document.game.team.resurrectionUsesSpent = -1),
+  "uses spent as text": (document) =>
+    (document.game.team.resurrectionUsesSpent = "2"),
+  "uses spent of none": (document) =>
+    (document.game.team.resurrectionUsesSpent = null),
+  "uses spent not a number": (document) =>
+    (document.game.team.resurrectionUsesSpent = NaN),
+  "uses spent infinite": (document) =>
+    (document.game.team.resurrectionUsesSpent = Infinity),
+  "uses spent above the data's count": (document) =>
+    (document.game.team.resurrectionUsesSpent = 4),
+  "uses spent beyond the safe integers": (document) =>
+    (document.game.team.resurrectionUsesSpent = 2 ** 53),
+  // The moment of the next return stands exactly while some use is spent, and is a safe integer of
+  // any sign (D-386).
+  "a moment of the next return with none spent": (document) => {
+    document.game.team.resurrectionUsesSpent = 0;
+  },
+  "a moment of the next return of 0 with none spent": (document) => {
+    document.game.team.resurrectionUsesSpent = 0;
+    document.game.team.resurrectionNextReturnAtMs = 0;
+  },
+  "a moment of the next return missing with some spent": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = null),
+  "a moment of the next return fractional": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = 1.5),
+  "a moment of the next return as text": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = "1760000028800000"),
+  "a moment of the next return not a number": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = NaN),
+  "a moment of the next return infinite": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = Infinity),
+  "a moment of the next return beyond the safe integers": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = 2 ** 53),
+  "a moment of the next return below the safe integers": (document) =>
+    (document.game.team.resurrectionNextReturnAtMs = -(2 ** 53)),
   "a generation of 0": (document) =>
     (document.game.team.characters[0].generation = 0),
   "a generation below 0": (document) =>
@@ -1234,20 +1363,6 @@ const CRAFTED = {
     (document.game.team.characters[0].generation = null),
   "a generation beyond the safe integers": (document) =>
     (document.game.team.characters[0].generation = 2 ** 53),
-  "a moment of readiness fractional": (document) =>
-    (document.game.team.resurrectionReadyAtMs = 1.5),
-  "a moment of readiness as text": (document) =>
-    (document.game.team.resurrectionReadyAtMs = "0"),
-  "a moment of readiness of none": (document) =>
-    (document.game.team.resurrectionReadyAtMs = null),
-  "a moment of readiness not a number": (document) =>
-    (document.game.team.resurrectionReadyAtMs = NaN),
-  "a moment of readiness infinite": (document) =>
-    (document.game.team.resurrectionReadyAtMs = Infinity),
-  "a moment of readiness beyond the safe integers": (document) =>
-    (document.game.team.resurrectionReadyAtMs = 2 ** 53),
-  "a moment of readiness below the safe integers": (document) =>
-    (document.game.team.resurrectionReadyAtMs = -(2 ** 53)),
   "a key added to a rule of a program": (document) =>
     (document.game.programs[0].program.groups[0].rules[0].note = "x"),
   "a key added to a condition of the copy": (document) =>
@@ -1534,14 +1649,6 @@ const CRAFTED = {
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [];
   },
-  "a deposit at the completion of a marked run": (document) => {
-    solvingItsMap(document);
-    document.game.paused = false;
-    document.game.realMsCarry = 0;
-    document.game.run.solvedMapRun = true;
-    document.game.run.completion = { minute: 212 };
-    document.game.run.deposited = [{ item: "berry", count: 2 }];
-  },
   "a marked completion without its deposit": (document) => {
     solvingItsMap(document);
     document.game.paused = false;
@@ -1596,6 +1703,41 @@ const CRAFTED = {
     dead(document, { kind: "resurrectionUsed", generation: 2 }),
   "a resurrection used with a key added": (document) =>
     dead(document, { kind: "resurrectionUsed", note: "x" }),
+  // The death that spent a use keeps the uses spent after it: exactly the key `usesSpent`, a whole count
+  // from 1 up to the data's count of three (D-190); the count of the data is the one of the load, so a
+  // count lowered later refuses only a document with more spent than the new count.
+  "a resurrection used without its uses spent": (document) =>
+    dead(document, { kind: "resurrectionUsed" }),
+  "a resurrection used with its uses spent above the data's count": (
+    document,
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 4 }),
+  "a resurrection used with its uses spent far above the data's count": (
+    document,
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 10 }),
+  "a resurrection used with none spent": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 0 }),
+  "a resurrection used with its uses spent below 0": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: -1 }),
+  "a resurrection used with its uses spent fractional": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 1.5 }),
+  "a resurrection used with its uses spent as text": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: "2" }),
+  "a resurrection used with its uses spent of none": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: null }),
+  "a resurrection used with its uses spent not finite": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: Infinity }),
+  "a resurrection used with its uses spent beyond the safe integers": (
+    document,
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 2 ** 53 }),
+  "a resurrection used with the old key of the uses left": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesLeft: 2 }),
+  "a resurrection used with the old key beside the uses spent": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 1, usesLeft: 2 }),
+  "a resurrection used with its uses spent on a map run going on": (document) =>
+    (document.game.run.deathSettlement = {
+      kind: "resurrectionUsed",
+      usesSpent: 2,
+    }),
   "no practice holding a generation": (document) =>
     dead(document, { kind: "noPractice", generation: 1 }),
   "no practice with a key added": (document) =>
@@ -2334,6 +2476,46 @@ test("a completion depositing exactly the planned counts loads", () => {
   assert.deepEqual(loadSavedGame(exact), { ok: true, state: exact.game });
 });
 
+// A manual run of a solved map brings its loot out as every other map run does, so its completion
+// deposits by the same rule: entries of the frozen bring plan in its order, each at most its planned
+// count (D-179, D-189). Berry 5 and stick 20 in the document, as in the case above.
+test("a completion of a marked run depositing its planned counts loads, and a deposit beyond them is refused as shape", () => {
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
+  // decision: D-179 "The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest"
+  const marked = (deposited) =>
+    changed((document) => {
+      solvingItsMap(document);
+      document.game.paused = false;
+      document.game.realMsCarry = 0;
+      document.game.run.solvedMapRun = true;
+      document.game.run.completion = { minute: 212 };
+      document.game.run.deposited = deposited;
+    });
+  const exact = marked([
+    { item: "berry", count: 5 },
+    { item: "stick", count: 20 },
+  ]);
+  assert.deepEqual(loadSavedGame(exact), { ok: true, state: exact.game });
+  assertRefused(
+    "a marked deposit above its planned count",
+    marked([{ item: "berry", count: 6 }]),
+    "shape",
+  );
+  assertRefused(
+    "a marked deposit of an item the frozen bring plan lacks",
+    marked([{ item: "moss", count: 1 }]),
+    "shape",
+  );
+  assertRefused(
+    "a marked deposit out of the frozen bring plan's order",
+    marked([
+      { item: "stick", count: 4 },
+      { item: "berry", count: 2 },
+    ]),
+    "shape",
+  );
+});
+
 // invariant: save-version
 // Two characters of one number, the rest of the document sound: the number alone refuses it.
 test("two characters of one number are refused as shape, the rest of the document sound", () => {
@@ -2569,11 +2751,11 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
 // the open game with no minutes, a second earning loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
-    // D-386: a safe integer of any sign, as `resurrectionReadyAtMs` is read, so the case is no
-    // crafted document.
+    // D-386: a safe integer of any sign, as the team's moment of the next return is read, so the case
+    // is no crafted document.
     "a save time below 0": (document) => (document.game.saveTimeMs = -1),
     "an earning loop in its first map run, nothing gathered": (document) => {
       olaLoop(document).runNumber = 1;
@@ -2650,7 +2832,7 @@ test("a state with its save time is a copy holding the moment, the state passed 
 
 // D-386: as in `settleDeath`, so a broken clock never reaches a document.
 test("a moment that is no safe integer gives no save time", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
     assert.throws(
       () => withSaveTime(newGame(), moment),
@@ -2664,7 +2846,7 @@ test("a moment that is no safe integer gives no save time", () => {
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const state = newGame();
   for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {
@@ -2754,20 +2936,20 @@ function withPractice(state) {
   };
 }
 
-/** The death in combat of `deeper`, its character holding practice and the team's resurrection not ready at `REAL_MS`. */
+/** The death in combat of `deeper`, its character holding practice and the team's resurrection used up at `REAL_MS`. */
 function deathUnready() {
-  const state = withPractice(deeper((run) => run.death !== null));
-  return {
-    ...state,
-    team: { ...state.team, resurrectionReadyAtMs: REAL_MS + 1 },
-  };
+  return usedUp(withPractice(deeper((run) => run.death !== null)));
 }
 
-/** `state` with the team's resurrection used up until the moment after `REAL_MS`. */
+/** `state` with the team's resurrection's three uses all spent, the first of them returning after `REAL_MS`. */
 function usedUp(state) {
   return {
     ...state,
-    team: { ...state.team, resurrectionReadyAtMs: REAL_MS + 1 },
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: 3,
+      resurrectionNextReturnAtMs: REAL_MS + 1,
+    },
   };
 }
 
@@ -2913,6 +3095,37 @@ function patrolling() {
   return state;
 }
 
+// A save stores the uses as they stand at its moment (D-386): the use due at REAL_MS + 1 has come back
+// by SAVE_MS, a minute later, so it is stored as returned, the next one due four hours after it (240
+// real minutes, 14 400 000 ms). Each pair is the uses spent and the moment of the next return.
+const STORED_AT_THE_SAVE = {
+  "a death that took everything": [2, REAL_MS + 1 + 14_400_000],
+  "after that death and „Zakończ”, with no map run": [
+    2,
+    REAL_MS + 1 + 14_400_000,
+  ],
+  "the restart after that death": [2, REAL_MS + 1 + 14_400_000],
+  "that completion, its renewal of the resurrection settled as it found it used up":
+    [1, REAL_MS + 1 + 14_400_000],
+};
+
+/** The state `state`, named `name` among the states of the round trip, as a save at SAVE_MS holds it. */
+function stampedAtTheSave(name, state) {
+  const [spent, next] = STORED_AT_THE_SAVE[name] ?? [
+    state.team.resurrectionUsesSpent,
+    state.team.resurrectionNextReturnAtMs,
+  ];
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: spent,
+      resurrectionNextReturnAtMs: next,
+    },
+    saveTimeMs: SAVE_MS,
+  };
+}
+
 test("a game state the simulation made loads back from its saved document", () => {
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
@@ -3004,7 +3217,7 @@ test("a game state the simulation made loads back from its saved document", () =
       state: equipped(true),
       goesOn: true,
     },
-    "the completion of a marked run, its deposit empty": {
+    "the completion of a marked run, its deposit of the berries carried": {
       state: doneMarked,
       goesOn: false,
     },
@@ -3040,8 +3253,10 @@ test("a game state the simulation made loads back from its saved document", () =
   );
   assert.notEqual(states["an attack going on"].state.run.activeCombat, null);
   assert.equal(states["a death in combat"].state.run.death.cause, "combat");
+  // D-190: the death spends the first of the three uses, one is spent after it.
   assert.deepEqual(states["a death in combat"].state.run.deathSettlement, {
     kind: "resurrectionUsed",
+    usesSpent: 1,
   });
   assert.deepEqual(lost.run.deathSettlement, {
     kind: "progressLost",
@@ -3092,14 +3307,21 @@ test("a game state the simulation made loads back from its saved document", () =
   );
   assert.notEqual(doneMarked.run.completion, null);
   assert.equal(doneMarked.run.solvedMapRun, true);
-  assert.deepEqual(doneMarked.run.deposited, []);
+  // D-189: a marked run brings its loot out to the chest as any run does, its bring list clipped to
+  // what the character still carries; only its practice is not paid. So the same run of a map not
+  // solved, `done`, is the expectation of what the marked run carries and deposits.
+  assert.deepEqual(
+    doneMarked.run.character.backpack,
+    done.run.character.backpack,
+  );
+  assert.deepEqual(doneMarked.run.deposited, done.run.deposited);
   assert.equal(
     states["the restart after the completion that solved the map"].state.run
       .solvedMapRun,
     true,
   );
   for (const [name, { state, goesOn }] of Object.entries(states)) {
-    const stamped = { ...state, saveTimeMs: SAVE_MS };
+    const stamped = stampedAtTheSave(name, state);
     assert.deepEqual(
       loadSavedGame(savedGame(withSaveTime(state, SAVE_MS))),
       { ok: true, state: goesOn ? { ...stamped, paused: true } : stamped },

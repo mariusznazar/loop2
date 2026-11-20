@@ -3,7 +3,7 @@
  * left the list of the maps open to the player and on the right the card of the map the address
  * names with, under it, the section „Kto idzie”. Before a map is named the right area says to pick
  * one. The card is drawn from the map's data (D-327, D-328); under it each character of the team
- * stands with its lines and the two buttons that send it (D-329, D-243, D-244, D-251, D-287, D-326).
+ * stands with its lines and the two buttons that send it (D-329, D-243, D-244, D-287, D-326).
  *
  * The page holds the screen behind one boundary, `createMapsScreen` (D-36), as it holds the screen
  * Postać: an element of its own for the page to place, a first render that is synchronous,
@@ -44,12 +44,7 @@ import {
   resurrectionLine,
   runWaitingSentence,
 } from "./team-lines.js";
-import {
-  emptyLoopMark,
-  entersLine,
-  rehearsalMark,
-  tripWarning,
-} from "./trip-lines.js";
+import { emptyLoopMark, entersLine, tripWarning } from "./trip-lines.js";
 
 /** What the page gives the screen; every call of `update` gives it whole. */
 export type MapsScreenProps = {
@@ -271,13 +266,6 @@ function CharacterRow({
   const capacity = character.traits.carryingCapacity;
   const resurrection = resurrectionLine(state.team, nowMs);
   const warning = tripWarning(plan, capacity, map);
-  const rehearsal = rehearsalMark(
-    solved,
-    plan,
-    capacity,
-    map,
-    state.team.chest,
-  );
   const emptyLoop = solved ? emptyLoopMark(plan) : null;
   const run = state.run;
   return (
@@ -323,7 +311,7 @@ function CharacterRow({
         />
       </div>
       <p className="maps-who-enters">
-        {entersLine(plan, solved ? null : state.team.chest, capacity, map)}
+        {entersLine(plan, state.team.chest, capacity, map)}
       </p>
       {warning === null ? null : <p className="trip-warning">{warning}</p>}
       <div className="maps-who-actions">
@@ -336,9 +324,6 @@ function CharacterRow({
             buttonRef={focus.keep(id, "enter")}
             onClick={() => controls.enter(id, mapId, program.id)}
           />
-          {rehearsal === null ? null : (
-            <p className="rehearsal-mark">{rehearsal}</p>
-          )}
         </div>
         {solved ? (
           <div className="maps-who-loop-start">
