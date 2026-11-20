@@ -1,0 +1,4 @@
+✖ a save made after every spent use has returned stores none spent, so a count lowered to 1 loads it (3.0111ms)
+✖ a save made while some spent uses are back stores the ones still spent and the moment of the next, and a count lowered to the spent ones loads it (2.0675ms)
+✖ bringing the uses up to date at a save changes nothing the game reckons from the save moment on, and nothing in the state the view holds (4.1379ms)
+ℹ pass 24

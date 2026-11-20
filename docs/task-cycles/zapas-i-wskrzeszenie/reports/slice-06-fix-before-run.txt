@@ -1,0 +1,61 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/team.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a created character joins the end of the team's list as an elemental mage, in the order of creation (1.9105ms)
+✔ two characters may share a name and stay two characters (0.2143ms)
+✔ the name loses the white space at its start and end, and keeps the white space inside (0.1948ms)
+✔ a name empty once trimmed creates no character (0.5542ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (5.0624ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (1.0899ms)
+✔ while one character's map run goes on, no other character of the team is sent (0.7742ms)
+✔ a new game's resurrection has every use and its clock is not running (0.2693ms)
+✔ the death of a character with practice spends one use, the death of a full stock starting the clock at its moment (2.2261ms)
+✔ a death while the clock runs spends a use and leaves the moment of the next return as it runs (0.3087ms)
+✔ a death with no use left takes all practice and ranks as before, and leaves the uses and their moment as they stood (0.2396ms)
+✔ the death of a character with no practice spends no use, at a full stock and at a part one, and changes nothing (2.6849ms)
+✔ the uses return one at a time, each the renewal after the clock started or after the use before it, a moment equal to a use's moment counting as returned (0.4348ms)
+✔ the uses that returned up to the moment of a death, that moment included, count before the death is settled (0.2172ms)
+✔ the first solving of a map returns one use while the stock is not full, the clock running on, and stops the clock when the stock fills (0.4476ms)
+✔ a first solving that finds the stock full leaves it as it is, and one that follows uses that returned up to its moment (0.3377ms)
+✔ a solving of a map the account had solved returns no use (0.1406ms)
+✔ a death settled later, at an earlier real moment, never moves back a clock an earlier-settled death started (0.1333ms)
+✔ a game state these rules make loads back from its saved document as it was (13.5509ms)
+✔ a death whose clock would stand at a moment that is no safe integer is a RangeError, and one whose clock stands at the largest safe integer is not (2.2343ms)
+✔ a crafted team of the resurrection is refused whole as shape (7.1857ms)
+✖ a settlement whose uses left equal the data's count loads, and one above it is refused (3.2963ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.3696
+
+✖ failing tests:
+
+test at tests\sim\team.test.mjs:659:1
+✖ a settlement whose uses left equal the data's count loads, and one above it is refused (3.2963ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:667:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

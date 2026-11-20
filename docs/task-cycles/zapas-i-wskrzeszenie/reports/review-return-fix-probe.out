@@ -1,0 +1,31 @@
+two deaths, save +13h: stored spent=0 next=null
+  count 3: ok
+  count 2: ok
+  count 1: ok
+  count 0: ok
+three deaths, save +4h-1ms: stored spent=3 next-T0=14400000; held reckons {"usesLeft":0,"nextReturnMs":1760014400000}
+  loads at 3: ok, 2: refused shape, 1: refused shape
+three deaths, save +4h exactly: stored spent=2 next-T0=28800000; held reckons {"usesLeft":1,"nextReturnMs":1760028800000}
+  loads at 3: ok, 2: ok, 1: refused shape
+three deaths, save +9h: stored spent=1 next-T0=43200000; held reckons {"usesLeft":2,"nextReturnMs":1760043200000}
+  loads at 3: ok, 2: ok, 1: ok
+three deaths, save +12h exactly: stored spent=0 next-T0=null; held reckons {"usesLeft":3,"nextReturnMs":null}
+  loads at 3: ok, 2: ok, 1: ok
+equivalence from the save on: 1050 comparisons, 0 mismatches
+open window after 2nd death, save +13h: team spent=0, settlement={"kind":"resurrectionUsed","usesSpent":2}; count 2: ok, count 1: refused shape
+open window after 1st death, save +13h: team spent=0; count 1: ok
+held state unchanged after a save: true; team identity kept with nothing returned: true
+hostile spent above count: refused shape
+hostile spent 0 with a moment: refused shape
+hostile spent 1 no moment: refused shape
+hostile moment text: refused shape
+hostile moment 2**53: refused shape
+hostile moment 1.5: refused shape
+hostile spent NaN: refused shape
+hostile spent -1: refused shape
+hostile old key beside: refused shape
+hostile save time text: refused shape
+hostile save time missing: refused shape
+base +6h document at count 3: ok
+forged moment -MAX_SAFE with 3 spent: load true, save -> 0/null
+forged moment MAX_SAFE-10 with 3 spent, save at MAX_SAFE: load true, save -> RangeError: 9007199269140980 is not a safe integer moment; resurrectionAt at that moment -> RangeError

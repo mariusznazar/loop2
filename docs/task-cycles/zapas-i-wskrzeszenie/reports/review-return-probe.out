@@ -1,0 +1,32 @@
+states: first team=1/settle=1; second 2/2; third 3/3
+AS-EXPECTED count=3 first (1 spent, window open): ok=true
+AS-EXPECTED count=1 first (1 spent, window open): ok=true
+AS-EXPECTED count=0 first (1 spent, window open): ok=false reason=shape
+AS-EXPECTED count=1 second (2 spent): ok=false reason=shape
+AS-EXPECTED count=2 second (2 spent): ok=true
+AS-EXPECTED count=2 third (3 spent): ok=false reason=shape
+AS-EXPECTED count=3 third (3 spent): ok=true
+AS-EXPECTED count=5 third (3 spent) raised: ok=true
+  raised to 5: usesLeft at T0+2000 = 2
+AS-EXPECTED count=1 team 1, settlement 2: ok=false reason=shape
+AS-EXPECTED count=2 team 1, settlement 2: ok=true
+AS-EXPECTED count=1 team 2, settlement 1: ok=false reason=shape
+AS-EXPECTED count=2 team 2, settlement 1: ok=true
+AS-EXPECTED count=3 team 1, settlement 3: ok=true
+AS-EXPECTED count=3 settlement usesSpent string '1': ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent 0: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent -1: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent 1.5: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent Infinity: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent NaN: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent null: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent true: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent [1]: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent {valueOf:1}: ok=false reason=shape
+AS-EXPECTED count=3 settlement usesSpent 2**53: ok=false reason=shape
+AS-EXPECTED count=3 settlement with usesLeft beside: ok=false reason=shape
+AS-EXPECTED count=3 progressLost carrying usesSpent: ok=false reason=shape
+AS-EXPECTED count=3 settlement with __proto__ key: ok=false reason=shape
+AS-EXPECTED count=3 settlement with usesSpent only inherited: ok=false reason=shape
+AS-EXPECTED count=0 new game, none spent, count 0: ok=true
+AS-EXPECTED count=1 first, moment kept: ok=true

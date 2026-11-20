@@ -1,0 +1,60 @@
+OK   full stock death starts clock 
+OK   death with clock running keeps moment 
+OK   return at moment counts 
+OK   3 back at T+2R 
+OK   2 back at T+2R-1 
+OK   1 back at T, 2 back at T+R 
+OK   far future full 
+OK   death after two returns 
+OK   death after one return 
+OK   zero left takes all 
+OK   no practice spends none 
+OK   no practice full stock 
+OK   first solving 3->2 keeps clock 
+OK   first solving after a return: spent 1, clock at T+R [1,1760014400000]
+OK   first solving after a return: stock now [2, T+R] [2,1760014400000]
+OK   first solving fills stock stops clock 
+OK   first solving at full stock 
+OK   ready with 1 left 
+OK   not ready with 0 left 
+OK   baseline doc loads 
+OK   refused: spent 4 {"ok":false,"reason":"shape"}
+OK   refused: spent -1 {"ok":false,"reason":"shape"}
+OK   refused: spent NaN {"ok":false,"reason":"shape"}
+OK   refused: spent -Infinity {"ok":false,"reason":"shape"}
+OK   refused: spent null {"ok":false,"reason":"shape"}
+OK   refused: spent true {"ok":false,"reason":"shape"}
+OK   refused: spent [] {"ok":false,"reason":"shape"}
+OK   refused: spent {} {"ok":false,"reason":"shape"}
+OK   refused: spent 2^53 {"ok":false,"reason":"shape"}
+OK   refused: spent BigInt {"ok":false,"reason":"shape"}
+OK   refused: spent Number obj {"ok":false,"reason":"shape"}
+OK   refused: next NaN {"ok":false,"reason":"shape"}
+OK   refused: next undefined {"ok":false,"reason":"shape"}
+OK   refused: next -2^53 {"ok":false,"reason":"shape"}
+OK   refused: next 1.5 {"ok":false,"reason":"shape"}
+OK   refused: next false {"ok":false,"reason":"shape"}
+OK   refused: spent 0 next stands {"ok":false,"reason":"shape"}
+OK   refused: spent 1 next null {"ok":false,"reason":"shape"}
+OK   refused: old key added {"ok":false,"reason":"shape"}
+OK   refused: next missing {"ok":false,"reason":"shape"}
+OK   refused: spent missing {"ok":false,"reason":"shape"}
+OK   refused: spent getter {"ok":false,"reason":"shape"}
+OK   accepted: spent 3 with any moment 
+OK   view reading does not throw: spent 3 with any moment 
+OK   accepted: next negative 
+OK   view reading does not throw: next negative 
+OK   accepted: next max safe 
+OK   view reading does not throw: next max safe 
+OK   accepted: next -max safe 
+OK   view reading does not throw: next -max safe 
+OK   version 7 refused as version 
+OK   dead doc loads {"kind":"resurrectionUsed","usesLeft":2}
+OK   settlement usesLeft 3 {"ok":false,"reason":"shape"}
+OK   settlement usesLeft 2 {"ok":true,"state":{"programs":[{"id":1,"name":"Program","pr
+OK   settlement usesLeft 0 {"ok":true,"state":{"programs":[{"id":1,"name":"Program","pr
+OK   settlement usesLeft -1 {"ok":false,"reason":"shape"}
+OK   settlement usesLeft NaN {"ok":false,"reason":"shape"}
+OK   settlement usesLeft null {"ok":false,"reason":"shape"}
+OK   settlement usesLeft '1' {"ok":false,"reason":"shape"}
+OK   settlement without usesLeft refused 
