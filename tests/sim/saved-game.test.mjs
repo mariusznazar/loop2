@@ -3095,6 +3095,37 @@ function patrolling() {
   return state;
 }
 
+// A save stores the uses as they stand at its moment (D-386): the use due at REAL_MS + 1 has come back
+// by SAVE_MS, a minute later, so it is stored as returned, the next one due four hours after it (240
+// real minutes, 14 400 000 ms). Each pair is the uses spent and the moment of the next return.
+const STORED_AT_THE_SAVE = {
+  "a death that took everything": [2, REAL_MS + 1 + 14_400_000],
+  "after that death and „Zakończ”, with no map run": [
+    2,
+    REAL_MS + 1 + 14_400_000,
+  ],
+  "the restart after that death": [2, REAL_MS + 1 + 14_400_000],
+  "that completion, its renewal of the resurrection settled as it found it used up":
+    [1, REAL_MS + 1 + 14_400_000],
+};
+
+/** The state `state`, named `name` among the states of the round trip, as a save at SAVE_MS holds it. */
+function stampedAtTheSave(name, state) {
+  const [spent, next] = STORED_AT_THE_SAVE[name] ?? [
+    state.team.resurrectionUsesSpent,
+    state.team.resurrectionNextReturnAtMs,
+  ];
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: spent,
+      resurrectionNextReturnAtMs: next,
+    },
+    saveTimeMs: SAVE_MS,
+  };
+}
+
 test("a game state the simulation made loads back from its saved document", () => {
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
@@ -3290,7 +3321,7 @@ test("a game state the simulation made loads back from its saved document", () =
     true,
   );
   for (const [name, { state, goesOn }] of Object.entries(states)) {
-    const stamped = { ...state, saveTimeMs: SAVE_MS };
+    const stamped = stampedAtTheSave(name, state);
     assert.deepEqual(
       loadSavedGame(savedGame(withSaveTime(state, SAVE_MS))),
       { ok: true, state: goesOn ? { ...stamped, paused: true } : stamped },

@@ -727,7 +727,7 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
 });
 
 test("a count lowered from 3 to 1 after the save refuses a game with two uses spent and none with one, an open end-of-run window after a first death included", () => {
-  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned at the moment of the save, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
   // decision: D-386 "Lowering the number of uses in the balance data makes the load refuse a saved game state only where more uses are spent than the new number, in the team or in the settlement of a death, so a saved game state with an end-of-run window open after a death stays loadable."
   // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
   const first = settleDeath(fell(practised()), T0).state;
@@ -760,10 +760,121 @@ test("a count lowered from 3 to 1 after the save refuses a game with two uses sp
   }
 });
 
+const HOUR_MS = 3_600_000;
+
+/** Ala dead twice, at T0 and T0 + 1 s, from a full stock: two uses spent, the first returning at T0 + 4 h, the window closed. */
+function twiceFallen() {
+  const first = settleDeath(fell(practised()), T0).state;
+  const second = settleDeath(fell(end(first).state), T0 + 1_000).state;
+  const state = end(second).state;
+  assert.equal(state.team.resurrectionUsesSpent, 2, "precondition: two spent");
+  assert.equal(state.team.resurrectionNextReturnAtMs, T0 + 4 * HOUR_MS);
+  return state;
+}
+
+// A saved document holds the uses as the game reckons them at the moment of the save: a use whose
+// moment has come by then is not stored as spent, so a count lowered in the data later refuses only a
+// save that has more uses spent at its own moment than the new count.
+test("a save made after every spent use has returned stores none spent, so a count lowered to 1 loads it", () => {
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned at the moment of the save, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
+  // decision: D-386 "Lowering the number of uses in the balance data makes the load refuse a saved game state only where more uses are spent than the new number, in the team or in the settlement of a death, so a saved game state with an end-of-run window open after a death stays loadable."
+  const state = twiceFallen();
+  const document = savedGame(withSaveTime(state, T0 + 13 * HOUR_MS));
+  assert.equal(document.game.team.resurrectionUsesSpent, 0);
+  assert.equal(document.game.team.resurrectionNextReturnAtMs, null);
+  const uses = BALANCE.resurrectionUses;
+  try {
+    for (const count of [3, 2, 1]) {
+      BALANCE.resurrectionUses = count;
+      const loaded = loadSavedGame(document);
+      assert.equal(loaded.ok, true, `count lowered to ${count}`);
+      assert.deepEqual(stock(loaded.state.team, T0 + 13 * HOUR_MS), [
+        count,
+        null,
+      ]);
+    }
+  } finally {
+    BALANCE.resurrectionUses = uses;
+  }
+});
+
+test("a save made while some spent uses are back stores the ones still spent and the moment of the next, and a count lowered to the spent ones loads it", () => {
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned at the moment of the save, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
+  const state = twiceFallen();
+  const uses = BALANCE.resurrectionUses;
+  // At T0 + 6 h the first use is back and the second returns at T0 + 8 h; at T0 + 4 h exactly the
+  // first counts as back (D-190: a moment equal to the moment of the return counts).
+  for (const at of [T0 + 6 * HOUR_MS, T0 + 4 * HOUR_MS]) {
+    const document = savedGame(withSaveTime(state, at));
+    assert.equal(document.game.team.resurrectionUsesSpent, 1, `save at ${at}`);
+    assert.equal(
+      document.game.team.resurrectionNextReturnAtMs,
+      T0 + 8 * HOUR_MS,
+    );
+    try {
+      BALANCE.resurrectionUses = 1;
+      assert.equal(loadSavedGame(document).ok, true, `save at ${at}`);
+    } finally {
+      BALANCE.resurrectionUses = uses;
+    }
+  }
+  // A save one millisecond before the first return holds both uses spent, which a count of 1 refuses.
+  const early = savedGame(withSaveTime(state, T0 + 4 * HOUR_MS - 1));
+  assert.equal(early.game.team.resurrectionUsesSpent, 2);
+  try {
+    BALANCE.resurrectionUses = 1;
+    assert.deepEqual(loadSavedGame(early), { ok: false, reason: "shape" });
+  } finally {
+    BALANCE.resurrectionUses = uses;
+  }
+});
+
+test("bringing the uses up to date at a save changes nothing the game reckons from the save moment on, and nothing in the state the view holds", () => {
+  // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
+  const state = twiceFallen();
+  const held = structuredClone(state);
+  for (const saveAt of [
+    T0 + 1_000,
+    T0 + 4 * HOUR_MS - 1,
+    T0 + 4 * HOUR_MS,
+    T0 + 6 * HOUR_MS,
+    T0 + 8 * HOUR_MS,
+    T0 + 13 * HOUR_MS,
+  ]) {
+    const loaded = loadSavedGame(savedGame(withSaveTime(state, saveAt)));
+    assert.equal(loaded.ok, true, `save at ${saveAt}`);
+    for (const at of [
+      saveAt,
+      saveAt + 1,
+      T0 + 8 * HOUR_MS - 1,
+      T0 + 8 * HOUR_MS,
+      T0 + 8 * HOUR_MS + 1,
+      T0 + 12 * HOUR_MS,
+      T0 + 20 * HOUR_MS,
+    ].filter((moment) => moment >= saveAt)) {
+      assert.deepEqual(
+        stock(loaded.state.team, at),
+        stock(state.team, at),
+        `uses at ${at} after a save at ${saveAt}`,
+      );
+      assert.deepEqual(
+        dies(loaded.state.team, 0, at),
+        dies(state.team, 0, at),
+        `a death at ${at} after a save at ${saveAt}`,
+      );
+    }
+  }
+  assert.deepEqual(state, held, "the state the view holds is the value it was");
+  assert.equal(
+    withSaveTime(state, T0 + 13 * HOUR_MS).team !== state.team,
+    true,
+  );
+});
+
 // A settlement whose uses spent equal the data's count loads, and one above it is refused, the count
 // being the data's of the moment of the load.
 test("a settlement whose uses spent equal the data's count loads, and one above it is refused", () => {
-  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned at the moment of the save, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
   const settled = settleDeath(fell(practised()), T0).state;
   const withUsesSpent = (usesSpent) => {
     const copy = structuredClone(savedGame(withSaveTime(settled, T0)));

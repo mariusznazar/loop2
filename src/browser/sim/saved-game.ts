@@ -499,7 +499,9 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
 
 /**
  * The uses of the team's one resurrection that are spent, at most the data's count, and the moment
- * the next one returns: no moment with none spent, and a moment with some spent.
+ * the next one returns: no moment with none spent, and a moment with some spent. The game writes the
+ * count as it stands at the save time (`withSaveTime`), so the check against the data's count refuses
+ * a document only for the uses it has spent at its own moment (D-386); the load itself repairs nothing.
  */
 function resurrectionUses(
   spentValue: unknown,
@@ -1266,7 +1268,7 @@ const GAME_KEYS = [
  * The game state of a document, every key read and checked. The counts stand beside the rules of
  * the copy during a map run and beside the rules of the program they name after „Zakończ”, and are
  * none otherwise; without a map run nothing is paused, held as a discovery or carried. The save time
- * is a safe integer of any sign, as a moment of readiness is: every document is stamped, and a device
+ * is a safe integer of any sign, as the moment the next use returns is: every document is stamped, and a device
  * clock set before 1970 is the player's own, so a save the game wrote is never refused for it. The
  * Understanding holds at least what a new game's holds (D-118): a document whose Understanding lacks
  * the condition „Zawsze” or the action „Eksploruj” is of a shape the game does not admit.

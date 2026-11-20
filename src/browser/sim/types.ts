@@ -429,7 +429,8 @@ export type Chest = { pieces: Partial<Record<ItemId, number>> };
  * real moment the next one returns, which stands exactly while that count is above zero. A new game
  * starts with the count at 0 and no moment. The state holds the uses as they stood when a death or a
  * first solving last settled; a use whose moment has passed since still counts as returned, and
- * `resurrectionAt` gives the uses as they stand at a real moment.
+ * `resurrectionAt` gives the uses as they stand at a real moment. A saved document holds them as they
+ * stand at its save time (`withSaveTime`), so its count is the one not yet returned at that moment.
  */
 export type Team = {
   characters: Character[];

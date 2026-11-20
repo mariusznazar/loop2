@@ -750,10 +750,16 @@ export function settleCompletion(state: GameState, nowMs: number): GameResult {
 }
 
 /**
- * A copy of the state holding the real moment `nowMs` as its save time (D-248). Whoever saves applies
- * it on the way to the saved document only, so the state the view holds stays the very value it was
- * and a comparison by identity sees no change in a save. A `nowMs` that is no safe integer is a
- * RangeError.
+ * A copy of the state holding the real moment `nowMs` as its save time (D-248), with the uses of the
+ * team's resurrection brought up to date at that moment: each spent use whose moment has come, that
+ * moment included, is stored as returned and the moment of the next recomputed, none stored when none
+ * is spent (D-386). The document then holds the count the game reckons at the saved moment, not the
+ * one the last settled death or first solving left, so a count lowered in the data later refuses only
+ * a save with more uses spent at its own moment than the new count; from `nowMs` on the game reckons
+ * the same uses from the copy as from the state (`resurrectionAt`), by the one clock of D-190. Whoever
+ * saves applies it on the way to the saved document only, so the state the view holds stays the very
+ * value it was and a comparison by identity sees no change in a save. A `nowMs` that is no safe
+ * integer, or whose moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function withSaveTime(state: GameState, nowMs: number): GameState {
   if (!Number.isSafeInteger(nowMs)) {
@@ -761,7 +767,16 @@ export function withSaveTime(state: GameState, nowMs: number): GameState {
       `withSaveTime: ${String(nowMs)} is not a safe integer moment`,
     );
   }
-  return { ...state, saveTimeMs: nowMs };
+  const { spent, nextReturnMs } = usesAt(state.team, nowMs);
+  const team =
+    spent === state.team.resurrectionUsesSpent
+      ? state.team
+      : {
+          ...state.team,
+          resurrectionUsesSpent: spent,
+          resurrectionNextReturnAtMs: nextReturnMs,
+        };
+  return { ...state, team, saveTimeMs: nowMs };
 }
 
 /**

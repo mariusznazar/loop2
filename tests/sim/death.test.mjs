@@ -100,7 +100,7 @@ test("a resurrection is not ready before its moment, is ready at it and stays re
 });
 
 // invariant: resurrection-renewal
-test("a moment of readiness below zero is ready at every moment from zero on", () => {
+test("a spent use whose moment of return lies below zero has returned at every moment from zero on", () => {
   const character = usedUpTeam(-5);
   assert.equal(resurrectionHasUse(character, 0), true);
   assert.equal(resurrectionHasUse(character, -5), true);
