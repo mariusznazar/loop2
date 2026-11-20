@@ -1534,14 +1534,6 @@ const CRAFTED = {
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [];
   },
-  "a deposit at the completion of a marked run": (document) => {
-    solvingItsMap(document);
-    document.game.paused = false;
-    document.game.realMsCarry = 0;
-    document.game.run.solvedMapRun = true;
-    document.game.run.completion = { minute: 212 };
-    document.game.run.deposited = [{ item: "berry", count: 2 }];
-  },
   "a marked completion without its deposit": (document) => {
     solvingItsMap(document);
     document.game.paused = false;
@@ -2332,6 +2324,47 @@ test("a completion depositing exactly the planned counts loads", () => {
     ];
   });
   assert.deepEqual(loadSavedGame(exact), { ok: true, state: exact.game });
+});
+
+// A manual run of a solved map brings its loot out as every other map run does, so its completion
+// deposits by the same rule: entries of the frozen bring plan in its order, each at most its planned
+// count (D-179, D-189). Berry 5 and stick 20 in the document, as in the case above.
+// invariant: solved-map-manual-run
+test("a completion of a marked run depositing its planned counts loads, and a deposit beyond them is refused as shape", () => {
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
+  // decision: D-179 "at a completion only what that list names goes to the chest"
+  const marked = (deposited) =>
+    changed((document) => {
+      solvingItsMap(document);
+      document.game.paused = false;
+      document.game.realMsCarry = 0;
+      document.game.run.solvedMapRun = true;
+      document.game.run.completion = { minute: 212 };
+      document.game.run.deposited = deposited;
+    });
+  const exact = marked([
+    { item: "berry", count: 5 },
+    { item: "stick", count: 20 },
+  ]);
+  assert.deepEqual(loadSavedGame(exact), { ok: true, state: exact.game });
+  assertRefused(
+    "a marked deposit above its planned count",
+    marked([{ item: "berry", count: 6 }]),
+    "shape",
+  );
+  assertRefused(
+    "a marked deposit of an item the frozen bring plan lacks",
+    marked([{ item: "moss", count: 1 }]),
+    "shape",
+  );
+  assertRefused(
+    "a marked deposit out of the frozen bring plan's order",
+    marked([
+      { item: "stick", count: 4 },
+      { item: "berry", count: 2 },
+    ]),
+    "shape",
+  );
 });
 
 // invariant: save-version

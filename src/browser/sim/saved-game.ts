@@ -766,14 +766,13 @@ function copy(value: unknown, records: Records): ProgramCopy {
 
 /**
  * What completion put in the chest: none before a completion, and at one the frozen bring plan's
- * entries in its order, each at most the count it plans (D-179, D-189); at the completion of a
- * marked run an empty list, since such a run deposits nothing.
+ * entries in its order, each at most the count it plans (D-179, D-189). A manual run of a solved map
+ * completes by the same rule: it brings its loot out as every other map run does (D-189).
  */
 function deposited(
   value: unknown,
   bringPlan: readonly TripEntry[],
   completed: boolean,
-  marked: boolean,
 ): TripEntry[] | null {
   if (value === null) {
     if (completed) refuse();
@@ -781,7 +780,6 @@ function deposited(
   }
   if (!completed) refuse();
   const put = tripList(value);
-  if (marked && put.length > 0) refuse();
   let from = 0;
   for (const entry of put) {
     const at = bringPlan.findIndex(
@@ -1063,12 +1061,7 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     ...record(read, run),
     copy: copy(read.copy, records),
     bringPlan,
-    deposited: deposited(
-      read.deposited,
-      bringPlan,
-      run.completion !== null,
-      solvedMapRun,
-    ),
+    deposited: deposited(read.deposited, bringPlan, run.completion !== null),
     solvedMapRun,
     deathSettlement: deathSettlement(
       read.deathSettlement,
