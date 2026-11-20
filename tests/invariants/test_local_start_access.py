@@ -96,13 +96,22 @@ createServer((request) => {
 }).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
 """
 
-# A server that holds its whole process, as a start busy on its way up does.
-BUSY_SERVER = (
-    STAND_IN_SERVER
-    + """
-Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
+# A server that holds its whole process, as a start busy on its way up does, from the moment it
+# listens: the port the start picked for it is taken before the hold begins, so that no other
+# start picks it meanwhile.
+BUSY_SERVER = """import { createServer } from "node:http";
+
+const host = process.env.LOOP2_LISTEN_HOST;
+const port = Number(process.env.LOOP2_LISTEN_PORT);
+createServer((request, response) => {
+  request.resume();
+  response.setHeader("content-type", "application/json");
+  response.end(JSON.stringify(request.rawHeaders));
+}).listen(port, host, () => {
+  console.log(`Loop: http://${host}:${port}`);
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
+});
 """
-)
 
 # The server of a start whose port another program took between the start's picking it and the
 # server's listening. The program is a process of its own that takes every connection and says
@@ -512,10 +521,16 @@ class LocalStart(unittest.TestCase):
         first = Start(self.copy, command, wait=False)
         self.starts.append(first)
         deadline = time.monotonic() + START_TIMEOUT
-        while not directories(self.copy) and time.monotonic() < deadline:
+        while (
+            not (directories(self.copy) and SERVER_LINE.search(first.output()))
+            and time.monotonic() < deadline
+        ):
             time.sleep(0.02)
         early = directories(self.copy)
         self.assertEqual(len(early), 1, "precondition: the first start's directory stands")
+        self.assertRegex(
+            first.output(), SERVER_LINE, "precondition: the first start's server holds its port"
+        )
 
         self.starts.append(Start(self.copy, command))
         first.wait()
