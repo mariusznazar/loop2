@@ -24,6 +24,7 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 | account-policy | `guidelines/coding-account-policy.md` | Przed dodaniem lub zmianą pliku sprawdzania danych logowania i rejestracji albo dopuszczania prób. |
 | browser-api-client | `guidelines/coding-browser-api-client.md` | Przed dodaniem lub zmianą pliku klienta API serwera w przeglądarce. |
 | mail-sending | `guidelines/coding-mail-sending.md` | Przed dodaniem lub zmianą pliku wysyłki poczty w account-server. |
+| balance-instrument | `guidelines/coding-balance-instrument.md` | Przed dodaniem lub zmianą pliku kodu przyrządu balansu w `balance/`. |
 
 ## Rules
 

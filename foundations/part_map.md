@@ -130,6 +130,9 @@ The part measures the balance of the game outside the browser: it runs the game'
 
 - **Files:** balance/**
   tests/balance/**
+  tests/invariants/balance_source_scan.py
+  tests/invariants/test_balance_instrument_file_writes.py
+  tests/invariants/test_balance_instrument_repeatability.py
 - **Depends on:** simulation
 - **Trust boundary:** none
 

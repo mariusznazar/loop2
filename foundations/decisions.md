@@ -885,6 +885,21 @@ Every standalone Bash script that D-31 has ShellCheck check by name stands as lo
 *Rationale:* The layout of each script depends on the agent who wrote it, and one tool with fixed flags gives them one layout. The two spaces of indent are the layout the scripts have today; shfmt's default of tabs would have changed about 1 600 lines of diff in the three scripts against about 180, and `-bn -ci` leave `&&` between commands at the start of a line and the branches of `case` indented, as the scripts are written, which brings the change down to about 120. The flags stand in the command, and not in an EditorConfig file, because shfmt reads none where a flag is given, so the layout does not depend on the computer. The package `shfmt-py` is the way found to put shfmt into the environment that already holds Ruff and ShellCheck and is installed from pinned hashes; it has one maintainer, a risk taken with a pinned version and hashes of every published wheel. The counts of lines come from a trial run of shfmt on a copy of the scripts made by the product's people before this decision, a measurement of their own whose record is not open to a reader of the repository.
 *Rejected:* the plugin of shfmt for Prettier from npm — an older engine of shfmt, and the file patterns of Prettier would have to cover scripts with no extension, which the test of those patterns does not check today; beautysh — it does not parse the syntax of Bash fully and brings three packages of dependencies; Bash formatting left deferred — the layout of the three scripts goes on depending on the author; the default tabs of shfmt — about 1 600 changed lines instead of about 180; only the two spaces with the rest of the flags at their defaults — operators move to the end of a line and the branches of `case` are flattened, about 180 changed lines and a layout unlike the habit of the scripts.
 
+### D-437 — Which file is the exemplar for the code of the balance instrument?
+
+The exemplar for kind `balance-instrument` is `balance/engine.mjs`, and its kind guidelines are read before adding or changing a file of that kind; the kind is the files of code of the balance instrument in `balance/`, and the overlay files and the player descriptions that the instrument reads are data and stand outside it. The engine runs a map run of one seed through the game's built simulation and its own functions, takes an explicit input and gives its result as data, and refuses an identifier the game's data lacks with an error that names what is missing; these illustrate the rules of the kind, without requiring every mode of the instrument to take the shape of the engine.
+
+- **Scope:** balance-tools
+- **Based on:** none
+- **Relations:** derives from D-28
+- **Verification:** an agent compares a change with the decision:
+  - complies: balance-instrument guidelines designate the selected exemplar, list each file of code of the instrument in the table of the kind and leave the overlay files and the player descriptions out of it
+  - violates: a second exemplar for the kind; a row for an overlay file or a player description in the table of the kind
+- **Origin:** none
+
+*Rationale:* the engine is what every other mode of the instrument stands on, and it holds what a new file of the kind may not lose: the contact with the game's own functions, the explicit seed and the refusal of a wrong input. How a mode built on the engine is shaped, with its measuring constants named and its measurement kept apart from the laying out of its table, is shown by an example and binds no one. The overlay files and the player descriptions are data, and a kind of the coding guidelines means code, so the table of the kind does not grow with every new overlay.
+*Rejected:* the small map check as the exemplar — it shows neither the contact with the game's functions nor the refusal of a wrong input, and a task that changes the engine itself stays without a model; the same kind with the JSON files of overlays and player descriptions in its table — the table grows with every new overlay, the tools that check code do not read those files, and a kind of the coding guidelines means code, not data; two kinds, the measuring modules and the command line apart, each with an exemplar — a second guidelines file and a second decision for one file, and a change of D-28, which defers a model for entry points.
+
 ## Testing discipline
 
 The testing discipline loop2 adopts: the levels, shape and exemplars of tests, the mechanisms they exercise and the deliberate exclusions.
@@ -11677,7 +11692,7 @@ The results of the measurements of the balance instrument do not enter the repos
 - **Scope:** balance-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** tests: a sweep and the command that lists the reference programs printing their result and writing no file, and with `--out` writing to the path given and to no other. An agent compares a change with the part no test holds:
+- **Verification:** invariants: balance-instrument-file-writes. tests: a sweep and the command that lists the reference programs printing their result and writing no file, and with `--out` writing to the path given and to no other. An agent compares a change with the part no invariant and no test holds:
   - complies: any other command of the instrument that prints its result, or writes it to the path given in a flag
   - violates: a command of the instrument that writes a result to a fixed path in the repository; a file of results of a measurement committed beside the instrument
 - **Origin:** none
