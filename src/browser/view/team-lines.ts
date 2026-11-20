@@ -1,7 +1,7 @@
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
-import { resurrectionReady } from "../sim/game.js";
+import { resurrectionAt } from "../sim/game.js";
 import type {
   Chest,
   EarningLoop,
@@ -72,15 +72,11 @@ export type ResurrectionLine = {
  * time left is rounded up to whole minutes first, then divided into hours and minutes, so the line
  * never promises sooner than the real time. A clock set back gives more time left. Pure.
  */
-export function resurrectionLine(
-  team: Pick<Team, "resurrectionReadyAtMs">,
-  nowMs: number,
-): ResurrectionLine {
-  if (resurrectionReady(team, nowMs))
+export function resurrectionLine(team: Team, nowMs: number): ResurrectionLine {
+  const { usesLeft, nextReturnMs } = resurrectionAt(team, nowMs);
+  if (usesLeft > 0 || nextReturnMs === null)
     return { text: "Wskrzeszenie drużyny gotowe", danger: false };
-  const minutes = Math.ceil(
-    (team.resurrectionReadyAtMs - nowMs) / MS_PER_MINUTE,
-  );
+  const minutes = Math.ceil((nextReturnMs - nowMs) / MS_PER_MINUTE);
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const left =
     hours === 0

@@ -84,6 +84,23 @@ export function resurrectionReady(
   return team.resurrectionReadyAtMs <= nowMs;
 }
 
+/** The team's resurrection at a real moment: the uses left, and the moment the next missing one returns. */
+export type ResurrectionStock = {
+  usesLeft: number;
+  nextReturnMs: number | null;
+};
+
+/**
+ * The team's resurrection at the real moment `nowMs`: the uses left, and the moment the next missing
+ * use returns, `null` where none is missing. Today the team holds one use: left while it is ready,
+ * missing from its moment on. Pure.
+ */
+export function resurrectionAt(team: Team, nowMs: number): ResurrectionStock {
+  if (resurrectionReady(team, nowMs))
+    return { usesLeft: 1, nextReturnMs: null };
+  return { usesLeft: 0, nextReturnMs: team.resurrectionReadyAtMs };
+}
+
 /** Whether a map's prerequisite maps are all in this game's solved-map record. */
 export function canSendMap(
   solvedMaps: readonly MapId[],
