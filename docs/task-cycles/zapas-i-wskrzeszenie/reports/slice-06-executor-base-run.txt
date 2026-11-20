@@ -1,0 +1,906 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/team.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ a created character joins the end of the team's list as an elemental mage, in the order of creation (3.173ms)
+✔ two characters may share a name and stay two characters (0.3426ms)
+✔ the name loses the white space at its start and end, and keeps the white space inside (0.1994ms)
+✔ a name empty once trimmed creates no character (0.5191ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (6.0731ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (1.4284ms)
+✔ while one character's map run goes on, no other character of the team is sent (0.9153ms)
+✖ a new game's resurrection has every use and its clock is not running (0.3196ms)
+✖ the death of a character with practice spends one use, the death of a full stock starting the clock at its moment (3ms)
+✖ a death while the clock runs spends a use and leaves the moment of the next return as it runs (0.4699ms)
+✖ a death with no use left takes all practice and ranks as before, and leaves the uses and their moment as they stood (0.8285ms)
+✖ the death of a character with no practice spends no use, at a full stock and at a part one, and changes nothing (4.2186ms)
+✖ the uses return one at a time, each the renewal after the clock started or after the use before it, a moment equal to a use's moment counting as returned (0.4948ms)
+✖ the uses that returned up to the moment of a death, that moment included, count before the death is settled (0.2667ms)
+✖ the first solving of a map returns one use while the stock is not full, the clock running on, and stops the clock when the stock fills (0.6361ms)
+✖ a first solving that finds the stock full leaves it as it is, and one that follows uses that returned up to its moment (0.7601ms)
+✔ a solving of a map the account had solved returns no use (0.259ms)
+✖ a death settled later, at an earlier real moment, never moves back a clock an earlier-settled death started (0.4716ms)
+✖ a game state these rules make loads back from its saved document as it was (12.9389ms)
+✖ a death whose clock would stand at a moment that is no safe integer is a RangeError, and one whose clock stands at the largest safe integer is not (1.8544ms)
+✖ a crafted team of the resurrection is refused whole as shape (13.5318ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 7
+ℹ fail 14
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 162.9799
+
+✖ failing tests:
+
+test at tests\sim\team.test.mjs:64:1
+✖ a created character joins the end of the team's list as an elemental mage, in the order of creation (3.173ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:99:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:253:1
+✖ a new game's resurrection has every use and its clock is not running (0.3196ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:256:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:268:1
+✖ the death of a character with practice spends one use, the death of a full stock starting the clock at its moment (3ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 1
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:271:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:282:1
+✖ a death while the clock runs spends a use and leaves the moment of the next return as it runs (0.4699ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 2
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:286:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:299:1
+✖ a death with no use left takes all practice and ranks as before, and leaves the uses and their moment as they stood (0.8285ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   kind: 'resurrectionUsed'
+  -   generation: 2,
+  -   kind: 'progressLost'
+    }
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:303:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { kind: 'resurrectionUsed' },
+    expected: { kind: 'progressLost', generation: 2 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:312:1
+✖ the death of a character with no practice spends no use, at a full stock and at a part one, and changes nothing (4.2186ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:336:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:341:1
+✖ the uses return one at a time, each the renewal after the clock started or after the use before it, a moment equal to a use's moment counting as returned (0.4948ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 3
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:347:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:371:1
+✖ the uses that returned up to the moment of a death, that moment included, count before the death is settled (0.2667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:376:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:399:1
+✖ the first solving of a map returns one use while the stock is not full, the clock running on, and stops the clock when the stock fills (0.6361ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:406:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:423:1
+✖ a first solving that finds the stock full leaves it as it is, and one that follows uses that returned up to its moment (0.7601ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   1,
+  -   3,
+      null
+    ]
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:436:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 1, null ],
+    expected: [ 3, null ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:471:1
+✖ a death settled later, at an earlier real moment, never moves back a clock an earlier-settled death started (0.4716ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 1760014405000
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:475:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 1760014405000,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:490:1
+✖ a game state these rules make loads back from its saved document as it was (12.9389ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at reloaded (file:///tests/sim/team.test.mjs:496:12)
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:526:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:542:1
+✖ a death whose clock would stand at a moment that is no safe integer is a RangeError, and one whose clock stands at the largest safe integer is not (1.8544ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception (RangeError).
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:545:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:567:1
+✖ a crafted team of the resurrection is refused whole as shape (13.5318ms)
+  AssertionError [ERR_ASSERTION]: the old key beside the new ones
+  + actual - expected
+  
+    {
+  +   ok: true,
+  +   state: {
+  +     awayReport: [],
+  +     countsProgram: null,
+  +     discovery: null,
+  +     lastEnteredProgram: 1,
+  +     lastSeed: 204219582,
+  +     lastUsedPrograms: {
+  +       '1': 1
+  +     },
+  +     loops: {},
+  +     nextCharacterId: 3,
+  +     nextProgramId: 2,
+  +     pace: 1,
+  +     paused: false,
+  +     pickedPrograms: {},
+  +     programs: [
+  +       {
+  +         id: 1,
+  +         name: 'Program',
+  +         program: {
+  +           groups: [
+  +             {
+  +               condition: {
+  +                 kind: 'always'
+  +               },
+  +               id: 1,
+  +               name: 'Program',
+  +               rules: []
+  +             }
+  +           ],
+  +           nextGroupId: 2,
+  +           nextRuleId: 1,
+  +           tripPlan: {
+  +             bring: [],
+  +             take: []
+  +           }
+  +         }
+  +       }
+  +     ],
+  +     realMsCarry: 0,
+  +     ruleCounts: {},
+  +     run: {
+  +       activeCombat: null,
+  +       attackCooldownStart: 0,
+  +       attackRandom: 1105871498,
+  +       body: {
+  +         health: 0,
+  +         satiety: 0,
+  +         temperature: 31.168
+  +       },
+  +       bringPlan: [],
+  +       burningItems: [],
+  +       campfires: [],
+  +       character: {
+  +         at: {
+  +           q: 1,
+  +           r: 1
+  +         },
+  +         backpack: {
+  +           berry: 0,
+  +           fiber: 0,
+  +           moss: 0,
+  +           stick: 0
+  +         },
+  +         id: 1,
+  +         skills: {
+  +           campfireCrafting: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           dodging: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           eating: {
+  +             practice: 20,
+  +             ranks: {}
+  +           },
+  +           exploration: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           flameSpell: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           kicking: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           oneHandedCombat: {
+  +             practice: 0,
+  +             ranks: {}
+  +           },
+  +           smallItemGathering: {
+  +             practice: 0,
+  +             ranks: {}
+  +           }
+  +         },
+  +         traits: {
+  +           carryingCapacity: 15
+  +         }
+  +       },
+  +       completion: null,
+  +       completionSettlement: null,
+  +       copy: {
+  +         base: {
+  +           groups: [
+  +             {
+  +               condition: {
+  +                 kind: 'always'
+  +               },
+  +               id: 1,
+  +               name: 'Program',
+  +               rules: []
+  +             }
+  +           ],
+  +           nextGroupId: 2,
+  +           nextRuleId: 1,
+  +           tripPlan: {
+  +             bring: [],
+  +             take: []
+  +           }
+  +         },
+  +         deletedName: null,
+  +         program: {
+  +           groups: [
+  +             {
+  +               condition: {
+  +                 kind: 'always'
+  +               },
+  +               id: 1,
+  +               name: 'Program',
+  +               rules: []
+  +             }
+  +           ],
+  +           nextGroupId: 2,
+  +           nextRuleId: 1,
+  +           tripPlan: {
+  +             bring: [],
+  +             take: []
+  +           }
+  +         },
+  +         programId: 1
+  +       },
+  +       current: {
+  +         activity: {
+  +           kind: 'wait'
+  +         },
+  +         endMinute: 243,
+  +         startMinute: 242,
+  +         stepTo: null
+  +       },
+  +       death: {
+  +         cause: 'cold',
+  +         minute: 243
+  +       },
+  +       deathSettlement: {
+  +         kind: 'resurrectionUsed'
+  +       },
+  +       defeatedAttacks: 0,
+  +       deposited: null,
+  +       enteredWith: [],
+  +       gatherRandom: 2835730693,
+  +       lastCombat: null,
+  +       longestStreak: 83,
+  +       mapId: 'forest',
+  +       minute: 243,
+  +       minutesByAction: {
+  +         combat: 0,
+  +         craftCampfire: 0,
+  +         eat: 0,
+  +         explore: 0,
+  +         feedCampfire: 0,
+  +         gather: 0,
+  +         lightCampfire: 0,
+  +         lightItem: 0,
+  +         patrol: 0,
+  +         wait: 243,
+  +         walkTo: 0,
+  +         walkToCampfire: 0,
+  +         wander: 0
+  +       },
+  +       natureEnergy: 100,
+  +       practice: {},
+  +       seed: 204219582,
+  +       solvedMapRun: false,
+  +       streak: 0,
+  +       tiles: [
+  +         {
+  +           at: {
+  +             q: 0,
+  +             r: 0
+  +           },
+  +           col: 0,
+  +           revealed: false,
+  +           row: 0,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             fiber: 6,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 1,
+  +             r: 0
+  +           },
+  +           col: 1,
+  +           revealed: false,
+  +           row: 0,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             fiber: 6
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 2,
+  +             r: 0
+  +           },
+  +           col: 2,
+  +           revealed: false,
+  +           row: 0,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             fiber: 6,
+  +             moss: 6,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 3,
+  +             r: 0
+  +           },
+  +           col: 3,
+  +           revealed: false,
+  +           row: 0,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             fiber: 6
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 0,
+  +             r: 1
+  +           },
+  +           col: 0,
+  +           revealed: false,
+  +           row: 1,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             moss: 6,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 1,
+  +             r: 1
+  +           },
+  +           col: 1,
+  +           revealed: false,
+  +           row: 1,
+  +           stepMinutes: 5,
+  +           stock: {}
+  +         },
+  +         {
+  +           at: {
+  +             q: 2,
+  +             r: 1
+  +           },
+  +           col: 2,
+  +           revealed: false,
+  +           row: 1,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             fiber: 6
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 3,
+  +             r: 1
+  +           },
+  +           col: 3,
+  +           revealed: false,
+  +           row: 1,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: -1,
+  +             r: 2
+  +           },
+  +           col: 0,
+  +           revealed: false,
+  +           row: 2,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             moss: 6,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 0,
+  +             r: 2
+  +           },
+  +           col: 1,
+  +           revealed: false,
+  +           row: 2,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             fiber: 6
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 1,
+  +             r: 2
+  +           },
+  +           col: 2,
+  +           revealed: false,
+  +           row: 2,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 2,
+  +             r: 2
+  +           },
+  +           col: 3,
+  +           revealed: false,
+  +           row: 2,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: -1,
+  +             r: 3
+  +           },
+  +           col: 0,
+  +           revealed: false,
+  +           row: 3,
+  +           stepMinutes: 5,
+  +           stock: {}
+  +         },
+  +         {
+  +           at: {
+  +             q: 0,
+  +             r: 3
+  +           },
+  +           col: 1,
+  +           revealed: false,
+  +           row: 3,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             moss: 6
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 1,
+  +             r: 3
+  +           },
+  +           col: 2,
+  +           revealed: false,
+  +           row: 3,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             moss: 6,
+  +             stick: 12
+  +           }
+  +         },
+  +         {
+  +           at: {
+  +             q: 2,
+  +             r: 3
+  +           },
+  +           col: 3,
+  +           revealed: false,
+  +           row: 3,
+  +           stepMinutes: 5,
+  +           stock: {
+  +             berry: 8,
+  +             stick: 12
+  +           }
+  +         }
+  +       ],
+  +       wanderRandom: 3034630746
+  +     },
+  +     saveTimeMs: 1760000000000,
+  +     solvedMaps: [
+  +       'forestEdge'
+  +     ],
+  +     stoppedLoops: {},
+  +     team: {
+  +       characters: [
+  +         {
+  +           archetypeId: 'elementalMage',
+  +           generation: 1,
+  +           id: 1,
+  +           name: 'Ala',
+  +           skills: {
+  +             campfireCrafting: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             dodging: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             eating: {
+  +               practice: 20,
+  +               ranks: {}
+  +             },
+  +             exploration: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             flameSpell: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             kicking: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             oneHandedCombat: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             smallItemGathering: {
+  +               practice: 0,
+  +               ranks: {}
+  +             }
+  +           },
+  +           traits: {
+  +             carryingCapacity: 15
+  +           }
+  +         },
+  +         {
+  +           archetypeId: 'elementalMage',
+  +           generation: 1,
+  +           id: 2,
+  +           name: 'Ola',
+  +           skills: {
+  +             campfireCrafting: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             dodging: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             eating: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             exploration: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             flameSpell: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             kicking: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             oneHandedCombat: {
+  +               practice: 0,
+  +               ranks: {}
+  +             },
+  +             smallItemGathering: {
+  +               practice: 0,
+  +               ranks: {}
+  +             }
+  +           },
+  +           traits: {
+  +             carryingCapacity: 15
+  +           }
+  +         }
+  +       ],
+  +       chest: {
+  +         pieces: {}
+  +       },
+  +       resurrectionReadyAtMs: 1760000000000
+  +     },
+  +     understanding: {
+  +       actions: [
+  +         'explore',
+  +         'wander',
+  +         'walkTo',
+  +         'walkToCampfire',
+  +         'gather',
+  +         'patrol',
+  +         'craftCampfire',
+  +         'lightCampfire',
+  +         'lightItem',
+  +         'feedCampfire',
+  +         'eat',
+  +         'strikeWithStick',
+  +         'kick',
+  +         'dodge'
+  +       ],
+  +       conditions: [
+  +         'always',
+  +         'hereBelow',
+  +         'temperatureBelow',
+  +         'satietyBelow',
+  +         'natureEnergyBelow',
+  +         'itemBelow',
+  +         'campfireLeftBelow',
+  +         'healthBelow',
+  +         'opponentHealthBelow',
+  +         'awayFromCampfire'
+  +       ],
+  +       creatures: [
+  +         'wolf'
+  +       ],
+  +       items: [
+  +         'stick',
+  +         'berry',
+  +         'moss',
+  +         'fiber',
+  +         'campfire'
+  +       ],
+  +       trees: [
+  +         'exploration',
+  +         'smallItemGathering',
+  +         'campfireCrafting',
+  +         'eating',
+  +         'flameSpell',
+  +         'oneHandedCombat',
+  +         'kicking',
+  +         'dodging'
+  +       ]
+  +     }
+  +   }
+  -   ok: false,
+  -   reason: 'shape'
+    }
+  
+      at TestContext.<anonymous> (file:///tests/sim/team.test.mjs:647:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { ok: true, state: { programs: [Array], nextProgramId: 2, pickedPrograms: {}, lastUsedPrograms: [Object], lastEnteredProgram: 1, understanding: [Object], ruleCounts: {}, countsProgram: null, team: [Object], nextCharacterId: 3, run: [Object], lastSeed: 204219582, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0, loops: {}, stoppedLoops: {}, awayReport: [], saveTimeMs: 1760000000000 } },
+    expected: { ok: false, reason: 'shape' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
