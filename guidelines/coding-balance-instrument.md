@@ -114,8 +114,10 @@ nie powtarza się z tymi samymi flagami i ziarnami, więc nie wiadomo, czy zmian
 wyniku pochodzi od zmiany gry. Test nie łapie generatora napisanego od zera,
 zegara ani losowości sięgniętych nazwą złożoną dopiero w trakcie działania albo
 przez obiekt podany z zewnątrz pliku (`Date` albo `Math` wzięte jako argument),
-ani metody, która czyta bieżącą chwilę, a żadna z jego postaci jej nie nazywa;
-te przypadki pilnuje recenzent.
+ani `Math`, `Date` albo `performance` wziętych jako wartość w miejscu, którego
+test nie czyta (po `||`, `&&`, `...` albo `{`, jak w `{ Math }`), ani metody,
+która czyta bieżącą chwilę, a żadna z jego postaci jej nie nazywa; te przypadki
+pilnuje recenzent.
 
 ## Examples
 
