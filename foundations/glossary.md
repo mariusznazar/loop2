@@ -298,3 +298,9 @@ An owner is an account whose role is `owner`, the role that lets its holder use 
 An overlay is a file that changes the game's data in memory for the time of one measurement of the balance instrument, such as by adding a game map or changing the numbers of one, and leaves the game's data files untouched.
 
 - **Not:** none
+
+## wall
+
+A map that asks for something new — an item, a spell or another idea of a program — and without it is solved rarely.
+
+- **Not:** none
