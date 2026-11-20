@@ -4,17 +4,23 @@ import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { newGame } from "../../dist/browser/sim/game.js";
+import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   campaignSweep,
+  comeBack,
   dueAttempt,
   playCampaign,
   programsOf,
 } from "../../balance/campaign.mjs";
+import { makeState } from "../../balance/engine.mjs";
 import { LOOP_START_MS } from "../../balance/loop.mjs";
 import best from "../../balance/players/edge-daily-best.json" with { type: "json" };
 import decent from "../../balance/players/edge-daily-decent.json" with { type: "json" };
 import stock from "../../balance/players/edge-daily-decent-stock.json" with { type: "json" };
-import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
+import {
+  REFERENCE_PROGRAMS,
+  emptyProgram,
+} from "../sim/reference-programs.mjs";
 
 // The campaign of a player over many days, checked against relations the campaign code does not
 // compute: the first map is solved before any loop starts, no purchase is made that the points do
@@ -248,4 +254,79 @@ test("a player who waits for the resurrection tries its next map while one use i
   };
   assert.equal(dueWith(2), attempt, "two uses spent, one left");
   assert.equal(dueWith(3), undefined, "all three uses spent");
+});
+
+/**
+ * The campaign's one character on the loop of the empty program at Skraj lasu from the loop's start:
+ * the mage has practice, so a death is covered by a use while one is left, and the program does
+ * nothing, so every map run of the loop ends in a death.
+ */
+function emptyLoopContext() {
+  const [skills] = makeState().team.characters.map(
+    (character) => character.skills,
+  );
+  const state = makeState({
+    program: emptyProgram,
+    skills: { ...skills, eating: { practice: 20, ranks: {} } },
+    solvedMaps: [FIRST_MAP],
+  });
+  const [character] = state.team.characters;
+  const started = startLoop(
+    { ...state, lastSeed: 1 },
+    { mapId: FIRST_MAP, characterId: character.id },
+    LOOP_START_MS,
+  ).state;
+  return {
+    player: { days: 0, attempts: [] },
+    state: { ...started, saveTimeMs: LOOP_START_MS },
+    characterId: character.id,
+    clock: { ms: LOOP_START_MS },
+    horizonMs: LOOP_START_MS + 2 * 24 * 60 * 60 * 1000,
+    nextDayMark: 1,
+    log: {
+      resurrectionsUsed: 0,
+      loopCompletions: 0,
+      progressLost: 0,
+      daily: [],
+    },
+  };
+}
+
+/** The game minutes the map run of the empty loop lasts before the mage dies, read from the game. */
+function minutesOfAnEmptyRun() {
+  const { state, characterId } = emptyLoopContext();
+  return advanceLoopRun(state, characterId, 100000).passed;
+}
+
+test("one return that covers several deaths counts every use spent, and the loop it leaves alive counts no death as a completion", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice"
+  // A map run of the empty program ends in 243 game minutes, so the 24 hours of this return hold the
+  // deaths at minutes 243, 486, 729, 972 and 1215; each finds a use, for the one the earlier death
+  // spent returned four hours (240 minutes) after the clock started, before the next death.
+  assert.equal(minutesOfAnEmptyRun(), 243, "precondition: the run's length");
+  const ctx = emptyLoopContext();
+  comeBack(ctx, 24);
+  assert.equal(ctx.log.resurrectionsUsed, 5);
+  assert.equal(ctx.log.loopCompletions, 0);
+  assert.equal(ctx.log.progressLost, 0);
+  assert.equal(ctx.state.loops[ctx.characterId].runNumber, 6);
+});
+
+test("a loop that stops after covered deaths counts each of the uses spent and no completion, the stopping death being no use and no completion", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice"
+  // With the renewal far beyond the return no use comes back: the deaths at minutes 243, 486 and 729
+  // spend the three uses, and the one at minute 972 finds none and stops the loop.
+  const renewalMinutes = BALANCE.resurrectionRenewalRealMinutes;
+  try {
+    BALANCE.resurrectionRenewalRealMinutes = 100000;
+    assert.equal(minutesOfAnEmptyRun(), 243, "precondition: the run's length");
+    const ctx = emptyLoopContext();
+    comeBack(ctx, 24);
+    assert.equal(ctx.state.loops[ctx.characterId], undefined);
+    assert.equal(ctx.log.resurrectionsUsed, BALANCE.resurrectionUses);
+    assert.equal(ctx.log.loopCompletions, 0);
+    assert.equal(ctx.log.progressLost, 1);
+  } finally {
+    BALANCE.resurrectionRenewalRealMinutes = renewalMinutes;
+  }
 });
