@@ -15,17 +15,26 @@ const FIRST_MAP = "forestEdge";
  * nothing, so every map run of the loop ends in a death.
  */
 export function emptyLoopContext() {
+  return loopContextOf(emptyProgram, 1);
+}
+
+/**
+ * The context of `emptyLoopContext` with the loop of `program` at Skraj lasu, its first map run
+ * started on `seed`: where the program completes some map runs and dies in others, one return holds
+ * both.
+ */
+export function loopContextOf(program, seed) {
   const [skills] = makeState().team.characters.map(
     (character) => character.skills,
   );
   const state = makeState({
-    program: emptyProgram,
+    program,
     skills: { ...skills, eating: { practice: 20, ranks: {} } },
     solvedMaps: [FIRST_MAP],
   });
   const [character] = state.team.characters;
   const started = startLoop(
-    { ...state, lastSeed: 1 },
+    { ...state, lastSeed: seed },
     { mapId: FIRST_MAP, characterId: character.id },
     LOOP_START_MS,
   ).state;

@@ -184,7 +184,7 @@ test("a use returns at its moment itself and not a millisecond before, and the n
   });
 });
 
-test("a clock set back lengthens the time left: the moment an hour earlier reads 9 godz. 0 min for 8 hours of renewal", () => {
+test("a clock set back lengthens the time left: a moment an hour before the reading reads 9 godz. 0 min for a next use due 8 hours after it", () => {
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   assert.equal(
     resurrectionLine(teamWithUses(1, NOW + 8 * HOUR), NOW - HOUR).text,

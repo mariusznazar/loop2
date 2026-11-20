@@ -2479,7 +2479,6 @@ test("a completion depositing exactly the planned counts loads", () => {
 // A manual run of a solved map brings its loot out as every other map run does, so its completion
 // deposits by the same rule: entries of the frozen bring plan in its order, each at most its planned
 // count (D-179, D-189). Berry 5 and stick 20 in the document, as in the case above.
-// invariant: solved-map-manual-run
 test("a completion of a marked run depositing its planned counts loads, and a deposit beyond them is refused as shape", () => {
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // decision: D-179 "The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest"
@@ -3278,10 +3277,13 @@ test("a game state the simulation made loads back from its saved document", () =
   assert.notEqual(doneMarked.run.completion, null);
   assert.equal(doneMarked.run.solvedMapRun, true);
   // D-189: a marked run brings its loot out to the chest as any run does, its bring list clipped to
-  // what the character still carries; only its practice is not paid. Of the three berries taken from
-  // the chest, the character carries two at the completion.
-  assert.equal(doneMarked.run.character.backpack.berry, 2);
-  assert.deepEqual(doneMarked.run.deposited, [{ item: "berry", count: 2 }]);
+  // what the character still carries; only its practice is not paid. So the same run of a map not
+  // solved, `done`, is the expectation of what the marked run carries and deposits.
+  assert.deepEqual(
+    doneMarked.run.character.backpack,
+    done.run.character.backpack,
+  );
+  assert.deepEqual(doneMarked.run.deposited, done.run.deposited);
   assert.equal(
     states["the restart after the completion that solved the map"].state.run
       .solvedMapRun,

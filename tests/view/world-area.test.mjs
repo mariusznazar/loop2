@@ -274,9 +274,9 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     // Dead, with no use of the resurrection left: no settlement line in the world area (D-216: the
     // window holds it, in its section about what the death cost); the practice of the run stays after
     // the death (D-201).
-    const notReady = died(sent(), BALANCE.resurrectionUses);
-    assert.equal(notReady.run.deathSettlement.kind, "progressLost");
-    await show(withRun(notReady, { lastCombat: WOLF }));
+    const usedUp = died(sent(), BALANCE.resurrectionUses);
+    assert.equal(usedUp.run.deathSettlement.kind, "progressLost");
+    await show(withRun(usedUp, { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",

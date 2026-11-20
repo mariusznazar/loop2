@@ -582,7 +582,6 @@ function aboutToComplete(state) {
 }
 
 test("a manual run of a solved map takes its take list from the chest, cut by its stock and the capacity, as any run does", () => {
-  // invariant: solved-map-manual-run
   // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // The chest of `equipped` holds stick 10, berry 10, moss 2; the take list asks stick 8 and berry 9,

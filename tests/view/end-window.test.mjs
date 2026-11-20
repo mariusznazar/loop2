@@ -331,7 +331,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
 
 // Catches a death of a character with no practice shown as a resurrection used or a loss, and the
 // renewal line of a first completion missing, in the wrong role, before the deposit line, or standing
-// where the resurrection was found ready (D-216, D-185, D-190, D-39).
+// where the stock of uses was found full (D-216, D-185, D-190, D-39).
 test("the window shows the line of a death with no practice, and the renewal line after the deposit line of a first completion that renewed", async () => {
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"

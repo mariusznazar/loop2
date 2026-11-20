@@ -5,6 +5,7 @@ import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { newGame } from "../../dist/browser/sim/game.js";
+import { catchUp } from "../../dist/browser/sim/loop.js";
 import {
   campaignSweep,
   comeBack,
@@ -16,8 +17,12 @@ import { LOOP_START_MS } from "../../balance/loop.mjs";
 import best from "../../balance/players/edge-daily-best.json" with { type: "json" };
 import decent from "../../balance/players/edge-daily-decent.json" with { type: "json" };
 import stock from "../../balance/players/edge-daily-decent-stock.json" with { type: "json" };
-import { emptyLoopContext, minutesOfAnEmptyRun } from "./campaign-fixture.mjs";
-import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
+import {
+  emptyLoopContext,
+  loopContextOf,
+  minutesOfAnEmptyRun,
+} from "./campaign-fixture.mjs";
+import { REFERENCE_PROGRAMS, forestNaive } from "../sim/reference-programs.mjs";
 
 // The campaign of a player over many days, checked against relations the campaign code does not
 // compute: the first map is solved before any loop starts, no purchase is made that the points do
@@ -265,6 +270,27 @@ test("one return that covers several deaths counts every use spent, and the loop
   assert.equal(ctx.log.loopCompletions, 0);
   assert.equal(ctx.log.progressLost, 0);
   assert.equal(ctx.state.loops[ctx.characterId].runNumber, 6);
+});
+
+test("one return that holds completions and covered deaths counts each use spent and each completion, as the game's catch-up over the same span ends them", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice"
+  // The game's own catch-up is the expectation: every map run of the loop it leaves alive ended in a
+  // completion or in a death a use covered, so the uses spent are the map runs that ended less the
+  // completions.
+  const caught = catchUp(
+    loopContextOf(forestNaive, 1).state,
+    LOOP_START_MS + 24 * 60 * 60 * 1000,
+  ).state;
+  const [loop] = Object.values(caught.loops);
+  const completions = loop.completed;
+  const uses = loop.runNumber - 1 - completions;
+  assert.ok(completions > 0, "precondition: a map run was completed");
+  assert.ok(uses > 0, "precondition: a death was covered");
+  const ctx = loopContextOf(forestNaive, 1);
+  comeBack(ctx, 24);
+  assert.equal(ctx.log.resurrectionsUsed, uses);
+  assert.equal(ctx.log.loopCompletions, completions);
+  assert.equal(ctx.log.progressLost, 0);
 });
 
 test("a loop that stops after covered deaths counts each of the uses spent and no completion, the stopping death being no use and no completion", () => {

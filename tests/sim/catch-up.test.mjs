@@ -202,7 +202,7 @@ function usedUpUntil(state, returnMs) {
   return withUses(state, 3, returnMs);
 }
 
-/** The state with two uses spent: one left, the clock stopped far beyond the cases' readings. */
+/** The state with two uses spent: one left, the clock running to a moment far beyond the cases' readings. */
 function oneLeft(state) {
   return withUses(state, 2, S + 10_000 * MIN);
 }
@@ -497,6 +497,13 @@ test("a character whose chest and resurrection no other earning loop reaches end
   const longer = catchUp(aloneLooping(), S + 600 * MIN).state;
   assert.equal(ala(longer).generation, 1);
   assert.equal(longer.loops[1].runNumber, 3);
+  // The use of the first death returned at minute 483 and the clock stopped with the stock full; the
+  // second death, in minute 486, spent a use of the full stock and started the clock anew.
+  assert.equal(longer.team.resurrectionUsesSpent, 1);
+  assert.equal(
+    longer.team.resurrectionNextReturnAtMs,
+    S + 486 * MIN + RENEWAL_MS,
+  );
   // Uncovered at the first death.
   const uncovered = usedUpUntil(aloneLooping(), S + 400 * MIN);
   assertRelation(uncovered, 600, "uncovered");

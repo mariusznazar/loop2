@@ -1398,7 +1398,7 @@ test("a death of a character with no practice takes the carried items only: the 
   // decision: D-189 "A manual map run that first solves its map pays practice once per map for the player, whichever character completes it; a manual run of a solved map pays no practice; every run pays loot only on completion, an earning-loop run included; a run that ends in death pays neither loot nor practice"
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
-  for (const readyAt of [0, T0 + 1]) {
+  for (const nextReturnMs of [0, T0 + 1]) {
     const state = usedUpUntil(
       changingRun(
         dyingNext(
@@ -1409,7 +1409,7 @@ test("a death of a character with no practice takes the carried items only: the 
         1,
         { practice: { smallItemGathering: 9 } },
       ),
-      readyAt,
+      nextReturnMs,
     );
     const passed = advanceLoopRun(state, 1, 1).state;
     assert.ok(passed.loops[1].run.death, "precondition: the character died");
@@ -1417,7 +1417,7 @@ test("a death of a character with no practice takes the carried items only: the 
     assert.equal(after.team.resurrectionUsesSpent, 3, "the uses stay");
     assert.equal(
       after.team.resurrectionNextReturnAtMs,
-      readyAt,
+      nextReturnMs,
       "the clock stays",
     );
     assert.deepEqual(ala(after), ala(passed));

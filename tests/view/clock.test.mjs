@@ -613,8 +613,9 @@ test("in a reading that ends an earning loop's map run in a death and the manual
   // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
   // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths for the account's last use of the resurrection in the open game the earlier in real time takes it, and the clock of the returns runs from the moment of the death that started it"
   withBothClocks(({ pass, jump }) => {
-    // Two uses are spent and the clock runs to the return of the next, an hour after the reading: one use is
-    // left for the two deaths, and the death that takes it leaves the clock as it runs.
+    // Two uses are spent and the clock runs to the return of the next, about two hours after the
+    // reading: one use is left for the two deaths, and the death that takes it leaves the clock as it
+    // runs.
     const both = withUses(
       practised(practised(twoCharacters(), 1), 2),
       2,

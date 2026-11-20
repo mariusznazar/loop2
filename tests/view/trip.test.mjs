@@ -208,24 +208,6 @@ test("the enter line gives what a send takes, cut by the chest, the capacity and
   assert.equal(entersLine(take(), stocked, 15, MAPS.forest), "Wejdzie: nic");
 });
 
-// D-189: a manual run of a map already solved takes from the chest as every run does, so the line of a
-// solved map is cut by the chest as well. Catches a line of a solved map that takes from nowhere, which
-// would write the take list as asked.
-test("the enter line of a map already solved is cut by the chest, as at any map", () => {
-  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  const take = (...entries) => ({ take: entries, bring: [] });
-  assert.equal(
-    entersLine(
-      take(entry("stick", 6), entry("berry", 4)),
-      { pieces: { stick: 2, berry: 1 } },
-      15,
-      MAPS.forest,
-    ),
-    "Wejdzie: patyk 2, jagoda 1",
-  );
-});
-
 // D-326: a program whose bring list is empty earns nothing for the chest, so the earning loop mark
 // stands; a list with an item in it does not. Catches the mark on a non-empty list, and no mark on
 // an empty one.
