@@ -676,10 +676,10 @@ listę otwartych map, po prawej kartę wybranej mapy.
   pętli w `text` z „Zatrzymaj” (D-244); „Program:” w `text-label` z listą
   programów; „Wejdzie: …” i „Wejdzie: nic” w `text-secondary`; ostrzeżenie
   o przyciętym planie w `warning` (D-188); „Wejdź” w głównym wyglądzie (D-274);
-  „Puść w pętlę” zwykłym przyciskiem, a obok „Pętla nic nie zarobi do skrzynki” w `warning`, gdy
-  lista „Wynieś” jest pusta (D-326); zdanie o przejściu ręcznym, które czeka
-  albo się skończyło, pod wyłączonymi przyciskami każdej postaci, w
-  `text-secondary` (D-287).
+  „Puść w pętlę” zwykłym przyciskiem, a obok „Pętla nic nie zarobi do
+  skrzynki” w `warning`, gdy lista „Wynieś” jest pusta (D-326); zdanie
+  o przejściu ręcznym, które czeka albo się skończyło, pod wyłączonymi
+  przyciskami każdej postaci, w `text-secondary` (D-287).
 - Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
   w `text-secondary`.
 
