@@ -1,6 +1,6 @@
 import { newTraits } from "./character.js";
 import { hasNoPractice, newSkills, paidPractice } from "./skills.js";
-import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
+import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
@@ -266,7 +266,9 @@ function nowLine(run: GameMapRun): NowLine {
 
 /**
  * A new map run at minute 0 carrying out `copy`, every count of the copy's rules starting from
- * zero; events mapRunStarted, activityStarted.
+ * zero; its equipment leaves the chest as it stands, as every start does (D-179, D-189), and the
+ * state of the map at the start marks a run of a solved map, which pays no practice (D-214); events
+ * mapRunStarted, activityStarted.
  */
 function startRun(
   state: GameState,
@@ -276,23 +278,14 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
-  // The state of the map at this start settles whether the run pays and takes (D-189).
+  // The state of the map at this start settles whether the run pays practice (D-189, D-214).
   const solvedMapRun = state.solvedMaps.includes(mapId);
-  const equipment = solvedMapRun
-    ? {
-        chest: state.team.chest,
-        backpack: takeFromNowhere(
-          copy.program.tripPlan,
-          traits.carryingCapacity,
-          mapOf(mapId),
-        ),
-      }
-    : takeTrip(
-        copy.program.tripPlan,
-        state.team.chest,
-        traits.carryingCapacity,
-        mapOf(mapId),
-      );
+  const equipment = takeTrip(
+    copy.program.tripPlan,
+    state.team.chest,
+    traits.carryingCapacity,
+    mapOf(mapId),
+  );
   const skills =
     state.run?.character.skills ??
     state.team.characters.find((character) => character.id === characterId)!
@@ -741,9 +734,10 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
- * events, no program rule is picked and the map is added to the solved maps; the completion pays
- * practice and deposits the bring list only for a run not marked `solvedMapRun`, and a death pays
- * nothing; where the minute of a completion or of a death is
+ * events, no program rule is picked and the map is added to the solved maps; the completion deposits
+ * the bring list clipped as every completion does, for every run (D-189), and pays practice only for
+ * a run not marked `solvedMapRun`, and a death pays nothing; where the minute of a completion or of
+ * a death is
  * also a discovery's, the game holds the discovery and is not paused (D-122). A map run that has ended
  * changes nothing. A death stays unsettled here: this function knows no real time, and whoever
  * passes it game time then calls `settleDeath`, as a saved document holding a death unsettled is

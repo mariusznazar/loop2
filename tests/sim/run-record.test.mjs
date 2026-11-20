@@ -325,19 +325,20 @@ test("a map run entered with an empty backpack keeps an empty list", () => {
   assert.deepEqual(state.run.enteredWith, []);
 });
 
-test("a map run of a solved map keeps what it took from nowhere, and the chest stays as it was", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
+test("a map run of a solved map keeps what it took from the chest, as any map run does", () => {
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
+  // The chest holds 6 sticks and the take asks 4: the run takes 4 and the chest keeps 2.
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {
       condition: ALWAYS,
       action: { kind: "explore" },
     }),
-    {},
+    { stick: 6 },
     { game: { solvedMaps: ["forestEdge", "forest"] } },
   );
   assert.equal(state.run.solvedMapRun, true);
-  assert.deepEqual(state.team.chest.pieces, {});
+  assert.deepEqual(state.team.chest.pieces, { stick: 2 });
   assert.deepEqual(state.run.enteredWith, [{ item: "stick", count: 4 }]);
 });
 

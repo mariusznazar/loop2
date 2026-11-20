@@ -34,10 +34,11 @@ export function clipTrip(
 }
 
 /**
- * The entries a send takes into a manual map run, the one rule both starts use.
- * At a map not solved the take list is cut by the chest's stock, the carrying capacity and the
- * map's entry cap in list order. A manual run of a solved map has no chest (`null`) and takes the
- * take list from nowhere, cut by the carrying capacity and the entry cap only (D-189, D-214).
+ * The entries a send takes into a manual map run, the one rule every start uses (D-189, D-214): the
+ * take list is cut by the chest's stock, the carrying capacity and the map's entry cap in list
+ * order. A `null` chest, which only the view's line for a solved map passes, takes the take list
+ * from nowhere, cut by the carrying capacity and the entry cap only; the simulation's starts always
+ * pass the chest.
  */
 export function sendTake(
   plan: TripPlan,
@@ -90,9 +91,9 @@ export function clippedTake(
 }
 
 /**
- * Equipment of a marked run (a manual map run of a solved map): the take list taken from nowhere,
- * the list's own counts standing in for the stock, clipped only by the carrying capacity and the
- * map's entry cap. The chest is not an argument, so nothing leaves it.
+ * The take list taken from nowhere, the list's own counts standing in for the stock, clipped only by
+ * the carrying capacity and the map's entry cap. No start of a map run and no view calls it now
+ * (D-189); only the tests do, until the slice that removes it.
  */
 export function takeFromNowhere(
   plan: TripPlan,
@@ -106,15 +107,15 @@ export function takeFromNowhere(
 }
 
 /**
- * The same clipped snapshot drives both the live preview and the eventual deposit. A marked run
- * deposits nothing, so its list is empty.
+ * The same clipped snapshot drives both the live preview and the eventual deposit, for every run:
+ * a manual run of a solved map brings its loot out as any other run does (D-189). The mark
+ * `solvedMapRun` does not change the list; it only stops the practice.
  */
 export function tripLoot(
   run: Pick<GameMapRun, "bringPlan" | "character" | "solvedMapRun">,
   chest: Chest,
   map: MapDef,
 ): TripEntry[] {
-  if (run.solvedMapRun) return [];
   return clipTrip(
     run.bringPlan,
     run.character.backpack,
