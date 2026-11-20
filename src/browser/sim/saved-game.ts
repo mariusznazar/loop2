@@ -833,10 +833,10 @@ const SETTLEMENTS: {
 } = {
   resurrectionUsed: (value) => {
     const read = fields(value, ["kind", "usesLeft"]);
-    // A death spends one use of a stock that holds at most the data's count, so at most one is
-    // left after it.
+    // At most the data's count: a count lowered later refuses only a save with more spent than the new
+    // count (the game itself leaves at most one below the count it had).
     const usesLeft = count(read.usesLeft);
-    if (usesLeft >= BALANCE.resurrectionUses) refuse();
+    if (usesLeft > BALANCE.resurrectionUses) refuse();
     return { kind: "resurrectionUsed", usesLeft };
   },
   progressLost: (value, currentGeneration) => {

@@ -623,11 +623,6 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
       delete team.resurrectionNextReturnAtMs;
       team.resurrectionReadyAtMs = T0;
     }),
-    "uses left in the settlement equal to the data's count": withSettlement(
-      (settlement) => {
-        settlement.usesLeft = USES;
-      },
-    ),
     "uses left in the settlement above the data's count": withSettlement(
       (settlement) => {
         settlement.usesLeft = USES + 1;
@@ -657,4 +652,25 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
       name,
     );
   }
+});
+
+// Task question 15: a lowering of the count refuses only a save with more spent than the new count,
+// so a settlement of a death from a larger stock, whose uses left equal the new count, still loads.
+test("a settlement whose uses left equal the data's count loads, and one above it is refused", () => {
+  const settled = settleDeath(fell(practised()), T0).state;
+  const withUsesLeft = (usesLeft) => {
+    const copy = structuredClone(savedGame(withSaveTime(settled, T0)));
+    copy.game.run.deathSettlement.usesLeft = usesLeft;
+    return copy;
+  };
+  const equal = loadSavedGame(withUsesLeft(USES));
+  assert.equal(equal.ok, true);
+  assert.deepEqual(equal.state.run.deathSettlement, {
+    kind: "resurrectionUsed",
+    usesLeft: USES,
+  });
+  assert.deepEqual(loadSavedGame(withUsesLeft(USES + 1)), {
+    ok: false,
+    reason: "shape",
+  });
 });
