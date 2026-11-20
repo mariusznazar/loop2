@@ -1,6 +1,6 @@
 ---
 name: the-way-define-project
-description: Use when a project of a product that uses the-way has to be defined before it is broken into tasks — an idea, a concept or a note to turn into a project definition, a definition to resume from its status line, or a definition to take through the readiness gate. Use this product's pinned the-way commit.
+description: Use when a project of a product that uses the-way has to be defined before it is broken into tasks — an idea, a concept or a note to turn into a project definition, a definition to resume from its status line, or a definition to take through the readiness approval. Use this product's pinned the-way commit.
 ---
 
 # the-way-define-project

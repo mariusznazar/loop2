@@ -1,6 +1,6 @@
 ---
 name: the-way-plan-project
-description: Use when an approved project definition of a product that uses the-way has to be broken into tasks — the breakdown that writes the project plan, a plan to resume from its status line, or a plan to check again after its definition passed the readiness gate anew. Not for a task's plan of slices, and never refines a task. Use this product's pinned the-way commit.
+description: Use when an approved project definition of a product that uses the-way has to be broken into tasks — the breakdown that writes the project plan, a plan to resume from its status line, or a plan to check again after its definition passed the readiness approval anew. Not for a task's plan of slices, and never refines a task. Use this product's pinned the-way commit.
 ---
 
 # the-way-plan-project
