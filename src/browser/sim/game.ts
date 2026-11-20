@@ -112,10 +112,12 @@ function usesAt(team: Uses, nowMs: number): UsesAt {
 }
 
 /**
- * Whether the team's resurrection, the one all its characters share, has a use left at the real
- * moment `nowMs`: the uses whose moment has come count as returned, that moment included.
+ * Whether the team's resurrection, the one all its characters share, has at least one use left at the
+ * real moment `nowMs`: the uses whose moment has come count as returned, that moment included. It
+ * does not say the stock is full: the settlement kind `resurrectionReady` of a completion names a
+ * stock found full, while this holds for a stock with a use spent as well.
  */
-export function resurrectionReady(team: Uses, nowMs: number): boolean {
+export function resurrectionHasUse(team: Uses, nowMs: number): boolean {
   return usesAt(team, nowMs).spent < BALANCE.resurrectionUses;
 }
 
@@ -629,7 +631,8 @@ export function setPace(state: GameState, pace: Pace): GameResult {
  * death settled at an earlier real moment after another never moves back (D-240); the settlement
  * holds the uses spent after it. With none left the character loses all its practice and ranks and its
  * generation number grows by one, the uses and their moment unchanged. `nowMs` is taken as a safe
- * integer; the caller checks it.
+ * integer; the caller checks it. A safe `nowMs` that carries a moment of the clock beyond the safe
+ * integers is still a RangeError (D-386).
  */
 export function teamAfterDeath(
   team: Team,
@@ -679,7 +682,8 @@ export function teamAfterDeath(
  * generation number grows by one. The map run holds how it went; its own
  * skills, the chest, the programs, the Understanding and the solved maps are out of reach, and the
  * mark of a solved map plays no part. With no map run, no death or a death settled, returns the very
- * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
+ * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer, or whose
+ * moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function settleDeath(state: GameState, nowMs: number): GameResult {
   const run = state.run;
@@ -711,7 +715,7 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
  * counting first, the clock running on as it was and stopping when the stock is then full, and leaves
  * a full stock as it is; the run holds which it was. With no map run, no completion, a completion of a solved map or a
  * completion settled, returns the very state it got, without reading `nowMs`; otherwise a `nowMs`
- * that is no safe integer is a RangeError.
+ * that is no safe integer, or whose moment of the clock is beyond the safe integers, is a RangeError.
  */
 export function settleCompletion(state: GameState, nowMs: number): GameResult {
   const run = state.run;

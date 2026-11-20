@@ -73,11 +73,11 @@ export function takeTrip(
 
 /**
  * The same clipped snapshot drives both the live preview and the eventual deposit, for every run:
- * a manual run of a solved map brings its loot out as any other run does (D-189). The mark
- * `solvedMapRun` does not change the list; it only stops the practice.
+ * a manual run of a solved map brings its loot out as any other run does (D-189), so the list does
+ * not read the run's mark `solvedMapRun`, which only stops the practice.
  */
 export function tripLoot(
-  run: Pick<GameMapRun, "bringPlan" | "character" | "solvedMapRun">,
+  run: Pick<GameMapRun, "bringPlan" | "character">,
   chest: Chest,
   map: MapDef,
 ): TripEntry[] {

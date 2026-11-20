@@ -190,7 +190,6 @@ function lootOf(run, equipment, program, map) {
     {
       bringPlan: program.tripPlan.bring,
       character: run.character,
-      solvedMapRun: false,
     },
     equipment.chest,
     map,

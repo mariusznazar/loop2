@@ -15,7 +15,7 @@ import {
   newGame,
   restart,
   resurrectionAt,
-  resurrectionReady,
+  resurrectionHasUse,
   send,
   setProgram,
   settleCompletion,
@@ -264,7 +264,7 @@ test("a new game's resurrection has every use and its clock is not running", () 
   assert.equal(team.resurrectionUsesSpent, 0);
   assert.equal(team.resurrectionNextReturnAtMs, null);
   assert.deepEqual(stock(team, T0), [USES, null]);
-  assert.equal(resurrectionReady(team, T0), true);
+  assert.equal(resurrectionHasUse(team, T0), true);
   assert.deepEqual(
     stock(createCharacter(newGame(), "Ala").state.team, T0),
     [USES, null],
@@ -371,7 +371,7 @@ test("the uses return one at a time, each the renewal after the clock started or
   ]) {
     assert.deepEqual(stock(team, at), expected, `at T0 + ${at - T0}`);
     assert.equal(
-      resurrectionReady(team, at),
+      resurrectionHasUse(team, at),
       expected[0] > 0,
       `at T0 + ${at - T0}`,
     );
@@ -726,9 +726,6 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
   }
 });
 
-// Task question 15: a lowering of the count refuses only a save in which more uses are spent than the new
-// count, so a game saved at the open end of a run after its first death, with one use spent, still
-// loads when the count is lowered from 3 to 1, and the same game with two spent is refused.
 test("a count lowered from 3 to 1 after the save refuses a game with two uses spent and none with one, an open end-of-run window after a first death included", () => {
   // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
   const first = settleDeath(fell(practised()), T0).state;

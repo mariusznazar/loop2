@@ -32,7 +32,7 @@ import {
   end,
   newGame,
   resurrectionAt,
-  resurrectionReady,
+  resurrectionHasUse,
   send,
   setPaused,
   settleCompletion,
@@ -419,7 +419,7 @@ export function dueAttempt(ctx) {
     canSendMap(ctx.state.solvedMaps, attempt.map) &&
     hasAll(ctx.state.team.chest, attempt.needChest) &&
     (!attempt.needResurrection ||
-      resurrectionReady(ctx.state.team, ctx.clock.ms));
+      resurrectionHasUse(ctx.state.team, ctx.clock.ms));
   return ready ? attempt : undefined;
 }
 

@@ -16,7 +16,7 @@ import {
   newGame,
   passRealTime,
   restart,
-  resurrectionReady,
+  resurrectionHasUse,
   send,
   setProgram,
   settleCompletion,
@@ -553,7 +553,7 @@ test("the first completion of a map returns one use of a used-up resurrection of
   assert.equal(settled.team.resurrectionUsesSpent, 2);
   // The clock runs on as it was: the next use is still due at the moment it was due before.
   assert.equal(settled.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
-  assert.equal(resurrectionReady(settled.team, T0), true);
+  assert.equal(resurrectionHasUse(settled.team, T0), true);
   assert.deepEqual(settled.team.characters, done.team.characters);
   assert.deepEqual(settled.solvedMaps, done.solvedMaps);
 });

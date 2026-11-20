@@ -334,7 +334,6 @@ function takeEnd(
       {
         bringPlan: loop.program.tripPlan.bring,
         character: run.character,
-        solvedMapRun: false,
       },
       chest,
       MAPS[run.mapId],

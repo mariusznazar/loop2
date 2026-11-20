@@ -15,7 +15,7 @@ import {
   passRealTime,
   restart,
   resurrectionAt,
-  resurrectionReady,
+  resurrectionHasUse,
   send,
   setPace,
   setProgram,
@@ -94,17 +94,17 @@ function usedUpTeam(returnMs) {
 // invariant: resurrection-renewal
 test("a resurrection is not ready before its moment, is ready at it and stays ready after it", () => {
   const character = usedUpTeam(1_760_000_000_000);
-  assert.equal(resurrectionReady(character, 1_759_999_999_999), false);
-  assert.equal(resurrectionReady(character, 1_760_000_000_000), true);
-  assert.equal(resurrectionReady(character, 1_760_000_000_001), true);
+  assert.equal(resurrectionHasUse(character, 1_759_999_999_999), false);
+  assert.equal(resurrectionHasUse(character, 1_760_000_000_000), true);
+  assert.equal(resurrectionHasUse(character, 1_760_000_000_001), true);
 });
 
 // invariant: resurrection-renewal
 test("a moment of readiness below zero is ready at every moment from zero on", () => {
   const character = usedUpTeam(-5);
-  assert.equal(resurrectionReady(character, 0), true);
-  assert.equal(resurrectionReady(character, -5), true);
-  assert.equal(resurrectionReady(character, -6), false);
+  assert.equal(resurrectionHasUse(character, 0), true);
+  assert.equal(resurrectionHasUse(character, -5), true);
+  assert.equal(resurrectionHasUse(character, -6), false);
 });
 
 test("a new game's resurrection is full from the start, at the first moment there is, and a created character brings none of its own", () => {
@@ -112,8 +112,8 @@ test("a new game's resurrection is full from the start, at the first moment ther
   const { team } = createCharacter(newGame(), "Ala").state;
   assert.equal(team.resurrectionUsesSpent, 0);
   assert.equal(team.resurrectionNextReturnAtMs, null);
-  assert.equal(resurrectionReady(team, 0), true);
-  assert.equal(resurrectionReady(team, 1_760_000_000_000), true);
+  assert.equal(resurrectionHasUse(team, 0), true);
+  assert.equal(resurrectionHasUse(team, 1_760_000_000_000), true);
   assert.equal(
     Object.hasOwn(team.characters[0], "resurrectionUsesSpent"),
     false,
@@ -128,7 +128,7 @@ test("a character created while the team's resurrection is used up does not make
   const added = createCharacter(used, "Ula").state;
   assert.equal(added.team.resurrectionUsesSpent, 3);
   assert.equal(added.team.resurrectionNextReturnAtMs, T0 + 1);
-  assert.equal(resurrectionReady(added.team, T0), false);
+  assert.equal(resurrectionHasUse(added.team, T0), false);
 });
 
 test("a new character is of generation 1, and a created second one too", () => {
@@ -246,9 +246,27 @@ test("the return does not depend on the pace of the map run", () => {
 test("a used use is back at its moment after a save and a load, and the next death goes by it", () => {
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
-  const stocked = usedUp(team(), T0 + RENEWAL_MS);
+  // The three uses are spent by three deaths the game settles, the first at T0 and the next two 100
+  // and 200 real minutes after it, so the clock runs from the first death.
+  let stocked = team();
+  for (const minutes of [0, 100, 200]) {
+    const at = T0 + minutes * 60_000;
+    stocked = end(settleDeath(died(stocked, at), at).state).state;
+  }
+  assert.equal(
+    stocked.team.resurrectionUsesSpent,
+    3,
+    "precondition: the stock is used up",
+  );
+  assert.equal(
+    stocked.team.resurrectionNextReturnAtMs,
+    T0 + RENEWAL_MS,
+    "precondition: the clock runs from the first death",
+  );
   // D-248: a saved document carries the moment of its save, so the state is stamped first.
-  const loaded = loadSavedGame(savedGame(withSaveTime(stocked, T0)));
+  const loaded = loadSavedGame(
+    savedGame(withSaveTime(stocked, T0 + 200 * 60_000)),
+  );
   assert.equal(loaded.ok, true);
   const back = loaded.state;
   assert.deepEqual(resurrectionAt(back.team, T0 + RENEWAL_MS - 1), {
