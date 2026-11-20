@@ -436,8 +436,8 @@ test("an unconfirmed address shows its sentence in text-secondary above „Wyśl
 test("right after registration the sentence is the outcome of the registration's message", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
-  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       await openBar(page, {
@@ -458,8 +458,8 @@ test("right after registration the sentence is the outcome of the registration's
 test("a send waits with the button disabled as Wysyłanie…, the menu stays open, then the outcome stands, the button is restored and focused", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
-  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”"
   // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
@@ -499,8 +499,8 @@ test("a send waits with the button disabled as Wysyłanie…, the menu stays ope
 
 test("the menu stays open after the answer to „Wyślij ponownie” until the player closes it", async () => {
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
-  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   await withPage(async (page) => {
     const { held, outside } = await openBar(page, {
@@ -523,7 +523,7 @@ test("the menu stays open after the answer to „Wyślij ponownie” until the p
 
 test("a failure of the client stands in warning with its own sentence, and the button stays", async () => {
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -551,7 +551,7 @@ test("a failure of the client stands in warning with its own sentence, and the b
 
 test("a refusal other than an address already confirmed is a failure too: its sentence in warning and the button stays", async () => {
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -605,7 +605,7 @@ test("the page's account turning confirmed removes the sentence and the button",
 test("an answer that comes while the menu is closed is there when the player opens it, and takes no focus", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
-  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
   await withPage(async (page) => {
     const { held, field } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
