@@ -1,8 +1,8 @@
 ## Backlog
 
-- Projects: the entry `projects` under `loop2` in the locations file `~/.the-way/locations.json`, which lies on the author's disk outside every repository. The folder the entry names is in the author's private notes. Where the file or the entry is missing, or an agent cannot open it, it asks the human and offers to add the entry to the file.
-- Tasks: the entry `tasks` under `loop2` in the same file. The list of tasks the entry names is in the author's private notes. Where the file or the entry is missing, or an agent cannot open it, it asks the human and offers to add the entry to the file.
-- Task rules: the entry `task-rules` under `loop2` in the same locations file. It names the author's rules for a task's line: its status when new, its move to ready, its dependencies. A missing entry or file is handled as for the tasks.
+- Projects: the key `projects` under `loop2` in the locations file `~/.the-way/locations.json`, which lies on the author's disk outside every repository. The folder the key names is in the author's private notes. Where the file or the key is missing, or an agent cannot open it, it asks the human and offers to add the key to the file.
+- Tasks: the key `tasks` under `loop2` in the same file. The list of tasks the key names is in the author's private notes. Where the file or the key is missing, or an agent cannot open it, it asks the human and offers to add the key to the file.
+- Task rules: the key `task-rules` under `loop2` in the same locations file. It names the author's rules for a task's line: its status when new, its move to ready, its dependencies. A missing key or file is handled as for the tasks.
 
 Before changing product code, including scripts and tests, read `guidelines/coding.md`.
 
