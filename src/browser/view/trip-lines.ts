@@ -74,9 +74,9 @@ export function tripTexts(state: GameState): {
 }
 
 const SOLVED_RUN_TEXT =
-  "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.";
+  "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.";
 
-/** The line of a run on a solved map, whatever its moment; null for any other run. */
+/** The line of a run on a solved map, whatever its moment (D-215); null for any other run. */
 export function solvedRunText(state: GameState): string | null {
   return state.run?.solvedMapRun ? SOLVED_RUN_TEXT : null;
 }
