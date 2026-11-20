@@ -10,9 +10,11 @@ template text and regular expressions, holds `Date.now`, `performance.now`, `new
 argument, `new Date(undefined)`, `Date()` called without `new`, `hrtime`, `uptime`, `timeOrigin` or
 `Intl.DateTimeFormat`, with `Date` or `performance` reached by its own name or as a member of
 anything (`globalThis.Date.now()`); it draws a random number or reads the clock under another name
-where `Math`, `Date` or `performance` stands as a value, assigned, destructured or passed on
-(`const { random } = Math`, `const D = Date`, `list.map(Date)`); it draws a random number from
-another source where that code names `Math.random`, `Math[` (computed access to `Math`), `crypto`,
+where `Math`, `Date` or `performance`, alone or as a member of a chain (`globalThis.Date`),
+stands after `=`, `=>`, `,`, `(`, `:`, `[`, `?` or `return` and before `;`, `,`, `)`, `]` or `}`,
+or after `?` and before `:`, which is what `CLOCK_OR_DRAW_AS_VALUE` reads (`const { random } =
+Math`, `const D = Date`, `list.map(Date)`, `{ m: Math }`, `[Math]`, `return Math;`, `() => Date;`,
+`cond ? Math : null`); it draws a random number from another source where that code names `Math.random`, `Math[` (computed access to `Math`), `crypto`,
 `getRandomValues` or `randomUUID`, holds the increment constant of the mulberry32 generator step,
 `0x6D2B79F5` (decimal 1831565813), so that no generator beside the seeded one of the game stands
 in the instrument, or where a string literal of the file is a module specifier of the clock or
@@ -24,11 +26,21 @@ Covers:
   source holding the same names only in comments, strings, template text, a regular expression,
   or a date given its argument (`new Date(0)`), is not.
 
+Stricter than the sentence: the scan flags, besides what the sentence names, some uses that read no
+clock and draw no number, and the fix of each is a rewrite of the line. `Intl.DateTimeFormat` is
+flagged also where it formats a date it is given (`new Intl.DateTimeFormat('pl').format(new
+Date(0))`); `Math`, `Date` or `performance` standing as a value in the places above is flagged also
+where nothing is called on it (`Object.keys(Math)`, `String(row.Date)`, `const { UTC } = Date`,
+`x === Date`); a variable, a field or a function named `uptime`, `timeOrigin` or `hrtime` is
+flagged though it reads no clock.
+
 Does NOT cover: a generator written from scratch that uses none of the names above and not the
 mulberry32 constant; the clock or a random source reached through a name built at run time, through
 an object handed in from outside the file (a `Date` or a `Math` taken as an argument and called
-there) or through `Reflect` and `Function`; a method that reads the current moment and is named
-by none of the forms above; a command the file starts whose output depends on the time.
+there) or through `Reflect` and `Function`; `Math`, `Date` or `performance` taken as a value in a
+place the list above does not hold (after `||`, `&&`, `...` or `{` as in `{ Math }`, or before an
+operator or a closing bracket other than those listed); a method that reads the current moment and
+is named by none of the forms above; a command the file starts whose output depends on the time.
 """
 
 import re
@@ -50,10 +62,14 @@ FORBIDDEN_NAMES = (
     (re.compile(r"\btimeOrigin\b"), "timeOrigin"),
     (re.compile(r"\bIntl\s*(?:\?\.|\.)\s*DateTimeFormat\b"), "Intl.DateTimeFormat"),
 )
-# `Math`, `Date` or `performance` taken as a value, assigned, destructured or passed on, so that a
-# function of it (`random`, `now`) is called under another name.
+# `Math`, `Date` or `performance` taken as a value, so that a function of it (`random`, `now`) is
+# called under another name. The reading, exactly: the name, alone or as a member of a chain
+# (`globalThis.Date`, `row.Date`), standing after `=`, `=>`, `,`, `(`, `:`, `[`, `?` or `return` and
+# before `;`, `,`, `)`, `]` or `}`; or standing after `?` and before `:` (the value of a conditional).
+VALUE_LEFT = r"(?:=>|[=,(:\[?]|\breturn\b)"
+VALUE_NAME = r"(?:[\w$]+\s*(?:\?\.|\.)\s*)*(?:Math|Date|performance)"
 CLOCK_OR_DRAW_AS_VALUE = re.compile(
-    r"[=,(]\s*(?:[\w$]+\s*(?:\?\.|\.)\s*)*(?:Math|Date|performance)\s*[;,)]"
+    VALUE_LEFT + r"\s*" + VALUE_NAME + r"\s*[;,)\]}]|\?\s*" + VALUE_NAME + r"\s*:"
 )
 FORBIDDEN_STRINGS = ("crypto", "node:crypto", "perf_hooks", "node:perf_hooks")
 GENERATOR_CONSTANT = (
@@ -137,6 +153,12 @@ FLAGGED_SOURCES = (
     "export const t = performance.timeOrigin;\n",
     "export const t = new Intl.DateTimeFormat().format();\n",
     "export const t = new Date(undefined);\n",
+    "const o = { m: Math };\nexport const u = o.m.random();\n",
+    "const [m] = [Math];\nexport const u = m.random();\n",
+    "function g() { return Math; }\nexport const u = g().random();\n",
+    "const g = () => Date;\nexport const t = g().now();\n",
+    "const m = true ? Math : null;\nexport const u = m.random();\n",
+    "const m = globalThis.flag ? null : globalThis.Math;\nexport const u = m.random();\n",
 )
 # Made-up source holding the names only where the scan must not look, and a date with an argument.
 CLEAN_SOURCE = (
@@ -152,6 +174,10 @@ CLEAN_SOURCE = (
     "export const utc = globalThis.Date.UTC(2020, 0, 1);\n"
     "export const round = Math.round(1.5) + Math.floor(2.5) + Math.min(1, 2);\n"
     "export const record = { Date: 1, performance: 2 };\n"
+    "export const pick = list.length > 0 ? list[0] : null;\n"
+    "export const rounded = (value) => Math.round(value * 100) / 100;\n"
+    "export const first = () => { return list[0]; };\n"
+    "export const index = { key: 1, other: [Math.PI] };\n"
 )
 
 
