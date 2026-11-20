@@ -304,3 +304,15 @@ An overlay is a file that changes the game's data in memory for the time of one 
 A map that asks for something new — an item, a spell or another idea of a program — and without it is solved rarely.
 
 - **Not:** none
+
+## judging
+
+A judging is twelve runs of one character's program on the twelve fixed seeds of one game map, which are no map run of the character and each of which can end at a cap of game minutes, neither solved nor in a death.
+
+- **Not:** none
+
+## loop record
+
+A loop record is the largest number of map runs of one earning loop completed in a row with no death between them, counted from the start of that earning loop and gone with it.
+
+- **Not:** none

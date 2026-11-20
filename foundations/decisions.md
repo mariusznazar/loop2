@@ -5476,6 +5476,9 @@ seed, and each map run of an earning loop takes its seed from a draw of the map 
 first map run of an earning loop, with none before it, takes a new seed, as a send of a character
 does.
 
+A judging of a program (D-439) runs on the twelve fixed seeds of its map, the same at each
+judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does.
+
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
@@ -5486,7 +5489,12 @@ does.
   meet their first attack in the same game minute; the layout's draws in a fixed order, the
   entrance after the resources; a send after „Zakończ” taking a new seed; the first map run of an
   earning loop taking the seed a send at that moment takes, and each later one the first draw of
-  the fifth generator of the map run before it.
+  the fifth generator of the map run before it. For the seeds of a judging, an agent compares a
+  change with the part no invariant and no test holds:
+  - complies: two judgings of one program of one character on Las, with one chest, giving the same
+    twelve lines, their runs taking the same twelve seeds of the map
+  - violates: a judging that draws a new seed for its runs, or takes the seeds from the seed of the
+    character's last map run
 - **Origin:** none
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
@@ -5502,7 +5510,9 @@ combat soon turns stiff and chances are a simple axis of progress, and the seed 
 both the rolls and its repeatability. Draws in combat, when they come, stay repeatable. The first map
 run of an earning loop has no map run to draw from, so it starts as a send does — the first map run
 of an earning loop in the old loop game also takes its seed from a real random draw. The draws that
-fix the map's layout at the start of a map run happen in a fixed order, which is a contract.
+fix the map's layout at the start of a map run happen in a fixed order, which is a contract. A
+judging takes the same seeds each time, so its result changes with the program and the chest
+rather than with trying again (D-439).
 *Rejected:* the browser's own random numbers in the simulation — repeatability goes, and with it the
 meaning of the count of firings a program rule shows; one generator for every kind of draw — two
 programs on one seed meet attacks in different game minutes, and splitting it once the maps are
@@ -6237,7 +6247,7 @@ The used uses return one at a time on one clock: a death that uses up a use of a
   solving of a map returning nothing.
 - **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve with a few uses, paid back in real time and by a new map solved: a failed try at a wall costs the player what was carried in and, at worst, a wait of hours before the next protected try, and the progression never needs the player's absence (D-438). At a wall where each try succeeds with a share of 25% and every failed try ends in death, 3 uses let the wall fall within one sitting on the uses alone in 58% of sittings, and a full stock returns 12 hours after the first death when one use returns every 4 hours; that is a calculation, and both numbers are lines of the balance data, to be corrected when the walls are measured. The resurrection is numbers of the account and no item; restoring a use by making an item is a later direction, not built. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A use of the resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; a use of the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death with no use left stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice takes a use from every character until it returns. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would take a use from the whole team until it returned, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death with no use left takes it, so a new character that has gathered practice at its earning loop is guarded. The use returned at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map returns a use at most once, and a full stock gains nothing from it. The clock of the other used uses runs on at a completion, so a player who saw the next use due in some hours sees it still, with one use more. Accepted with it: each new map gives the account one use for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes a use from the others; the catch-up gives the last use to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when none of its uses is left. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies with no use left comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve with a few uses, paid back in real time and by a new map solved: a failed try at a wall costs the player what was carried in and, at worst, a wait of hours before the next protected try, and the progression never needs the player's absence (D-438). At a wall where each try succeeds with a share of 25% and every failed try ends in death, 3 uses let the wall fall within one sitting on the uses alone in 58% of sittings, and a full stock returns 12 hours after the first death when one use returns every 4 hours; that is a calculation, and both numbers are lines of the balance data, to be corrected when the walls are measured. The resurrection is numbers of the account and no item; restoring a use by making an item is a later direction, not built. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A use of the resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; a use of the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death with no use left stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice takes a use from every character until it returns. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would take a use from the whole team until it returned, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death with no use left takes it, so a new character that has gathered practice at its earning loop is guarded. The use returned at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map returns a use at most once, and a full stock gains nothing from it. The clock of the other used uses runs on at a completion, so a player who saw the next use due in some hours sees it still, with one use more. Accepted with it: each new map gives the account one use for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes a use from the others; the catch-up gives the last use to the character earlier on the list (D-240); a judging of a program on twelve fixed seeds of a map (D-439) shows at no cost where the program loses before the earning loop, but it covers its twelve seeds alone, so an earning loop on other seeds may still cost the character all its practice when none of its uses is left. A judging can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies with no use left comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
 *Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection of each character — a character made for one risky try would escape the stake of death; a resurrection as an item carried in the backpack — not made; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one; a shared resurrection renewed by the span of real time alone — the player waits for the whole span even after a success; practice counted in the skills alone — a new character that has gathered practice at its earning loop through a night would lose with its death the practice the resurrection should guard; the death of a character with no practice changing everything but the use of the resurrection — a new character that lost nothing would read as generation 2, be told it lost all its practice and have its earning loop stopped; the renewal after eight hours of real time or at once by a first completion, as before, with no uses — after every death on a wall a careful player waits up to eight hours, and a program graded on seeds reduces the failures, not the wait after one; a shorter clock with the rule as it was, one number changed — the wait stays, only shorter, and real time stays the price of progress; 2 uses with one returning after 8 hours — the nearest to the game before, but waiting comes more often and lasts longer; 5 uses with one returning after 2 hours — for a careful player the resurrection hardly stays a stake; each used use returning on its own clock, from the death that used it — the game state keeps a moment for each use, and with the same numbers the game is milder, so the same severity comes only with a longer span; a first completion returning all the uses and stopping the clock — a player going up the ladder hardly waits, and the number of uses weighs only at the wall where the player is stuck; the shape of one change and no further path through crafting — the clock stays the price of progress for good; a full crafted item at once — no cost to the product known; a resurrection as a real item with numbers of its own — no cost to the product known; numbers of the human's own choosing in place of 3 uses and 4 hours — no cost to the product known.
 
 ### D-216 — Where does the player read what a death took and what a completion returned?
@@ -8653,7 +8663,10 @@ after a long absence, the way this decision refuses.
 The game state holds its earning loops beside the one manual map run, by character number, so a
 character has at most one, each with the content of the program taken at its start, its map run
 going on, the number of that map run, the count of its completions and the practice gathered from
-those completions since the player last took the practice waiting with „Odbierz”. In every game
+those completions since the player last took the practice waiting with „Odbierz”. Each earning
+loop also holds, from its start, the number of its map runs completed in a row with no death between
+them, which a death that does not stop the earning loop sets back to zero, and the largest such
+number, its loop record. In every game
 state the browser view holds or a saved game state admits, the map run of an earning loop is going
 on: the function that reaches its end deals with that end at once.
 
@@ -8667,7 +8680,14 @@ on: the function that reaches its end deals with that end at once.
   a saved game state admits them; an edit or a deletion of the program leaving the content an
   earning loop holds, in its later map runs too; the open game and the catch-up dealing with the end
   of an earning loop's map run at once, the state the browser view holds after a reading or a load holding
-  the next map run, and a load refusing an earning loop whose map run has ended.
+  the next map run, and a load refusing an earning loop whose map run has ended. For the map runs
+  completed in a row and the loop record, an agent compares a change with the part no invariant and
+  no test holds:
+  - complies: an earning loop that completes three map runs, loses one to a death a use of the
+    resurrection covers and completes two more holding 2 in a row and a loop record of 3, in the
+    open game and in the catch-up alike
+  - violates: a death a use of the resurrection covers leaving the number in a row as it was; a
+    loop record that stays with the character after its earning loop stops
 - **Origin:** none
 
 *Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
@@ -8679,8 +8699,18 @@ character's skills, until the player takes it with „Odbierz” or the earning 
 together with the practice of the map run going on, so the earning loop and that map run hold exactly the
 practice that waits, and a death with no use of the resurrection left takes what waits with the rest. D-56 has
 a map run name its character by number. Accepted with it: a later preview of an earning loop's map
-run needs more of the copy, which is a change of the shape and of its version.
-*Rejected:* map runs held by character in place of the one manual map run — everything that reads the
+run needs more of the copy, which is a change of the shape and of its version. The loop record
+counts within one earning loop, from its start, so the report of the time away can tell how long the
+program went without a death, and it is no goal to beat: it goes with its earning loop. Accepted
+with it: two counters and their tests for a number that is by design no goal, a change of the shape
+of the save, and a number that is gone when its earning loop stops.
+*Rejected:* the number of completed map runs of the earning loop, with no new state, in place of the
+loop record — the same number until a death a use of the resurrection covers; after one it grows on
+and stops counting map runs with no death, and „ · wskrzeszenie zużyte” leaves the report when the
+report is closed; a lasting record, the best run of map runs of a character on a map — more state, and
+a number to beat that grows from waiting alone; a record shared by the account, for each map — the
+cost of a lasting record, and it mixes characters of different bought ranks;
+map runs held by character in place of the one manual map run — everything that reads the
 manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
 map run and copy of a manual map run — it reuses the load's reading of a map run whole, but carries what an earning
 loop never reads, doubles the program in a save under 64 KiB and makes the deletion of a program
@@ -8741,11 +8771,18 @@ split of a span would change who gets the chest, and `minute-span-split` would n
 ### D-243 — How does the player start an earning loop?
 
 The player starts an earning loop with „Puść w pętlę”, which stands at each character in
-the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that
-character's list „Program:” and acts at once on the click. For that list the start counts as a send:
+the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that
+character's list „Program:”, which its click first judges anew (D-439). For that list the start counts as a send:
 the program becomes the one the character used last and the one with which a character last entered
 a map, and the pick clears. At a character in an earning loop „Wejdź” and „Puść w pętlę” are
 inactive, and the player stops the earning loop first.
+
+The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment,
+and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the
+same line as the result of the button of a judging (D-329) that stands under the character. Otherwise
+the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren
+program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”,
+and a second click starts the earning loop.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -8755,16 +8792,49 @@ inactive, and the player stops the earning loop first.
   program the character's list „Program:” shows, the player staying on the card; the start making
   that program the one the character used last and the one with which a character last entered a
   map, and clearing the pick; at a character in an earning loop „Wejdź” and „Puść w pętlę” inactive
-  and a send and a start refused, while those of another character stay active.
+  and a send and a start refused, while those of another character stay active. For the judging
+  that „Puść w pętlę” runs first, an agent compares a change with the part no test holds:
+  - complies: on Las, a click of „Puść w pętlę” at a program that solves all twelve seeds starting
+    the earning loop at once; at a program that dies on two seeds the result under the character,
+    „Na 2 z 12 ziaren program mapy nie rozwiązuje.” above the button, „Puść mimo to” on it and the
+    earning loop started by the second click; at a program whose result with two deaths stands
+    under the character from „Oceń na 12 ziarnach”, a click that gives the same twelve lines
+    starting the earning loop at once
+  - violates: „Puść w pętlę” starting an earning loop on the first click at a program that dies on
+    some seed while no result with the same lines stands under the character; „Puść w pętlę”
+    starting from a result that stands under the character without judging the program again
 - **Origin:** none
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
-shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
-going on from being lost by a click on another button. Accepted with it: one click more where the
-predecessor game stopped the earning loop when a character was sent.
+shows, so a tuned program goes out with one click: a program that solves all twelve seeds of its
+judging starts at once. A program that loses on some seed shows where before the character risks it
+in an earning loop, where a death with no use of the resurrection left takes all its practice
+(D-190), and the player still sends it with a second click, so solving a map still unlocks its
+earning loop with no guarantee asked of the program (D-239). The judging runs anew at each start,
+with what the earning loop takes from the chest at that moment, so a result judged with a chest that
+has changed since starts nothing; a result the player has just seen from the button of a judging
+starts the earning loop at once where the new judging gives it again. Stopping first keeps the
+backpack of the map run going on from being lost by a click on another button. Accepted with it: one
+click more at every program that loses on some seed, also where the player knows what it does, so
+„Puść w pętlę” is no longer one click for such a program; a moment of counting at each start; a
+little more logic of the screen; a player who judged a program before and forgot its result starts
+the earning loop with one click, while that result stands under the character until the player
+leaves the card; one click more where the predecessor game stopped the earning loop when a character
+was sent.
 *Rejected:* a section „Pętle” with a pick of character, map and program — a second place for sending
 characters and several times more to draw; „Wejdź” stopping the earning loop by itself, as sending a
-character did in the predecessor game — one click silently loses the backpack.
+character did in the predecessor game — one click silently loses the backpack; „Puść w pętlę” acting
+at once as before, with a warning beside a program that has no judging remembered — the warning can
+be passed over, so the game still lets the player lose the character's practice with one click, and
+it speaks of a missing judging, not of one judged with a chest that has changed since; „Puść w
+pętlę” inactive until the program has a judging remembered — every program is judged first with a
+click of its own, and a judging made with another chest unlocks the button as a fresh one does;
+„Puść w pętlę” waiting for a second click after every judging with a failure, also where the same
+result stands under the character — a player who judged the program on purpose and sends it in
+spite of its failures clicks twice though the result was seen; a result standing under the
+character counted as seen, with no new judging, the earning loop starting at once — where the chest
+has changed since the judging, the earning loop starts on a result that no longer holds, which the
+judging anew at each start guards against.
 
 ### D-244 — What does the player see of an earning loop?
 
@@ -8851,6 +8921,12 @@ pokolenie {n}.”, the title reading
 „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a
 manual map run reads the report on reaching Siedziba.
 
+At the end of the line of a character whose earning loop goes on stands the loop record of that
+earning loop (D-241) as plain text, with no mark and no comparison with anything, „ · najdłużej bez
+śmierci: {n} przejść z rzędu”, declined as „1 przejście”, „3 przejścia”, „5 przejść”. It is read
+from the earning loop whenever the section is drawn, as the practice waiting is, and stands nowhere
+where it is zero.
+
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-240
@@ -8870,14 +8946,19 @@ manual map run reads the report on reaching Siedziba.
   reload, a further return adding to it, the section opening from one whole game minute of the
   catch-up and at a stop in its first game minute; one „Zamknij” emptying the whole report; the
   report hidden on the screen of a manual map run and on Postać and read on reaching Siedziba. For
-  the roles of the lines that went on and of the sentence of a full chest, and for a later earning
-  loop of a character whose earning loop „Zatrzymaj” stopped, an agent compares a change with the
-  part no invariant and no test holds:
+  the roles of the lines that went on and of the sentence of a full chest, for a later earning
+  loop of a character whose earning loop „Zatrzymaj” stopped, and for the loop record at the end of
+  a line, an agent compares a change with the part no invariant and no test holds:
   - complies: the lines of earning loops that went on in `text`, and „Skrzynka jest pełna.” in
     `warning`; „Zatrzymaj” leaving the character's line open, so the next return of a later earning
-    loop of that character adds to it
+    loop of that character adds to it; „Ola: 240 min · skrzynka: jagoda +12 · najdłużej bez śmierci:
+    3 przejścia z rzędu” for an earning loop whose loop record is 3, the number following the
+    earning loop at each drawing of the section
   - violates: „Skrzynka jest pełna.” in `text` or `danger`; a line of an earning loop that went on in
-    `text-secondary`; a later earning loop after „Zatrzymaj” opening a second line of that character
+    `text-secondary`; a later earning loop after „Zatrzymaj” opening a second line of that character;
+    the loop record in `positive` or beside the record of an earlier earning loop; „ · najdłużej bez
+    śmierci: 0 przejść z rzędu”; the loop record at the end of a line of an earning loop a death
+    stopped
 - **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
@@ -8893,8 +8974,14 @@ with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
 closed along with the others, which the predecessor game did not do, a stop in the open game that
 does not say how long the earning loop went, a second title and one more condition in the view, and the chest and practice of an earlier return
-leaving the screen when that line stops in the open game.
-*Rejected:* a report counting completed map runs alone — after eight hours it shows no practice although the game earned some; the payment behind the destructive „Zatrzymaj” alone, which drops the backpack; closing at each character, as the predecessor game did — as many clicks as characters; one
+leaving the screen when that line stops in the open game. The loop record closes the line as plain
+text, so it tells how long the program went without a death and is no goal to beat; read from the
+earning loop at each drawing, it is gone with its earning loop. Accepted with it: a number that the
+player cannot keep past the earning loop it counts.
+*Rejected:* the number of completed map runs of the earning loop in place of the loop record — after
+a death a use of the resurrection covers it grows on and stops counting map runs with no death; a
+lasting record of the character on the map, or one shared by the account — a number to beat that
+grows from waiting alone, the second also mixing characters of different bought ranks; a report counting completed map runs alone — after eight hours it shows no practice although the game earned some; the payment behind the destructive „Zatrzymaj” alone, which drops the backpack; closing at each character, as the predecessor game did — as many clicks as characters; one
 line for the whole team — the player does not know which character it was about; all the minutes of
 the earning loop from its start in a line of a stop in the open game — a number that can exceed the
 last absence, and {m} means two things in the section, which also looks like a departure from the predecessor game;
@@ -9797,7 +9884,7 @@ map is inactive (D-55) and the player has to go back and end the map run; no but
 
 ### D-325 — What does the screen Mapy show?
 
-The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź” and „Puść w pętlę”.
+The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9806,15 +9893,18 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
   Skraj lasu in a new game and Las and Las — głębiej once their openers are solved; the card of the
   map the address names, with what it asks, its terrain, what lies there, what lurks there and what
   it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
-  and „Puść w pętlę”. For the list standing on the left and the card on the right, an agent
-  compares a change with the part no test holds:
+  and „Puść w pętlę”. For the list standing on the left and the card on the right, and for the
+  judging of a program in „Kto idzie”, an agent compares a change with the part no test holds:
   - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
-    the right the card of Las with the section „Kto idzie” under it
-  - violates: the list of the maps standing on the right of the card or under it
+    the right the card of Las with the section „Kto idzie” under it; „Oceń na 12 ziarnach” at each
+    character of „Kto idzie”, on a solved map and on one not yet solved
+  - violates: the list of the maps standing on the right of the card or under it; the judging of a
+    program started only from the screen of a map run
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
-*Rejected:* empty places for maps that do not exist yet — they promise content that is not there; a map shown locked with an inactive send — it reveals the map before it opens.
+The section „Kto idzie” holds the judging of a program too, so the player learns where a program loses on the card where the character is sent from, before risking it.
+*Rejected:* empty places for maps that do not exist yet — they promise content that is not there; a map shown locked with an inactive send — it reveals the map before it opens; the judging of a program on the screen of a map run, as in the predecessor game, comparing the copy with a program of the list — to judge, the player first enters a manual map run, which takes its stock from the chest and on a map not yet solved risks the character, while the earning loop starts from the card of the map, and it gives a comparison of two programs that nothing asks for.
 
 ### D-326 — What does the game say before an earning loop that earns nothing?
 
@@ -9884,7 +9974,9 @@ The card of a map shows all that the map's data holds, whatever the player has d
 
 ### D-329 — What stands at each character in the section „Kto idzie”, and in what order?
 
-At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the earning loop, „Program:” with its list, „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and „Puść w pętlę” with the warning of an empty list „Wynieś” beside „Puść w pętlę” (D-326), the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the earning loop, „Program:” with its list and, beside it, the judging remembered for the program it shows (D-440), „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, „Wejdź” and „Puść w pętlę” with the warning of an empty list „Wynieś” beside „Puść w pętlę” (D-326) and the warning of seeds left unsolved above it (D-243), with the button of a judging beside them, and under them the result of a judging while it stands, the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+
+The button of a judging, „Oceń na 12 ziarnach”, judges the program of the character's list „Program:” on the map of the card (D-439) and reads „Oceniam…” while the judging counts. Its result unfolds under the character as „Ocena na 12 ziarnach: {n} z 12 rozwiązanych”, twelve lines „Ziarno {i}: …” and „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.”, and stands until the player picks another program on that list, judges again or leaves the card.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9895,12 +9987,19 @@ At each character in the section „Kto idzie” stand, from the top, the name a
   „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and
   „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
   the sentence of a team with no character in the section. For the role „Wejdzie: …” is drawn in,
-  an agent compares a change with the part no test holds:
-  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`
-  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped
+  and for the button of a judging, its result and the judging remembered beside „Program:”, an agent
+  compares a change with the part no test holds:
+  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`; „Oceń na 12
+    ziarnach” beside „Wejdź” at each character on a solved map and on one not yet solved, reading
+    „Oceniam…” while it counts; under the character „Ocena na 12 ziarnach: 10 z 12 rozwiązanych”,
+    twelve lines „Ziarno {i}: …” and the sentence that the judging costs nothing, gone when another
+    program is picked on the list
+  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped; the result
+    of a judging still standing after another program is picked on the list; the result of a judging
+    standing at another character than the one judged
 - **Origin:** none
 
-*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
+*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba. The button of a judging stands at each character, on every map open to the player, so the player sees where a program loses before risking the character; its result stands under the character it was judged for while it speaks of the program on the list, and the judging remembered stands beside the list, so the player reads it as the program is picked. Accepted with it: the word „ziarno” meets the player here for the first time, and nothing in the game explains it yet.
 *Rejected:* „Wejdzie: …” only where less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters, and with a plan that enters whole the words of D-180 „the card of a map shows what of it enters” and of D-325 „what enters from the trip plan” would not hold; the rest as it stands but with no sentence for a team with no character — the section would have its heading alone, an empty area with no hint where to make a character.
 
 ### D-330 — What is the first of the three clicks from Siedziba to the first map run?
@@ -11707,6 +11806,63 @@ The results of the measurements of the balance instrument do not enter the repos
 
 *Rationale:* a result says how the game stood at one commit, and the numbers of the maps are requirements of the game that stand in its decisions and its data (D-388, D-18) and whose expectations a test takes from the foundation (D-82); a file of results in the repository would be read as a requirement while only a measurement of the past stands in it, and would go stale with the next change of the game.
 *Rejected:* taking everything the analyses behind the instrument kept, results and one-time scripts included — a great deal of code that nobody runs a second time, each file of which has to pass the checks of style and gets a part of the map.
+
+## Judging a program
+
+How the game judges a program on fixed seeds of a map before an earning loop, and what it remembers of a judging.
+
+### D-439 — How does the game judge a program before an earning loop?
+
+The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data, 4000 to start. Such a judging is no map run of the character: it takes nothing from the chest, pays nothing and settles no death.
+
+A program can be judged on every map open to the player, a map not yet solved included, and for a character in an earning loop or in a manual map run, and the judging changes nothing of either. The character enters each of the twelve runs with the take list of the program cut by what lies in the chest, by the character's carrying capacity and by the map's entry cap, all twelve starting with the same equipment, and nothing leaves the chest. A judging discovers nothing: it runs with what the player has discovered, writes nothing into the Understanding and adds no rule to the program.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-179 · derives from D-409
+- **Verification:** an agent compares a change with the decision:
+  - complies: a judging of a program on Las giving twelve lines, and the same twelve at the next
+    judging with the same chest and character; a run that neither completes nor dies by game minute
+    4000 ending undecided and counted as unsolved, and one that completes or dies in game minute
+    4000 counted as solved or as a death; after the judging the chest, the character's practice and
+    ranks, the uses of the resurrection, the Understanding and the program as they were, also at a
+    character in an earning loop; the take list „jagoda 10” with 4 berries in the chest entering each
+    of the twelve runs with 4 berries; „Oceń na 12 ziarnach” acting on a map not yet solved
+  - violates: a judging that takes items from the chest or pays practice; a death in a judging that
+    uses up a use of the resurrection; a judging that writes a discovery into the Understanding or a
+    rule into the program; a judging refused on a map not yet solved or at a character in an earning
+    loop; the cap of game minutes written as a number in the code of the simulation or of the view
+- **Origin:** none
+
+*Rationale:* In the product's own measurements, whose record is not open to a reader of the repository, 108 variants of the thresholds of one program gave on a fixed twelve of seeds the same count or a count one seed apart, so a bare count answers almost no change the player makes; and on fresh seeds a program that solves 94% of map runs passed a mark of 95 in 100 in 44% of tries, so a result on fresh seeds grows from trying again. A program that keeps the character alive and keeps losing the streak never ends its run, so the judging stops it at a cap; such a seed is no death, since the program does not die but does not hold the streak, which asks for another correction of the program. The cap is one number in the game's data, as the game's numbers are; it starts where the balance instrument stops a run, so that the judging and the measurement of a map stop the same run at the same minute. Accepted with it: a map with a much longer streak needs the number changed. A program can be judged on every map open to the player, a map not yet solved included, so the player sees what a program dies of on a new map before risking the character; accepted with it: part of the tension of a first try goes, and on a map where the player has not discovered something the program has no rules for it. The character enters a judging with what the earning loop would take from the chest at that moment, since in a game where many maps ask for the right equipment a judging with equipment from nowhere would not last: the result tells what the earning loop really gets at its start, and stock is gained by manual play on solved maps, so gaining it and then judging costs minutes, not hours; accepted with it: the game has no place where a program is tried with stock the player does not have yet, and the result changes with every change of the chest. A judging discovers nothing, as a map run of an earning loop discovers nothing (D-249); accepted with it: on a map not yet solved a judging may show failures that a manual map run, with its discoveries, could avoid.
+*Rejected:* the bare count, such as "9 of 12" — it stays the same through most changes; fresh seeds — the result rewards another try rather than another program; the game minute of the first fire, what lay on the entrance tile and one sentence summing up what the failures share — they are details of the game's present maps, which stop telling anything once the game has many kinds of food and of fire, and what the failures share cannot be foreseen and does not last: the game has berries alone to eat, and it is to have many ways to answer hunger and many kinds of food; a cap counted from the map's solving condition, such as a multiple of its streak — a new rule with a multiplier still to be settled; a run stopped at the cap counted as a failure with a cause of its own — it looks like a death and is none; a judging only on solved maps, where „Puść w pętlę” stands — before a try at a wall there is no free check of a program; equipment from nowhere on every map, with a warning beside the result where the chest lacks it — „12 z 12” does not promise that the earning loop passes, since the earning loop takes only what lies in the chest, the warning can be missed, and once items are pieces of their own the rule has to be made anew; equipment from nowhere on a solved map and from the chest on one not yet solved, as in the predecessor game — two rules in place of one, at a wall the judging does not check a program with stock the player lacks, and the rule it copies, a manual map run of a solved map taking its equipment from nowhere, no longer stands (D-189); a switch between full stock and what lies in the chest — one more control and two results of one program, so the badge would have to say which result it is for; a judging that discovers as a manual map run does — discoveries with no risk and no stop of the game, twelve runs at a time.
+
+### D-440 — What does the game remember of a judging, and what stands beside the list „Program:”?
+
+The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329). A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map.
+
+Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise. Where the chest holds less of an item than the judging took, the result stays with „oceniono z zapasem, którego dziś nie ma w skrzynce” beside it and the badge goes out, „12 z 12” standing in its place.
+
+A change of the rules, the rule groups or the trip plan of a program erases the judgings remembered for it, and a death that takes a character's practice and bought ranks because no use of the resurrection is left (D-190) erases every judging remembered for that character, on every map.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-439 · derives from D-165
+- **Verification:** an agent compares a change with the decision:
+  - complies: a judging of the program „Ostrożny” of the character Ola on Las that solved all twelve
+    seeds showing „szczelny: 12 z 12” beside the list while it shows „Ostrożny”, and nothing beside
+    the list while it shows another program; the same after a load; after the chest lost the
+    berries the judging took, „12 z 12” with „oceniono z zapasem, którego dziś nie ma w skrzynce”
+    and no badge, and with more berries than it took the badge as it was; an edit of a rule of
+    „Ostrożny”, and a death of Ola with no use of the resurrection left, each leaving no judging
+    remembered for it
+  - violates: the cause or the game minute of a line kept in the saved game state; the badge still
+    standing after the chest lost what the judging took; a judging remembered for a program and a
+    map with no character; a judging of Ola kept after the death that took her practice
+- **Origin:** none
+
+*Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the saved game states of the earlier version are discarded (D-206); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings.
+*Rejected:* the judging remembered for a program and a map, with no character — less state, but the badge at one character may come from a judging of another character with other bought ranks; the badge from 11 of 12 seeds — the badge stands at a program that does not solve one of the twelve seeds of the map, the earning loop draws further seeds and meets similar ones, and 11 is a guessed number; nothing remembered — the game does not know which program was judged, so there is neither a warning of a program not judged nor a memory that a program passed, every return to the card judges again, and the card of a map has no remembered result to show; the result gone when the chest no longer gives what the judging took — the player loses how the program did with that stock; the judging kept for a span of time with the equipment it was judged with — not taken, since the next judging replaces the result and a change of the program erases it; the judgings of a character kept after a death that took its practice, as after the purchase of a rank — beside a character that has just lost everything „szczelny: 12 z 12” may stand until the next judging, the badge lying at the worst moment; those judgings kept with a note such as „oceniono przed utratą wprawy” and their badges gone out — a second note and one more state of the result on the screen, whose text would have to be settled with the others.
 
 ## Withdrawn identifiers
 
