@@ -5869,8 +5869,8 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 
 A manual map run is a manual run of a solved map by the state of its map when that map run starts,
 and it stays one to its end, on the screen after its end and after a load. A map run restart after
-the completion that solved the map is such a run: it takes its equipment from nowhere and pays
-nothing.
+the completion that solved the map is such a run: it takes its equipment from the chest and pays no
+practice.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -5879,7 +5879,7 @@ nothing.
   mark of a manual run of a solved map coming back with a load, a load refusing a map run ended in
   death whose mark disagrees with its map's being solved, and the screen of such a run giving its
   line after its end and after a load; a restart after the completion that solved the map marked as
-  such a run, taking its equipment from nowhere and leaving the chest as it was.
+  such a run, taking its equipment from the chest and paying no practice.
 - **Origin:** none
 
 *Rationale:* a map run restart is a map run the player starts, and once a completion has solved the
@@ -5989,6 +5989,21 @@ account, and it is to be revised when the balance is worked on.
 *Rejected:* at least as many seeds as the account with everything discovered — it fails by one seed,
 which the human did not take as a fault; a percentage tolerance fixed without a measurement — it
 would be a number nobody had measured, too loose or too tight.
+
+### D-438 — May the progression require the player's absence?
+
+The progression never requires the player's absence: time away gives progress and additional things, and each next map can be solved with what the maps before it gave — practice, items, a better program — with no wait for an earning loop to gather more.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new map whose requirement of practice, items and equipment is met by what the first solutions and the manual runs of the maps before it gave, a measurement of the balance instrument showing it with the best reference program and no earning loop
+  - violates: a new map whose requirement is met only by what an earning loop gathers over hours of real time; a requirement of pace counted in days
+- **Origin:** none
+
+*Rationale:* A map that can be solved only from some day on is a great mistake: the game is to be engaging, it gives progress and more while the player is away, and it never makes being away a need.
+*Rejected:* a requirement of pace counted in days — the second map with wolves on the second to fourth day, the wolf pack at the end of the first week.
 
 ## Team, body, death and resurrection
 
@@ -6189,29 +6204,36 @@ After a character's death the screen stays on the state of the game minute of de
 
 ### D-190 — What does a character's death take?
 
-A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready.
+A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no use of the resurrection left starts from the character as that death left it.
+
+The account has one resurrection, shared by all its characters, held as numbers of the account, no item of any backpack, equipment or chest: a number of uses and the span of real time after which one used use returns, both set in the balance data, 3 uses and 4 hours to start. The death of a character with practice uses up one use while any is left, and a death of a character with practice with none left stops its earning loop.
+
+The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full. The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-179 · narrows D-189
+- **Relations:** derives from D-179 · narrows D-189 · derives from D-438
 - **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once ·
   catch-up-death-moment · catch-up-state. tests: a death taking what was carried and paying nothing of its map run,
-  a resurrection ready or not and on a solved map too; with none ready, all practice, the practice
+  a use of the resurrection left or not and on a solved map too; with none left, all practice, the practice
   gathered at the earning loop included, every rank bought and one more generation taken, the
   name, archetype, traits and place in the team kept, and the earning loop stopped; the death of a
   character with no practice in any skill, no rank bought and none gathered at its earning loop
-  taking nothing more and leaving its generation, the resurrection and its earning loop as they
-  were; the programs, the chest, the Understanding and the solved maps surviving every death, the
-  map run on the screen kept as it was, and a „Restart” after a death with none ready starting from
-  the character as the death left it; one resurrection for the team, used up by the death of any
-  character with practice while ready, in a manual map run, an earning loop and a catch-up alike,
-  a character created while it is used up bringing none, its renewal 480 real minutes in the
-  balance data, a ready one staying ready at a first completion, and a second solving of a map
-  renewing nothing.
+  taking nothing more and leaving its generation, the uses of the resurrection and its earning loop as
+  they were; the programs, the chest, the Understanding and the solved maps surviving every death, the
+  map run on the screen kept as it was, and a „Restart” after a death with none left starting from
+  the character as the death left it; one resurrection for the team, one of its uses used up by
+  the death of any character with practice while any is left, in a manual map run, an earning loop
+  and a catch-up alike, a character created while uses are used up bringing none, its number of
+  uses and the real time of the return of one, 3 uses and 4 hours, in the balance data, the used
+  uses returning one at a time on one clock that a death of a full stock starts and a later death
+  leaves as it runs, the clock stopping when the stock is full, a first completion returning one
+  use while the stock is not full and nothing when it is, the clock running on, and a second
+  solving of a map returning nothing.
 - **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its earning loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
-*Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection of each character — a character made for one risky try would escape the stake of death; a resurrection as an item carried in the backpack — not made; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one; a shared resurrection renewed by the span of real time alone — the player waits for the whole span even after a success; practice counted in the skills alone — a new character that has gathered practice at its earning loop through a night would lose with its death the practice the resurrection should guard; the death of a character with no practice changing everything but the use of a ready resurrection — a new character that lost nothing would read as generation 2, be told it lost all its practice and have its earning loop stopped.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve with a few uses, paid back in real time and by a new map solved: a failed try at a wall costs the player what was carried in and, at worst, a wait of hours before the next protected try, and the progression never needs the player's absence (D-438). At a wall where each try succeeds with a share of 25% and every failed try ends in death, 3 uses let the wall fall within one sitting on the uses alone in 58% of sittings, and a full stock returns 12 hours after the first death when one use returns every 4 hours; that is a calculation, and both numbers are lines of the balance data, to be corrected when the walls are measured. The resurrection is numbers of the account and no item; restoring a use by making an item is a later direction, not built. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A use of the resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; a use of the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death with no use left stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice takes a use from every character until it returns. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would take a use from the whole team until it returned, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death with no use left takes it, so a new character that has gathered practice at its earning loop is guarded. The use returned at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map returns a use at most once, and a full stock gains nothing from it. The clock of the other used uses runs on at a completion, so a player who saw the next use due in some hours sees it still, with one use more. Accepted with it: each new map gives the account one use for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes a use from the others; the catch-up gives the last use to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when none of its uses is left. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies with no use left comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
+*Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection of each character — a character made for one risky try would escape the stake of death; a resurrection as an item carried in the backpack — not made; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one; a shared resurrection renewed by the span of real time alone — the player waits for the whole span even after a success; practice counted in the skills alone — a new character that has gathered practice at its earning loop through a night would lose with its death the practice the resurrection should guard; the death of a character with no practice changing everything but the use of the resurrection — a new character that lost nothing would read as generation 2, be told it lost all its practice and have its earning loop stopped; the renewal after eight hours of real time or at once by a first completion, as before, with no uses — after every death on a wall a careful player waits up to eight hours, and a program graded on seeds reduces the failures, not the wait after one; a shorter clock with the rule as it was, one number changed — the wait stays, only shorter, and real time stays the price of progress; 2 uses with one returning after 8 hours — the nearest to the game before, but waiting comes more often and lasts longer; 5 uses with one returning after 2 hours — for a careful player the resurrection hardly stays a stake; each used use returning on its own clock, from the death that used it — the game state keeps a moment for each use, and with the same numbers the game is milder, so the same severity comes only with a longer span; a first completion returning all the uses and stopping the clock — a player going up the ladder hardly waits, and the number of uses weighs only at the wall where the player is stuck.
 
 ### D-216 — Where does the player read what a death took and what a completion renewed?
 
@@ -6329,21 +6351,21 @@ game would hold two clocks.
 
 ### D-220 — What generation number and resurrection does a new character have?
 
-A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready.
+A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection with its full number of uses.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-190
 - **Verification:** tests: a created character of generation 1, the second one too, holding no
-  resurrection of its own; a new game's resurrection ready from the start; a character created
-  while the resurrection is used up leaving it used up.
+  resurrection of its own; a new game's resurrection with its full number of uses from the start and its clock not
+  running; a character created while uses are used up leaving them used up.
 - **Origin:** none
 
 *Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1.
 The resurrection is the account's, one for all the characters (D-190), so a character made later does
-not bring a ready one, and a new game starts with the resurrection ready, as the first character of
-the tests of loop did. Accepted with it: behaviours of those tests that nobody chose knowingly come in too.
-*Rejected:* the tests of loop taken only as material, from which each behaviour would be chosen anew; a ready resurrection for each new character — a
+not bring a use of its own, and a new game starts with all the uses of the resurrection, as the first
+character of the tests of loop had its resurrection ready. Accepted with it: behaviours of those tests that nobody chose knowingly come in too.
+*Rejected:* the tests of loop taken only as material, from which each behaviour would be chosen anew; a resurrection of its own for each new character — a
 character made for one risky try would escape the stake of death.
 
 ### D-221 — When is a character's death settled?
@@ -8327,7 +8349,7 @@ second kind of chest and an exception everywhere it is read.
 
 ### D-179 — How do items go into a map run and out of it?
 
-The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest. Reality cuts the trip plan down and never up: outside a manual map run of a map already solved, what the chest lacks does not go into the backpack, what the backpack lacks does not come back, and where items compete for one budget — the backpack, the map's cap, the free room in the chest — as many go in from the top of the list as fit. The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand.
+The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest. Reality cuts the trip plan down and never up: what the chest lacks does not go into the backpack, what the backpack lacks does not come back, and where items compete for one budget — the backpack, the map's cap, the free room in the chest — as many go in from the top of the list as fit. The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -8338,7 +8360,7 @@ The trip plan is a field of the program, both its lists are bound at the start o
   entering the map cut, the player told so beforehand on the card of the map and beside „Restart”.
 - **Origin:** none
 
-*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since the simulation lets the trip plan of the copy change without breaking the streak (D-131), and a switch to another program brings another trip plan, which the snapshot does not follow; the shield stands in the simulation and at the switch, because the screen of a map run gives no edit of the trip plan (D-180). The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
+*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since the simulation lets the trip plan of the copy change without breaking the streak (D-131), and a switch to another program brings another trip plan, which the snapshot does not follow; the shield stands in the simulation and at the switch, because the screen of a map run gives no edit of the trip plan (D-180). The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it, a manual map run of a map already solved included (D-189).
 *Rejected:* a choice made by a click before each start — the earning loop could not carry it out without the player.
 
 ### D-180 — Where does the player arrange the trip plan?
@@ -8509,11 +8531,11 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment (D-251).
+A manual map run that first solves its map pays practice once per map for the player, whichever character completes it; a manual run of a solved map pays no practice; every run pays loot only on completion, an earning-loop run included; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-179 · derives from D-239
+- **Relations:** derives from D-179 · derives from D-239 · derives from D-438
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. tests: a manual
   map run that first solves its map paying practice to the character's skills and loot to the
   chest; a death paying no practice, on a manual map run and on a map run of an earning loop;
@@ -8521,13 +8543,12 @@ A manual map run that first solves its map pays practice and loot once per map f
   character skills by „Odbierz”, all of it with the map run going on included, the map run, its
   backpack, the earning loop and the chest left as they were, and by the stop of the earning loop,
   the practice of the map run stopped before its completion included and that of a map run ended
-  in death left out; a manual map run of a solved map taking its equipment from nowhere, cut only
-  by the character's carrying capacity and the map's entry cap, and the mark under „Wejdź” at a
-  solved map where that cut equipment is more than the chest holds.
+  in death left out; a manual map run of a solved map taking its equipment from the chest and
+  bringing its loot out to it as every other map run does, and paying no practice.
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark under „Wejdź” on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
-*Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). A manual run of a solved map takes from the chest and brings out to it like any other map run, so a failed try at a wall costs the supplies carried in, the tuning of a program on a solved map included, and the player gets the next ones by playing a solved map by hand or from the earning loop, never only by being away (D-438). Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Every start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
+*Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a manual run of a solved map that also pays practice — a fast-forwarded run would give the practice of hours of the earning loop; a thing always at the wall itself, what the wall asks for or its parts gathered and made in its own run, the chest only easing it — a failed try would cost nothing but half a minute, so a wall would fall after a few repeats without the thing it asks for, and the walls built on „bring it from another map” would have to be laid out differently; time as the only way to the next supply, the stock beyond a one-off payout coming from the earning loop alone — after each failure that loses the stock the player waits for hours; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
 
 ### D-307 — What does the line of an empty trip plan say?
 
@@ -8584,10 +8605,7 @@ The catch-up takes place when the player returns and advances the missed game mi
 characters one at a time, each to the end, in the order of the player's list of characters.
 Characters meet only at the borders of map runs and at the account's resurrection: an item
 reaches the chest when a map run completes, and the next map run takes what it finds there; when the
-chest has room for one character's loot only, the character earlier on the list takes it; the death
-of each character finds the resurrection as the characters earlier on the list left it, so with one
-resurrection for two deaths the character earlier on the list takes it, even when it died later in
-real time.
+chest has room for one character's loot only, the character earlier on the list takes it; the death of each character finds the uses of the resurrection and the clock of their return as the characters earlier on the list left them, so with one use left for two deaths the character earlier on the list takes it, even when it died later in real time, and a clock that a death settled earlier on the list started does not move back.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -8595,8 +8613,7 @@ real time.
 - **Verification:** invariants: catch-up-state. tests: the catch-up running when a loaded game comes
   back, taking the characters one at a time, each to the end, in the order of the list; an item
   reaching the chest at a completion and the next map run of another character taking it from there;
-  the last room of the chest going to the character earlier on the list, and one resurrection for
-  two deaths going to the character earlier on the list though it died later in real time.
+  the last room of the chest going to the character earlier on the list, and one use of the resurrection left for two deaths going to the character earlier on the list though it died later in real time, the death of each character finding the uses and the clock as the characters earlier on the list left them, and a clock started by a death settled earlier not moving back.
 - **Origin:** none
 
 *Rationale:* nothing has to run while no browser is open, so the catch-up needs no server of its own.
@@ -8661,8 +8678,7 @@ including that game minute, and a death in it is settled at that moment, in the 
 catch-up. In the open game a reading passes its game minutes one after another, within each game
 minute the characters in the team's order, however many game minutes it brings; the death and the
 first completion of the manual map run that the reading brings are settled after those game minutes,
-at the reading, so that of two deaths on the account's one resurrection in the open game the earlier
-in real time takes it.
+at the reading, so that of two deaths for the account's last use of the resurrection in the open game the earlier in real time takes it, and the clock of the returns runs from the moment of the death that started it.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -8675,12 +8691,11 @@ in real time takes it.
   earning loop settled at its game minute's own moment in the open game, the same in calls of any
   size; the open game passing the game minutes of a reading one after another, within each game
   minute the characters in the team's order, the same in calls of any size; the death of the manual
-  map run settled at the reading, after the earlier death in an earning loop took the one
-  resurrection. For the first completion of the manual map run that a reading brings, an agent
+  map run settled at the reading, after the earlier death in an earning loop took the last use of the resurrection. For the first completion of the manual map run that a reading brings, an agent
   compares a change with the part no invariant and no test holds:
   - complies: a reading that passes game minutes of earning loops and brings the first completion of
     a map by the manual map run settling that completion after those game minutes, at the reading,
-    so a death in those game minutes finds the resurrection as the completion had not yet renewed it
+    so a death in those game minutes finds the uses of the resurrection as the completion had not yet returned one
   - violates: the first completion of the manual map run settled before the game minutes of the
     earning loops that the same reading passes
 - **Origin:** none
@@ -8690,8 +8705,7 @@ statement about what a monotonic clock does during sleep, so a hidden tab, throt
 sleeping computer all arrive as more whole game minutes at the next reading. The manual map run keeps
 its elapsed measure, so a date that jumps changes no pace there. Between whole game minutes the game
 state stays the very same value, as D-04 and the saving of D-207 want. Whole real moments keep a death
-at one place on the clock however the span is read, so a resurrection used in a death during an
-absence renews from that death's own moment and can cover a further death the same night, with real
+at one place on the clock however the span is read, so a use of the resurrection used in a death during an absence returns from that death's own moment, the clock starting there, and the uses left can cover a further death the same night, with real
 time passed in as an argument (D-04) keeping the earning loop, the catch-up and the renewal of a
 resurrection on one footing. Passing the open game minute by minute keeps
 `minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
@@ -11677,7 +11691,7 @@ For each game map an overlay adds and each reference program, the map check of t
 - **Scope:** balance-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** tests: the table's columns, one for each figure of the check, the balance of the earning loop among them; a row holding the figures of its own map and its own program, the program measured with the chest its take list asks and the earning loop started with the resurrection ready; no identifier of a reference program and no text of its rules in the table; a program named by its place in the whole list of reference programs, whatever rows a flag narrows the check to. An agent compares a change with the part no test holds:
+- **Verification:** tests: the table's columns, one for each figure of the check, the balance of the earning loop among them; a row holding the figures of its own map and its own program, the program measured with the chest its take list asks and the earning loop started with the full number of uses of the resurrection; no identifier of a reference program and no text of its rules in the table; a program named by its place in the whole list of reference programs, whatever rows a flag narrows the check to. An agent compares a change with the part no test holds:
   - complies: a row for each map an overlay adds and each reference program, with the share solved measured on the seeds 1 to 500
   - violates: a share solved measured on other seeds, or a map an overlay adds or a reference program left out of the rows, with no change of this decision
 - **Origin:** none

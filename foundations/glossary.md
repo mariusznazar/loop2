@@ -210,9 +210,9 @@ A trip plan is two ordered lists with counts: what a character takes into a map 
 
 ## resurrection
 
-A resurrection is what the account has, one for all its characters, ready or not at the moment of the death of a character with practice, and what then protects that practice, its bought ranks and its generation number, the map run ending in death with a resurrection ready too; the death of a character with no practice uses none up.
+A resurrection is what the account has, one for all its characters, with a number of uses, of which the death of a character with practice uses up one while any is left, the use then protecting that practice, its bought ranks and its generation number, the map run ending in death with a use left too; the death of a character with no practice uses none up.
 
-- **Not:** none
+- **Not:** one of its uses — "use"
 
 ## generation number
 
