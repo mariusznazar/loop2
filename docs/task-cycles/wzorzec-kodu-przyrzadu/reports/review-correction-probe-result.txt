@@ -1,0 +1,39 @@
+seven | destructure random from Math | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+seven | destructure now from Date | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+seven | process.uptime | flagged=True | old-value-pattern=False | ['balance/p.mjs names uptime']
+seven | os.uptime | flagged=True | old-value-pattern=False | ['balance/p.mjs names uptime']
+seven | performance.timeOrigin | flagged=True | old-value-pattern=False | ['balance/p.mjs names timeOrigin']
+seven | Intl format with no date | flagged=True | old-value-pattern=False | ['balance/p.mjs names Intl.DateTimeFormat']
+seven | new Date(undefined) | flagged=True | old-value-pattern=False | ['balance/p.mjs reads the system clock by new Date(undefined)']
+minor1-forms | Math as object value | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+minor1-forms | Math in array | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+minor1-forms | Math returned | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+minor1-forms | arrow returns Date | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+minor1-forms | ternary Math | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+earlier-flagged | alias D = Date | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+earlier-flagged | map(Date) | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+earlier-flagged | destructure from globalThis.Date | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+earlier-flagged | destructure from performance | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+harmless-minor2 | Intl format given a date | flagged=True | old-value-pattern=False | ['balance/p.mjs names Intl.DateTimeFormat']
+harmless-minor2 | keys of Math | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+harmless-minor2 | a field named Date passed on | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+harmless-minor2 | local named uptime | flagged=True | old-value-pattern=False | ['balance/p.mjs names uptime']
+harmless-minor2 | Date.UTC destructured | flagged=True | old-value-pattern=True | ['balance/p.mjs takes Math, Date or performance as a value']
+documented-uncovered | or Math | flagged=False | old-value-pattern=False | []
+documented-uncovered | and Date | flagged=False | old-value-pattern=False | []
+documented-uncovered | spread Math | flagged=False | old-value-pattern=False | []
+documented-uncovered | shorthand Math | flagged=True | old-value-pattern=False | ['balance/p.mjs names Math.random']
+other-clean | TS parameter typed Date | flagged=True | old-value-pattern=False | ['balance/p.mjs takes Math, Date or performance as a value']
+other-clean | ternary with Math.PI | flagged=False | old-value-pattern=False | []
+other-clean | object key Date then value | flagged=False | old-value-pattern=False | []
+other-clean | case label | flagged=False | old-value-pattern=False | []
+other-clean | optional chaining | flagged=False | old-value-pattern=False | []
+clean-control | []
+real | balance/campaign.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/check-map.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/cli.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/describe.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/engine.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/loop.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/overlay.mjs | [] | new-value-matches=0 | old-value-matches=0
+real | balance/trace.mjs | [] | new-value-matches=0 | old-value-matches=0
