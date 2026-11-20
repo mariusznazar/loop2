@@ -1,4 +1,4 @@
-// The screen Mapy (D-325 to D-331, D-134, D-149, D-170, D-188, D-217, D-243, D-244, D-251, D-274,
+// The screen Mapy (D-325 to D-331, D-134, D-149, D-170, D-188, D-217, D-243, D-244, D-274,
 // D-282, D-287, D-326) on jsdom through tests/view/page-document.mjs (D-264): the list of open
 // maps, the area on the right with no map named and with one, the card of a map from the data, the
 // section „Kto idzie” with each character's lines and buttons, and what the buttons hand the page.
@@ -60,10 +60,17 @@ const withChest = (state, pieces) => ({
   team: { ...state.team, chest: { ...state.team.chest, pieces } },
 });
 
-/** `state` with the team's one resurrection ready from the real moment `readyAtMs` on. */
-const withResurrection = (state, readyAtMs) => ({
+/**
+ * `state` with the team's resurrection spent by `usesSpent` uses, the next of them returning at the
+ * real moment `nextReturnAtMs` (null where none is spent).
+ */
+const withUses = (state, usesSpent, nextReturnAtMs) => ({
   ...state,
-  team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  team: {
+    ...state.team,
+    resurrectionUsesSpent: usesSpent,
+    resurrectionNextReturnAtMs: nextReturnAtMs,
+  },
 });
 
 const LOOP = {
@@ -483,7 +490,7 @@ test("the characters stand in the order of their creation, each with its lines f
   // decision: D-170 "The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map"
   // decision: D-180 "The card of a map shows what of the plan enters"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   await withPage(async (page) => {
     const state = solved(
@@ -514,7 +521,7 @@ test("the characters stand in the order of their creation, each with its lines f
     ]);
     assert.equal(
       text(ala, ".maps-who-resurrection"),
-      "Wskrzeszenie drużyny gotowe",
+      "Wskrzeszenie drużyny: użycia 3 z 3",
     );
     assert.equal(
       ala.querySelector(".maps-who-resurrection").classList.contains("danger"),
@@ -529,25 +536,30 @@ test("the characters stand in the order of their creation, each with its lines f
   });
 });
 
-// D-217, D-190: the team's one resurrection, not ready, reads the time left in danger at every character.
-test("a resurrection not ready reads the time left in danger at each character and turns ready with the clock", async () => {
+// D-217, D-190: the team's resurrection at zero uses reads the time to the next use in danger at every
+// character, and once a use returns it reads the uses left in text-secondary with the next return.
+test("a resurrection at zero uses reads the time to the next use in danger at each character, and a returned use turns it to text-secondary", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   await withPage(async (page) => {
-    const readyAt = NOW + 8 * HOUR;
-    const state = withResurrection(teamOf("Ala", "Bob"), readyAt);
+    // All three uses spent; the first returns in 8 hours, each next one 4 hours after the one before.
+    const state = withUses(teamOf("Ala", "Bob"), 3, NOW + 8 * HOUR);
     const { screen } = await mount(page, propsOf(state, "forest"));
     const lines = () => all(page.root, ".maps-who-resurrection");
     assert.equal(
       lines()[0].textContent,
-      `Wskrzeszenie drużyny za 8 godz. 0 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny: użycia 0 z 3, następne za 8 godz. 0 min czasu realnego${WARNING}`,
     );
     assert.ok(lines()[0].classList.contains("danger"));
     assert.equal(lines()[1].textContent, lines()[0].textContent);
     assert.ok(lines()[1].classList.contains("danger"));
-    await inAct(() => screen.update(propsOf(state, "forest", readyAt)));
+    // At 9 hours one use has returned, so the next returns 12 hours from the start: 3 hours on.
+    await inAct(() => screen.update(propsOf(state, "forest", NOW + 9 * HOUR)));
     for (const line of lines()) {
-      assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
+      assert.equal(
+        line.textContent,
+        "Wskrzeszenie drużyny: użycia 1 z 3, następne za 3 godz. 0 min czasu realnego",
+      );
       assert.equal(line.classList.contains("danger"), false);
     }
   });
@@ -584,11 +596,12 @@ test("the list „Program:” shows the program of the row in the order of the p
   });
 });
 
-// D-180, D-329: „Wejdzie: …” stands always; it is what the send takes, cut by the chest at a map not
-// yet solved and from nowhere at a solved one.
-test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map, from nowhere at a solved one, and „nic” where it takes none", async () => {
+// D-180, D-329, D-189: „Wejdzie: …” stands always; it is what the send takes, cut by the chest at every
+// map, a solved one included.
+test("„Wejdzie: …” is what a send takes from the chest, at an unsolved map and at a solved one alike, and „nic” where it takes none", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-180 "The card of a map shows what of the plan enters"
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   await withPage(async (page) => {
     const plan = {
       take: [
@@ -607,12 +620,12 @@ test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map
     await inAct(() => screen.update(propsOf(withChest(bare, {}), "forest")));
     assert.equal(entering(), "Wejdzie: nic", "an empty chest gives nothing");
     await inAct(() =>
-      screen.update(propsOf(solved(withChest(bare, {})), "forest")),
+      screen.update(propsOf(solved(withChest(bare, { stick: 2 })), "forest")),
     );
     assert.equal(
       entering(),
-      "Wejdzie: patyk 6, jagoda 4",
-      "a solved map takes from nowhere",
+      "Wejdzie: patyk 2",
+      "a solved map takes from the chest, as every map does",
     );
     await inAct(() =>
       screen.update(
@@ -740,40 +753,6 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
     // At a map not yet solved there is no earning loop, so there is no mark either.
     await inAct(() => screen.update(propsOf(teamOf("Ala"), "forest")));
     assert.equal(page.root.querySelector(".maps-who-empty-loop"), null);
-  });
-});
-
-// D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
-test("a rehearsal the earning loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
-  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
-  await withPage(async (page) => {
-    const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
-    const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });
-    const { screen } = await mount(page, propsOf(solved(state), "forest"));
-    const mark = page.root.querySelector(".rehearsal-mark");
-    assert.equal(
-      mark.textContent,
-      "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.",
-    );
-    const enter = buttonLabelled(page.root, "Wejdź: Ala, mapa Las");
-    assert.equal(mark.parentElement, enter.parentElement);
-    assert.deepEqual(kinds(mark.parentElement), ["button", "rehearsal-mark"]);
-    await inAct(() => screen.update(propsOf(state, "forest")));
-    assert.equal(
-      page.root.querySelector(".rehearsal-mark"),
-      null,
-      "at a map not yet solved the mark is not drawn",
-    );
-    await inAct(() =>
-      screen.update(propsOf(solved(withChest(state, { stick: 3 })), "forest")),
-    );
-    assert.equal(
-      page.root.querySelector(".rehearsal-mark"),
-      null,
-      "a chest that holds the take list leaves no mark",
-    );
   });
 });
 

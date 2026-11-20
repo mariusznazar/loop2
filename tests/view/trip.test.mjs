@@ -20,12 +20,12 @@ import {
 import {
   emptyLoopMark,
   entersLine,
-  rehearsalMark,
   solvedRunText,
   tripTexts,
   tripWarning,
 } from "../../dist/browser/view/trip-lines.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
@@ -165,115 +165,9 @@ test("map warning appears below desired load and backpack capacity, including a 
   );
 });
 
-const MARK =
-  "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
-
-// D-251. Catches a mark measured against the take list before its cut, one shown at a map
-// not yet solved, and one that stays where the chest holds exactly what the run takes.
-test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
-  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
-  // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
-  const take = (...entries) => ({ take: entries, bring: [] });
-  const chest = (pieces) => ({ pieces });
-  // Three pieces asked, two in the chest: the mark; the same at a map not yet solved: none.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 3)),
-      15,
-      MAPS.forest,
-      chest({ stick: 2 }),
-    ),
-    MARK,
-  );
-  assert.equal(
-    rehearsalMark(
-      false,
-      take(entry("stick", 3)),
-      15,
-      MAPS.forest,
-      chest({ stick: 2 }),
-    ),
-    null,
-  );
-  // Stock equal to the count, and above it: none. An item the chest lacks altogether: the mark.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 3)),
-      15,
-      MAPS.forest,
-      chest({ stick: 3 }),
-    ),
-    null,
-  );
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 3)),
-      15,
-      MAPS.forest,
-      chest({ stick: 9 }),
-    ),
-    null,
-  );
-  assert.equal(
-    rehearsalMark(true, take(entry("stick", 3)), 15, MAPS.forest, chest({})),
-    MARK,
-  );
-  // The cut by the carrying capacity: 5 asked, 3 carried, 3 in the chest: none.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 5)),
-      3,
-      MAPS.forest,
-      chest({ stick: 3 }),
-    ),
-    null,
-  );
-  // The cut by the entry cap: 5 asked, 2 let in, 2 in the chest: none.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 5)),
-      15,
-      { ...MAPS.forest, carryIn: 2 },
-      chest({ stick: 2 }),
-    ),
-    null,
-  );
-  // The budget runs in list order: capacity 4 gives the stick 3 and the berry the one left, and
-  // the chest holds no berry.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 3), entry("berry", 4)),
-      4,
-      MAPS.forest,
-      chest({ stick: 3 }),
-    ),
-    MARK,
-  );
-  // An entry cut to nothing asks for nothing: berry 4 after a capacity spent on stick.
-  assert.equal(
-    rehearsalMark(
-      true,
-      take(entry("stick", 3), entry("berry", 4)),
-      3,
-      MAPS.forest,
-      chest({ stick: 3 }),
-    ),
-    null,
-  );
-  // An empty list asks for nothing.
-  assert.equal(rehearsalMark(true, take(), 15, MAPS.forest, chest({})), null);
-});
-
 // D-180, D-189: the line names what a send takes, which is the cut the send makes.
-// Catches a line that writes the take list as asked, not as cut; a solved map that reads the chest
-// where the run takes from nowhere; and an empty take that stands without „nic”.
+// Catches a line that writes the take list as asked, not as cut; and an empty take that stands
+// without „nic”.
 test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
@@ -311,17 +205,25 @@ test("the enter line gives what a send takes, cut by the chest, the capacity and
     }),
     "Wejdzie: patyk 3",
   );
-  // A solved map takes from nowhere (chest null), cut by the capacity 5: the stick 5, the berry none.
+  assert.equal(entersLine(take(), stocked, 15, MAPS.forest), "Wejdzie: nic");
+});
+
+// D-189: a manual run of a map already solved takes from the chest as every run does, so the line of a
+// solved map is cut by the chest as well. Catches a line of a solved map that takes from nowhere, which
+// would write the take list as asked.
+test("the enter line of a map already solved is cut by the chest, as at any map", () => {
+  // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  const take = (...entries) => ({ take: entries, bring: [] });
   assert.equal(
     entersLine(
       take(entry("stick", 6), entry("berry", 4)),
-      null,
-      5,
+      { pieces: { stick: 2, berry: 1 } },
+      15,
       MAPS.forest,
     ),
-    "Wejdzie: patyk 5",
+    "Wejdzie: patyk 2, jagoda 1",
   );
-  assert.equal(entersLine(take(), null, 15, MAPS.forest), "Wejdzie: nic");
 });
 
 // D-326: a program whose bring list is empty earns nothing for the chest, so the earning loop mark
@@ -369,13 +271,18 @@ const completed = (state) =>
     1,
   ).state;
 /**
- * The state's run played on to the character's death and settled at a real moment; `readyAtMs`
- * sets when the team's resurrection is ready.
+ * The state's run played on to the character's death and settled at the real moment 1_000, with
+ * `usesSpent` uses of the team's resurrection spent before the death; a spent use returns at the
+ * moment 9_000_000, after the settlement.
  */
-function died(state, readyAtMs) {
+function died(state, usesSpent) {
   let dying = {
     ...state,
-    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: usesSpent,
+      resurrectionNextReturnAtMs: usesSpent > 0 ? 9_000_000 : null,
+    },
   };
   for (let round = 0; round < 50 && !mapRunEnded(dying.run); round += 1)
     dying = advanceMinutes(setPaused(dying, false).state, 5000).state;
@@ -402,10 +309,10 @@ test("the six screens of a map run give the world area the solved-map line and t
     solved: null,
     preview: "Wyniesie: patyk 3",
   });
-  // going on, marked run: the solved line, and the preview reading nothing
+  // going on, marked run: the solved line, and the preview of what the run brings out (D-189)
   assert.deepEqual(lines(solvedSent()), {
     solved: SOLVED_LINE,
-    preview: "Wyniesie: nic",
+    preview: "Wyniesie: patyk 3",
   });
   // completion, unmarked: no line of the deposit in the world area
   assert.deepEqual(lines(completed(sent())), { solved: null, preview: null });
@@ -416,7 +323,7 @@ test("the six screens of a map run give the world area the solved-map line and t
   });
   // death, unmarked: no line of the settlement in the world area
   assert.deepEqual(lines(died(sent(), 0)), { solved: null, preview: null });
-  assert.deepEqual(lines(died(sent(), 9_000_000)), {
+  assert.deepEqual(lines(died(sent(), BALANCE.resurrectionUses)), {
     solved: null,
     preview: null,
   });
@@ -442,12 +349,12 @@ test("a death not yet settled has no settlement record, and a loaded game holds 
     "resurrectionUsed",
   );
   assert.equal(
-    died(sent(), 9_000_000).run.deathSettlement.kind,
+    died(sent(), BALANCE.resurrectionUses).run.deathSettlement.kind,
     "progressLost",
   );
   for (const state of [
     died(solvedSent(), 0),
-    died(sent(), 9_000_000),
+    died(sent(), BALANCE.resurrectionUses),
     completed(solvedSent()),
     solvedSent(),
   ]) {
