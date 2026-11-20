@@ -1,6 +1,6 @@
 // The command line of the balance instrument: `npm run balance -- <command> [flags]`, which builds
-// the game and runs this file. The commands are `sweep`, `trace`, `loop`, `campaign`, `programs` and
-// `check-map`;
+// the game and runs this file. The commands are `sweep`, `trace`, `loop`, `campaign`, `programs`,
+// `check-map` and `progression`;
 // `node balance/cli.mjs help` lists the flags of each. A command prints its result on standard
 // output, or writes it to the file the flag `--out` names; the instrument writes nothing else and
 // nothing into the repository unless a flag names a path there (D-429). A command lays the
@@ -26,6 +26,7 @@ import { describePrograms, programLabels } from "./describe.mjs";
 import { buildSkills, seedRange, sweep } from "./engine.mjs";
 import { loopSweep } from "./loop.mjs";
 import { applyOverlay, readOverlay } from "./overlay.mjs";
+import { measureProgression, renderProgression } from "./progression.mjs";
 import { trace } from "./trace.mjs";
 
 /** A refusal of what a person typed: its message is a sentence for them, with no stack. */
@@ -67,6 +68,7 @@ const COMMAND_FLAGS = {
   campaign: ["player", "seeds", "overlay", "out"],
   programs: ["out"],
   "check-map": ["overlay", "maps", "programs", "practice", "ranks", "out"],
+  progression: ["seeds", "maps", "programs", "out"],
 };
 
 /** The flags that stand alone, with no value after them. */
@@ -84,7 +86,7 @@ ${Object.entries(COMMAND_FLAGS)
 
 --map         a map of the game, or one an overlay adds
 --program     an identifier of the reference programs, or the path of a program file of the game's shape
---seeds       a range (1-500), a list (3,7,12) or both (1-5,9); default ${DEFAULT_SEEDS.text}
+--seeds       a range (1-500), a list (3,7,12) or both (1-5,9); default ${DEFAULT_SEEDS.text}, for progression 1-500
 --chest       the pieces in the chest, as stick=8,berry=7
 --practice    the practice of the character's skills, as smallItemGathering=80
 --ranks       the bought ranks of the branches, as keenEye=3
@@ -93,7 +95,8 @@ ${Object.entries(COMMAND_FLAGS)
 --hours       real hours of the loop's readings, as 8,24,72
 --no-resurrection  start the loop with the team's resurrection spent
 --player      a player description: an identifier of balance/players/ or a file
---maps        the maps of the overlays to check, as wasteland,deadZone; default all of them
+--maps        the maps of the overlays to check, as wasteland,deadZone; default all of them; for
+              progression the maps of the game, as forest,forestDeep; default all of them
 --programs    identifiers of the reference programs to check; default all of them
 --out         a file for the result (a directory for programs); with it nothing is printed
 `;
@@ -443,6 +446,32 @@ function runCheckMap(options, overlays) {
   return delivered(options, renderTable(rows));
 }
 
+/**
+ * The progression measurement: a row for each map of the game (or those `--maps` names) and each
+ * reference program (or those `--programs` names), each map measured from what the maps before it gave,
+ * the table and its sentence printed or written. The maps and programs are checked before any measurement.
+ */
+function runProgression(options) {
+  for (const mapId of options.maps ?? [])
+    if (!Object.hasOwn(MAPS, mapId))
+      throw new UsageError(`--maps: ${mapId} is no map of the game`);
+  for (const programId of options.programs ?? [])
+    if (!Object.hasOwn(REFERENCE_PROGRAMS, programId))
+      throw new UsageError(
+        `--programs: ${programId} is no reference program (the programs command lists them)`,
+      );
+  return delivered(
+    options,
+    renderProgression(
+      measureProgression({
+        mapIds: options.maps,
+        seeds: options.seeds,
+        programIds: options.programs,
+      }),
+    ),
+  );
+}
+
 const COMMANDS = {
   sweep: runSweep,
   trace: runTrace,
@@ -450,6 +479,7 @@ const COMMANDS = {
   campaign: runCampaign,
   programs: runPrograms,
   "check-map": runCheckMap,
+  progression: runProgression,
 };
 
 /**

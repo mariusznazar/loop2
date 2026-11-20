@@ -1,13 +1,14 @@
 ---
 name: loop2-balance
-description: How an agent measures the game's balance with the balance instrument - one npm command with the modes sweep, trace, loop, campaign, programs and check-map, overlays that add or change maps in memory, checking a map before a package is defined, and results on standard output or in a file outside the tracked files. Use for a question about balance, for a new map, or to run the instrument.
+description: How an agent measures the game's balance with the balance instrument - one npm command with the modes sweep, trace, loop, campaign, programs, check-map and progression, overlays that add or change maps in memory, checking a map before a package is defined, and results printed or written outside the tracked files. Use for a question about balance, for a new map, or to run the instrument.
 ---
 
 # loop2-balance
 
 The balance instrument runs the game's own simulation outside the browser. It plays map runs from
-seeds, traces one run, measures the earning loop, plays a player's campaign over days, and checks a
-map before a package is defined (D-428). Its results never enter the repository (D-429). Its code
+seeds, traces one run, measures the earning loop, plays a player's campaign over days, checks a
+map before a package is defined (D-428), and measures whether each map of the game can be solved
+with what the maps before it gave (D-438). Its results never enter the repository (D-429). Its code
 is the part `balance-tools`: `balance/` and `tests/balance/`.
 
 Run every command in the repository's root with:
@@ -30,6 +31,7 @@ with it standard output holds the result alone.
 | `campaign` | Plays one player from an empty account through the game's own actions | header and summary; with `--out` also the log of each campaign |
 | `programs` | Lists the reference programs in the words the game shows the player, each headed by its label `P1`, `P2`... and its identifier: the key to the labels of the map check's table | the list; with `--out DIR` one `<identifier>.json` per program and one file of all of them in words |
 | `check-map` | Checks the maps an overlay adds against every reference program (below) | one Markdown table |
+| `progression` | Measures each map of the game against every reference program, from what the maps before it gave, with no earning loop (below) | one Markdown table and one sentence under it |
 | `help` | Lists each command's flags | the usage text |
 
 Each command takes only its own flags. A flag of another command, a missing value, a repeated flag
@@ -42,7 +44,7 @@ or an unknown name stops the command with a sentence on standard error and exit 
 - `--program <id or path>`: an identifier of the reference programs (`npm run --silent balance -- programs`
   lists them), or the path of a program file of the game's shape.
 - `--seeds <list>`: a range `1-500`, a list `3,7,12`, or both `1-5,9`. Default `1-100`; `trace`
-  takes one seed, default 1.
+  takes one seed, default 1; `progression` defaults to `1-500`.
 - `--chest <pairs>`: the pieces in the chest at the start, as `stick=12,berry=3`. `sweep`, `trace`
   and `loop` take the chest only from this flag; `check-map` takes it from each program's take list.
 - `--practice <pairs>` and `--ranks <pairs>`: the practice of the character's skills and the bought
@@ -54,7 +56,8 @@ or an unknown name stops the command with a sentence on standard error and exit 
 - `--no-resurrection`: starts the loop with the team's resurrection spent.
 - `--player <id or path>`: a player description. The identifiers are `edge-daily-best`,
   `edge-daily-decent` and `edge-daily-decent-stock` (the files of `balance/players/`).
-- `--maps <list>` and `--programs <list>`: narrow the rows of `check-map`.
+- `--maps <list>` and `--programs <list>`: narrow the rows of `check-map` (maps an overlay adds)
+  and of `progression` (maps of the game, as `forest,forestDeep`).
 - `--out <path>`: writes the result to that file and prints nothing (for `programs`, a directory).
 
 ## Overlays
@@ -129,6 +132,42 @@ Every map goes through this check before a package is defined.
    the deaths by cause, under a neutral label of its own (`A1`, `A2`...), never under the file's
    name or a word of what the attempt does.
 
+## Measuring whether each map can be solved with what the maps before it gave
+
+The progression never requires the player's absence (D-438): each next map can be solved with what
+the maps before it gave, with no earning loop. `progression` measures that for the maps of the game:
+
+```sh
+npm run --silent balance -- progression --out .runs/<name>.md
+```
+
+It measures every reference program on each map on seeds 1-500, the map counting by its best
+program, the one that solves the largest share of the seeds. Each map is measured from the state the
+maps before it give, built through the game's own functions: the practice that the first solvings of
+the maps before it pay, each by the best program of that map (the median of its solved runs, summed
+along the maps that open it); the ranks bought from that practice, as far as its points reach, of
+the branches the measured program needs (those that open an action its rules use); and the stock of
+the program's take list, brought out by manual runs of the solved maps before it within the chest's
+capacity, counted. The first map has no map before it, so a program that takes from the chest goes
+in with none of it. A manual run pays no practice and its death is not settled. A branch that a
+program needs without opening an action of its rules, as a reference program's comment may name, is
+not bought: read such a row as measured without it.
+
+The table is the map check's without the earning loop's columns: the map, the program's label
+(`P1`, `P2`..., the key to it is `programs`), the share solved, the median game minutes of the solved
+runs, the deaths by cause and the runs at the cap. Under it stands one sentence that says with what
+each map was measured and how many manual runs its stock took. Both go to the person as they are,
+and name no condition, action, rule, skill, branch, rank or item. The measurement reads a map as
+solvable where its best program solves at least 20 % of the seeds; that share is the measurement's
+reading and no number the game's decisions hold for later maps. Read the share of each map's best
+row from the table. A failure of the best program says the map needs an earning loop; a pass can
+let through a map that a player without an equally good program passes more rarely.
+
+`--maps` and `--programs` narrow the rows; a map measured alone still goes through the maps that
+open it, and the best program of each is picked among the programs named, so a narrowed run is no
+cut of the whole table. A map the game's data lacks and a program that is no reference program stop the command
+before any measurement.
+
 ## Where results go
 
 - Standard output: the result alone, with `--silent`.
@@ -143,3 +182,6 @@ Every map goes through this check before a package is defined.
 A `sweep` of 500 seeds takes a few seconds; `check-map` for one overlay takes about 55 seconds, and
 two narrowed rows about 6 seconds. Each call also builds the game, so a short measurement costs about
 two seconds more.
+
+`progression` for the three maps of the game, every reference program on seeds 1-500, takes about 45
+seconds.

@@ -22,6 +22,10 @@ import {
 } from "../../balance/engine.mjs";
 import { loopSweep } from "../../balance/loop.mjs";
 import {
+  measureProgression,
+  renderProgression,
+} from "../../balance/progression.mjs";
+import {
   REFERENCE_PROGRAMS,
   always,
   forestBest,
@@ -530,4 +534,70 @@ test("the programs command prints every reference program in the game's words, a
       one,
     );
   assert.equal(byPath[path.join(directory, "programs.md")], plain.printed);
+});
+
+test("the progression command reads its own flags alone, and its seeds default to 1-500 in the measurement, not in the flags", () => {
+  const { command, options } = parseArgs([
+    "progression",
+    "--seeds",
+    "1-4",
+    "--maps",
+    "forest,forestDeep",
+    "--programs",
+    "forestBest,forestDeepBest",
+    "--out",
+    "table.md",
+  ]);
+  assert.equal(command, "progression");
+  assert.deepEqual(options.seeds, [1, 2, 3, 4]);
+  assert.deepEqual(options.maps, ["forest", "forestDeep"]);
+  assert.deepEqual(options.programs, ["forestBest", "forestDeepBest"]);
+  assert.equal(options.out, "table.md");
+  assert.equal(parseArgs(["progression"]).options.seeds, undefined);
+  for (const flag of ["--map", "--chest", "--overlay", "--hours"])
+    assert.throws(
+      () => parseArgs(["progression", flag, "forest"]),
+      new RegExp(flag),
+      flag,
+    );
+});
+
+// decision: D-429 "The instrument prints each result, or writes it to the file that a flag of its command names, and writes no file into the repository of its own accord"
+test("the progression command prints the measurement's table and sentence, and with --out hands them over as the one file to write", () => {
+  const given = parseArgs([
+    "progression",
+    "--seeds",
+    "1-6",
+    "--maps",
+    "forest",
+    "--programs",
+    "forestBest,emptyProgram",
+  ]).options;
+  const plain = runCommand("progression", given);
+  assert.deepEqual(plain.files, []);
+  const expected = renderProgression(
+    measureProgression({
+      mapIds: ["forest"],
+      seeds: seedRange(1, 6),
+      programIds: ["forestBest", "emptyProgram"],
+    }),
+  );
+  assert.equal(plain.printed, expected);
+  assert.ok(plain.printed.startsWith("| Map | Program |"));
+  const target = path.join("somewhere", "progression.md");
+  const written = runCommand("progression", { ...given, out: target });
+  assert.equal(written.printed, "");
+  assert.deepEqual(written.files, [{ path: target, content: expected }]);
+});
+
+test("the progression command refuses a map the game lacks and a program that is no reference program before any measurement", () => {
+  const base = parseArgs(["progression"]).options;
+  assert.throws(
+    () => runCommand("progression", { ...base, maps: ["noSuchMap"] }),
+    /--maps.*noSuchMap/,
+  );
+  assert.throws(
+    () => runCommand("progression", { ...base, programs: ["noSuchProgram"] }),
+    /--programs.*noSuchProgram/,
+  );
 });
