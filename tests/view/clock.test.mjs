@@ -218,6 +218,12 @@ function practised(state, id) {
 
 /** `state` with the team's resurrection holding `spent` uses spent, the next of them returning at `nextReturnMs`, null where none is missing. */
 function withUses(state, spent, nextReturnMs = null) {
+  // The load refuses a stock with a use spent and no moment of the next return, or the reverse.
+  assert.equal(
+    nextReturnMs === null,
+    spent === 0,
+    "a moment of the next return stands exactly while a use is spent",
+  );
   return {
     ...state,
     team: {
@@ -602,12 +608,18 @@ test("a reading passes the manual run, then the earning loops, and hands the sto
 test("in a reading that ends an earning loop's map run in a death and the manual run in another, the earning loop's death, earlier than the reading, takes the last use", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop"
   // decision: D-190 "The death of a character with practice uses up one use while any is left, and a death of a character with practice with none left stops its earning loop."
+  // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
   // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
   // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths for the account's last use of the resurrection in the open game the earlier in real time takes it, and the clock of the returns runs from the moment of the death that started it"
   withBothClocks(({ pass, jump }) => {
-    // Two uses are spent, so one is left for the two deaths.
-    const both = withUses(practised(practised(twoCharacters(), 1), 2), 2);
+    // Two uses are spent and the clock runs to the return of the next, an hour after the reading: one use is
+    // left for the two deaths, and the death that takes it leaves the clock as it runs.
+    const both = withUses(
+      practised(practised(twoCharacters(), 1), 2),
+      2,
+      T0 + 2 * 3_600_000,
+    );
     let state = send(loopingOla(both), SENT, 1).state;
     for (;;) {
       const next = advanceMinutes(state, 1).state;
@@ -628,7 +640,8 @@ test("in a reading that ends an earning loop's map run in a death and the manual
     );
     assert.equal(
       handed.team.resurrectionNextReturnAtMs,
-      T0 + LOOP_MINUTE_MS + RENEWAL_MS,
+      T0 + 2 * 3_600_000,
+      "a death while the clock runs leaves it as it runs",
     );
     assert.equal(
       handed.team.characters[1].generation,
