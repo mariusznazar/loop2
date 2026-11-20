@@ -1445,6 +1445,26 @@ A map run of one seed, from one starting game state with one program and the equ
 - **Part:** simulation · balance-tools
 - **Violated:** no
 
+## balance-instrument-file-writes
+
+No file of code in `balance/` other than `balance/cli.mjs` writes a file or creates a directory.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-429
+- **Part:** balance-tools
+- **Violated:** no
+
+## balance-instrument-repeatability
+
+No file of code in `balance/` reads the system clock or draws a random number from any source other than the seed of its measurement.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** recovered from code — `balance/engine.mjs`, in which a map run takes its seed as an input and no line reads the system clock or a random source, as no other file of code in `balance/` does
+- **Part:** balance-tools
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

@@ -126,10 +126,13 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
 
 ## balance-tools
 
-The part measures the balance of the game outside the browser: it runs the game's built simulation, from one map run to sweeps of many seeds, earning loops and the campaign of a player, with the reference programs of the tests of the simulation and with overlays that change the game's data in memory, and it holds the player descriptions a campaign follows and the tests that keep its instrument in agreement with the game.
+The part measures the balance of the game outside the browser: it runs the game's built simulation, from one map run to sweeps of many seeds, earning loops and the campaign of a player, with the reference programs of the tests of the simulation and with overlays that change the game's data in memory, and it holds the player descriptions a campaign follows and the tests that keep its instrument in agreement with the game, from writing a file outside its command line and from reading the clock or drawing outside the seed of a measurement.
 
 - **Files:** balance/**
   tests/balance/**
+  tests/invariants/balance_source_scan.py
+  tests/invariants/test_balance_instrument_file_writes.py
+  tests/invariants/test_balance_instrument_repeatability.py
 - **Depends on:** simulation
 - **Trust boundary:** none
 

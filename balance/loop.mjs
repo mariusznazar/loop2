@@ -13,12 +13,18 @@ import {
 } from "../dist/browser/sim/loop.js";
 import { paidPractice, skillProgress } from "../dist/browser/sim/skills.js";
 import { pieceCount } from "../dist/browser/sim/trip.js";
-import { makeState, meanOf, prerequisitesOf, quantile } from "./engine.mjs";
+import {
+  makeState,
+  meanNumber,
+  meanOf,
+  prerequisitesOf,
+  quantile,
+} from "./engine.mjs";
 
 /** The real moment the loop clock starts from: any safe integer would do. */
 export const LOOP_START_MS = 1760000000000;
 const MS_PER_HOUR = 60 * 60 * 1000;
-const MS_PER_MINUTE = 60 * 1000;
+export const MS_PER_MINUTE = 60 * 1000;
 const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
 
 /** `numerator / denominator` in percent, one decimal, or null for no denominator. */
@@ -26,15 +32,6 @@ function percent(numerator, denominator) {
   return denominator === 0
     ? null
     : Math.round((numerator / denominator) * 1000) / 10;
-}
-
-/** The mean of `read` over the list, two decimals, or null for an empty list. */
-function meanNumber(list, read) {
-  return list.length === 0
-    ? null
-    : Math.round(
-        (list.reduce((sum, item) => sum + read(item), 0) / list.length) * 100,
-      ) / 100;
 }
 
 /** The points of the levels above 1 summed over all trees: what a character has earned so far. */

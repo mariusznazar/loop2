@@ -52,13 +52,17 @@ import {
   skillProgress,
 } from "../dist/browser/sim/skills.js";
 import { pieceCount } from "../dist/browser/sim/trip.js";
-import { fullUnderstanding, quantile } from "./engine.mjs";
-import { LOOP_START_MS, earnedPoints } from "./loop.mjs";
+import {
+  DEFAULT_CAP_MINUTES,
+  fullUnderstanding,
+  meanNumber,
+  outcomeOf,
+  quantile,
+} from "./engine.mjs";
+import { LOOP_START_MS, MS_PER_MINUTE, earnedPoints } from "./loop.mjs";
 
 const MS_PER_SECOND = 1000;
-const MS_PER_MINUTE = 60 * MS_PER_SECOND;
 const MS_PER_DAY = 24 * 60 * MS_PER_MINUTE;
-const DEFAULT_CAP_MINUTES = 4000;
 /** The game minutes a manual map run is passed in one call: long enough to be cheap, short enough to see a discovery. */
 const MANUAL_STEP_MINUTES = 600;
 const CASH_IN_RULES = ["always", "whenPoints", "never"];
@@ -233,7 +237,7 @@ function manualRun(ctx, { mapId, programId }) {
   const run = current.run;
   const gameMinutesPerSecond = BALANCE.gameMinutesPerRealSecond * player.pace;
   clock.ms += Math.ceil(run.minute / gameMinutesPerSecond) * MS_PER_SECOND;
-  const outcome = run.completion ? "solved" : run.death ? "death" : "cap";
+  const outcome = outcomeOf(run);
   if (run.death) current = settleDeath(current, clock.ms).state;
   if (run.completion) current = settleCompletion(current, clock.ms).state;
   const settlement = current.run.deathSettlement?.kind ?? null;
@@ -505,15 +509,6 @@ function spread(values) {
   };
 }
 
-/** The mean of `read` over the list, two decimals, or null for an empty list. */
-function mean(list, read) {
-  return list.length === 0
-    ? null
-    : Math.round(
-        (list.reduce((sum, item) => sum + read(item), 0) / list.length) * 100,
-      ) / 100;
-}
-
 /** The share of the list for which `test` holds, in percent with one decimal, or null for an empty list. */
 function shareOf(list, test) {
   return list.length === 0
@@ -529,10 +524,10 @@ function summarizeDays(logs, days) {
       .filter(Boolean);
     return {
       day,
-      points: mean(rows, (row) => row.points),
-      pointsWithPending: mean(rows, (row) => row.pointsWithPending),
-      chest: mean(rows, (row) => row.chest),
-      bought: mean(rows, (row) => row.bought),
+      points: meanNumber(rows, (row) => row.points),
+      pointsWithPending: meanNumber(rows, (row) => row.pointsWithPending),
+      chest: meanNumber(rows, (row) => row.chest),
+      bought: meanNumber(rows, (row) => row.bought),
       generationAbove1Share: shareOf(rows, (row) => row.generation > 1),
       lastMapSolvedShare: shareOf(rows, (row) => row.lastMapSolved),
     };
@@ -600,12 +595,12 @@ export function campaignSweep({ player, programs, seeds }) {
     lastMapSolvedDay: spread(logs.map((log) => log.lastMapSolvedDay)),
     lastMapAttempts: spread(logs.map((log) => log.lastMapAttempts)),
     solvedDayByMap: summarizeMaps(logs),
-    progressLostMean: mean(logs, (log) => log.progressLost),
+    progressLostMean: meanNumber(logs, (log) => log.progressLost),
     progressLostAtLeastOnce: logs.filter((log) => log.progressLost > 0).length,
-    resurrectionsUsedMean: mean(logs, (log) => log.resurrectionsUsed),
-    loopCompletionsMean: mean(logs, (log) => log.loopCompletions),
+    resurrectionsUsedMean: meanNumber(logs, (log) => log.resurrectionsUsed),
+    loopCompletionsMean: meanNumber(logs, (log) => log.loopCompletions),
     lastPurchaseDay: spread(logs.map((log) => log.lastPurchaseDay)),
-    boughtMean: mean(logs, (log) => log.bought.length),
+    boughtMean: meanNumber(logs, (log) => log.bought.length),
     byDay: summarizeDays(logs, days),
     trees: summarizeTrees(logs),
     finalPoints: spread(logs.map((log) => log.final.points)),
