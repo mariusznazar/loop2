@@ -18,7 +18,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 ### Otwarcie schematu bez utraty danych
 
-- **Decision:** D-112
+- **Decision:** D-112 · D-436
 - **Invariant:** account-database-schema
 - **Good:** Ponowne otwarcie zachowuje konta, sesje i zapisane stany gry, baza w starszej znanej wersji przechodzi na bieżącą w jednej transakcji, a błąd inicjalizacji albo kroku przejścia wycofuje całą transakcję.
 - **Bad:** Start resetuje istniejącą bazę, pozostawia część utworzonych tabel po błędzie albo zmienia krok przejścia, który trafił już na serwer testowy.
@@ -58,7 +58,7 @@ jedną operację i je zamyka; samo nie trzyma żadnego SQL.
 Zapis sesji czyta stan blokady konta w tej samej instrukcji, która wstawia
 rekord, a razem z nim skrót hasła, który sesja nazywa, gdy go podano, więc
 blokada ani reset hasła zatwierdzone przez inne połączenie nie wejdą między
-sprawdzenie a zapis (D-112).
+sprawdzenie a zapis (D-435).
 
 ## Where in code
 

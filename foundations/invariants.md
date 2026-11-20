@@ -801,7 +801,7 @@ The SQLite session Store returns only valid stored account identity and cookie d
 
 - **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation · sqlite-wal-concurrency
-- **Derives from:** D-112 · D-115
+- **Derives from:** D-435 · D-115
 - **Part:** account-server
 - **Violated:** no
 
@@ -1101,7 +1101,7 @@ A password-reset link sets a new password only once, only before its expiry, onl
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-112 · D-155 · D-160 · D-226
+- **Derives from:** D-435 · D-155 · D-160 · D-226
 - **Part:** account-server
 - **Violated:** no
 
@@ -1111,7 +1111,7 @@ No session its account held when a password reset committed authorizes a request
 
 - **Method:** test
 - **Rests on:** express-session-end-of-request · express-session-regenerated-session-saved-again
-- **Derives from:** D-112 · D-138
+- **Derives from:** D-435 · D-138
 - **Part:** account-server
 - **Violated:** no
 

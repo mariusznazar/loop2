@@ -422,12 +422,12 @@ test("a damaged database and a temporary directory that cannot be made each end 
   assert.doesNotMatch(result.stderr, /no[\\/]such|accounts\.sqlite/);
 });
 
-// D-231, D-112. Faults: a file the server never set up given tables by the
+// D-231, D-436. Faults: a file the server never set up given tables by the
 // command, or refused with another code than a missing file, or taken for a
 // database whose backup is whole.
 test("a file in which the server set up no tables is refused with the code of a missing file, writes nothing in it and leaves nothing on standard output", async (t) => {
   // decision: D-231 "That command opens only an existing database file"
-  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-436 "Beyond the rules of D-112, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const { temporary, directory } = await sandbox(t);
   const empty = join(directory, "empty-secret-name.sqlite");
   await writeFile(empty, "");

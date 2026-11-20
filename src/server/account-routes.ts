@@ -214,7 +214,7 @@ function saveFields(body: unknown): {
 // stands on the password hash named by the caller (the one a login checked the
 // password against, the one a registration made), and the store keeps it
 // for every write of that session object, so a password reset committed at any
-// point leaves no session behind (D-112).
+// point leaves no session behind (D-435).
 function establishSession(
   runtime: AccountRuntime,
   request: Request,
@@ -495,7 +495,7 @@ export function accountRoutes(
 
   // The checks come in this order: the guards, the fields, the session, the
   // size of the stored text, then one write that checks the block, the version
-  // and the revision (D-104 for the guards, the fields and the size, D-112,
+  // and the revision (D-104 for the guards, the fields and the size, D-435,
   // D-209 and D-210 for the write).
   router.put(paths.savedGame, (request, response) => {
     const fields = saveFields(request.body);

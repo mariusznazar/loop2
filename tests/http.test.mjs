@@ -3634,7 +3634,7 @@ test(
   async (t) => {
     // invariant: password-reset-link
     // invariant: unblock-restores-no-link
-    // decision: D-226 "`POST /api/password-reset` checks the fields of its request, then the rules of D-98, then the form of the token and whether its link works, all before any password work, so a link that does not work never reaches the password gate of D-103 and a bad password never tells whether a token works; it then hashes through that gate, with no attempt admission of D-102, and checks the link again in the transaction of D-112 that sets the password"
+    // decision: D-226 "`POST /api/password-reset` checks the fields of its request, then the rules of D-98, then the form of the token and whether its link works, all before any password work, so a link that does not work never reaches the password gate of D-103 and a bad password never tells whether a token works; it then hashes through that gate, with no attempt admission of D-102, and checks the link again in the transaction of D-435 that sets the password"
     // decision: D-226 "Every token that is malformed, unknown, spent, expired, stopped, of another kind or of a blocked account gets one and the same refusal `invalid-link`, before the hashing or after it"
     // Faults: the outcome of the transaction ignored, so that a link stopped
     // meanwhile answers 204; an answer of 200.
@@ -4149,7 +4149,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: blocked-account-access
-    // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
+    // decision: D-435 "Writing a saved game state reads its account's blocked state"
     // Fault: a write that does not read the block in its own transaction.
     const f = await accountFixture(t);
     const cookie = seed(f, "save-race", f.first);
@@ -4513,7 +4513,7 @@ test(
     // invariant: blocked-account-access
     // invariant: previous-save-slot
     // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399)"
-    // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
+    // decision: D-435 "The reset of the game reads the account's blocked state"
     // Fault: a reset that reads the block outside its own transaction.
     const f = await accountFixture(t);
     const cookie = seed(f, "previous-race", f.first);

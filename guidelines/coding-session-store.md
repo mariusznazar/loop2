@@ -18,7 +18,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 ### Odczyt i odnowienie sesji
 
-- **Decision:** D-112 · D-115
+- **Decision:** D-435 · D-115
 - **Invariant:** account-session-storage
 - **Good:** Spreparowany zapis jest odrzucany przed odtworzeniem sesji, a opóźnione odnowienie nie przywraca wylogowanej sesji.
 - **Bad:** Odczyt bez walidacji albo odnowienie przez wstawienie brakującego rekordu.
@@ -40,7 +40,7 @@ odbiorcy nie powoduje drugiego wywołania. Brak callbacku kieruje błąd do zdar
 `error` magazynu. Zapis nowej uwierzytelnionej sesji używa `set`; zwykłe żądanie
 używa `touch` i nie przepisuje tożsamości. Trasa, która tworzy sesję, podaje
 magazynowi skrót hasła, na którym sesja stoi (`expectPasswordHash`); magazyn
-trzyma go obok obiektu sesji, nie w nim, i przekazuje do zapisu (D-112). Zasady HTTP i atrybuty ciasteczka
+trzyma go obok obiektu sesji, nie w nim, i przekazuje do zapisu (D-435). Zasady HTTP i atrybuty ciasteczka
 ustala aplikacja używająca magazynu.
 
 ### Wartości przyjmowane przez bibliotekę
