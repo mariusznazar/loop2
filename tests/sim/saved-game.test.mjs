@@ -2471,7 +2471,7 @@ test("a completion depositing exactly the planned counts loads", () => {
 // invariant: solved-map-manual-run
 test("a completion of a marked run depositing its planned counts loads, and a deposit beyond them is refused as shape", () => {
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
-  // decision: D-179 "at a completion only what that list names goes to the chest"
+  // decision: D-179 "The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest"
   const marked = (deposited) =>
     changed((document) => {
       solvingItsMap(document);
