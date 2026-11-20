@@ -10,6 +10,7 @@ import { mapRunEnded } from "../sim/game.js";
 import { MINUTE_KINDS } from "../sim/run-record.js";
 import { solvingRequirements } from "../sim/run.js";
 import type { GameMapRun, GameState, MinuteKind } from "../sim/types.js";
+import { countedName } from "./counted-name.js";
 import { discoveryBandText } from "./discovery-band-text.js";
 import { discoveryRule } from "./discovery-rule.js";
 import { deathText } from "./now-lines.js";
@@ -48,6 +49,7 @@ const ON_THE_WAY: readonly MinuteKind[] = [
   "walkToCampfire",
   "wander",
 ];
+const MINUTES_PER_HOUR = 60;
 /** The least share, in whole percent, that gives a piece of its own in the bar of time. */
 const PIECE_FLOOR_PERCENT = 8;
 /** The most pieces of its own the bar of time shows; the rest stand in „reszta”. */
@@ -83,9 +85,28 @@ export function longestStreakLine(
 }
 
 /**
+ * The span of real time after which one used use of the resurrection returns, in the words of D-216:
+ * „co godzinę”, „co 2 godziny”, „co 5 godzin” for a whole number of hours, the hours declined as the
+ * game's counters are; „co {g} godz. {m} min” for hours and minutes; „co {m} min” below one hour. Pure.
+ */
+export function renewalSpanText(minutes: number): string {
+  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+  const rest = minutes % MINUTES_PER_HOUR;
+  if (hours === 0) return `co ${rest} min`;
+  if (rest > 0) return `co ${hours} godz. ${rest} min`;
+  const noun = countedName(hours, {
+    one: "godzinę",
+    few: "godziny",
+    many: "godzin",
+  });
+  return hours === 1 ? `co ${noun}` : `co ${hours} ${noun}`;
+}
+
+/**
  * What the end gave or cost: after a completion the deposit the completion froze, after a death its
- * settlement with the resurrection, of the team's or none where the character had no practice yet;
- * null while the map run goes on or a death is unsettled.
+ * settlement with the resurrection (D-216): the uses left the settlement leaves against the count of
+ * the balance data, read now, or the generation of a death with none left, or the words of a character
+ * with no practice yet; null while the map run goes on or a death is unsettled.
  */
 export function endCostLine(state: GameState): EndLine | null {
   const run = state.run;
@@ -93,18 +114,21 @@ export function endCostLine(state: GameState): EndLine | null {
   if (run.death) {
     const settlement = run.deathSettlement;
     if (!settlement) return null;
-    if (settlement.kind === "resurrectionUsed")
+    if (settlement.kind === "resurrectionUsed") {
+      const left = BALANCE.resurrectionUses - settlement.usesSpent;
+      const span = renewalSpanText(BALANCE.resurrectionRenewalRealMinutes);
       return {
-        text: `Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po ${BALANCE.resurrectionRenewalRealMinutes / 60} godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.`,
+        text: `Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia ${left} z ${BALANCE.resurrectionUses}; zużyte wracają po kolei, jedno ${span} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.`,
         role: "text-secondary",
       };
+    }
     if (settlement.kind === "noPractice")
       return {
-        text: "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+        text: "Postać nie miała jeszcze wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.",
         role: "text-secondary",
       };
     return {
-      text: `Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie ${settlement.generation}.`,
+      text: `Wskrzeszenie drużyny nie miało żadnego użycia: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie ${settlement.generation}.`,
       role: "danger",
     };
   }
@@ -115,15 +139,15 @@ export function endCostLine(state: GameState): EndLine | null {
 }
 
 /**
- * The line of the renewal a first solving made (D-185): „Wskrzeszenie odnowione: pierwsze rozwiązanie
- * tej mapy.” after a completion that made the team's used-up resurrection ready, null otherwise,
- * a completion that found it ready included.
+ * The line of the use a first solving returned (D-216): „Wróciło jedno użycie wskrzeszenia drużyny:
+ * pierwsze rozwiązanie tej mapy.” after a completion that returned a use, null otherwise, a completion
+ * that found the stock of uses full included.
  */
 export function endRenewalLine(state: GameState): EndLine | null {
   if (state.run?.completionSettlement?.kind !== "resurrectionRenewed")
     return null;
   return {
-    text: "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+    text: "Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.",
     role: "text-secondary",
   };
 }

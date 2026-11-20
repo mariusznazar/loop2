@@ -19,6 +19,7 @@ import {
   endRenewalLine,
   endTitle,
   longestStreakLine,
+  renewalSpanText,
   timeShares,
   tripRows,
   unfiredRules,
@@ -159,47 +160,75 @@ test("the cost line after a completion is the deposit frozen at the completion, 
   );
 });
 
-// Catches a resurrection line with another number of hours (the hours come from the balance data, 480
-// real minutes, which is 8 hours), a missing generation, or a line shown while the death is unsettled
-// (D-216, D-39).
-test("after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing one with the generation in danger, and nothing while the death is unsettled", () => {
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+// Catches a used-up line that reads the uses spent as the uses left, a count other than the data's, a
+// span other than the data's four hours, a line in the other role, or a line shown while the death is
+// unsettled (D-216, D-39). The data's count is 3 and its span 240 real minutes; the words are D-216's.
+test("after a death that spent a use the cost line gives the uses left in text-secondary, a missing one in danger with the generation, and nothing while the death is unsettled", () => {
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
   const dead = (deathSettlement) =>
     withRun(RUNNING, {
       minute: 312,
       death: { minute: 312, cause: "cold" },
       deathSettlement,
     });
-  assert.deepEqual(endCostLine(dead({ kind: "resurrectionUsed" })), {
-    text: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
-    role: "text-secondary",
-  });
+  assert.deepEqual(
+    endCostLine(dead({ kind: "resurrectionUsed", usesSpent: 1 })),
+    {
+      text: "Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia 2 z 3; zużyte wracają po kolei, jedno co 4 godziny czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.",
+      role: "text-secondary",
+    },
+  );
+  assert.equal(
+    endCostLine(dead({ kind: "resurrectionUsed", usesSpent: 3 })).text,
+    "Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia 0 z 3; zużyte wracają po kolei, jedno co 4 godziny czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.",
+    "the last use spent leaves 0 of 3 in the same role",
+  );
   assert.deepEqual(endCostLine(dead({ kind: "progressLost", generation: 3 })), {
-    text: "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+    text: "Wskrzeszenie drużyny nie miało żadnego użycia: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 3.",
     role: "danger",
   });
   assert.equal(endCostLine(dead(null)), null);
 });
 
-// Catches the line of the death of a character with no practice standing in the other role, with the
-// hours of the renewal or the generation, or missing (D-216, D-190, D-39).
-test("after the death of a character with no practice the cost line says the team's resurrection was not used, in text-secondary", () => {
-  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+// Catches the line of the death of a character with no practice standing in the other role, or with
+// a use spent or a generation in it (D-216, D-190, D-39).
+test("after the death of a character with no practice the cost line says the death spared the team's resurrection, in text-secondary", () => {
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Zużyte jedno użycie wskrzeszenia drużyny: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Po tej śmierci zostały użycia {u} z {c}; zużyte wracają po kolei, jedno {r} czasu realnego, a jedno od razu przy pierwszym rozwiązaniu nowej mapy.”"
   const bare = withRun(RUNNING, {
     minute: 312,
     death: { minute: 312, cause: "cold" },
     deathSettlement: { kind: "noPractice" },
   });
   assert.deepEqual(endCostLine(bare), {
-    text: "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+    text: "Postać nie miała jeszcze wprawy, więc śmierć nie zabrała drużynie żadnego użycia wskrzeszenia.",
     role: "text-secondary",
   });
 });
 
-// Catches a renewal line after a completion that found the resurrection ready, one before the
-// completion is settled, one on a death or a map run going on, or in the other role (D-185, D-190).
-test("the renewal line stands only after a first completion that made a used-up resurrection ready", () => {
-  // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
+// Catches the span of the return written with another plural, with the hours and minutes in another
+// split, or with the minutes rounded or dropped (D-216, question 16). Each expectation is written from
+// the words D-216 gives: a whole number of hours declined as the game's counters are (1 hour is
+// „godzinę”, 12 to 14 and the rest of the teens take „godzin”), otherwise „co {g} godz. {m} min”, and
+// below an hour „co {m} min”.
+test("the span of the return reads the whole hours declined, the hours and minutes of a part, and the minutes below an hour", () => {
+  // decision: D-216 "The span {r} reads „co godzinę”, „co 2 godziny” or „co 5 godzin” where it is a whole number of hours, declined by the number as the other counters of the game are, and otherwise „co {g} godz. {m} min”, below one hour „co {m} min”, in the form of the time reading of D-217."
+  assert.equal(renewalSpanText(60), "co godzinę");
+  assert.equal(renewalSpanText(120), "co 2 godziny");
+  assert.equal(renewalSpanText(240), "co 4 godziny");
+  assert.equal(renewalSpanText(300), "co 5 godzin");
+  assert.equal(renewalSpanText(720), "co 12 godzin");
+  assert.equal(renewalSpanText(1320), "co 22 godziny");
+  assert.equal(renewalSpanText(90), "co 1 godz. 30 min");
+  assert.equal(renewalSpanText(150), "co 2 godz. 30 min");
+  assert.equal(renewalSpanText(61), "co 1 godz. 1 min");
+  assert.equal(renewalSpanText(59), "co 59 min");
+  assert.equal(renewalSpanText(1), "co 1 min");
+});
+
+// Catches a renewal line after a completion that found the stock of uses full, one before the
+// completion is settled, one on a death or a map run going on, or in the other role (D-216, D-185).
+test("the line of the use a first solving returned stands only after a first completion that returned one", () => {
+  // decision: D-216 "After the first completion of a map that returned a use of the resurrection, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the stock of uses full shows none."
   const completion = { minute: 480 };
   const done = (completionSettlement) =>
     withRun(RUNNING, {
@@ -210,7 +239,7 @@ test("the renewal line stands only after a first completion that made a used-up 
       completionSettlement,
     });
   assert.deepEqual(endRenewalLine(done({ kind: "resurrectionRenewed" })), {
-    text: "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+    text: "Wróciło jedno użycie wskrzeszenia drużyny: pierwsze rozwiązanie tej mapy.",
     role: "text-secondary",
   });
   assert.equal(endRenewalLine(done({ kind: "resurrectionReady" })), null);
@@ -221,7 +250,7 @@ test("the renewal line stands only after a first completion that made a used-up 
       withRun(RUNNING, {
         minute: 312,
         death: { minute: 312, cause: "cold" },
-        deathSettlement: { kind: "resurrectionUsed" },
+        deathSettlement: { kind: "resurrectionUsed", usesSpent: 1 },
       }),
     ),
     null,
