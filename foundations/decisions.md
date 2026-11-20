@@ -616,7 +616,7 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 
 - **Scope:** account-server
 - **Based on:** express-session-store-contract · express-session-cookie-lifecycle · cookie-serialization-validation
-- **Relations:** derives from D-28 · derives from D-107 · derives from D-435
+- **Relations:** derives from D-28 · derives from D-107 · derives from D-112 · derives from D-435
 - **Verification:** invariants: account-session-storage. tests: the Store delivering each failure of a library callback once, as that callback's error, and letting an exception the callback throws reach its caller. An agent compares a change with the part no invariant and no test holds:
   - complies: session-store guidelines naming `src/server/session-store.ts` as the exemplar; the cookie's name, flags and lifetime set where the application is assembled, the Store keeping and checking what the library hands it
   - violates: session-store guidelines naming another file as the exemplar; the Store setting the cookie's flags or lifetime, or reading the HTTP request
