@@ -727,6 +727,8 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
 });
 
 test("a count lowered from 3 to 1 after the save refuses a game with two uses spent and none with one, an open end-of-run window after a first death included", () => {
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
+  // decision: D-386 "Lowering the number of uses in the balance data makes the load refuse a saved game state only where more uses are spent than the new number, in the team or in the settlement of a death, so a saved game state with an end-of-run window open after a death stays loadable."
   // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
   const first = settleDeath(fell(practised()), T0).state;
   assert.equal(first.team.resurrectionUsesSpent, 1, "precondition: one spent");
@@ -761,6 +763,7 @@ test("a count lowered from 3 to 1 after the save refuses a game with two uses sp
 // A settlement whose uses spent equal the data's count loads, and one above it is refused, the count
 // being the data's of the moment of the load.
 test("a settlement whose uses spent equal the data's count loads, and one above it is refused", () => {
+  // decision: D-386 "A saved game state holds the uses of the account's resurrection as the count spent and not yet returned, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death."
   const settled = settleDeath(fell(practised()), T0).state;
   const withUsesSpent = (usesSpent) => {
     const copy = structuredClone(savedGame(withSaveTime(settled, T0)));

@@ -290,7 +290,7 @@ test("a used use is back at its moment after a save and a load, and the next dea
 
 // D-07, D-219: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
 test("a moment below zero settles as any other", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const settled = settleDeath(died(team(), -20_000), -5_000).state;
   assert.equal(settled.team.resurrectionUsesSpent, 1);
   assert.equal(settled.team.resurrectionNextReturnAtMs, RENEWAL_MS - 5_000);
@@ -403,7 +403,7 @@ test("a settled death saved and loaded on its screen is left as it stood by a la
 
 // D-386: where there is nothing to settle the moment is not even looked at.
 test("with nothing to settle the very state comes back, whatever the moment", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const going = send(team(), SENT, T0).state;
   const completed = {
     ...going,
@@ -425,7 +425,7 @@ test("with nothing to settle the very state comes back, whatever the moment", ()
 
 // D-386: a moment the load would refuse never enters the game state.
 test("a moment that is no safe integer is refused at a death to settle", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = died(team());
   for (const nowMs of [
     Number.NaN,

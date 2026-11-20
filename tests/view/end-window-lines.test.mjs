@@ -206,7 +206,7 @@ test("after the death of a character with no practice the cost line says the dea
 });
 
 // Catches the span of the return written with another plural, with the hours and minutes in another
-// split, or with the minutes rounded or dropped (D-216, question 16). Each expectation is written from
+// split, or with the minutes rounded or dropped (D-216). Each expectation is written from
 // the words D-216 gives: a whole number of hours declined as the game's counters are (1 hour is
 // „godzinę”, 12 to 14 and the rest of the teens take „godzin”), otherwise „co {g} godz. {m} min”, and
 // below an hour „co {m} min”.

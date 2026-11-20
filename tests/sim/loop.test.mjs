@@ -883,7 +883,7 @@ test("a death is settled once: the state the end leaves holds no end, a further 
 });
 
 test("taking an end reads the moment only when there is an end to settle, and the moment must be a safe integer", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const running = looping();
   assert.equal(endLoopRun(running, 1, NaN).state, running);
   assert.equal(endLoopRun(running, 2, NaN).state, running);

@@ -1020,7 +1020,7 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 
 // invariant: save-version
 test("the team's moment of the next return below zero loads, as it is a safe integer of any sign", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const before = changed((document) => {
     document.game.team.resurrectionNextReturnAtMs = -1500;
   });
@@ -2751,7 +2751,7 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
 // the open game with no minutes, a second earning loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
     // D-386: a safe integer of any sign, as the team's moment of the next return is read, so the case
@@ -2832,7 +2832,7 @@ test("a state with its save time is a copy holding the moment, the state passed 
 
 // D-386: as in `settleDeath`, so a broken clock never reaches a document.
 test("a moment that is no safe integer gives no save time", () => {
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
     assert.throws(
       () => withSaveTime(newGame(), moment),
@@ -2846,7 +2846,7 @@ test("a moment that is no safe integer gives no save time", () => {
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
-  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const state = newGame();
   for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {

@@ -216,7 +216,7 @@ A resurrection is what the account has, one for all its characters, with a numbe
 
 ## generation number
 
-A generation number is a count kept at a character that grows by one at a death that takes the character's practice because no resurrection is ready, and at no other, the death of a character with no practice included, the character staying the same character with the number the game gave it at its creation (D-56).
+A generation number is a count kept at a character that grows by one at a death that takes the character's practice because no use of the resurrection is left, and at no other, the death of a character with no practice included, the character staying the same character with the number the game gave it at its creation (D-56).
 
 - **Not:** the number the game gives a character at its creation (D-56) — "character's number"
 
