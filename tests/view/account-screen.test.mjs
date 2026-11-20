@@ -39,7 +39,10 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
-import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
+import {
+  loadSavedGame,
+  SAVED_GAME_VERSION,
+} from "../../dist/browser/sim/saved-game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { createAccountCard } from "../../dist/browser/view/account-card.js";
 import {
@@ -1891,9 +1894,9 @@ const OTHER_ACCOUNT = {
 };
 
 /** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 7;
-/** The version before `VERSION`, which D-206 makes another version: the save of a game whose characters each held a resurrection. */
-const OLDER_VERSION = 6;
+const VERSION = SAVED_GAME_VERSION;
+/** The version before `VERSION`, which D-206 makes another version: the save of a game whose team held its one resurrection as a moment of readiness. */
+const OLDER_VERSION = SAVED_GAME_VERSION - 1;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
 const SAVED_MS = CLOCK_MS - 60_000;
 /** A new game with Ala in its team. */
