@@ -190,7 +190,7 @@ const schemaSteps = [
 const currentVersion = schemaSteps.length;
 
 // An emailed link stays recorded until it has expired and is this old, because
-// its row also counts an account message against D-105's hourly limits (D-112,
+// its row also counts an account message against D-105's hourly limits (D-435,
 // D-161); no window of those limits may be longer.
 const linkRecordAgeMs = 3_600_000;
 
@@ -199,7 +199,7 @@ export interface StoredSession {
   data: string;
   expiresAt: number;
   // The password hash the session stands on. Where given, nothing is stored
-  // once the account holds another hash (D-112); a session read has none.
+  // once the account holds another hash (D-435); a session read has none.
   expectedPasswordHash?: string;
 }
 
@@ -210,7 +210,7 @@ interface DatabaseOptions {
   onCleanupError?: (error: Error) => void;
   // An opening with this option never sets up a new database: it refuses a
   // file in which the server has set up no tables and writes nothing in it
-  // (D-112). Every command the operator runs on the server that changes or copies
+  // (D-436). Every command the operator runs on the server that changes or copies
   // the account database opens with it; the check of the database at the build
   // of the image does not, since it sets up a temporary database of its own.
   existingOnly?: boolean;

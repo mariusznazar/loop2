@@ -672,12 +672,12 @@ test("a damaged database file fails with the JSON line of the failure first, and
   assert.ok(after.bytes.equals(before.bytes), "the bytes of the file");
 });
 
-// D-410, D-112. Faults: a file the server never set up given tables by the
+// D-410, D-436. Faults: a file the server never set up given tables by the
 // command, or refused with another code than a missing file, or reported as a
 // database failure that asks for a second run.
 test("the role command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login"
-  // decision: D-112 "Beyond the rules above, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
+  // decision: D-436 "Beyond the rules of D-112, no command that the operator runs on the server and that changes or copies the account database sets up a new database"
   const refusals = [];
   for (const [label, name, prepare] of [
     ["an empty file", "empty-secret-name.sqlite", (f) => writeFile(f.path, "")],

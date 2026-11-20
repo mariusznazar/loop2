@@ -20,7 +20,7 @@ import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 // transaction and closes it. A file in which the server has set up no tables,
 // whether empty, no SQLite database or one with no schema version, is no
 // account database: the command refuses it as a missing file and writes
-// nothing in it (D-112). It reads no other setting and prints no password
+// nothing in it (D-436). It reads no other setting and prints no password
 // hash or session identifier, and of a database error its kind and code alone.
 
 const usage =

@@ -18,9 +18,9 @@ import { installLastResort, writeFailure } from "./log-line.js";
 // The output holds every address and password hash, so the command does
 // nothing without that one fixed word and prints nothing to standard output
 // then (D-231). It opens the existing database of LOOP2_DATABASE_PATH beside
-// the running server, as account-block.ts does (D-112), and refuses a file in
-// which the server has set up no tables as it refuses a missing file, writing
-// nothing in it; it backs the database up into a
+// the running server, as account-block.ts does (D-112, D-436), and refuses a
+// file in which the server has set up no tables as it refuses a missing file,
+// writing nothing in it; it backs the database up into a
 // private temporary directory, closes it, streams the finished file out and
 // removes the directory, also after a failure and after a reader that goes
 // away; a signal that kills the process leaves it. Standard output carries the
