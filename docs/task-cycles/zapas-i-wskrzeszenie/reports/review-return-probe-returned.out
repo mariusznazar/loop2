@@ -1,6 +1,0 @@
-stored team: spent=2 nextReturnAtMs-T0=14400000 run=none
-at the save (T0+13h), count 3: {"usesLeft":3,"nextReturnMs":null}
-document team: spent=2 saveTime-T0=46800000
-count=3: ok=true
-count=2: ok=true
-count=1: ok=false reason=shape
