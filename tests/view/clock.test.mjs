@@ -144,8 +144,8 @@ test("the clock's send carries the program number to the simulation's send", () 
 
 /** A real moment of the browser's clock, in ms. */
 const T0 = 1_760_000_000_000;
-/** The renewal of a resurrection, 480 real minutes (D-190), in ms: 480 × 60 000. */
-const RENEWAL_MS = 28_800_000;
+/** The span after which one spent use of the team's resurrection returns, 240 real minutes (D-190), in ms: 240 × 60 000. */
+const RENEWAL_MS = 14_400_000;
 const SENT = { mapId: "forest", characterId: 1 };
 
 /**
@@ -216,16 +216,26 @@ function practised(state, id) {
   };
 }
 
+/** `state` with the team's resurrection holding `spent` uses spent, the next of them returning at `nextReturnMs`, null where none is missing. */
+function withUses(state, spent, nextReturnMs = null) {
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      resurrectionUsesSpent: spent,
+      resurrectionNextReturnAtMs: nextReturnMs,
+    },
+  };
+}
+
 /**
  * Ala, who has practice, on an empty program in Las, one game minute from dying of cold, the team's
- * resurrection ready from `readyAtMs` on, `practice` false for an Ala with none.
+ * resurrection with `spent` uses spent, the next returning at `nextReturnMs`; `practice` false for an
+ * Ala with none.
  */
-function lastMinute(readyAtMs = 0, practice = true) {
+function lastMinute(spent = 0, nextReturnMs = null, practice = true) {
   const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
-  const ready = {
-    ...made,
-    team: { ...made.team, resurrectionReadyAtMs: readyAtMs },
-  };
+  const ready = withUses(made, spent, nextReturnMs);
   let state = send(practice ? practised(ready, 1) : ready, SENT, 1).state;
   for (let next = state; !next.run.death;) {
     state = next;
@@ -286,15 +296,23 @@ test("a flush in which the character dies hands the store one result: the events
       "precondition: this second ends in the death",
     );
     assert.deepEqual(events, passed.events);
-    assert.deepEqual(handed.run.deathSettlement, { kind: "resurrectionUsed" });
-    assert.equal(handed.team.resurrectionReadyAtMs, T0 + 1000 + RENEWAL_MS);
+    assert.deepEqual(handed.run.deathSettlement, {
+      kind: "resurrectionUsed",
+      usesSpent: 1,
+    });
+    assert.equal(handed.team.resurrectionUsesSpent, 1);
+    assert.equal(
+      handed.team.resurrectionNextReturnAtMs,
+      T0 + 1000 + RENEWAL_MS,
+    );
     clock.dispose();
   });
 });
 
 // invariant: resurrection-renewal
-// The moment of the reading decides: a resurrection ready from it on is ready, one a millisecond
-// later is not, whatever moment the clock read when it started.
+// The moment of the reading decides: a use due at a moment is returned by a reading at that moment, one a
+// millisecond later is not, whatever moment the clock read when it started. With all three uses spent,
+// the death at the reading finds the one due at it returned, and one a millisecond later finds none.
 test("a death is settled against the reading of its flush, not an earlier one", () => {
   // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
@@ -304,7 +322,7 @@ test("a death is settled against the reading of its flush, not an earlier one", 
     ]) {
       // A second a reading: this one, the clock's start, then its flush.
       const flushMoment = Date.now() + 2000;
-      const store = holdingStore(lastMinute(flushMoment + offset));
+      const store = holdingStore(lastMinute(3, flushMoment + offset));
       const clock = startClock(store);
       pass(1000);
       clock.flush();
@@ -317,31 +335,31 @@ test("a death is settled against the reading of its flush, not an earlier one", 
 // D-190, D-221: a death of a character with no practice is settled at the reading too, and leaves the
 // resurrection as it was.
 test("a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stays as it was", () => {
-  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop"
   // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
-    for (const readyAtMs of [0, T0 + 10 * RENEWAL_MS]) {
-      const state = lastMinute(readyAtMs, false);
+    for (const [spent, nextReturnMs] of [
+      [0, null],
+      [3, T0 + 10 * RENEWAL_MS],
+    ]) {
+      const state = lastMinute(spent, nextReturnMs, false);
       const store = holdingStore(state);
       const clock = startClock(store);
       pass(1000);
       clock.flush();
       assert.deepEqual(store.state.run.deathSettlement, { kind: "noPractice" });
-      assert.equal(store.state.team.resurrectionReadyAtMs, readyAtMs);
+      assert.equal(store.state.team.resurrectionUsesSpent, spent);
+      assert.equal(store.state.team.resurrectionNextReturnAtMs, nextReturnMs);
       assert.equal(store.state.team.characters[0].generation, 1);
       clock.dispose();
     }
   });
 });
 
-/** Ala sent to Las, which her team has not solved, one game minute short of solving it, the team's resurrection ready from `readyAtMs` on. */
-function oneMinuteFromSolving(readyAtMs) {
+/** Ala sent to Las, which her team has not solved, one game minute short of solving it, the team's resurrection with `spent` uses spent, the next returning at `nextReturnMs`. */
+function oneMinuteFromSolving(spent, nextReturnMs) {
   const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
-  const sent = send(
-    { ...made, team: { ...made.team, resurrectionReadyAtMs: readyAtMs } },
-    SENT,
-    1,
-  ).state;
+  const sent = send(withUses(made, spent, nextReturnMs), SENT, 1).state;
   return {
     ...sent,
     run: {
@@ -364,9 +382,11 @@ function oneMinuteFromSolving(readyAtMs) {
 
 // invariant: resurrection-renewal
 // D-190, D-221: the first completion of a map is settled at the reading of the flush that completes it.
-test("a flush in which the map run solves its map for the first time settles the renewal at that reading, once", () => {
+test("a flush in which the map run solves its map for the first time returns a use at that reading, once", () => {
+  // decision: D-190 "The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full."
   withBothClocks(({ pass }) => {
-    const store = holdingStore(oneMinuteFromSolving(T0 + 10 * RENEWAL_MS));
+    // The use due at T0 + 1 s, the reading's moment, returns with it, so the completion finds one use spent to return.
+    const store = holdingStore(oneMinuteFromSolving(2, T0 + 1000));
     const clock = startClock(store);
     pass(1000);
     clock.flush();
@@ -378,8 +398,8 @@ test("a flush in which the map run solves its map for the first time settles the
     assert.deepEqual(store.state.run.completionSettlement, {
       kind: "resurrectionRenewed",
     });
-    // The date gives T0 to the start and a second more to this reading.
-    assert.equal(store.state.team.resurrectionReadyAtMs, T0 + 1000);
+    assert.equal(store.state.team.resurrectionUsesSpent, 0);
+    assert.equal(store.state.team.resurrectionNextReturnAtMs, null);
     const settled = store.state;
     pass(200);
     clock.flush();
@@ -388,17 +408,18 @@ test("a flush in which the map run solves its map for the first time settles the
   });
 });
 
-test("a flush in which the map run solves its map finds a ready resurrection ready and says so", () => {
-  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+test("a flush in which the map run solves its map finds the team's stock of uses full and says so", () => {
+  // decision: D-190 "The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full."
   withBothClocks(({ pass }) => {
-    const store = holdingStore(oneMinuteFromSolving(0));
+    const store = holdingStore(oneMinuteFromSolving(0, null));
     const clock = startClock(store);
     pass(1000);
     clock.flush();
     assert.deepEqual(store.state.run.completionSettlement, {
       kind: "resurrectionReady",
     });
-    assert.equal(store.state.team.resurrectionReadyAtMs, 0);
+    assert.equal(store.state.team.resurrectionUsesSpent, 0);
+    assert.equal(store.state.team.resurrectionNextReturnAtMs, null);
     clock.dispose();
   });
 });
@@ -535,7 +556,7 @@ function loopingOla(state = twoCharacters()) {
 // D-221, D-242. Catches earning loops passed before the manual run, and a reading that hands
 // the store the manual run's result and the earning loops' as two, so a moment of saving would come twice.
 test("a reading passes the manual run, then the earning loops, and hands the store one result with their events together", () => {
-  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop"
   // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
@@ -575,16 +596,18 @@ test("a reading passes the manual run, then the earning loops, and hands the sto
 });
 
 // invariant: resurrection-renewal
-// D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. An earning loop's end
-// lies at its minute's moment, here a millisecond before the reading, and the manual run's death at the reading.
-test("in a reading that ends an earning loop's map run in a death and the manual run in another, the earning loop's death, earlier than the reading, takes the resurrection", () => {
-  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
-  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+// D-190, D-242: of two deaths for the team's last use of the resurrection the earlier in real time takes it.
+// An earning loop's end lies at its minute's moment, here a millisecond before the reading, and the manual
+// run's death at the reading.
+test("in a reading that ends an earning loop's map run in a death and the manual run in another, the earning loop's death, earlier than the reading, takes the last use", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when the resurrection has no use left, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no use of the resurrection, whether one is left or not, and does not stop its earning loop"
+  // decision: D-190 "The death of a character with practice uses up one use while any is left, and a death of a character with practice with none left stops its earning loop."
   // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
-  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths for the account's last use of the resurrection in the open game the earlier in real time takes it, and the clock of the returns runs from the moment of the death that started it"
   withBothClocks(({ pass, jump }) => {
-    const both = practised(practised(twoCharacters(), 1), 2);
+    // Two uses are spent, so one is left for the two deaths.
+    const both = withUses(practised(practised(twoCharacters(), 1), 2), 2);
     let state = send(loopingOla(both), SENT, 1).state;
     for (;;) {
       const next = advanceMinutes(state, 1).state;
@@ -599,13 +622,18 @@ test("in a reading that ends an earning loop's map run in a death and the manual
     clock.flush();
     const handed = store.state;
     assert.equal(
-      handed.team.resurrectionReadyAtMs,
+      handed.team.resurrectionUsesSpent,
+      3,
+      "all three uses are spent",
+    );
+    assert.equal(
+      handed.team.resurrectionNextReturnAtMs,
       T0 + LOOP_MINUTE_MS + RENEWAL_MS,
     );
     assert.equal(
       handed.team.characters[1].generation,
       1,
-      "Ola's earning loop death used it",
+      "Ola's earning loop death used the last use",
     );
     assert.ok(handed.loops[2], "her earning loop goes on");
     assert.equal(
@@ -632,8 +660,9 @@ test("an earning loop's end is settled at the minute's own moment, not at the re
     // The date gave T0 to the start; this reading comes 61 s after it, one whole minute and a second.
     jump(LOOP_MINUTE_MS);
     clock.flush();
+    assert.equal(store.state.team.resurrectionUsesSpent, 1);
     assert.equal(
-      store.state.team.resurrectionReadyAtMs,
+      store.state.team.resurrectionNextReturnAtMs,
       T0 + LOOP_MINUTE_MS + RENEWAL_MS,
     );
     clock.dispose();

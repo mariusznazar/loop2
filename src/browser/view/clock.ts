@@ -64,10 +64,10 @@ const TICK_MS = 200;
 /**
  * Starts the clock: every 200 ms it makes a reading, of `performance.now()` for the real
  * milliseconds elapsed since its previous reading, which go to `passRealTime`, and of `Date.now()`
- * for the moment `settleDeath` settles a death at, `settleCompletion` settles the renewal of the
- * resurrection by a first completion of a map at, and for the earning loops. The clock holds the
+ * for the moment `settleDeath` settles a death at, `settleCompletion` settles the return of a use of the
+ * team's resurrection by a first completion of a map at, and for the earning loops. The clock holds the
  * loop clock, a date up to which whole earning loop minutes have been passed (D-242); a reading passes the
- * manual run, then the earning loops, which take the team's resurrection at the minutes' own moments, none
+ * manual run, then the earning loops, which take the team's uses of the resurrection at the minutes' own moments, none
  * after the reading, and then settles the manual run at the reading, and takes the loop clock's new
  * value before it hands the store the result, as a moment of saving inside `apply` reads the clock again and would
  * otherwise pass the same minutes twice. The store gets one result of each reading, the events of
@@ -95,7 +95,7 @@ export function startClock(
     const loops = passLoops(passed.state, loopClock, moment);
     loopClock = loops.clockMs;
     // The earning loops' ends lie at the minutes' own moments, none after the reading, so they take the
-    // team's resurrection before the manual run's death and completion, settled at the reading.
+    // team's uses of the resurrection before the manual run's death and completion, settled at the reading.
     const settled = settleCompletion(
       settleDeath(loops.state, moment).state,
       moment,
