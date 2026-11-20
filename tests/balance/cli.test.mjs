@@ -435,6 +435,7 @@ test("a trace prints the lines of the engine's map run and ends in the outcome t
   );
 });
 
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection, the switch `--no-resurrection` starts the loop with every use spent and the clock of the returns started at the start of the loop"
 test("a loop command gives the readings the loop gives for the same flags, and --practice and --no-resurrection reach the loop", () => {
   const seeds = seedRange(1, 10);
   const given = parseArgs([

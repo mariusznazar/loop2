@@ -93,7 +93,7 @@ ${Object.entries(COMMAND_FLAGS)
 --overlay     overlay files laid on the game's data for the measurement; repeat the flag or list them
 --cap         game minutes after which a map run is given up
 --hours       real hours of the loop's readings, as 8,24,72
---no-resurrection  start the loop with the team's resurrection spent
+--no-resurrection  the loop starts with every use of the team's resurrection spent, the uses returning as in the game
 --player      a player description: an identifier of balance/players/ or a file
 --maps        the maps of the overlays to check, as wasteland,deadZone; default all of them; for
               progression the maps of the game, as forest,forestDeep; default all of them

@@ -16,7 +16,8 @@
 //   loopMapAfter  the place of the loop once the last map of `attempts` is solved (optional)
 //   buyOrder      branch ids in the order of buying; a repeated id is its next rank
 //   attempts      the maps tried after the first one, in order: { map, program, needChest,
-//                 needResurrection }, `program` naming a role of `programs`
+//                 needResurrection }, `program` naming a role of `programs`; a needResurrection
+//                 attempt waits until one use of the resurrection is left
 //   programs      the roles `first`, `loop`, `loopAfter` (optional) and those the attempts name,
 //                 each an identifier of a program
 //   knowing       whether the account starts with every Understanding (optional, true)
@@ -375,8 +376,11 @@ function comeBack(ctx, hours) {
   markDays(ctx);
 }
 
-/** The first attempt not yet solved, when the road to it is open and the player has what it asks for. */
-function dueAttempt(ctx) {
+/**
+ * The first attempt not yet solved, when the road to it is open and the player has what it asks for;
+ * an attempt that waits for the resurrection is due while the team has one use of it left.
+ */
+export function dueAttempt(ctx) {
   const attempt = ctx.player.attempts.find(
     (each) => !ctx.state.solvedMaps.includes(each.map),
   );

@@ -197,7 +197,8 @@ test("a row of one map and one program with few seeds comes from the measurement
   assert.equal(Math.round((row.runs * row.solvedShare) / 100), summary.solved);
 });
 
-test("the earning loop of a row starts with the resurrection ready, which changes its balance for this program and these seeds", () => {
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection"
+test("the earning loop of a row starts with the full number of uses of the resurrection, which changes its balance for this program and these seeds", () => {
   const skills = buildSkills({ practice: { smallItemGathering: 80 } });
   const loopSeeds = seedRange(1, 10);
   const loopOf = (resurrectionReady) =>

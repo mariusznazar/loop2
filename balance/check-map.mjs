@@ -1,7 +1,7 @@
 // The map check of the balance instrument: for each map an overlay adds and each reference program,
 // the share solved on seeds 1-500, the median game minutes of the solved map runs, the failures by
-// cause, and the balance of the earning loop over 24 real hours on seeds 1-100 with resurrection
-// ready. The table is Markdown and holds no condition, action or rule of any program (D-428); it
+// cause, and the balance of the earning loop over 24 real hours on seeds 1-100, the loop starting
+// with the full number of uses of the resurrection. The table is Markdown and holds no condition, action or rule of any program (D-428); it
 // names a program by a neutral label, because an identifier can state the rules of its program in
 // other words, and the key from label to identifier is what the `programs` command prints. A
 // program's chest is the one its take list asks, so a program is measured with what it brings.

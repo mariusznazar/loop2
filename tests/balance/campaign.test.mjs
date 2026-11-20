@@ -3,11 +3,14 @@ import { test } from "node:test";
 import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
+import { newGame } from "../../dist/browser/sim/game.js";
 import {
   campaignSweep,
+  dueAttempt,
   playCampaign,
   programsOf,
 } from "../../balance/campaign.mjs";
+import { LOOP_START_MS } from "../../balance/loop.mjs";
 import best from "../../balance/players/edge-daily-best.json" with { type: "json" };
 import decent from "../../balance/players/edge-daily-decent.json" with { type: "json" };
 import stock from "../../balance/players/edge-daily-decent-stock.json" with { type: "json" };
@@ -19,6 +22,8 @@ import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
 // campaigns they sum. The campaigns here are short, on one to three seeds.
 
 const FIRST_MAP = "forestEdge";
+/** The real time one use of the resurrection takes to return: four hours, the game's start value. */
+const RENEWAL_MS = 4 * 60 * 60 * 1000;
 
 /** The player with the given fields changed, for a short campaign. */
 function shortPlayer(player, changes) {
@@ -214,4 +219,33 @@ test("the three players of Skraj lasu name programs of the reference file, maps 
 test("a player naming a program the registry lacks is refused", () => {
   const player = { ...best, programs: { ...best.programs, first: "nope" } };
   assert.throws(() => programsOf(player, REFERENCE_PROGRAMS), /nope/);
+});
+
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection, the switch `--no-resurrection` starts the loop with every use spent and the clock of the returns started at the start of the loop, after which the uses return as in the game, and the player of a campaign who waits for the resurrection before trying the next map tries when at least one use is left"
+test("a player who waits for the resurrection tries its next map while one use is left, and waits when every use is spent", () => {
+  const attempt = {
+    map: FIRST_MAP,
+    program: "first",
+    needChest: {},
+    needResurrection: true,
+  };
+  const dueWith = (usesSpent) => {
+    const game = newGame();
+    return dueAttempt({
+      player: { attempts: [attempt] },
+      state: {
+        ...game,
+        solvedMaps: [],
+        team: {
+          ...game.team,
+          resurrectionUsesSpent: usesSpent,
+          resurrectionNextReturnAtMs:
+            usesSpent === 0 ? null : LOOP_START_MS + RENEWAL_MS,
+        },
+      },
+      clock: { ms: LOOP_START_MS },
+    });
+  };
+  assert.equal(dueWith(2), attempt, "two uses spent, one left");
+  assert.equal(dueWith(3), undefined, "all three uses spent");
 });

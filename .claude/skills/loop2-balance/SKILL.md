@@ -53,7 +53,7 @@ or an unknown name stops the command with a sentence on standard error and exit 
   list the files with commas.
 - `--cap <minutes>`: game minutes after which a map run is given up.
 - `--hours <list>`: real hours of the loop's readings, as `8,24,72`.
-- `--no-resurrection`: starts the loop with the team's resurrection spent.
+- `--no-resurrection`: the loop starts with every use of the team's resurrection spent, the uses returning as in the game.
 - `--player <id or path>`: a player description. The identifiers are `edge-daily-best`,
   `edge-daily-decent` and `edge-daily-decent-stock` (the files of `balance/players/`).
 - `--maps <list>` and `--programs <list>`: narrow the rows of `check-map` (maps an overlay adds)
@@ -96,7 +96,7 @@ Every map goes through this check before a package is defined.
    with `--out <path>` outside the tracked files.
 3. The columns are: the map's name in the game's data, the program's label, the share solved on
    seeds 1-500, the median game minutes of the solved runs, the deaths by cause and the runs at the
-   cap, and the earning loop over 24 real hours on seeds 1-100 with resurrection ready: pieces taken
+   cap, and the earning loop over 24 real hours on seeds 1-100, the loop starting with the full number of uses of the resurrection: pieces taken
    from the chest per map run, pieces put into it per map run, and the share of map runs that end in
    death. The label is `P1`, `P2`... : the program's number in the list that `programs` prints, the
    same whichever programs `--programs` narrows to. The table shows no condition, action, rule or

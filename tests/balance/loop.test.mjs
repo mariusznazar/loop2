@@ -1,12 +1,22 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { loopBalance, loopOnce, loopSweep } from "../../balance/loop.mjs";
+import { resurrectionAt } from "../../dist/browser/sim/game.js";
+import {
+  LOOP_START_MS,
+  loopBalance,
+  loopOnce,
+  loopSweep,
+} from "../../balance/loop.mjs";
 import { runOnce } from "../../balance/engine.mjs";
 import { forestBest, forestLoopWithStock } from "../sim/reference-programs.mjs";
 
 // The loop mode of the instrument, checked against relations the loop code does not compute: a loop
 // of zero hours leaves the chest as the take list left it, the counts of one loop agree with each
-// other and with the chest, and the summary per checkpoint agrees with the readings it sums.
+// other and with the chest, and the summary per checkpoint agrees with the readings it sums. The
+// resurrection is read through the game's own `resurrectionAt`, which holds the uses and the clock.
+
+/** The real time one use of the resurrection takes to return: four hours, the game's start value. */
+const RENEWAL_MS = 4 * 60 * 60 * 1000;
 
 /** The sum of the counts of a record of pieces, an item with no count left out. */
 function total(pieces) {
@@ -119,6 +129,46 @@ test("the balance of a loop of zero hours is one map run that took its pieces an
   assert.equal(perSeed[0].deaths, 0);
   assert.equal(perSeed[0].put, 0);
   assert.equal(perSeed[0].taken, total(taken));
+});
+
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection"
+test("a loop that starts with the resurrection ready starts with its full stock of three uses", () => {
+  const { finalState } = loopOnce({
+    mapId: "forest",
+    program: forestLoopWithStock,
+    seed: 1,
+    chest: { stick: 8, berry: 7 },
+    checkpoints: [0],
+  });
+  assert.deepEqual(resurrectionAt(finalState.team, LOOP_START_MS), {
+    usesLeft: 3,
+    nextReturnMs: null,
+  });
+});
+
+// decision: D-428 "The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection, the switch `--no-resurrection` starts the loop with every use spent and the clock of the returns started at the start of the loop"
+test("a loop with the resurrection not ready starts with every use spent, and the first use returns four hours after the loop's start", () => {
+  const { finalState } = loopOnce({
+    mapId: "forest",
+    program: forestLoopWithStock,
+    seed: 1,
+    chest: { stick: 8, berry: 7 },
+    checkpoints: [0],
+    resurrectionReady: false,
+  });
+  const { team } = finalState;
+  assert.deepEqual(resurrectionAt(team, LOOP_START_MS), {
+    usesLeft: 0,
+    nextReturnMs: LOOP_START_MS + RENEWAL_MS,
+  });
+  assert.deepEqual(resurrectionAt(team, LOOP_START_MS + RENEWAL_MS - 1), {
+    usesLeft: 0,
+    nextReturnMs: LOOP_START_MS + RENEWAL_MS,
+  });
+  assert.deepEqual(resurrectionAt(team, LOOP_START_MS + RENEWAL_MS), {
+    usesLeft: 1,
+    nextReturnMs: LOOP_START_MS + 2 * RENEWAL_MS,
+  });
 });
 
 test("the summary per checkpoint counts the seeds and takes its stopped share from the readings it sums", () => {
