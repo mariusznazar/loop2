@@ -280,7 +280,7 @@ test("the death of a character with practice spends one use, the death of a full
   assert.equal(settled.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
   assert.deepEqual(settled.run.deathSettlement, {
     kind: "resurrectionUsed",
-    usesLeft: 2,
+    usesSpent: 1,
   });
   // What the death left of the character: nothing taken while a use was left.
   assert.deepEqual(settled.team.characters, practised().team.characters);
@@ -295,12 +295,15 @@ test("a death while the clock runs spends a use and leaves the moment of the nex
   assert.equal(second.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
   assert.deepEqual(second.settlement, {
     kind: "resurrectionUsed",
-    usesLeft: 1,
+    usesSpent: 2,
   });
   const third = dies(second.team, 0, T0 + 2_000);
   assert.equal(third.team.resurrectionUsesSpent, 3);
   assert.equal(third.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
-  assert.deepEqual(third.settlement, { kind: "resurrectionUsed", usesLeft: 0 });
+  assert.deepEqual(third.settlement, {
+    kind: "resurrectionUsed",
+    usesSpent: 3,
+  });
 });
 
 // invariant: resurrection-renewal
@@ -412,21 +415,24 @@ test("the uses that returned up to the moment of a death, that moment included, 
   const early = dies(spentOne, 0, T0 + R - 1);
   assert.equal(early.team.resurrectionUsesSpent, 2);
   assert.equal(early.team.resurrectionNextReturnAtMs, T0 + R);
-  assert.deepEqual(early.settlement, { kind: "resurrectionUsed", usesLeft: 1 });
+  assert.deepEqual(early.settlement, {
+    kind: "resurrectionUsed",
+    usesSpent: 2,
+  });
   // The very moment: the use is back, the stock is full, so this death starts the clock anew.
   const at = dies(spentOne, 0, T0 + R);
   assert.equal(at.team.resurrectionUsesSpent, 1);
   assert.equal(at.team.resurrectionNextReturnAtMs, T0 + 2 * R);
-  assert.deepEqual(at.settlement, { kind: "resurrectionUsed", usesLeft: 2 });
+  assert.deepEqual(at.settlement, { kind: "resurrectionUsed", usesSpent: 1 });
   // Two uses back at the moment of the death: it spends one, the clock of the third as it runs.
   const spentAll = withUses(practised(), USES, T0 + R).team;
   const two = dies(spentAll, 0, T0 + 2 * R);
   assert.equal(two.team.resurrectionUsesSpent, 2);
   assert.equal(two.team.resurrectionNextReturnAtMs, T0 + 3 * R);
-  assert.deepEqual(two.settlement, { kind: "resurrectionUsed", usesLeft: 1 });
+  assert.deepEqual(two.settlement, { kind: "resurrectionUsed", usesSpent: 2 });
   // With every use spent a use that returns at the moment of the death is there to spend: nothing is taken.
   const last = dies(spentAll, 0, T0 + R);
-  assert.deepEqual(last.settlement, { kind: "resurrectionUsed", usesLeft: 0 });
+  assert.deepEqual(last.settlement, { kind: "resurrectionUsed", usesSpent: 3 });
   assert.equal(last.team.resurrectionUsesSpent, USES);
   assert.equal(last.team.resurrectionNextReturnAtMs, T0 + 2 * R);
   assert.equal(last.team.characters[0].generation, 1);
@@ -513,7 +519,7 @@ test("a death settled later, at an earlier real moment, never moves back a clock
   const ola = dies(ala.team, 1, T0);
   assert.equal(ola.team.resurrectionUsesSpent, 2);
   assert.equal(ola.team.resurrectionNextReturnAtMs, T0 + 5_000 + RENEWAL_MS);
-  assert.deepEqual(ola.settlement, { kind: "resurrectionUsed", usesLeft: 1 });
+  assert.deepEqual(ola.settlement, { kind: "resurrectionUsed", usesSpent: 2 });
   // With one use left for two deaths the character settled first takes it, though it died later in real time.
   const lastOne = withUses(bothPractised(), 2, T0 + RENEWAL_MS).team;
   const first = dies(lastOne, 0, T0 + 5_000);
@@ -569,8 +575,8 @@ test("a game state these rules make loads back from its saved document as it was
   }
   assert.equal(
     loadSavedGame(savedGame(stamped(cases["a death that spent the first use"])))
-      .state.run.deathSettlement.usesLeft,
-    2,
+      .state.run.deathSettlement.usesSpent,
+    1,
   );
 });
 
@@ -653,22 +659,58 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
       delete team.resurrectionNextReturnAtMs;
       team.resurrectionReadyAtMs = T0;
     }),
-    "uses left in the settlement above the data's count": withSettlement(
+    // The death that spent a use holds the uses spent after it, a whole number from 1 up to the data's count.
+    "uses spent in the settlement above the data's count": withSettlement(
       (settlement) => {
-        settlement.usesLeft = USES + 1;
+        settlement.usesSpent = USES + 1;
       },
     ),
-    "uses left in the settlement below zero": withSettlement((settlement) => {
-      settlement.usesLeft = -1;
-    }),
-    "uses left in the settlement that is no whole number": withSettlement(
+    "uses spent in the settlement far above the data's count": withSettlement(
       (settlement) => {
-        settlement.usesLeft = 0.5;
+        settlement.usesSpent = 2 ** 53 - 1;
       },
     ),
-    "uses left in the settlement missing": withSettlement((settlement) => {
-      delete settlement.usesLeft;
+    "uses spent in the settlement of none, a death that spent a use leaving one spent at least":
+      withSettlement((settlement) => {
+        settlement.usesSpent = 0;
+      }),
+    "uses spent in the settlement below zero": withSettlement((settlement) => {
+      settlement.usesSpent = -1;
     }),
+    "uses spent in the settlement that is no whole number": withSettlement(
+      (settlement) => {
+        settlement.usesSpent = 0.5;
+      },
+    ),
+    "uses spent in the settlement that is not finite": withSettlement(
+      (settlement) => {
+        settlement.usesSpent = Infinity;
+      },
+    ),
+    "uses spent in the settlement that is a text": withSettlement(
+      (settlement) => {
+        settlement.usesSpent = "1";
+      },
+    ),
+    "uses spent in the settlement of none at all": withSettlement(
+      (settlement) => {
+        settlement.usesSpent = null;
+      },
+    ),
+    "uses spent in the settlement missing": withSettlement((settlement) => {
+      delete settlement.usesSpent;
+    }),
+    "the old key of the uses left beside the uses spent": withSettlement(
+      (settlement) => {
+        settlement.usesLeft = 2;
+      },
+    ),
+    "the old key of the uses left instead of the uses spent": withSettlement(
+      (settlement) => {
+        delete settlement.usesSpent;
+        settlement.usesLeft = 2;
+      },
+    ),
   };
   assert.equal(
     loadSavedGame(document).ok,
@@ -684,22 +726,57 @@ test("a crafted team of the resurrection is refused whole as shape", () => {
   }
 });
 
-// Task question 15: a lowering of the count refuses only a save with more spent than the new count,
-// so a settlement of a death from a larger stock, whose uses left equal the new count, still loads.
-test("a settlement whose uses left equal the data's count loads, and one above it is refused", () => {
+// Task question 15: a lowering of the count refuses only a save in which more uses are spent than the new
+// count, so a game saved at the open end of a run after its first death, with one use spent, still
+// loads when the count is lowered from 3 to 1, and the same game with two spent is refused.
+test("a count lowered from 3 to 1 after the save refuses a game with two uses spent and none with one, an open end-of-run window after a first death included", () => {
+  // decision: D-190 "The used uses return one at a time on one clock: a death that uses up a use of a full stock starts the clock, a death while the clock runs leaves it as it runs, a use returns after the span from the moment the clock started and each next one after the span from the return of the one before it, and the clock stops when the stock is full."
+  const first = settleDeath(fell(practised()), T0).state;
+  assert.equal(first.team.resurrectionUsesSpent, 1, "precondition: one spent");
+  assert.deepEqual(
+    first.run.deathSettlement,
+    { kind: "resurrectionUsed", usesSpent: 1 },
+    "precondition: the window stands open after the first death",
+  );
+  const firstDocument = savedGame(withSaveTime(first, T0));
+  const second = settleDeath(fell(end(first).state), T0 + 1_000).state;
+  assert.equal(second.team.resurrectionUsesSpent, 2, "precondition: two spent");
+  assert.equal(second.run.deathSettlement.usesSpent, 2);
+  const secondDocument = savedGame(withSaveTime(second, T0 + 1_000));
+  const uses = BALANCE.resurrectionUses;
+  try {
+    BALANCE.resurrectionUses = 1;
+    assert.deepEqual(loadSavedGame(firstDocument), {
+      ok: true,
+      state: withSaveTime(first, T0),
+    });
+    assert.deepEqual(loadSavedGame(secondDocument), {
+      ok: false,
+      reason: "shape",
+    });
+    BALANCE.resurrectionUses = 2;
+    assert.equal(loadSavedGame(secondDocument).ok, true);
+  } finally {
+    BALANCE.resurrectionUses = uses;
+  }
+});
+
+// A settlement whose uses spent equal the data's count loads, and one above it is refused, the count
+// being the data's of the moment of the load.
+test("a settlement whose uses spent equal the data's count loads, and one above it is refused", () => {
   const settled = settleDeath(fell(practised()), T0).state;
-  const withUsesLeft = (usesLeft) => {
+  const withUsesSpent = (usesSpent) => {
     const copy = structuredClone(savedGame(withSaveTime(settled, T0)));
-    copy.game.run.deathSettlement.usesLeft = usesLeft;
+    copy.game.run.deathSettlement.usesSpent = usesSpent;
     return copy;
   };
-  const equal = loadSavedGame(withUsesLeft(USES));
+  const equal = loadSavedGame(withUsesSpent(USES));
   assert.equal(equal.ok, true);
   assert.deepEqual(equal.state.run.deathSettlement, {
     kind: "resurrectionUsed",
-    usesLeft: USES,
+    usesSpent: USES,
   });
-  assert.deepEqual(loadSavedGame(withUsesLeft(USES + 1)), {
+  assert.deepEqual(loadSavedGame(withUsesSpent(USES + 1)), {
     ok: false,
     reason: "shape",
   });

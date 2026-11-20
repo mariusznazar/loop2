@@ -832,12 +832,13 @@ const SETTLEMENTS: {
   ) => DeathSettlement;
 } = {
   resurrectionUsed: (value) => {
-    const read = fields(value, ["kind", "usesLeft"]);
-    // At most the data's count: a count lowered later refuses only a save with more spent than the new
-    // count (the game itself leaves at most one below the count it had).
-    const usesLeft = count(read.usesLeft);
-    if (usesLeft > BALANCE.resurrectionUses) refuse();
-    return { kind: "resurrectionUsed", usesLeft };
+    const read = fields(value, ["kind", "usesSpent"]);
+    // From one, as the death spent one, up to the data's count: a count lowered later refuses only a
+    // save with more spent than the new count, the settlement of a death with fewer spent loading as
+    // it stands.
+    const usesSpent = integer(read.usesSpent, 1);
+    if (usesSpent > BALANCE.resurrectionUses) refuse();
+    return { kind: "resurrectionUsed", usesSpent };
   },
   progressLost: (value, currentGeneration) => {
     const read = fields(value, ["kind", "generation"]);

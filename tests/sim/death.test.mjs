@@ -157,7 +157,7 @@ test("a death with a use left uses one up: one more is out and the next back 4 h
   assert.equal(ala(settled).generation, 1);
   assert.deepEqual(settled.run.deathSettlement, {
     kind: "resurrectionUsed",
-    usesLeft: 2,
+    usesSpent: 1,
   });
 });
 

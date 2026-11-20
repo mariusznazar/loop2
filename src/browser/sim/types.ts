@@ -283,15 +283,16 @@ export type MapRun = {
 };
 
 /**
- * How a death was settled: the use of the resurrection it spent, with the uses left after it (from 0
- * up to one below the data's count), which stay the uses of that death however the team goes on;
+ * How a death was settled: the use of the resurrection it spent, with the uses spent after it (from 1
+ * up to the data's count; the uses left are the count less these), which stay the uses of that death
+ * however the team goes on;
  * everything it took, with the generation number the death gave the character, which stays the number
  * of that death however the character goes on; or nothing besides what the character carried, the
  * character having no practice yet, so that the team's resurrection and the character stay as the
  * death found them.
  */
 export type DeathSettlement =
-  | { kind: "resurrectionUsed"; usesLeft: number }
+  | { kind: "resurrectionUsed"; usesSpent: number }
   | { kind: "progressLost"; generation: number }
   | { kind: "noPractice" };
 

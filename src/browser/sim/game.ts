@@ -627,7 +627,7 @@ export function setPace(state: GameState, pace: Pace): GameResult {
  * character stays as it is: a death with every use left starts the clock, the next use returning the
  * renewal after `nowMs`, and a death with the clock running leaves its moment as it runs, which a
  * death settled at an earlier real moment after another never moves back (D-240); the settlement
- * holds the uses left after it. With none left the character loses all its practice and ranks and its
+ * holds the uses spent after it. With none left the character loses all its practice and ranks and its
  * generation number grows by one, the uses and their moment unchanged. `nowMs` is taken as a safe
  * integer; the caller checks it.
  */
@@ -650,7 +650,7 @@ export function teamAfterDeath(
       },
       settlement: {
         kind: "resurrectionUsed",
-        usesLeft: BALANCE.resurrectionUses - spent - 1,
+        usesSpent: spent + 1,
       },
     };
   const generation = died.generation + 1;

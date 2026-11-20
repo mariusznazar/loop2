@@ -834,11 +834,12 @@ function solvingItsMap(document) {
 /**
  * The document's map run ended in a death in its game minute, settled as `settlement` gives; by
  * default the death spent the third of the data's three uses, the document holding two spent before
- * it, so none is left (D-190). The game no longer holds what only a map run going on holds.
+ * it, so three are spent after it and none is left (D-190). The game no longer holds what only a map
+ * run going on holds.
  */
 function dead(
   document,
-  settlement = { kind: "resurrectionUsed", usesLeft: 0 },
+  settlement = { kind: "resurrectionUsed", usesSpent: 3 },
 ) {
   document.game.paused = false;
   document.game.discovery = null;
@@ -1174,16 +1175,16 @@ test("the team's uses spent load at their edges: none with no moment, and all of
 });
 
 // invariant: save-version
-test("a death that spent a use keeps the uses left after it, from none up to the data's count, and each loads", () => {
+test("a death that spent a use keeps the uses spent after it, from one up to the data's count, and each loads", () => {
   // decision: D-190 "The death of a character with practice uses up one use while any is left, and a death of a character with practice with none left stops its earning loop."
-  for (const usesLeft of [0, 1, 2, 3]) {
+  for (const usesSpent of [1, 2, 3]) {
     const loaded = changed((document) =>
-      dead(document, { kind: "resurrectionUsed", usesLeft }),
+      dead(document, { kind: "resurrectionUsed", usesSpent }),
     );
     assert.deepEqual(
       loadSavedGame(loaded),
       { ok: true, state: loaded.game },
-      `uses left ${usesLeft}`,
+      `uses spent ${usesSpent}`,
     );
   }
 });
@@ -1702,30 +1703,40 @@ const CRAFTED = {
     dead(document, { kind: "resurrectionUsed", generation: 2 }),
   "a resurrection used with a key added": (document) =>
     dead(document, { kind: "resurrectionUsed", note: "x" }),
-  // The death that spent a use keeps the uses left after it: exactly the key `usesLeft`, a whole count
-  // from 0 up to the data's count of three (D-190).
-  "a resurrection used without its uses left": (document) =>
+  // The death that spent a use keeps the uses spent after it: exactly the key `usesSpent`, a whole count
+  // from 1 up to the data's count of three (D-190); the count of the data is the one of the load, so a
+  // count lowered later refuses only a document with more spent than the new count.
+  "a resurrection used without its uses spent": (document) =>
     dead(document, { kind: "resurrectionUsed" }),
-  "a resurrection used with its uses left above the data's count": (document) =>
-    dead(document, { kind: "resurrectionUsed", usesLeft: 4 }),
-  "a resurrection used with its uses left far above the data's count": (
+  "a resurrection used with its uses spent above the data's count": (
     document,
-  ) => dead(document, { kind: "resurrectionUsed", usesLeft: 10 }),
-  "a resurrection used with its uses left below 0": (document) =>
-    dead(document, { kind: "resurrectionUsed", usesLeft: -1 }),
-  "a resurrection used with its uses left fractional": (document) =>
-    dead(document, { kind: "resurrectionUsed", usesLeft: 1.5 }),
-  "a resurrection used with its uses left as text": (document) =>
-    dead(document, { kind: "resurrectionUsed", usesLeft: "2" }),
-  "a resurrection used with its uses left of none": (document) =>
-    dead(document, { kind: "resurrectionUsed", usesLeft: null }),
-  "a resurrection used with its uses left beyond the safe integers": (
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 4 }),
+  "a resurrection used with its uses spent far above the data's count": (
     document,
-  ) => dead(document, { kind: "resurrectionUsed", usesLeft: 2 ** 53 }),
-  "a resurrection used with its uses left on a map run going on": (document) =>
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 10 }),
+  "a resurrection used with none spent": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 0 }),
+  "a resurrection used with its uses spent below 0": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: -1 }),
+  "a resurrection used with its uses spent fractional": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 1.5 }),
+  "a resurrection used with its uses spent as text": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: "2" }),
+  "a resurrection used with its uses spent of none": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: null }),
+  "a resurrection used with its uses spent not finite": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: Infinity }),
+  "a resurrection used with its uses spent beyond the safe integers": (
+    document,
+  ) => dead(document, { kind: "resurrectionUsed", usesSpent: 2 ** 53 }),
+  "a resurrection used with the old key of the uses left": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesLeft: 2 }),
+  "a resurrection used with the old key beside the uses spent": (document) =>
+    dead(document, { kind: "resurrectionUsed", usesSpent: 1, usesLeft: 2 }),
+  "a resurrection used with its uses spent on a map run going on": (document) =>
     (document.game.run.deathSettlement = {
       kind: "resurrectionUsed",
-      usesLeft: 2,
+      usesSpent: 2,
     }),
   "no practice holding a generation": (document) =>
     dead(document, { kind: "noPractice", generation: 1 }),
@@ -3212,10 +3223,10 @@ test("a game state the simulation made loads back from its saved document", () =
   );
   assert.notEqual(states["an attack going on"].state.run.activeCombat, null);
   assert.equal(states["a death in combat"].state.run.death.cause, "combat");
-  // D-190: the death spends the first of the three uses, two are left after it.
+  // D-190: the death spends the first of the three uses, one is spent after it.
   assert.deepEqual(states["a death in combat"].state.run.deathSettlement, {
     kind: "resurrectionUsed",
-    usesLeft: 2,
+    usesSpent: 1,
   });
   assert.deepEqual(lost.run.deathSettlement, {
     kind: "progressLost",
