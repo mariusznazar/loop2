@@ -8705,7 +8705,7 @@ statement about what a monotonic clock does during sleep, so a hidden tab, throt
 sleeping computer all arrive as more whole game minutes at the next reading. The manual map run keeps
 its elapsed measure, so a date that jumps changes no pace there. Between whole game minutes the game
 state stays the very same value, as D-04 and the saving of D-207 want. Whole real moments keep a death
-at one place on the clock however the span is read, so a use of the resurrection used in a death during an absence returns from that death's own moment, the clock starting there, and the uses left can cover a further death the same night, with real
+at one place on the clock however the span is read, so the clock of the returns, when a death during an absence starts it, runs from that death's own moment, and the uses left can cover a further death the same night, with real
 time passed in as an argument (D-04) keeping the earning loop, the catch-up and the renewal of a
 resurrection on one footing. Passing the open game minute by minute keeps
 `minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
@@ -11688,6 +11688,8 @@ The reference programs, the programs that the tests of the simulation and the ba
 
 For each game map an overlay adds and each reference program, the map check of the balance instrument prints the share of map runs solved on the seeds 1 to 500, the median game minutes of the solved map runs, the failures by cause and the balance of the earning loop, which is what a map run takes from the chest, what it puts into it and how often the character dies. The table holds no condition, action or rule of any program. It names each program by a label, `P1`, `P2` and so on, the program's place in the whole list of reference programs that the command `programs` prints, and never by the program's identifier, which can state the rules of its program in other words.
 
+The earning loop of the map check and the command of the loop start with the full number of uses of the resurrection, the switch `--no-resurrection` starts the loop with every use spent and the clock of the returns started at the start of the loop, after which the uses return as in the game, and the player of a campaign who waits for the resurrection before trying the next map tries when at least one use is left.
+
 - **Scope:** balance-tools
 - **Based on:** none
 - **Relations:** none
@@ -11696,7 +11698,7 @@ For each game map an overlay adds and each reference program, the map check of t
   - violates: a share solved measured on other seeds, or a map an overlay adds or a reference program left out of the rows, with no change of this decision
 - **Origin:** none
 
-*Rationale:* the table goes to a person who is to play the game, and a program that solves a map would give that person the solution; the share, the minutes, the causes of failure and the balance say how the map behaves, and the programs stay with the agent. The balance of the earning loop stands in the same table because it is wanted for every map, so no map needs a separate command of the loop. A name can say what a program does in other words, so the table names a program by a label that says nothing of it, and the agent keeps the key from label to name.
+*Rationale:* the table goes to a person who is to play the game, and a program that solves a map would give that person the solution; the share, the minutes, the causes of failure and the balance say how the map behaves, and the programs stay with the agent. The balance of the earning loop stands in the same table because it is wanted for every map, so no map needs a separate command of the loop. A name can say what a program does in other words, so the table names a program by a label that says nothing of it, and the agent keeps the key from label to name. The loop and the check measure the game as it is, with its full stock of uses, and the switch measures it without that protection; a player who waits for the resurrection waits only until one use is back, since one use protects one try.
 *Rejected:* a table without the balance of the earning loop — the balance would have to be computed with a separate command of the loop for each map; a table without a skill that describes the instrument — the session that defines a package would look for the commands itself and guess how to work with them; names for the reference programs that say nothing of their rules, the table keeping the names — every program written later would have to keep its name free of its rules, and the tests, the player descriptions and the skill that name the programs would change, while a label closes the leak in the one place where the table is made.
 
 ### D-429 — Do the results of the balance instrument's measurements enter the repository?
