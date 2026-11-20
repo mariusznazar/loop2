@@ -7,8 +7,11 @@ no code.
 
 Reading of the sentence: a file reads the system clock where its code, outside comments, strings,
 template text and regular expressions, holds `Date.now`, `performance.now`, `new Date()` with no
-argument, `Date()` called without `new` or `hrtime`, with `Date` or `performance` reached by its
-own name or as a member of anything (`globalThis.Date.now()`); it draws a random number from
+argument, `new Date(undefined)`, `Date()` called without `new`, `hrtime`, `uptime`, `timeOrigin` or
+`Intl.DateTimeFormat`, with `Date` or `performance` reached by its own name or as a member of
+anything (`globalThis.Date.now()`); it draws a random number or reads the clock under another name
+where `Math`, `Date` or `performance` stands as a value, assigned, destructured or passed on
+(`const { random } = Math`, `const D = Date`, `list.map(Date)`); it draws a random number from
 another source where that code names `Math.random`, `Math[` (computed access to `Math`), `crypto`,
 `getRandomValues` or `randomUUID`, holds the increment constant of the mulberry32 generator step,
 `0x6D2B79F5` (decimal 1831565813), so that no generator beside the seeded one of the game stands
@@ -22,8 +25,10 @@ Covers:
   or a date given its argument (`new Date(0)`), is not.
 
 Does NOT cover: a generator written from scratch that uses none of the names above and not the
-mulberry32 constant; the clock or a random source reached through a name built at run time; a
-command the file starts whose output depends on the time.
+mulberry32 constant; the clock or a random source reached through a name built at run time, through
+an object handed in from outside the file (a `Date` or a `Math` taken as an argument and called
+there) or through `Reflect` and `Function`; a method that reads the current moment and is named
+by none of the forms above; a command the file starts whose output depends on the time.
 """
 
 import re
@@ -41,6 +46,14 @@ FORBIDDEN_NAMES = (
     (re.compile(r"\bgetRandomValues\b"), "getRandomValues"),
     (re.compile(r"\brandomUUID\b"), "randomUUID"),
     (re.compile(r"\bhrtime\b"), "hrtime"),
+    (re.compile(r"\buptime\b"), "uptime"),
+    (re.compile(r"\btimeOrigin\b"), "timeOrigin"),
+    (re.compile(r"\bIntl\s*(?:\?\.|\.)\s*DateTimeFormat\b"), "Intl.DateTimeFormat"),
+)
+# `Math`, `Date` or `performance` taken as a value, assigned, destructured or passed on, so that a
+# function of it (`random`, `now`) is called under another name.
+CLOCK_OR_DRAW_AS_VALUE = re.compile(
+    r"[=,(]\s*(?:[\w$]+\s*(?:\?\.|\.)\s*)*(?:Math|Date|performance)\s*[;,)]"
 )
 FORBIDDEN_STRINGS = ("crypto", "node:crypto", "perf_hooks", "node:perf_hooks")
 GENERATOR_CONSTANT = (
@@ -55,6 +68,7 @@ SYSTEM_TIME = (
     (re.compile(r"(?<![\w$])performance\s*(?:\?\.|\.)\s*now\b"), "performance.now"),
     (re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"Date\s*\(\s*\)"), "new Date()"),
     (re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"Date\s*(?![\s(\w$])"), "new Date"),
+    (re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"Date\s*\(\s*undefined\s*\)"), "new Date(undefined)"),
 )
 BARE_DATE_CALL = re.compile(r"(?<![\w$])Date\s*(?:\?\.\s*)?\(")
 NEW_BEFORE = re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"$")
@@ -67,6 +81,8 @@ def findings(relative, text):
     for pattern, name in FORBIDDEN_NAMES:
         if pattern.search(code):
             found.append(f"{relative} names {name}")
+    if CLOCK_OR_DRAW_AS_VALUE.search(code):
+        found.append(f"{relative} takes Math, Date or performance as a value")
     for pattern, name in GENERATOR_CONSTANT:
         if pattern.search(code):
             found.append(f"{relative} holds the generator step constant {name}")
@@ -110,6 +126,17 @@ FLAGGED_SOURCES = (
     "import { performance } from 'node:perf_hooks';\nexport const p = performance.now();\n",
     "export const t = process.hrtime.bigint();\n",
     "export const t = `${Date.now()}`;\n",
+    "const { random } = Math;\nexport const u = random();\n",
+    "const { now } = Date;\nexport const t = now();\n",
+    "const { now } = performance;\nexport const t = now();\n",
+    "const { now } = globalThis.Date;\nexport const t = now();\n",
+    "const D = Date;\nexport const t = D.now();\n",
+    "export const t = [1].map(Date);\n",
+    "export const t = process.uptime();\n",
+    "import os from 'node:os';\nexport const t = os.uptime();\n",
+    "export const t = performance.timeOrigin;\n",
+    "export const t = new Intl.DateTimeFormat().format();\n",
+    "export const t = new Date(undefined);\n",
 )
 # Made-up source holding the names only where the scan must not look, and a date with an argument.
 CLEAN_SOURCE = (
