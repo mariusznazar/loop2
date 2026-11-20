@@ -75,8 +75,9 @@ export function takeTrip(
 }
 
 /**
- * The take list as a run of a solved map takes it (D-189): each entry cut by the carrying capacity
- * and the map's entry cap in list order, the list's own counts standing in for the stock. Pure.
+ * The take list cut by the carrying capacity and the map's entry cap in list order, the list's own
+ * counts standing in for the stock; no start of a map run uses it now (D-189), the view's line of a
+ * solved map does. Pure.
  */
 export function clippedTake(
   plan: TripPlan,

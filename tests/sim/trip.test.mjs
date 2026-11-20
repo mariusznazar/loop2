@@ -667,7 +667,7 @@ test("clippedTake lists the take entries cut by capacity and the entry cap in li
 
 test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
   // invariant: solved-map-manual-run
-  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from the chest and pays no practice."
   const unsolved = sent();
   assert.equal(unsolved.run.solvedMapRun, false);
   assert.equal(sent(solvedForest()).run.solvedMapRun, true);
@@ -784,9 +784,10 @@ test("a death on a manual run of a solved map takes what the character carried a
   assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });
 
-// What a send takes is one function for both kinds of start (D-189): an unsolved map
-// takes from the chest, a solved one from nowhere. The expected entries below are worked out by hand
-// from the chest, the carrying capacity and the map's entry cap, in list order.
+// What a send takes is one function (D-189): every start passes the chest, and the cases with
+// no chest (`null`) are the view's line of a solved map, which reads the list without one. The
+// expected entries below are worked out by hand from the chest or the list, the carrying capacity
+// and the map's entry cap, in list order.
 
 test("sendTake at an unsolved map takes each entry cut by the chest's stock, then by the carrying capacity", () => {
   // Chest stick 5, berry 10; capacity 15, no entry cap. Stick: min(8, 5, 15) = 5, room 10 left.
@@ -820,7 +821,7 @@ test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the 
   ]);
 });
 
-test("sendTake at a solved map takes the take list from nowhere, clipped by capacity 12 only", () => {
+test("sendTake with no chest, the view's solved-map line, cuts the take list by capacity 12 only", () => {
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // Null chest: the list's own counts stand in for the stock. Stick: min(8, 8, 12) = 8, room 4.
   // Berry: min(9, 9, 4) = 4.
@@ -842,7 +843,7 @@ test("sendTake at a solved map is not cut by any chest's stock, as no chest is a
   ]);
 });
 
-test("the backpack of a solved map's run is the entries sendTake gives from nowhere", () => {
+test("takeFromNowhere gives the entries of a list cut by capacity and entry cap, with no chest", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
