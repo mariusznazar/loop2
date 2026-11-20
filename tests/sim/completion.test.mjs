@@ -514,55 +514,64 @@ test("an actual program edit resets the streak and defeated attacks; cold loss k
 
 /** A real moment of the browser's clock, in ms. */
 const T0 = 1_760_000_000_000;
-/** The renewal of a resurrection, 480 real minutes, in ms. */
-const RENEWAL_MS = 28_800_000;
+/** The return of one use of the resurrection, 240 real minutes, in ms: 240 × 60 000. */
+const RENEWAL_MS = 14_400_000;
 
-/** `game` with the team's resurrection ready from the real moment `readyAtMs` on. */
-const readyFrom = (game, readyAtMs) => ({
+/** `game` with the team's resurrection used up, its one use returning at the real moment `returnMs`. */
+const usedUp = (game, returnMs) => ({
   ...game,
-  team: { ...game.team, resurrectionReadyAtMs: readyAtMs },
+  team: {
+    ...game.team,
+    resurrectionUsesSpent: 3,
+    resurrectionNextReturnAtMs: returnMs,
+  },
 });
 
-/** A map run one game minute short of completing Las, in a game whose resurrection is ready from `readyAtMs`, completed. */
-function completedWith(readyAtMs, game = withEdgeSolved(newKnowingGame())) {
-  return advanceMinutes(oneShort(readyFrom(game, readyAtMs)), 5).state;
+/** A map run one game minute short of completing Las, in `game`, completed. */
+function completedWith(game = withEdgeSolved(newKnowingGame())) {
+  return advanceMinutes(oneShort(game), 5).state;
 }
 
-// D-190: a first completion of a map renews a used-up resurrection of the team, and leaves a ready one.
+// D-190: a first completion of a map returns one use of a used-up resurrection of the team, at the moment of the reading.
 // invariant: resurrection-renewal
-test("the first completion of a map makes a used-up resurrection of the team ready at the moment of the reading", () => {
-  const done = completedWith(T0 + RENEWAL_MS);
+test("the first completion of a map returns one use of a used-up resurrection of the team at the moment of the reading", () => {
+  // decision: D-190 "The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full"
+  const done = completedWith(
+    usedUp(withEdgeSolved(newKnowingGame()), T0 + RENEWAL_MS),
+  );
   assert.equal(
     done.run.completionSettlement,
     null,
     "game time settles nothing",
   );
-  assert.equal(done.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(done.team.resurrectionUsesSpent, 3);
+  assert.equal(done.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
   const settled = settleCompletion(done, T0).state;
   assert.deepEqual(settled.run.completionSettlement, {
     kind: "resurrectionRenewed",
   });
-  assert.equal(settled.team.resurrectionReadyAtMs, T0);
+  assert.equal(settled.team.resurrectionUsesSpent, 2);
+  // The clock runs on as it was: the next use is still due at the moment it was due before.
+  assert.equal(settled.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
   assert.equal(resurrectionReady(settled.team, T0), true);
   assert.deepEqual(settled.team.characters, done.team.characters);
   assert.deepEqual(settled.solvedMaps, done.solvedMaps);
 });
 
-// D-190: a ready resurrection stays ready.
-test("the first completion of a map leaves a ready resurrection as it was, ready from the moment it was, and says so", () => {
-  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
-  for (const readyAtMs of [0, T0 - 1, T0, -3_000]) {
-    const done = completedWith(readyAtMs);
-    const settled = settleCompletion(done, T0).state;
-    assert.deepEqual(
-      settled.run.completionSettlement,
-      { kind: "resurrectionReady" },
-      `ready from ${readyAtMs}`,
-    );
-    assert.equal(settled.team.resurrectionReadyAtMs, readyAtMs);
-  }
-  const notYet = settleCompletion(completedWith(T0 + 1), T0).state;
-  assert.equal(notYet.run.completionSettlement.kind, "resurrectionRenewed");
+// D-190: a full stock stays full.
+test("the first completion of a map leaves a full stock as it was, and says so", () => {
+  // decision: D-190 "The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full"
+  const settled = settleCompletion(completedWith(), T0).state;
+  assert.deepEqual(settled.run.completionSettlement, {
+    kind: "resurrectionReady",
+  });
+  assert.equal(settled.team.resurrectionUsesSpent, 0);
+  assert.equal(settled.team.resurrectionNextReturnAtMs, null);
+  const notFull = settleCompletion(
+    completedWith(usedUp(withEdgeSolved(newKnowingGame()), T0 + 1)),
+    T0,
+  ).state;
+  assert.equal(notFull.run.completionSettlement.kind, "resurrectionRenewed");
 });
 
 // D-190: once per map, for a success.
@@ -572,25 +581,33 @@ test("the completion of a map the account had solved before renews nothing, what
     ...withEdgeSolved(newKnowingGame()),
     solvedMaps: ["forestEdge", "forest"],
   };
-  const done = completedWith(T0 + RENEWAL_MS, solved);
+  const done = completedWith(usedUp(solved, T0 + RENEWAL_MS));
   assert.equal(done.run.solvedMapRun, true);
   assert.equal(done.run.completion.minute, 1);
   const result = settleCompletion(done, T0);
   assert.equal(result.state, done);
-  assert.equal(result.state.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(result.state.team.resurrectionUsesSpent, 3);
+  assert.equal(result.state.team.resurrectionNextReturnAtMs, T0 + RENEWAL_MS);
 });
 
 // D-190: the second solving of one map, by a restart of its completion, renews nothing either.
 test("a restart after a first completion starts a map run of a solved map, whose completion renews nothing", () => {
-  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
-  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
-  const settled = settleCompletion(completedWith(T0 + RENEWAL_MS), T0).state;
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from the chest and pays no practice"
+  // decision: D-190 "The first completion of a map the account has not solved yet returns one use at once while the stock is not full, once for each map, the clock running on as it was, and a full stock stays full"
+  const settled = settleCompletion(
+    completedWith(usedUp(withEdgeSolved(newKnowingGame()), T0 + RENEWAL_MS)),
+    T0,
+  ).state;
   const restarted = restart(settled).state;
   assert.equal(restarted.run.solvedMapRun, true);
   assert.equal(restarted.run.completionSettlement, null);
   const used = {
     ...restarted,
-    team: { ...restarted.team, resurrectionReadyAtMs: T0 + RENEWAL_MS },
+    team: {
+      ...restarted.team,
+      resurrectionUsesSpent: 3,
+      resurrectionNextReturnAtMs: T0 + RENEWAL_MS,
+    },
   };
   const again = advanceMinutes(
     {
@@ -611,10 +628,14 @@ test("a restart after a first completion starts a map run of a solved map, whose
 // D-221 in step: a completion is settled once, and a resurrection used up afterwards is not renewed by the screen standing on.
 // invariant: resurrection-renewal
 test("a completion settled is not settled again, even when the resurrection is used up while the screen stands", () => {
-  const settled = settleCompletion(completedWith(0), T0).state;
+  const settled = settleCompletion(completedWith(), T0).state;
   const used = {
     ...settled,
-    team: { ...settled.team, resurrectionReadyAtMs: T0 + RENEWAL_MS },
+    team: {
+      ...settled.team,
+      resurrectionUsesSpent: 3,
+      resurrectionNextReturnAtMs: T0 + RENEWAL_MS,
+    },
   };
   const later = settleCompletion(used, T0 + 1);
   assert.equal(later.state, used);
@@ -625,7 +646,9 @@ test("a completion settled is not settled again, even when the resurrection is u
 // D-386: where there is nothing to settle the moment is not looked at; one to settle is a safe integer.
 test("a completion to settle takes a safe integer moment, and nothing else to settle reads none", () => {
   // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
-  const done = completedWith(T0 + RENEWAL_MS);
+  const done = completedWith(
+    usedUp(withEdgeSolved(newKnowingGame()), T0 + RENEWAL_MS),
+  );
   for (const nowMs of [
     Number.NaN,
     Infinity,
@@ -661,9 +684,13 @@ test("a completion to settle takes a safe integer moment, and nothing else to se
 });
 
 // D-386: a device clock set before 1970 reads below zero, and the moment is stored as it is.
-test("a first completion at a moment below zero makes the used-up resurrection ready at that moment", () => {
+test("a first completion at a moment below zero returns one use, and the clock stays as it was", () => {
   // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
-  const settled = settleCompletion(completedWith(RENEWAL_MS), -5_000).state;
-  assert.equal(settled.team.resurrectionReadyAtMs, -5_000);
+  const settled = settleCompletion(
+    completedWith(usedUp(withEdgeSolved(newKnowingGame()), RENEWAL_MS)),
+    -5_000,
+  ).state;
+  assert.equal(settled.team.resurrectionUsesSpent, 2);
+  assert.equal(settled.team.resurrectionNextReturnAtMs, RENEWAL_MS);
   assert.equal(settled.run.completionSettlement.kind, "resurrectionRenewed");
 });

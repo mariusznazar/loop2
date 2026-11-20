@@ -423,11 +423,12 @@ test("every item and every item of the campfire names an item of the data", () =
   assert.ok(CAMPFIRE.light.item in ITEMS);
 });
 
-// D-190: the resurrection renews after eight hours, 480 real minutes. Real minutes, not game
-// minutes.
-test("the resurrection renews 480 real minutes after the death that used it", () => {
-  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
-  assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
+// D-190: the resurrection has three uses, and one used use returns after four hours, 240 real
+// minutes. Real minutes, not game minutes.
+test("the resurrection holds 3 uses and one returns 240 real minutes after the clock started", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters, held as numbers of the account, no item of any backpack, equipment or chest: a number of uses and the span of real time after which one used use returns, both set in the balance data, 3 uses and 4 hours to start."
+  assert.equal(BALANCE.resurrectionUses, 3);
+  assert.equal(BALANCE.resurrectionRenewalRealMinutes, 240);
 });
 
 // D-18, D-239: one game minute of an earning loop is 60 real seconds, a whole number from 1 up so

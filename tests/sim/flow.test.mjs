@@ -56,7 +56,8 @@ test("a new game has one empty program, a team with no character and an empty ch
   assert.deepEqual(state.team, {
     characters: [],
     chest: { pieces: {} },
-    resurrectionReadyAtMs: 0,
+    resurrectionUsesSpent: 0,
+    resurrectionNextReturnAtMs: null,
   });
   assert.equal(state.nextCharacterId, 1);
   assert.equal(state.run, null);
