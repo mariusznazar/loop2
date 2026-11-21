@@ -340,11 +340,12 @@ header .failure-line {
 
 /*
  * The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
- * program”, „Zatrzymaj” (D-44). Neutral at rest, its text in `text`; under the pointer and at the
- * visible focus its text in `danger` (D-39). The React button carries the class.
+ * program”, „Zatrzymaj” (D-44). Its text in `danger` at rest, in every layout, so a player of a phone
+ * sees it before a tap; under the pointer it adds only the background `highlight` from the rule
+ * above, and disabled it looks as every disabled button does, which the disabled rule below draws
+ * (D-39). The React button carries the class.
  */
-.button.destructive:hover:not(:disabled),
-.button.destructive:focus-visible {
+.button.destructive {
   color: var(--danger);
 }
 

@@ -27,6 +27,7 @@ import { ReactSelectList } from "../../dist/browser/view/controls/react-select-l
 import { ReactNumberField } from "../../dist/browser/view/controls/react-number-field.js";
 import { readNumberField } from "../../dist/browser/view/program-editor.js";
 import { readTripCount } from "../../dist/browser/view/trip-editor.js";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 
 // --- drawing a control -------------------------------------------------------------------------
 
@@ -156,6 +157,36 @@ for (const { name, kind, text, expectedClass } of KIND_CASES) {
     });
   });
 }
+
+// Catches a destructive button neutral at rest, its text `text` until the pointer or the focus comes:
+// the rule that gives its text `danger` must hold at rest, through the stylesheets as the page links
+// them, and a disabled one keeps `text-disabled` as every disabled button does (D-44).
+test("a destructive button has its text in danger at rest, a plain one in text, and a disabled one in text-disabled", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/`"
+  await withPage(async ({ document }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const { getComputedStyle } = document.defaultView;
+    const colour = (element) =>
+      getComputedStyle(element).getPropertyValue("color");
+    const destructive = drawnElement(
+      await drawn(document, createElement(ReactButton, { text: "Usuń", kind: "destructive" })),
+    );
+    assert.equal(colour(destructive), "var(--danger)");
+    const plain = drawnElement(
+      await drawn(document, createElement(ReactButton, { text: "Anuluj" })),
+    );
+    assert.equal(colour(plain), "var(--text)");
+    const disabled = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "Usuń", kind: "destructive", disabled: true }),
+      ),
+    );
+    assert.equal(colour(disabled), "var(--text-disabled)");
+  });
+});
 
 test("a button selected in its group carries the class selected and aria-pressed true, and one not selected aria-pressed false", async () => {
   await withPage(async ({ document }) => {
