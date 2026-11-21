@@ -14,7 +14,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { ITEMS } from "../sim/data/items.js";
-import { RESOURCES } from "../sim/data/resources.js";
 import type { ConditionNumber } from "../sim/program.js";
 import type { ItemId, Program, TripEntry, TripPlan } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
@@ -209,7 +208,7 @@ export function TripPlanView({ program, items, onCommit }: TripPlanViewProps) {
                       aria-label={ITEMS[entry.item].name}
                       style={
                         {
-                          "--icon": `url("/icons/${RESOURCES[entry.item].icon}.svg")`,
+                          "--icon": `url("/icons/${ITEMS[entry.item].icon}.svg")`,
                         } as CSSProperties
                       }
                     />

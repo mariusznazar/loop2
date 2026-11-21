@@ -766,7 +766,7 @@ export function actionPriceText(
     state.run?.character.skills ?? {},
   );
   const parts = pieces.map(({ item, count }) => {
-    const { name, plural } = RESOURCES[item];
+    const { name, plural } = ITEMS[item];
     return `${count} ${countedName(count, { one: name, ...plural })}`;
   });
   if (natureEnergy > 0)

@@ -5,6 +5,7 @@ import {
   CREATURES as CREATURE_DATA,
   type CreatureId,
 } from "../sim/data/creatures.js";
+import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -316,7 +317,7 @@ function plaquesOf(discovery: Understanding): ScenePlaque[] {
   const icons = new Set([
     ...discovery.actions.map((kind) => iconHref(ACTIONS[kind].icon)),
     ...discovery.items.map((id) =>
-      iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : RESOURCES[id].icon),
+      iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : ITEMS[id].icon),
     ),
     ...discovery.creatures.map((id) => iconHref(CREATURE_DATA[id].icon)),
   ]);
