@@ -1524,11 +1524,12 @@ test("a value the rule holds outside the pick stands chosen and greyed, with no 
   });
 });
 
-test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walka, each with its icon and the time of one execution beside it", async () => {
-  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+test("the actions stand in the five groups Ruch, Zbieranie, Ogień, Żywność i walka and Wytwarzanie, each with its icon and, where it has one, the time of one execution beside it", async () => {
+  // decision: D-290 "The pick of the rule panel sets the actions in five named groups"
   // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
   // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
   // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
+  // decision: D-363 "An action whose price its target gives, „Wytwórz” and „Opatrz” with an item as the target, shows no price at its cell of the pick of actions"
   // decision: D-293 "Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out of the action takes, such as „10 min”, „tura” for an action of combat, for a movement during a map run the time of a step on that map, and nothing for a movement outside a map run"
   await withPage(async (page) => {
     await mountPanel(page, twoGroups(), {
@@ -1557,17 +1558,31 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
       ],
       [
         "Żywność i walka",
-        ["Zjedz — jagoda (1 jagoda)", "Uderz — patyk", "Kopnij", "Odskocz"],
+        [
+          "Zjedz — jagoda (1 jagoda)",
+          "Opatrz",
+          "Uderz — patyk",
+          "Kopnij",
+          "Odskocz",
+        ],
       ],
+      ["Wytwarzanie", ["Wytwórz"]],
     ]);
     const timeOf = (name) =>
       cellNamed(panel, name).parentElement.querySelector(".rule-panel-time")
         ?.textContent ?? null;
-    // The minutes of the data (src/browser/sim/data/actions.ts): „Zbierz” 10, „Obchód” 40.
+    // The minutes of the data (src/browser/sim/data/actions.ts): „Zbierz” 10, „Obchód” 40, „Opatrz” 10.
     assert.equal(timeOf("Zbierz"), "10 min");
     assert.equal(timeOf("Obchód"), "40 min");
+    assert.equal(timeOf("Opatrz"), "10 min");
     assert.equal(timeOf("Kopnij"), "tura");
     assert.equal(timeOf("Wędruj"), null, "no map gives a move its step");
+    // „Wytwórz” takes its time from the recipe of its target, so its cell shows none (D-293).
+    assert.equal(
+      timeOf("Wytwórz"),
+      null,
+      "the recipe of the target gives the time",
+    );
     assert.ok(cellNamed(panel, "Zbierz").querySelector(".icon-mask"));
   });
 });
