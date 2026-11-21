@@ -536,12 +536,18 @@ function MapsView({
   const [shown, setShown] = useState<JudgingPlumbing["shown"]>({});
   const [shownOn, setShownOn] = useState(mapId);
   const alive = useRef(false);
+  const cardMap = useRef(mapId);
 
   // Another map of the list is leaving the card: no result of a judging stands past it (D-329).
   if (shownOn !== mapId) {
     setShownOn(mapId);
     setShown({});
   }
+
+  // The map of the card drawn last, which a judging asked for but not yet made checks its own map against.
+  useLayoutEffect(() => {
+    cardMap.current = mapId;
+  }, [mapId]);
 
   // A judging asked for but not yet made is dropped with the screen.
   useEffect(() => {
@@ -585,8 +591,20 @@ function MapsView({
       // The button is drawn waiting before the simulation runs, which blocks the page until it has
       // counted the twelve runs: the browser gets a frame to paint the button, and the page is asked in
       // the task after it.
+      const unwait = () =>
+        setWaiting((now) =>
+          now.filter(
+            (each) => each.characterId !== characterId || each.act !== act,
+          ),
+        );
       const judge = () => {
         if (!alive.current) return;
+        // The click acted on the map of its card: one the player has left for another map asks for
+        // nothing, as one of a screen taken down (D-243, D-329).
+        if (cardMap.current !== judgedMap) {
+          unwait();
+          return;
+        }
         let judged: Judging | null = null;
         let starting = false;
         try {
@@ -598,16 +616,13 @@ function MapsView({
             (solvedSeeds(judged) === judged.results.length ||
               (standing !== undefined && sameLines(standing, judged)));
           if (starting) {
-            focus.owe({ characterId, target: "stop" });
+            // Only where the pressed button held the focus: a focus that stood elsewhere is not taken.
+            if (hadFocus) focus.owe({ characterId, target: "stop" });
             controls.startLoop(characterId, judgedMap, programId);
           }
         } finally {
           if (hadFocus && !starting) focus.owe({ characterId, target: act });
-          setWaiting((now) =>
-            now.filter(
-              (each) => each.characterId !== characterId || each.act !== act,
-            ),
-          );
+          unwait();
           if (judged !== null) {
             const done = judged;
             setShown((now) =>

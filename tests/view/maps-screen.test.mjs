@@ -1587,7 +1587,7 @@ test("a seed unsolved shows the result under the character and the sentence over
   });
 });
 
-// D-243, task Q14: only a result from the button of a judging counts as seen. A result a first click of
+// D-243: only a result from the button of a judging counts as seen. A result a first click of
 // „Puść w pętlę” left under the character, its second click pressed and the loop stopped, is no such result:
 // the next click of „Puść w pętlę” whose judging gives the same twelve rows waits for „Puść mimo to”.
 test("a result left under the character by an earlier „Puść w pętlę” is no result of the button of a judging: the same rows wait for the second click again", async () => {
@@ -1710,7 +1710,7 @@ test("the waiting second click goes where another program is picked, a new judgi
   });
 });
 
-// D-243, task Q14: a result with a failure that stands from the button of a judging does not count as
+// D-243: a result with a failure that stands from the button of a judging does not count as
 // seen: „Puść w pętlę” judges anew, starts at once on the same result and waits on a different one.
 test("where a result with a failure already stands under the character, „Puść w pętlę” judges anew, starts at once on the same twelve rows and waits for the second click on a different result", async () => {
   // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
@@ -1839,6 +1839,32 @@ test("a screen taken down while „Puść w pętlę” judges never asks the pag
       await new Promise((resolve) => setTimeout(resolve, 80));
     });
     assert.deepEqual(calls, []);
+  });
+});
+
+// D-243, D-329: a click acts on the map of the card it was made on. The player who opens another map
+// before the judging is made has left that card, as one who leaves the screen, so the click asks the page
+// for nothing and the buttons of the new card wait for nothing.
+test("a click whose judging is not yet made when another map of the list opens asks the page to judge nothing and starts no earning loop", async () => {
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”, which its click first judges anew (D-439)."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala"));
+    const { screen, calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => judgedOf(),
+    });
+    const ala = members(page.root)[0];
+    await press(loopButton(ala));
+    await press(judgeButton(ala));
+    await inAct(() => screen.update(propsOf(state, "forestEdge")));
+    await inAct(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+    assert.deepEqual(calls, []);
+    const onEdge = members(page.root)[0];
+    assert.deepEqual(loopStand(onEdge), ORDINARY);
+    assert.equal(loopButton(onEdge).disabled, false);
+    assert.equal(judgeButton(onEdge).textContent, "Oceń na 12 ziarnach");
+    assert.equal(judgeButton(onEdge).disabled, false);
   });
 });
 
@@ -1973,6 +1999,30 @@ test("after „Puść w pętlę” the focus goes to that character's „Zatrzym
     );
     bobsList.focus();
     await inAct(() => screen.update(propsOf(idle, "forest", NOW + MINUTE)));
+    assert.equal(document.activeElement, bobsList);
+  });
+});
+
+// The styleguide's rule "Focus does not fall to the page" gives the focus back only where the pressed
+// button held it: the earning loop the judging starts at once takes no focus that stood elsewhere at the
+// click, as the judging that does not start takes none.
+test("an earning loop that „Puść w pętlę” starts at once takes no focus that stood elsewhere at the click", async () => {
+  await withPage(async (page) => {
+    const idle = solved(teamOf("Ala", "Bob"));
+    const looping = { ...idle, loops: { 1: LOOP } };
+    const { document } = page;
+    await mount(page, propsOf(idle, "forest"), {
+      judge: () => judgedOf(),
+      startLoop: (shown) => shown.update(propsOf(looping, "forest")),
+    });
+    const bobsList = page.root.querySelector(
+      'select[aria-label="Program: Bob"]',
+    );
+    bobsList.focus();
+    await press(buttonLabelled(page.root, "Puść w pętlę: Ala, mapa Las"));
+    await until(
+      () => buttonLabelled(page.root, "Zatrzymaj: Ala") !== undefined,
+    );
     assert.equal(document.activeElement, bobsList);
   });
 });
