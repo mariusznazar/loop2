@@ -1,14 +1,10 @@
-import {
-  ACTION_GROUPS,
-  ACTIONS,
-  NATURE_ENERGY_NAME,
-  type ActionDef,
-} from "../sim/data/actions.js";
+import { ACTION_GROUPS, ACTIONS, type ActionDef } from "../sim/data/actions.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
   type ConditionDef,
 } from "../sim/data/conditions.js";
+import { itemTargets, takesItem } from "../sim/action-targets.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -37,7 +33,14 @@ import type {
 } from "../sim/types.js";
 
 import { tenths } from "./body-row.js";
-import { countedName } from "./counted-name.js";
+import {
+  itemTargetPick,
+  itemTargetTime,
+  knownTargets,
+  namesItem,
+  priceText,
+  targetName,
+} from "./item-target-pick.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
@@ -412,7 +415,9 @@ export function withConditionKind(
 
 /**
  * The rule's action switched to `kind`; an action that names a resource — „Idź”, „Zbierz” — takes
- * the first of `resources`. Null when the kind is already chosen.
+ * the first of `resources`, and one that names an item — „Wytwórz”, „Opatrz” — the first of the
+ * action's targets that `items` holds, in the data's order. Null when the kind is already chosen,
+ * and where an action that names a target has none offered.
  */
 export function withActionKind(
   program: Program,
@@ -420,11 +425,20 @@ export function withActionKind(
   index: number,
   kind: ActionKind,
   resources: readonly ResourceId[],
+  items: readonly ItemId[],
 ): Program | null {
   const rule = program.groups.find((group) => group.id === groupId)?.rules[
     index
   ];
   if (!rule || rule.action.kind === kind) return null;
+  if (takesItem(kind)) {
+    const item = itemTargets(kind).find((id) => items.includes(id));
+    if (item === undefined) return null;
+    return replaceRule(program, groupId, index, {
+      ...rule,
+      action: { kind, item },
+    });
+  }
   if (!takesResource(kind))
     return replaceRule(program, groupId, index, { ...rule, action: { kind } });
   const resource = resources[0];
@@ -496,6 +510,32 @@ export function withActionResource(
   });
 }
 
+/**
+ * The item of the rule's action, where the action names one and the item is among the targets its
+ * kind takes; null when unchanged, when the action names no item or when the kind does not take it.
+ */
+export function withActionItem(
+  program: Program,
+  groupId: GroupId,
+  index: number,
+  item: ItemId,
+): Program | null {
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
+  if (
+    !rule ||
+    !namesItem(rule.action) ||
+    rule.action.item === item ||
+    !itemTargets(rule.action.kind).includes(item)
+  )
+    return null;
+  return replaceRule(program, groupId, index, {
+    ...rule,
+    action: { ...rule.action, item },
+  });
+}
+
 /** Why a cell of the rule panel's pick stands greyed (D-289); each is one sentence for the player. */
 export const PICK_REASONS = {
   branchNotBought: BRANCH_NOT_BOUGHT,
@@ -548,11 +588,6 @@ function knownResources(
       id,
       onMap: !map || map.resources.some((resource) => resource.id === id),
     }));
-}
-
-/** A resource or an item named in the player's words: its name from the data, capitalised. */
-function targetName(name: string): string {
-  return name.charAt(0).toLocaleUpperCase("pl") + name.slice(1);
 }
 
 /** A section of one group's cells, in a plan that parts what the data sets apart. */
@@ -634,6 +669,8 @@ export function actionPick(
           ? PICK_REASONS.branchNotBought
           : PICK_REASONS.branchWithoutRun;
       else if (takesResource(kind) && !named) reason = PICK_REASONS.noTarget;
+      else if (takesItem(kind) && knownTargets(state, kind).length === 0)
+        reason = PICK_REASONS.noTarget;
       return {
         at: groups.indexOf(def.group),
         cell: {
@@ -691,12 +728,16 @@ export function conditionTargetPick(
     }));
 }
 
-/** The pick of the action's target: the resources; null for an action that names none. Pure. */
+/**
+ * The pick of the action's target: the resources for „Idź”, „Zbierz” and „Obchód”, the items its kind
+ * takes for „Wytwórz” and „Opatrz”; null for an action that names none. Pure.
+ */
 export function actionTargetPick(
   state: GameState,
   held: Action,
 ): PickCell<ItemId>[] | null {
-  return namesResource(held) ? resourcePick(state, held.resource) : null;
+  if (namesResource(held)) return resourcePick(state, held.resource);
+  return namesItem(held) ? itemTargetPick(state, held) : null;
 }
 
 /** The fields a condition stands in, in order: the number only where it takes one, a target only where it names one. */
@@ -717,7 +758,9 @@ export function ruleFields(rule: ProgramRule): RuleField[] {
   return [
     ...conditionFields(rule.condition),
     "action",
-    ...(namesResource(rule.action) ? (["actionTarget"] as const) : []),
+    ...(namesResource(rule.action) || namesItem(rule.action)
+      ? (["actionTarget"] as const)
+      : []),
   ];
 }
 
@@ -737,11 +780,18 @@ export function fieldAfter<Field>(
 /**
  * The time one carrying out of an action takes, as the editor shows it: its minutes from the data,
  * during a map run as the simulation gives them for the character of the map run; „tura” for an
- * action of combat; for a movement the step of the map of the map run, and nothing outside one.
+ * action of combat; for a movement the step of the map of the map run, and nothing outside one. An
+ * action whose time its target gives has it from `item`, the target, and none of the bare action.
  */
-export function actionTime(state: GameState, kind: ActionKind): string | null {
+export function actionTime(
+  state: GameState,
+  kind: ActionKind,
+  item?: ItemId,
+): string | null {
   const def: ActionDef = ACTIONS[kind];
   if (def.combat) return "tura";
+  if (def.minutes !== null && typeof def.minutes === "object")
+    return item === undefined ? null : itemTargetTime(state, kind, item);
   const run = state.run;
   const base = def.minutes ?? (run ? MAPS[run.mapId].stepMinutes : null);
   if (base === null) return null;
@@ -755,25 +805,15 @@ export function actionTime(state: GameState, kind: ActionKind): string | null {
  * patyków”, „2 patyki, 10 energii natury”. The price follows the character of the map run as the
  * simulation gives it (the character with the branch „Czysty płomień” lights a campfire for 10 energii natury
  * alone), and outside a map run it is the price from the data. Null for an action that costs nothing,
- * a strike with a stick among them, which leaves the stick in the backpack (D-145). Pure.
+ * a strike with a stick among them, which leaves the stick in the backpack (D-145). An action with a
+ * target is priced by it, given as `item`: the bare verb costs nothing. Pure.
  */
 export function actionPriceText(
   state: GameState,
   kind: ActionKind,
+  item?: ItemId,
 ): string | null {
-  const { pieces, natureEnergy } = actionPrice(
-    kind,
-    state.run?.character.skills ?? {},
-  );
-  const parts = pieces.map(({ item, count }) => {
-    const { name, plural } = RESOURCES[item];
-    return `${count} ${countedName(count, { one: name, ...plural })}`;
-  });
-  if (natureEnergy > 0)
-    parts.push(
-      `${natureEnergy} ${countedName(natureEnergy, NATURE_ENERGY_NAME)}`,
-    );
-  return parts.length === 0 ? null : parts.join(", ");
+  return priceText(actionPrice(kind, state.run?.character.skills ?? {}, item));
 }
 
 /** The name of an action in the pick of the rule panel: its label, with its price in brackets where it has one. */
@@ -782,6 +822,17 @@ function actionCellLabel(state: GameState, kind: ActionKind): string {
   return price === null
     ? ACTIONS[kind].label
     : `${ACTIONS[kind].label} (${price})`;
+}
+
+/**
+ * The value the action field shows while its pick is closed: an action that names an item — the verb,
+ * its target and its price, „Wytwórz — Opatrunek (2 mchy)”; any other the name of its cell in the pick.
+ */
+export function actionFieldValue(state: GameState, action: Action): string {
+  if (!namesItem(action)) return actionCellLabel(state, action.kind);
+  const price = actionPriceText(state, action.kind, action.item);
+  const sentence = actionSentence(action);
+  return price === null ? sentence : `${sentence} (${price})`;
 }
 
 /** The number of the rule group at `groupIndex` of the program, counted from zero: „2” for the second. */
@@ -817,11 +868,13 @@ export function conditionSentence(condition: Condition): string {
   return head;
 }
 
-/** An action as a part of a row's sentence: its name and its target — „Zbierz — Patyk”. */
+/** An action as a part of a row's sentence: its name and its target — „Zbierz — Patyk”, „Opatrz — Opatrunek”. */
 export function actionSentence(action: Action): string {
   const label = ACTIONS[action.kind].label;
-  return namesResource(action)
-    ? `${label} — ${targetName(RESOURCES[action.resource].name)}`
+  if (namesResource(action))
+    return `${label} — ${targetName(RESOURCES[action.resource].name)}`;
+  return namesItem(action)
+    ? `${label} — ${targetName(ITEMS[action.item].name)}`
     : label;
 }
 

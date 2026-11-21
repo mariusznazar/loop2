@@ -9,14 +9,23 @@ import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { TRAITS } from "../../dist/browser/sim/data/traits.js";
+import { describeProgram } from "../../balance/describe.mjs";
 import { applyOverlay, readOverlay } from "../../balance/overlay.mjs";
+import { trace } from "../../balance/trace.mjs";
 import {
   prerequisitesOf,
   runOnce,
   seedRange,
   sweep,
 } from "../../balance/engine.mjs";
-import { forestBest } from "../sim/reference-programs.mjs";
+import {
+  always,
+  explore,
+  forestBest,
+  healthBelow,
+  itemBelow,
+  program,
+} from "../sim/reference-programs.mjs";
 
 // The data an overlay may change, each as the game holds it: the tables the instrument lays an
 // overlay on. They are the objects the game's own modules read, so a change here is a change of
@@ -161,6 +170,125 @@ test("each overlay file of the part adds its map, which opens after a map the ga
       Object.hasOwn(MAPS, mapId),
       false,
       `${mapId} is restored away`,
+    );
+  }
+});
+
+// What an overlay file would hold to add a second item with a recipe and a healing property: nothing
+// of the actions' rows, so the verbs' targets can only follow from the item's own row.
+const SPLINT_OVERLAY = {
+  description:
+    "A splint: a recipe of a stick and a piece of moss, and a healing.",
+  ITEMS: {
+    splint: {
+      name: "szyna",
+      plural: { few: "szyny", many: "szyn" },
+      icon: "first-aid-kit",
+      iconTitle: "First aid kit icon",
+      revealedBy: { kind: "gathered", item: "moss" },
+      recipe: {
+        uses: [
+          { item: "stick", count: 1 },
+          { item: "moss", count: 1 },
+        ],
+        minutes: 4,
+      },
+      healing: { health: 10 },
+    },
+  },
+};
+
+/** A program that takes a stick and a piece of moss, crafts a splint of them and dresses with it. */
+const SPLINT_PROGRAM = program({
+  take: [
+    ["stick", 1],
+    ["moss", 1],
+  ],
+  groups: [
+    {
+      name: "Opatrunek",
+      rules: [
+        [healthBelow(100), { kind: "tend", item: "splint" }],
+        [itemBelow("splint", 1), { kind: "craft", item: "splint" }],
+        [always, explore],
+      ],
+    },
+  ],
+});
+
+/** A program naming the item `item` as the target of `kind`. */
+function naming(kind, item) {
+  return program({
+    groups: [{ name: "x", rules: [[always, { kind, item }]] }],
+  });
+}
+
+test("a second item with a recipe and a healing property laid by an overlay becomes a target of both verbs that the instrument describes and runs, moss of neither, and the restore removes it", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
+  assert.ok(
+    !Object.hasOwn(ITEMS, "splint"),
+    "precondition: no splint in the data",
+  );
+  const before = copyOfTables();
+  const restore = applyOverlay(structuredClone(SPLINT_OVERLAY));
+  try {
+    const described = describeProgram("splint", SPLINT_PROGRAM)
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => /^\d+\. /.test(line))
+      .map((line) => line.split(" → ")[1]);
+    assert.deepEqual(described, [
+      "Opatrz — Szyna",
+      "Wytwórz — Szyna",
+      "Eksploruj",
+    ]);
+
+    const options = {
+      mapId: "forestDeep",
+      program: SPLINT_PROGRAM,
+      seed: 1,
+      chest: { stick: 1, moss: 1 },
+      capMinutes: 120,
+    };
+    const result = runOnce(options);
+    assert.equal(result.minutesBy.craft, 4, "the recipe's minutes");
+    assert.ok(result.minHealth < 100, "precondition: the health was hurt");
+    assert.ok(result.minutesBy.tend > 0, "it dressed");
+    assert.equal(result.backpack.splint, 0, "the splint was used up");
+    const started = trace(options)
+      .lines.filter((line) => line.includes(" start "))
+      .map((line) => line.split(":: ")[1]);
+    assert.ok(started.includes("start Wytwórz szyna"), started.join("|"));
+    assert.ok(started.includes("start Opatrz szyna"), started.join("|"));
+
+    for (const kind of ["craft", "tend"])
+      assert.throws(
+        () => runOnce({ ...options, program: naming(kind, "moss") }),
+        /moss/,
+        `moss as the target of ${kind}`,
+      );
+  } finally {
+    restore();
+  }
+
+  assert.ok(!Object.hasOwn(ITEMS, "splint"), "the restore removes the item");
+  for (const [name, table] of Object.entries(TABLES))
+    assert.deepEqual(table, before[name], `table ${name} after the restore`);
+  for (const kind of ["craft", "tend"]) {
+    assert.throws(
+      () => describeProgram("gone", naming(kind, "splint")),
+      /splint/,
+      `describing ${kind} of the removed item`,
+    );
+    assert.throws(
+      () =>
+        runOnce({
+          mapId: "forestDeep",
+          program: naming(kind, "splint"),
+          seed: 1,
+        }),
+      /splint/,
+      `running ${kind} of the removed item`,
     );
   }
 });

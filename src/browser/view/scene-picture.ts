@@ -5,6 +5,7 @@ import {
   CREATURES as CREATURE_DATA,
   type CreatureId,
 } from "../sim/data/creatures.js";
+import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -193,6 +194,8 @@ function goalOf(run: GameMapRun): MageGoal {
       return at(SCENE.rightEdgeX);
     case "lightItem":
     case "eat":
+    case "craft":
+    case "tend":
     case "strikeWithStick":
     case "kick":
     case "dodge":
@@ -316,7 +319,7 @@ function plaquesOf(discovery: Understanding): ScenePlaque[] {
   const icons = new Set([
     ...discovery.actions.map((kind) => iconHref(ACTIONS[kind].icon)),
     ...discovery.items.map((id) =>
-      iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : RESOURCES[id].icon),
+      iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : ITEMS[id].icon),
     ),
     ...discovery.creatures.map((id) => iconHref(CREATURE_DATA[id].icon)),
   ]);
@@ -568,13 +571,18 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
   };
 }
 
-/** The actions whose end takes pieces out of the backpack (crafting, lighting, feeding and eating). */
+/**
+ * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating and
+ * tending).
+ */
 const USES_BACKPACK: ReadonlySet<string> = new Set([
   "craftCampfire",
   "lightCampfire",
   "lightItem",
   "feedCampfire",
   "eat",
+  "craft",
+  "tend",
 ]);
 
 /**

@@ -6,13 +6,21 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { buildSkills, runOnce } from "../../balance/engine.mjs";
 import {
+  always,
+  explore,
   forestBest,
   forestDeepBest,
   forestDeepDecent,
   forestLoopWithStock,
   forestSettledPatrol,
+  gather,
+  healthBelow,
+  itemBelow,
+  program,
+  walkTo,
 } from "../sim/reference-programs.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -174,6 +182,54 @@ test("with practice and a bought rank the instrument ends each seed as the game 
     solvedMaps: ["forestEdge"],
     skills: { smallItemGathering: { practice: 160, ranks: { patrol: 1 } } },
     skillSpec: { practice: { smallItemGathering: 160 }, ranks: { patrol: 1 } },
+  });
+  assert.ok(minutes.size > 1);
+});
+
+// A program written out here, which gathers moss, crafts the bandage of it and dresses with it as soon
+// as the health is hurt: the two verbs with an item as their target, carried out in a map run. It
+// gathers as many pieces of moss as one making of the bandage uses, which the data hold (D-82).
+const MOSS_FOR_BANDAGE = ITEMS.bandage.recipe.uses.find(
+  (use) => use.item === "moss",
+).count;
+const DRESSING = program({
+  groups: [
+    {
+      name: "Opatrunek",
+      rules: [
+        [healthBelow(100), { kind: "tend", item: "bandage" }],
+        [itemBelow("bandage", 1), { kind: "craft", item: "bandage" }],
+      ],
+    },
+    {
+      name: "Zapasy",
+      rules: [
+        [itemBelow("moss", MOSS_FOR_BANDAGE), gather("moss")],
+        [itemBelow("moss", MOSS_FOR_BANDAGE), walkTo("moss")],
+        [always, explore],
+      ],
+    },
+  ],
+});
+
+test("precondition: the program that gathers moss, crafts the bandage and dresses with it carries out both verbs on Las — głębiej", () => {
+  const result = runOnce({
+    mapId: "forestDeep",
+    program: DRESSING,
+    seed: 1,
+    capMinutes: CAP_MINUTES,
+  });
+  assert.ok(result.minutesBy.craft > 0, "it crafted");
+  assert.ok(result.minutesBy.tend > 0, "it dressed");
+});
+
+// invariant: instrument-game-agreement
+test("on Las — głębiej with a program that gathers moss, crafts the bandage and dresses with it the instrument ends each seed as the game does", () => {
+  const minutes = agrees({
+    mapId: "forestDeep",
+    program: DRESSING,
+    chest: {},
+    solvedMaps: ["forestEdge", "forest"],
   });
   assert.ok(minutes.size > 1);
 });

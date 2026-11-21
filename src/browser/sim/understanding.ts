@@ -97,7 +97,7 @@ export function conditionInRepertoire(
   }
 }
 
-/** Whether an action, with the resource it names, lies in the repertoire. */
+/** Whether an action, with the resource or the item it names, lies in the repertoire. */
 export function actionInRepertoire(
   repertoire: Repertoire,
   action: Action,
@@ -108,6 +108,9 @@ export function actionInRepertoire(
     case "gather":
     case "patrol":
       return repertoire.items.includes(action.resource);
+    case "craft":
+    case "tend":
+      return repertoire.items.includes(action.item);
     default:
       return true;
   }
@@ -197,7 +200,7 @@ export const BRANCH_NOT_BOUGHT = "gałąź niewykupiona";
 /**
  * The first thing of a rule the repertoire lacks, in the order the row reads: its condition, that
  * condition's target, its action, that action's target — named as the player sees it, a kind by its
- * label and a resource or an item by its name.
+ * label, a resource by its name and an item by the name its row gives.
  */
 function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
   const { condition, action } = rule;
@@ -222,6 +225,11 @@ function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
     !repertoire.items.includes(action.resource)
   )
     return RESOURCES[action.resource].name;
+  if (
+    (action.kind === "craft" || action.kind === "tend") &&
+    !repertoire.items.includes(action.item)
+  )
+    return ITEMS[action.item].name;
   return ACTIONS[action.kind].label;
 }
 
@@ -273,8 +281,9 @@ function eventOf<K extends GameEvent["kind"]>(
  * The revealing events that happened in a game minute, read from the map run before the minute and
  * after it up to the pick, and from the events of that minute: the chill from the body after its
  * step; a finished exploration from its revealed tile and the items that tile holds; a gathering
- * from the pieces that entered the backpack; a crafting from the campfire put on the tile; a
- * lighting from its successful effect. The effect of an action takes hold only where the character
+ * from the pieces that entered the backpack; a crafting from the campfire put on the tile, and a
+ * „Wytwórz” from the piece of its target that entered the backpack; a lighting from its successful
+ * effect. The effect of an action takes hold only where the character
  * lives, so in the minute of death only the body's event happens.
  */
 function happened(
@@ -292,7 +301,8 @@ function happened(
 
   const finished = eventOf(events, "activityFinished");
   if (finished?.activity.kind !== "rule") return found;
-  switch (finished.activity.action.kind) {
+  const action = finished.activity.action;
+  switch (action.kind) {
     case "explore": {
       found.push({ kind: "explored" });
       const revealed = events.filter((event) => event.kind === "tileRevealed");
@@ -321,6 +331,13 @@ function happened(
     case "lightItem":
       if ((after.practice.flameSpell ?? 0) > (before.practice.flameSpell ?? 0))
         found.push({ kind: "lit" });
+      break;
+    case "craft":
+      if (
+        after.character.backpack[action.item] >
+        before.character.backpack[action.item]
+      )
+        found.push({ kind: "crafted", item: action.item });
       break;
     default:
       break;

@@ -10,6 +10,8 @@ const ALWAYS = { kind: "always" };
 const STICK = { kind: "gather", resource: "stick" };
 const EXPLORE = { kind: "explore" };
 const KICK = { kind: "kick" };
+const CRAFT_BANDAGE = { kind: "craft", item: "bandage" };
+const TEND_BANDAGE = { kind: "tend", item: "bandage" };
 
 /**
  * A program of two groups whose rule ids do not follow their places: rule 9 is the first of the
@@ -31,12 +33,16 @@ const PROGRAM = {
       id: 2,
       name: "Druga",
       condition: ALWAYS,
-      rules: [{ id: 9, condition: ALWAYS, action: STICK }],
+      rules: [
+        { id: 9, condition: ALWAYS, action: STICK },
+        { id: 10, condition: ALWAYS, action: CRAFT_BANDAGE },
+        { id: 11, condition: ALWAYS, action: TEND_BANDAGE },
+      ],
     },
   ],
   tripPlan: { take: [], bring: [] },
   nextGroupId: 3,
-  nextRuleId: 10,
+  nextRuleId: 12,
 };
 
 const NO_NEXT = { kind: "none" };
@@ -190,4 +196,52 @@ test("Potem does not depend on what Teraz says: after a death it still names the
   assert.equal(rows.now.text, "Mag zamarzł");
   assert.equal(rows.next.text, "Zbierz — Patyk");
   assert.equal(rows.next.right, "reguła 2.1");
+});
+
+// Catches the verb alone („Wytwórz”) or the target's words of the data's key („bandage”) in the rows,
+// a price in brackets in them, or the icon of the target in place of the icon of the verb.
+test("Teraz and Potem name „Wytwórz” and „Opatrz” with their target in the words of the rule's row, with the icon of the verb and no price", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
+  assert.deepEqual(
+    nowOf({
+      kind: "action",
+      ruleId: 10,
+      action: CRAFT_BANDAGE,
+      minutesLeft: 4,
+      minutes: 10,
+    }),
+    {
+      icon: "claw-hammer",
+      text: "Wytwórz — Opatrunek",
+      role: "text",
+      right: "reguła 2.2 · zostało 4 z 10 min",
+    },
+  );
+  assert.deepEqual(
+    nowOf({
+      kind: "action",
+      ruleId: 11,
+      action: TEND_BANDAGE,
+      minutesLeft: 10,
+      minutes: 10,
+    }),
+    {
+      icon: "bandage-roll",
+      text: "Opatrz — Opatrunek",
+      role: "text",
+      right: "reguła 2.3 · zostało 10 z 10 min",
+    },
+  );
+  assert.deepEqual(nextOf({ kind: "rule", ruleId: 11, action: TEND_BANDAGE }), {
+    icon: "bandage-roll",
+    text: "Opatrz — Opatrunek",
+    role: "text",
+    right: "reguła 2.3",
+  });
+  assert.equal(
+    nextOf({ kind: "rule", ruleId: 10, action: CRAFT_BANDAGE }).text,
+    "Wytwórz — Opatrunek",
+  );
 });

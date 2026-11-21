@@ -8,7 +8,6 @@ import { ACTIONS } from "../sim/data/actions.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
-import { RESOURCES } from "../sim/data/resources.js";
 import {
   BRANCHES,
   SKILLS,
@@ -89,7 +88,7 @@ export function knownGroups(understanding: Understanding): KnownGroup[] {
   const items = understanding.items.map((id) =>
     id === CAMPFIRE.id
       ? { key: id, icon: CAMPFIRE.icon, name: CAMPFIRE.name }
-      : { key: id, icon: RESOURCES[id].icon, name: ITEMS[id].name },
+      : { key: id, icon: ITEMS[id].icon, name: ITEMS[id].name },
   );
   const creatures = understanding.creatures.map((id) => ({
     key: id,

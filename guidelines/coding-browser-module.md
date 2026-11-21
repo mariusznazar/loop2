@@ -128,7 +128,7 @@ export function Label() {
 - **Good:** Widok odczytuje nazwę zasobu z katalogu przez przekazany identyfikator.
 - **Bad:** Widok wpisuje nazwę zasobu bezpośrednio w swoim kodzie.
 
-Poza plikami danych nie wpisuj identyfikatorów ani nazw map, zasobów i archetypów.
+Poza plikami danych nie wpisuj identyfikatorów ani nazw map, zasobów, przedmiotów i archetypów.
 Przekazuj identyfikatory z danych lub stanu i przez nie odczytuj katalog.
 
 ```good content-identifiers src/browser/view/guideline-name.ts

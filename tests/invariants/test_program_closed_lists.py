@@ -29,8 +29,9 @@ Reading of the sentence:
   unchanged (written out below as BASE); the program the state holds is the copy of the map run
   during a map run, and outside a map run the program of the list the team goes with;
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
-  with valid fields, including all ten condition kinds on groups, is taken in as offered (the control
-  that shows refusal is no blanket refusal);
+  with valid fields — the two kinds that take an item, `tend` and `craft`, with the bandage —
+  including all ten condition kinds on groups, is taken in as offered (the control that shows
+  refusal is no blanket refusal);
 - the load of a saved game state refuses a program as `setProgram` does: a saved document whose
   program, at the one place it stands, holds a kind the data do not list is not loaded (`loadSavedGame`
   gives no game state), where the document with the valid program there is loaded and holds the
@@ -43,8 +44,8 @@ real time T, and during an earning loop of that character on Skraj lasu (`forest
 earning loop at T; there `setProgram` refuses as it does elsewhere, and the program the earning loop carries does not
 become the offered one. The unlisted kind stands
 in rule 1 of three, between two valid rules, and on a group between valid groups, once bare and
-once with the fields a listed kind takes (`resource`, `value`), so that a reader that guesses a
-kind from its fields is caught. Every program offered to `setProgram` is also written into a saved
+once with the fields a listed kind takes (`resource`, `value`, `item`), so that a reader that guesses
+a kind from its fields is caught. Every program offered to `setProgram` is also written into a saved
 document at each of the four places, the document being that of the game just described stamped with
 a save time and made the JSON text it becomes; where the place is the copy, the counts of its rules
 are made to match the program written there, so that the load refuses on the kind and on nothing else.
@@ -55,7 +56,8 @@ same for a made-up load; the tripwire fails on made-up data holding a kind not w
 data lacking one.
 
 Does NOT cover: whether the simulation acts on the program it takes in (program-rule-pick);
-fields of a listed kind beyond those named above.
+fields of a listed kind beyond those named above; which items a kind that takes an item accepts
+(the tests of the targets).
 """
 
 import copy as copying
@@ -122,9 +124,11 @@ ACTION_KINDS = (
     "lightItem",
     "feedCampfire",
     "eat",
+    "tend",
     "strikeWithStick",
     "kick",
     "dodge",
+    "craft",
 )
 
 ALWAYS = {"kind": "always"}
@@ -157,9 +161,11 @@ VALID = program_from_rules(
         rule(ALWAYS, {"kind": "lightItem"}),
         rule(ALWAYS, {"kind": "feedCampfire"}),
         rule(ALWAYS, {"kind": "eat"}),
+        rule(ALWAYS, {"kind": "tend", "item": "bandage"}),
         rule({"kind": "healthBelow", "value": 50}, {"kind": "strikeWithStick"}),
         rule({"kind": "opponentHealthBelow", "value": 10}, {"kind": "kick"}),
         rule(ALWAYS, {"kind": "dodge"}),
+        rule(ALWAYS, {"kind": "craft", "item": "bandage"}),
     ]
 )
 
@@ -198,7 +204,6 @@ UNLISTED_ACTION_KINDS = (
     "Explore",
     "WANDER",
     "walkto",
-    "craft",
     "light",
     "feed",
     "Eat",
@@ -217,7 +222,7 @@ UNLISTED_ACTION_KINDS = (
     ["explore"],
 )
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.
-PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3}
+PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3, "item": "bandage"}
 
 DRIVER = (
     KNOWING_GAME_JS

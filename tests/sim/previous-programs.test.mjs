@@ -5,7 +5,9 @@
 // is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { newGame } from "../../dist/browser/sim/game.js";
 import { readPreviousPrograms } from "../../dist/browser/sim/previous-programs.js";
+import { appendPrograms } from "../../dist/browser/sim/programs.js";
 import { SAVED_GAME_VERSION } from "../../dist/browser/sim/saved-game.js";
 
 const ALWAYS = { kind: "always" };
@@ -129,8 +131,8 @@ function deepFreeze(value) {
 }
 
 // Versions 1 and 2 have programs with no trip plan; versions 3 to 8 have the trip plan; the items
-// of version 9, the current version, carry the content revision beside the other three keys, so
-// the bound of the readable versions is read in as well.
+// of version 9 and of version 10, the current version, carry the content revision beside the other
+// three keys, so the bound of the readable versions is read in as well.
 test("a document of each readable version, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
   // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
   // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
@@ -213,10 +215,19 @@ test("a document of each readable version, the current one included, gives its p
         ],
       },
     },
+    10: {
+      version: 10,
+      game: {
+        programs: [
+          { id: 1, name: "Program", program: EXPLORE, contentRevision: 0 },
+          { id: 2, name: "Las nocą", program: LAS, contentRevision: 3 },
+        ],
+      },
+    },
   };
   assert.equal(
     SAVED_GAME_VERSION,
-    9,
+    10,
     "precondition: the last document of the table is the current version",
   );
   assert.deepEqual(readPreviousPrograms(documents[1]), {
@@ -251,7 +262,7 @@ test("a document of each readable version, the current one included, gives its p
       { kind: "read", name: "Las nocą", program: LAS },
     ],
   });
-  for (const version of [6, 7, 8, 9]) {
+  for (const version of [6, 7, 8, 9, 10]) {
     // The result holds no content revision: the pull makes each program one of revision 0.
     assert.deepEqual(readPreviousPrograms(documents[version]), {
       ok: true,
@@ -527,6 +538,215 @@ test("a program naming an action, a resource or an item the data lacks is skippe
       { kind: "read", name: "Las", program: LAS },
     ],
   });
+});
+
+/** A program of one rule under „Zawsze” holding `action`, with a trip plan. */
+function programWith(action) {
+  return {
+    ...EXPLORE,
+    groups: [
+      {
+        ...EXPLORE.groups[0],
+        rules: [{ id: 1, condition: ALWAYS, action }],
+      },
+    ],
+  };
+}
+
+/** The document of the current version with one item per program, named by the keys of `programs`. */
+function documentOf(programs) {
+  return {
+    version: SAVED_GAME_VERSION,
+    game: {
+      programs: Object.entries(programs).map(([name, program], index) => ({
+        id: index + 1,
+        name,
+        program,
+        contentRevision: 0,
+      })),
+    },
+  };
+}
+
+// invariant: previous-save-programs-reader
+test("an item whose program holds „Wytwórz” or „Opatrz” with a target the data do not give, or with none, is skipped and named while the reading goes on", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on, and throws for no value a document can hold."
+  const bandage = (kind) => programWith({ kind, item: "bandage" });
+  const refused = {};
+  for (const kind of ["craft", "tend"]) {
+    for (const [label, item] of [
+      ["moss", "moss"],
+      ["an item of no verb", "stick"],
+      ["an identifier the data lack", "unobtainium"],
+      ["a case variant", "Bandage"],
+      ["a number", 0],
+      ["null", null],
+      ["a list", ["bandage"]],
+      ["an object that refuses to become text", { toString: 1, valueOf: 1 }],
+    ])
+      refused[`${kind} with ${label}`] = programWith({ kind, item });
+    refused[`${kind} with no item`] = programWith({ kind });
+    refused[`${kind} with a resource in place of the item`] = programWith({
+      kind,
+      resource: "moss",
+    });
+  }
+  const document = documentOf({
+    Wytwórz: bandage("craft"),
+    ...refused,
+    Opatrz: bandage("tend"),
+  });
+  const read = readPreviousPrograms(document);
+  assert.equal(read.ok, true);
+  assert.deepEqual(read.items, [
+    { kind: "read", name: "Wytwórz", program: bandage("craft") },
+    ...Object.keys(refused).map((name) => ({ kind: "skipped", name })),
+    { kind: "read", name: "Opatrz", program: bandage("tend") },
+  ]);
+});
+
+// invariant: previous-save-programs-reader
+test("a field of an action „Wytwórz” or „Opatrz” beyond its kind and its item is dropped, and the program is appended without it", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
+  const extras = { at: { q: 1, r: 2 }, count: 3, resource: "moss" };
+  const read = readPreviousPrograms(
+    documentOf({
+      Wytwórz: programWith({ kind: "craft", item: "bandage", ...extras }),
+      Opatrz: programWith({ kind: "tend", item: "bandage", ...extras }),
+    }),
+  );
+  assert.equal(read.ok, true);
+  assert.deepEqual(read.items, [
+    {
+      kind: "read",
+      name: "Wytwórz",
+      program: programWith({ kind: "craft", item: "bandage" }),
+    },
+    {
+      kind: "read",
+      name: "Opatrz",
+      program: programWith({ kind: "tend", item: "bandage" }),
+    },
+  ]);
+  const appended = appendPrograms(
+    newGame(),
+    read.items.filter((item) => item.kind === "read"),
+  );
+  assert.deepEqual(
+    appended.programs.slice(1).map((saved) => saved.program),
+    [
+      programWith({ kind: "craft", item: "bandage" }),
+      programWith({ kind: "tend", item: "bandage" }),
+    ],
+  );
+});
+
+// invariant: previous-save-programs-reader
+// Fault: a value a document holds at the item of „Wytwórz” or „Opatrz”, or at any other place of
+// a program that holds them, makes the reading throw. The expected result comes from D-213 and
+// D-401: the reader refuses or skips and never throws.
+test("no value a document can hold, at any place of a program holding „Wytwórz” and „Opatrz”, throws out of the reading", () => {
+  const program = {
+    ...EXPLORE,
+    groups: [
+      {
+        ...EXPLORE.groups[0],
+        rules: [
+          {
+            id: 1,
+            condition: ALWAYS,
+            action: { kind: "craft", item: "bandage" },
+          },
+          {
+            id: 2,
+            condition: ALWAYS,
+            action: { kind: "tend", item: "bandage" },
+          },
+        ],
+      },
+    ],
+    nextRuleId: 3,
+  };
+  const document = documentOf({ Opatrunki: program });
+  const places = placesIn(document);
+  assert.ok(
+    places.some((path) => path.join(".").endsWith("action.item")),
+    "precondition: the sweep reaches the item of an action",
+  );
+  for (const path of places) {
+    const label = path.join(".");
+    for (const hostile of HOSTILE_VALUES) {
+      const edited = editedAt(document, path, (holder, key) => {
+        holder[key] = structuredClone(hostile);
+      });
+      const before = structuredClone(edited);
+      assert.doesNotThrow(() => readPreviousPrograms(edited), label);
+      assert.deepEqual(edited, before, label);
+    }
+    const removed = editedAt(document, path, (holder, key) => {
+      delete holder[key];
+    });
+    assert.doesNotThrow(
+      () => readPreviousPrograms(removed),
+      `${label} removed`,
+    );
+  }
+});
+
+// invariant: previous-save-programs-reader
+test("a program holding every kind of action of today, as a document of version 9 holds it, is read, checked and appended with exactly that content", () => {
+  // decision: D-443 "An action made before this rule keeps a kind of its own until a change rewrites it."
+  // The kinds of today, written out: walkTo, gather and patrol name a resource; the rest name nothing.
+  const actions = [
+    { kind: "explore" },
+    { kind: "wander" },
+    { kind: "walkTo", resource: "berry" },
+    { kind: "walkToCampfire" },
+    { kind: "gather", resource: "moss" },
+    { kind: "patrol", resource: "stick" },
+    { kind: "craftCampfire" },
+    { kind: "lightCampfire" },
+    { kind: "lightItem" },
+    { kind: "feedCampfire" },
+    { kind: "eat" },
+    { kind: "strikeWithStick" },
+    { kind: "kick" },
+    { kind: "dodge" },
+  ];
+  const everyKind = {
+    groups: [
+      {
+        id: 1,
+        name: "Program",
+        condition: ALWAYS,
+        rules: actions.map((action, index) => ({
+          id: index + 1,
+          condition: ALWAYS,
+          action,
+        })),
+      },
+    ],
+    nextGroupId: 2,
+    nextRuleId: actions.length + 1,
+    tripPlan: { take: [{ item: "berry", count: 2 }], bring: [] },
+  };
+  const document = {
+    version: 9,
+    game: {
+      programs: [
+        { id: 1, name: "Wszystko", program: everyKind, contentRevision: 5 },
+      ],
+    },
+  };
+  const expected = structuredClone(everyKind);
+  const read = readPreviousPrograms(document);
+  assert.deepEqual(read, {
+    ok: true,
+    items: [{ kind: "read", name: "Wszystko", program: expected }],
+  });
+  const appended = appendPrograms(newGame(), [read.items[0]]);
+  assert.deepEqual(appended.programs.at(-1).program, expected);
 });
 
 // invariant: save-version

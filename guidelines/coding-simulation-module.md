@@ -15,6 +15,7 @@ wytyczne kodowania.
 | File                                   | Status      | Decision |
 | -------------------------------------- | ----------- | -------- |
 | `src/browser/sim/game.ts`              | exemplar    | D-35     |
+| `src/browser/sim/action-targets.ts`    | copy        | —        |
 | `src/browser/sim/body.ts`              | copy        | —        |
 | `src/browser/sim/character.ts`         | copy        | —        |
 | `src/browser/sim/combat.ts`            | copy        | —        |

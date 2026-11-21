@@ -1,5 +1,12 @@
 import type { Revelation } from "./revelations.js";
-import type { ItemId } from "./items.js";
+import type { ItemId, TargetProperty } from "./items.js";
+
+/**
+ * Where the game minutes of an action come from when it is no fixed number: `null` is the step of
+ * the tile the character moves onto, for the movements alone; `{ fromTarget }` is the property of
+ * the action's item target that holds them, as the recipe of the item does for „Wytwórz”.
+ */
+export type ActionMinutes = number | null | { fromTarget: "recipe" };
 
 export type ActionDef = {
   label: string;
@@ -7,8 +14,14 @@ export type ActionDef = {
   group: ActionGroupId;
   /** Status text; for walkTo the resource name follows it. */
   status: string;
-  /** Fixed duration in game minutes; null = taken from the target tile. */
-  minutes: number | null;
+  /** Fixed duration in game minutes; null = taken from the target tile; see `ActionMinutes`. */
+  minutes: ActionMinutes;
+  /**
+   * Present for an action that takes an item as its target: the property of the items' rows that
+   * gives it its targets, so the targets are the items whose row holds it. Absent for an action
+   * that takes no item.
+   */
+  itemTargets?: { property: TargetProperty };
   /**
    * The event that reveals the action to the player; absent for an action the Understanding holds
    * from the start of a new game.
@@ -50,6 +63,7 @@ export const ACTION_GROUPS = {
   gather: { label: "Zbieranie" },
   fire: { label: "Ogień" },
   foodAndCombat: { label: "Żywność i walka" },
+  crafting: { label: "Wytwarzanie" },
 } as const satisfies Record<string, { label: string }>;
 
 export type ActionGroupId = keyof typeof ACTION_GROUPS;
@@ -162,6 +176,17 @@ export const ACTIONS = {
     icon: "meal",
     iconTitle: "Meal icon",
   },
+  // „Opatrz” takes the targets of the items that hold a healing property and its own minutes.
+  tend: {
+    label: "Opatrz",
+    group: "foodAndCombat",
+    status: "Opatruje",
+    minutes: 10,
+    itemTargets: { property: "healing" },
+    revealedBy: { kind: "crafted", item: "bandage" },
+    icon: "bandage-roll",
+    iconTitle: "Bandage roll icon",
+  },
   strikeWithStick: {
     label: "Uderz — patyk",
     group: "foodAndCombat",
@@ -191,5 +216,16 @@ export const ACTIONS = {
     combat: { reducesNextDamageBy: 5 },
     icon: "dodge",
     iconTitle: "Dodge icon",
+  },
+  // „Wytwórz” takes the targets of the items that hold a recipe, and its minutes from that recipe.
+  craft: {
+    label: "Wytwórz",
+    group: "crafting",
+    status: "Wytwarza",
+    minutes: { fromTarget: "recipe" },
+    itemTargets: { property: "recipe" },
+    revealedBy: { kind: "gathered", item: "moss" },
+    icon: "claw-hammer",
+    iconTitle: "Claw hammer icon",
   },
 } as const satisfies Record<string, ActionDef>;

@@ -1,7 +1,7 @@
 import { ACTIONS, type ActionDef } from "../sim/data/actions.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CREATURES } from "../sim/data/creatures.js";
-import { RESOURCES } from "../sim/data/resources.js";
+import { ITEMS } from "../sim/data/items.js";
 import { ICON_CREDITS, ICON_LICENCE, PACK_CREDITS } from "./credits.js";
 
 const SOURCE_SITE = "game-icons.net";
@@ -49,11 +49,11 @@ function actionIcons(): WithIcon[] {
 }
 
 /**
- * Everything the data gives an icon, in the section's order: the resources, then the campfire and
- * the extinguished campfire, then the actions, then the creatures.
+ * Everything the data gives an icon, in the section's order: the items (the resources among them),
+ * then the campfire and the extinguished campfire, then the actions, then the creatures.
  */
 const WITH_ICONS: readonly WithIcon[] = [
-  ...Object.values(RESOURCES),
+  ...Object.values(ITEMS),
   CAMPFIRE,
   CAMPFIRE.extinguished,
   ...actionIcons(),
