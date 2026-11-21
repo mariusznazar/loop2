@@ -323,7 +323,7 @@ test("a judging made on the screen Mapy is remembered under the account and the 
 // Catches a mark shown for a judging of another account or of another game of the account, and a page
 // that leaves another game's values of the account in the storage or touches another account's.
 test("a judging stored under another account or another game's moment shows no mark, the account's judgings of other games are removed when the game is opened, and another account's are left", async () => {
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   await onPage(async () => {
     seed(ALA.id, MADE + 1);
     seed(OTHER_ACCOUNT, MADE);
@@ -352,7 +352,7 @@ test("a judging stored under another account or another game's moment shows no m
 // Catches a game built after a refused save that shows the mark its browser had cached for it, and one
 // that leaves the value in the storage.
 test("a game built after a save the server refused for another browser's shows no mark its browser had cached for it, and the value is removed", async () => {
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   await onPage(async () => {
     seed(ALA.id, MADE);
     const save = saveOf(gameMadeAt(MADE), 4);

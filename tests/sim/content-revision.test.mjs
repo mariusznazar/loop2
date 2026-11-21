@@ -351,7 +351,7 @@ test("a new game holds the moment it is made with, 0 where none is given, and an
 });
 
 test("a new game refuses with a RangeError a moment that is no safe integer, which its own load would refuse", () => {
-  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing, and the function that makes a new game refuses a moment that is no safe integer with a RangeError"
   for (const moment of [
     1.5,
     Number.NaN,

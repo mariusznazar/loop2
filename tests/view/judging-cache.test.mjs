@@ -651,7 +651,7 @@ const keysOfStorage = (storage) => [...storage.held.keys()].sort();
 
 test("opening a game removes the values of the same account under the moment of another game, and leaves other accounts' and other versions'", () => {
   // invariant: judging-cache-reading
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const value = JSON.stringify(VALID);
   const storage = mapStorage({
     [LAS_KEY]: value,
@@ -680,7 +680,7 @@ test("opening a game removes the values of the same account under the moment of 
 
 test("a game built after a refused save has every value of this game removed too, and other accounts' left", () => {
   // invariant: judging-cache-reading
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const value = JSON.stringify(VALID);
   const storage = mapStorage({
     [LAS_KEY]: value,
@@ -702,7 +702,7 @@ test("a game built after a refused save has every value of this game removed too
 
 test("opening with a storage that refuses to list its keys or to remove a value throws nothing and still reads", () => {
   // invariant: judging-cache-reading
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const noList = {
     ...mapStorage({ [LAS_KEY]: JSON.stringify(VALID) }),
     key: () => {
@@ -742,7 +742,7 @@ const valueAt = (revision, generation) =>
   JSON.stringify({ ...VALID, revision, generation });
 
 test("a value above the loaded game's content revision, or above its generation number, is removed at the opening, and one equal or below is kept", () => {
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const at = (map) => `loop2-judging-1|acct-1|1000|1|1|${map}`;
   const storage = mapStorage({
     [at("forest")]: valueAt(4, 2),
@@ -766,7 +766,7 @@ test("a value above the loaded game's content revision, or above its generation 
 });
 
 test("a value kept by the opening is given as it was stored, whatever it says of the loaded game: the check at the screen decides whether it stands", () => {
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({ [LAS_KEY]: valueAt(1, 1) });
   const cache = open(storage, {
     state: loaded({ revision: 6, generation: 4 }),
@@ -776,7 +776,7 @@ test("a value kept by the opening is given as it was stored, whatever it says of
 });
 
 test("a value of a triple whose character or program the loaded game lacks, or one that is no value of the cache's, is not removed by the above check", () => {
-  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({
     "loop2-judging-1|acct-1|1000|9|1|forest": valueAt(0, 9),
     "loop2-judging-1|acct-1|1000|1|9|forest": valueAt(9, 1),
