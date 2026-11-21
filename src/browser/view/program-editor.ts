@@ -9,6 +9,7 @@ import {
   CONDITIONS,
   type ConditionDef,
 } from "../sim/data/conditions.js";
+import { itemTargets, takesItem } from "../sim/action-targets.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -412,7 +413,9 @@ export function withConditionKind(
 
 /**
  * The rule's action switched to `kind`; an action that names a resource — „Idź”, „Zbierz” — takes
- * the first of `resources`. Null when the kind is already chosen.
+ * the first of `resources`, and one that names an item — „Wytwórz”, „Opatrz” — the first of the
+ * action's targets that `items` holds, in the data's order. Null when the kind is already chosen,
+ * and where an action that names a target has none offered.
  */
 export function withActionKind(
   program: Program,
@@ -420,11 +423,20 @@ export function withActionKind(
   index: number,
   kind: ActionKind,
   resources: readonly ResourceId[],
+  items: readonly ItemId[],
 ): Program | null {
   const rule = program.groups.find((group) => group.id === groupId)?.rules[
     index
   ];
   if (!rule || rule.action.kind === kind) return null;
+  if (takesItem(kind)) {
+    const item = itemTargets(kind).find((id) => items.includes(id));
+    if (item === undefined) return null;
+    return replaceRule(program, groupId, index, {
+      ...rule,
+      action: { kind, item },
+    });
+  }
   if (!takesResource(kind))
     return replaceRule(program, groupId, index, { ...rule, action: { kind } });
   const resource = resources[0];
@@ -742,6 +754,8 @@ export function fieldAfter<Field>(
 export function actionTime(state: GameState, kind: ActionKind): string | null {
   const def: ActionDef = ACTIONS[kind];
   if (def.combat) return "tura";
+  // A time that the action's target holds is no time of the bare action.
+  if (def.minutes !== null && typeof def.minutes === "object") return null;
   const run = state.run;
   const base = def.minutes ?? (run ? MAPS[run.mapId].stepMinutes : null);
   if (base === null) return null;

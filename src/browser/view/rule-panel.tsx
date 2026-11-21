@@ -230,6 +230,7 @@ function changedProgram(
             index,
             value as Action["kind"],
             offeredResources(state),
+            offeredItems(state),
           );
     case "actionTarget":
       return index === null

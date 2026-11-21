@@ -1,4 +1,5 @@
 import { backpackCap, backpackCount } from "./character.js";
+import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
@@ -368,6 +369,17 @@ function worldRefusal(run: RunView, action: Action): string | null {
       return itemFor(backpack, "food") !== null
         ? null
         : lacking(backpack, { item: firstItemFor("food"), count: 1 });
+    case "craft": {
+      const piece = ITEMS[action.item].recipe!.uses.find(
+        (use) => !holds(backpack, use),
+      );
+      return piece === undefined ? null : lacking(backpack, piece);
+    }
+    case "tend":
+      if (run.body.health >= BALANCE.body.startHealth) return "zdrowie pełne";
+      return holds(backpack, { item: action.item, count: 1 })
+        ? null
+        : lacking(backpack, { item: action.item, count: 1 });
     case "strikeWithStick":
     case "kick":
     case "dodge":

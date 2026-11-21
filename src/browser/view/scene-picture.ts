@@ -194,6 +194,8 @@ function goalOf(run: GameMapRun): MageGoal {
       return at(SCENE.rightEdgeX);
     case "lightItem":
     case "eat":
+    case "craft":
+    case "tend":
     case "strikeWithStick":
     case "kick":
     case "dodge":
@@ -569,13 +571,18 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
   };
 }
 
-/** The actions whose end takes pieces out of the backpack (crafting, lighting, feeding and eating). */
+/**
+ * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating and
+ * tending).
+ */
 const USES_BACKPACK: ReadonlySet<string> = new Set([
   "craftCampfire",
   "lightCampfire",
   "lightItem",
   "feedCampfire",
   "eat",
+  "craft",
+  "tend",
 ]);
 
 /**

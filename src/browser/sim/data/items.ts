@@ -29,7 +29,29 @@ export type ItemDef = {
     /** Degrees Celsius a minute it warms the character standing on its tile. */
     warmth: number;
   };
+  /**
+   * Present for an item that is made with „Wytwórz”: the pieces one making uses up and the game
+   * minutes it takes. One making gives one piece of the item. It uses at least one piece, so a
+   * making never raises the count of the backpack.
+   */
+  recipe?: {
+    /** The pieces used, at least one entry, in the order of the reasons a rule gives for lacking them. */
+    uses: readonly { item: ItemId; count: number }[];
+    /** Game minutes one making takes. */
+    minutes: number;
+  };
+  /** Present for an item that can be used with „Opatrz”. */
+  healing?: {
+    /** Health one piece restores. */
+    health: number;
+  };
 };
+
+/**
+ * The properties of an item's row that give an action its item targets: the items an action takes
+ * as its target are those whose row holds the property its row in actions.ts names.
+ */
+export type TargetProperty = "recipe" | "healing";
 
 /** The words of an item that is a resource, taken from its resource row, so no word stands twice. */
 function wordsOf(resource: ResourceId) {
@@ -41,13 +63,17 @@ function wordsOf(resource: ResourceId) {
  * What a row of `ITEM_ROWS` is checked against, which cannot be `ItemDef` itself: `ItemId` is read
  * from the keys of the rows, and the revelation of `ItemDef` names an `ItemId`.
  */
-type ItemRow = Omit<ItemDef, "revealedBy"> & {
+type ItemRow = Omit<ItemDef, "revealedBy" | "recipe"> & {
   revealedBy: { kind: string; item: string };
+  recipe?: {
+    uses: readonly { item: string; count: number }[];
+    minutes: number;
+  };
 };
 
 /**
- * The rows of the items; the type checker holds that every resource has one. Moss and fiber have no
- * use yet.
+ * The rows of the items; the type checker holds that every resource has one. The bandage is an item
+ * no map holds, so it has no resource row and carries its own words. Fiber has no use yet.
  */
 const ITEM_ROWS = {
   stick: {
@@ -68,6 +94,15 @@ const ITEM_ROWS = {
   fiber: {
     ...wordsOf("fiber"),
     revealedBy: { kind: "tileHolds", item: "fiber" },
+  },
+  bandage: {
+    name: "opatrunek",
+    plural: { few: "opatrunki", many: "opatrunków" },
+    icon: "first-aid-kit",
+    iconTitle: "First aid kit icon",
+    revealedBy: { kind: "gathered", item: "moss" },
+    recipe: { uses: [{ item: "moss", count: 2 }], minutes: 10 },
+    healing: { health: 25 },
   },
 } as const satisfies Record<ResourceId, ItemRow> & Record<string, ItemRow>;
 

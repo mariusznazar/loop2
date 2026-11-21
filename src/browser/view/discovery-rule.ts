@@ -9,6 +9,7 @@ import type {
   Action,
   GameState,
   GroupId,
+  ItemId,
   Program,
   ResourceId,
 } from "../sim/types.js";
@@ -53,12 +54,18 @@ export function discoveryRule(state: GameState): DiscoveryRule | null {
     field,
   });
   const resources = offeredResources(state);
+  const items = offeredItems(state);
 
   for (const kind of discovery.actions) {
-    const program = withAction(added, place, kind, resources, discovery.items);
+    const program = withAction(
+      added,
+      place,
+      kind,
+      { resources, items },
+      discovery.items,
+    );
     if (program) return { program, open: opened("action") };
   }
-  const items = offeredItems(state);
   for (const kind of discovery.conditions) {
     const program =
       ruleAt(added, place).condition.kind === kind
@@ -94,13 +101,21 @@ function withAction(
   program: Program,
   place: Place,
   kind: Action["kind"],
-  resources: readonly ResourceId[],
+  offered: { resources: readonly ResourceId[]; items: readonly ItemId[] },
   found: readonly string[],
 ): Program | null {
+  const { resources, items } = offered;
   const switched =
     ruleAt(program, place).action.kind === kind
       ? program
-      : withActionKind(program, place.groupId, place.index, kind, resources);
+      : withActionKind(
+          program,
+          place.groupId,
+          place.index,
+          kind,
+          resources,
+          items,
+        );
   if (!switched || !("resource" in ruleAt(switched, place).action))
     return switched;
   for (const item of found) {
