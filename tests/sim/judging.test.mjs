@@ -14,7 +14,10 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
-import { judgeOnSeeds } from "../../dist/browser/sim/judging.js";
+import {
+  judgeAndRecord,
+  judgeOnSeeds,
+} from "../../dist/browser/sim/judging.js";
 import { startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
@@ -456,4 +459,64 @@ test("a map, a character or a program the game does not have, and a map that is 
     ownRefusal,
     "a program deleted",
   );
+});
+
+test("the act of a judging gives the judging and its record, both from the state it read, and leaves the game state the very state it got", () => {
+  // decision: D-440 "The game remembers the last judging of each character, program and map in the browser that made it, as D-441 gives: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)."
+  // decision: D-439 "Such a judging is no map run of the character: it takes nothing from the chest, pays nothing and settles no death."
+  // Relation: the judging is the one `judgeOnSeeds` gives; an empty program of Las dies of cold on all twelve seeds.
+  const empty = game(EMPTY, { berry: 4 });
+  const done = judgeAndRecord(frozen(empty), asked("forest"));
+  assert.equal(done.state, empty);
+  assert.deepEqual(done.events, []);
+  assert.deepEqual(done.judging, judgeOnSeeds(empty, asked("forest")));
+  assert.deepEqual(done.record, {
+    results: SEEDS.map(() => "death"),
+    equipment: [],
+    contentRevision: empty.programs[0].contentRevision,
+    generation: 1,
+  });
+  // A program that takes berries: the record holds the equipment the judging took, the kinds of its results
+  // and the content revision of the program as it stood.
+  const eating = game(EATER, { berry: 4 });
+  const eats = judgeAndRecord(frozen(eating), asked("forest"));
+  assert.equal(eats.state, eating);
+  assert.deepEqual(eats.record, {
+    results: eats.judging.results.map((result) => result.kind),
+    equipment: [entry("berry", 4)],
+    contentRevision: eating.programs[0].contentRevision,
+    generation: 1,
+  });
+  assert.deepEqual(eats.judging.equipment, [entry("berry", 4)]);
+  // Another character at another generation: the record holds its generation number.
+  const second = changing(eating, 2, { generation: 5 });
+  assert.equal(judgeAndRecord(second, asked("forest", 2)).record.generation, 5);
+});
+
+test("the act of a judging leaves the very state it got where an earning loop or a manual map run goes on, and refuses what the judging refuses", () => {
+  // decision: D-439 "A program can be judged on every map open to the player, a map not yet solved included, and for a character in an earning loop or in a manual map run, and the judging changes nothing of either."
+  const outside = game(REFERENCE_PROGRAMS.forestDecent);
+  const looping = startLoop(
+    outside,
+    { mapId: "forestEdge", characterId: 1 },
+    1_760_000_000_000,
+  ).state;
+  const running = send(
+    outside,
+    { mapId: "forestEdge", characterId: 1 },
+    1_760_000_000_000,
+  ).state;
+  for (const held of [outside, looping, running]) {
+    const done = judgeAndRecord(frozen(held), asked("forestEdge", 1));
+    assert.equal(done.state, held);
+    assert.deepEqual(done.judging, judgeOnSeeds(held, asked("forestEdge", 1)));
+  }
+  const state = frozen(game());
+  for (const [what, ids] of [
+    ["a map of no name", asked("nowhere")],
+    ["a map that is not open", asked("forestDeep")],
+    ["a character the team lacks", asked("forest", 99)],
+    ["a program the list lacks", { ...asked("forest"), programId: 99 }],
+  ])
+    assert.throws(() => judgeAndRecord(state, ids), ownRefusal, what);
 });
