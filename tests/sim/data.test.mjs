@@ -410,15 +410,30 @@ test("the items are the four resources of Las and the bandage, with their words 
     iconTitle: "Flax icon",
     revealedBy: { kind: "tileHolds", item: "fiber" },
   });
-  assert.deepEqual(ITEMS.bandage, {
+  // The bandage's numbers of its recipe and its healing are balance figures, read from its row by
+  // shape here; the row holds them, and a change of the data alone changes them.
+  const { recipe, healing, ...words } = ITEMS.bandage;
+  assert.deepEqual(words, {
     name: "opatrunek",
     plural: { few: "opatrunki", many: "opatrunków" },
     icon: "first-aid-kit",
     iconTitle: "First aid kit icon",
     revealedBy: { kind: "gathered", item: "moss" },
-    recipe: { uses: [{ item: "moss", count: 2 }], minutes: 10 },
-    healing: { health: 25 },
   });
+  assert.ok(recipe.uses.some((use) => use.item === "moss"));
+  for (const use of recipe.uses)
+    assert.ok(
+      Number.isInteger(use.count) && use.count >= 1,
+      `count ${use.count}`,
+    );
+  assert.ok(
+    Number.isInteger(recipe.minutes) && recipe.minutes >= 1,
+    `minutes ${recipe.minutes}`,
+  );
+  assert.ok(
+    typeof healing.health === "number" && healing.health > 0,
+    `health ${healing.health}`,
+  );
 });
 
 test("the bandage is no resource and lies on no map", () => {
