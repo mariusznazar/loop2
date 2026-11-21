@@ -6,8 +6,9 @@
  * header, or a rule just added, is a request to open the panel, handed to `onOpen`. Which groups are
  * folded comes in the props and a change goes out through `onFoldedChange`, so the list holds no
  * memory of its own about it (D-295). Rules move by „↑” and „↓”, across the border of a group too,
- * and rules and whole groups by their handle on the browser's own drag (D-270), a drop line showing
- * where they would land; the drag is the Hook of `rule-drag.ts`. The program panel draws it as
+ * whole groups by „↑” and „↓” in their header (D-288), and rules and whole groups by their handle on
+ * the browser's own drag (D-270), a drop line showing where they would land; the drag is the Hook of
+ * `rule-drag.ts`. The program panel draws it as
  * `RuleListView` in its own tree. Nothing runs when the module is imported.
  *
  * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
@@ -40,8 +41,10 @@ import {
   addGroup,
   addRule,
   countText,
+  groupArrows,
   groupNumber,
   groupSummary,
+  moveGroup,
   moveRule,
   removeGroup,
   removeRule,
@@ -153,6 +156,7 @@ function clickedBody(event: MouseEvent<HTMLElement>): boolean {
 /** The edits a row, a header or a group's actions ask of the list. */
 type ListEdits = {
   move: (group: RuleGroup, index: number, offset: -1 | 1) => void;
+  moveGroup: (index: number, offset: -1 | 1) => void;
   remove: (group: RuleGroup, index: number) => void;
   add: (group: RuleGroup) => void;
   toggleFold: (id: GroupId) => void;
@@ -323,10 +327,15 @@ type GroupProps = {
   groupIndex: number;
 };
 
-/** The header of a group: its handle, name, condition and counts, and the buttons that fold and remove it. */
+/**
+ * The header of a group: its handle, name, condition and counts, the arrows that move the group one
+ * place (D-288), and the buttons that fold and remove it.
+ */
 function GroupHeader({ parts, group, groupIndex }: GroupProps) {
-  const { counts, folded, open, signs, drag, track, onOpen, edits } = parts;
+  const { program, counts, folded, open, signs, drag, track, onOpen, edits } =
+    parts;
   const summary = groupSummary(group, counts);
+  const arrows = groupArrows(program, groupIndex);
   const isFolded = folded.includes(group.id);
   const isOpen = open?.groupId === group.id && open.ruleId === null;
   const bar = signs?.judgement.groups[group.id];
@@ -370,6 +379,20 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
         <span className="rule-list-count">{countText(summary.executed)}</span>
       )}
       <span className="rule-list-controls">
+        <ReactButton
+          text="↑"
+          label="Grupa w górę"
+          disabled={!arrows.up}
+          buttonRef={track(`group:${group.id}:up`)}
+          onClick={() => edits.moveGroup(groupIndex, -1)}
+        />
+        <ReactButton
+          text="↓"
+          label="Grupa w dół"
+          disabled={!arrows.down}
+          buttonRef={track(`group:${group.id}:down`)}
+          onClick={() => edits.moveGroup(groupIndex, 1)}
+        />
         <ReactButton
           text={isFolded ? "▸" : "▾"}
           label={isFolded ? "Rozwiń grupę" : "Zwiń grupę"}
@@ -553,6 +576,19 @@ export function RuleListView({
     );
   }
 
+  function moveGroupAt(index: number, offset: -1 | 1): void {
+    const next = moveGroup(program, index, offset);
+    if (next === null) return;
+    const id = program.groups[index].id;
+    const own = offset === 1 ? "down" : "up";
+    const other = offset === 1 ? "up" : "down";
+    commit(
+      next,
+      [`group:${id}:${own}`, `group:${id}:${other}`, `group:${id}:open`],
+      { kind: "group", groupId: id },
+    );
+  }
+
   function remove(group: RuleGroup, index: number): void {
     const next = removeRule(program, group.id, index);
     if (next === null) return;
@@ -599,7 +635,14 @@ export function RuleListView({
     track,
     seatPanel,
     onOpen,
-    edits: { move, remove, add, toggleFold, removeWholeGroup },
+    edits: {
+      move,
+      moveGroup: moveGroupAt,
+      remove,
+      add,
+      toggleFold,
+      removeWholeGroup,
+    },
   };
 
   // The panel is drawn where the open row or header stands, so only where that group is drawn.
