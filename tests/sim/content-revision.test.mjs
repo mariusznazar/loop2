@@ -114,7 +114,7 @@ const CHANGES = {
   },
 };
 
-/** The three counters-only differences: no rule, group order or trip plan is touched. */
+/** A difference in the two identity counters alone: no rule, group order or trip plan is touched. */
 const COUNTERS_ALONE = { ...BASE, nextGroupId: 9, nextRuleId: 12 };
 
 /** A knowing game with Ala (1) and the program 1, „Program”, holding `BASE` at content revision 3. */
@@ -348,6 +348,24 @@ test("a new game holds the moment it is made with, 0 where none is given, and an
   assert.equal(newGame(-5).madeAtMs, -5);
   assert.equal(newGame(0).madeAtMs, 0);
   assert.equal(newGame().madeAtMs, 0);
+});
+
+test("a new game refuses with a RangeError a moment that is no safe integer, which its own load would refuse", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  for (const moment of [
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    2 ** 53,
+    -(2 ** 53),
+    "5",
+    null,
+  ]) {
+    assert.throws(() => newGame(moment), RangeError, String(moment));
+  }
+  assert.equal(newGame(Number.MAX_SAFE_INTEGER).madeAtMs, 9007199254740991);
+  assert.equal(newGame(-Number.MAX_SAFE_INTEGER).madeAtMs, -9007199254740991);
 });
 
 test("a saved game writes the moment of the game and each program's content revision, and loads back whole", () => {
