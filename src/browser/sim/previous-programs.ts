@@ -56,7 +56,7 @@ function listWithoutHoles(value: unknown): unknown[] | undefined {
 }
 
 /** A version the document may carry: a safe integer from 1 up to the current version, itself included. */
-function readableVersion(value: unknown): boolean {
+function readableVersion(value: unknown): value is number {
   return (
     typeof value === "number" &&
     Number.isSafeInteger(value) &&
@@ -65,14 +65,29 @@ function readableVersion(value: unknown): boolean {
   );
 }
 
+/** The first version whose items carry the content revision beside `id`, `name` and `program` (D-442). */
+const FIRST_VERSION_WITH_REVISION = 9;
+
+const KEYS_BEFORE_REVISION = ["id", "name", "program"] as const;
+const KEYS_WITH_REVISION = [
+  ...KEYS_BEFORE_REVISION,
+  "contentRevision",
+] as const;
+
 /**
- * One item of the list, at its place counted from 1. An item is read only when it is a plain object
- * with exactly the keys `id`, `name` and `program`, its name is a text not empty after trimming and
- * the program check accepts its program; any other item is skipped and named. The value of `id` is
- * neither read nor checked. Only the program check's own refusal is a skip; every other error
- * propagates.
+ * One item of the list, at its place counted from 1, of a document of `version`. An item is read
+ * only when it is a plain object with exactly the keys `id`, `name`, `program` and the content
+ * revision in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an
+ * earlier version, its name is a text not empty after trimming and the program check accepts its
+ * program; any other item is skipped and named. The values of `id` and of the content revision are
+ * neither read nor checked, and the result holds no revision, since a program pulled starts at
+ * revision 0. Only the program check's own refusal is a skip; every other error propagates.
  */
-function readItem(value: unknown, place: number): PreviousItem {
+function readItem(
+  value: unknown,
+  place: number,
+  version: number,
+): PreviousItem {
   const named = isPlainObject(value) ? ownData(value, "name") : undefined;
   const name =
     named && typeof named.value === "string" && named.value.trim() !== ""
@@ -80,8 +95,11 @@ function readItem(value: unknown, place: number): PreviousItem {
       : undefined;
   if (!isPlainObject(value) || name === undefined)
     return { kind: "skipped", place };
-  if (!hasExactKeys(value, ["id", "name", "program"]))
-    return { kind: "skipped", name };
+  const keys =
+    version >= FIRST_VERSION_WITH_REVISION
+      ? KEYS_WITH_REVISION
+      : KEYS_BEFORE_REVISION;
+  if (!hasExactKeys(value, keys)) return { kind: "skipped", name };
   const program = ownData(value, "program");
   if (!program) return { kind: "skipped", name };
   try {
@@ -103,6 +121,7 @@ export function readPreviousPrograms(saved: unknown): PreviousPrograms {
   if (!isPlainObject(saved)) return UNREADABLE;
   const version = ownData(saved, "version");
   if (!version || !readableVersion(version.value)) return UNREADABLE;
+  const documentVersion = version.value;
   const game = ownData(saved, "game");
   if (!game || !isPlainObject(game.value)) return UNREADABLE;
   const programs = ownData(game.value, "programs");
@@ -110,6 +129,8 @@ export function readPreviousPrograms(saved: unknown): PreviousPrograms {
   if (!items) return UNREADABLE;
   return {
     ok: true,
-    items: items.map((item, index) => readItem(item, index + 1)),
+    items: items.map((item, index) =>
+      readItem(item, index + 1, documentVersion),
+    ),
   };
 }

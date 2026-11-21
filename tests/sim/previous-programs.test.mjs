@@ -1,6 +1,6 @@
 // The reader of the programs of a previous save: a document of an older version, handed over as an
 // unknown, gives its programs one by one through the program check of the editor. Expectations come
-// from D-401, D-206 and D-213 in foundations/decisions.md, and from the invariant
+// from D-401, D-442, D-206 and D-213 in foundations/decisions.md, and from the invariant
 // previous-save-programs-reader and save-version in foundations/invariants.md; every expected value
 // is written out here.
 import assert from "node:assert/strict";
@@ -73,8 +73,8 @@ const DOCUMENT = {
   version: SAVED_GAME_VERSION,
   game: {
     programs: [
-      { id: 1, name: "Program", program: EXPLORE },
-      { id: 3, name: "Las nocą", program: LAS },
+      { id: 1, name: "Program", program: EXPLORE, contentRevision: 0 },
+      { id: 3, name: "Las nocą", program: LAS, contentRevision: 4 },
     ],
     nextProgramId: 4,
     pickedPrograms: { 2: 3 },
@@ -128,10 +128,11 @@ function deepFreeze(value) {
   return value;
 }
 
-// Versions 1 and 2 have programs with no trip plan; versions 3 to 9 have the trip plan, and 9 is
-// the current version, so the bound of the readable versions is read in as well.
-test("a document of each version from 1 to 9, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
-  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+// Versions 1 and 2 have programs with no trip plan; versions 3 to 8 have the trip plan; the items
+// of version 9, the current version, carry the content revision beside the other three keys, so
+// the bound of the readable versions is read in as well.
+test("a document of each readable version, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
   // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   const documents = {
     1: {
@@ -207,8 +208,8 @@ test("a document of each version from 1 to 9, the current one included, gives it
       version: 9,
       game: {
         programs: [
-          { id: 1, name: "Program", program: EXPLORE },
-          { id: 2, name: "Las nocą", program: LAS },
+          { id: 1, name: "Program", program: EXPLORE, contentRevision: 0 },
+          { id: 2, name: "Las nocą", program: LAS, contentRevision: 3 },
         ],
       },
     },
@@ -251,6 +252,7 @@ test("a document of each version from 1 to 9, the current one included, gives it
     ],
   });
   for (const version of [6, 7, 8, 9]) {
+    // The result holds no content revision: the pull makes each program one of revision 0.
     assert.deepEqual(readPreviousPrograms(documents[version]), {
       ok: true,
       items: [
@@ -262,7 +264,8 @@ test("a document of each version from 1 to 9, the current one included, gives it
 });
 
 // invariant: previous-save-programs-reader
-test("an item with a key besides id, name and program is skipped and named, and the others go on", () => {
+test("an item with a key besides those of the items of its version is skipped and named, and the others go on", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version"
   const document = {
     version: 5,
     game: {
@@ -279,6 +282,98 @@ test("an item with a key besides id, name and program is skipped and named, and 
       { kind: "read", name: "Dom", program: EXPLORE },
     ],
   });
+  const current = {
+    version: 9,
+    game: {
+      programs: [
+        {
+          id: 1,
+          name: "Las",
+          program: EXPLORE,
+          contentRevision: 0,
+          extra: true,
+        },
+        { id: 2, name: "Dom", program: EXPLORE, contentRevision: 0 },
+      ],
+    },
+  };
+  assert.deepEqual(readPreviousPrograms(current), {
+    ok: true,
+    items: [
+      { kind: "skipped", name: "Las" },
+      { kind: "read", name: "Dom", program: EXPLORE },
+    ],
+  });
+});
+
+// invariant: previous-save-programs-reader
+test("an item of a document of version 9 holds the content revision, which is neither read nor checked, and the result has no revision to pull", () => {
+  // decision: D-401 "Each program appended starts at the content revision 0, and the content revision an item holds, like its `id`, is neither read nor checked."
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made"
+  const revisions = [0, 1, 7, 2 ** 53 - 1, -1, 1.5, 2 ** 53, "7", null, [], {}];
+  const document = {
+    version: 9,
+    game: {
+      programs: revisions.map((contentRevision, index) => ({
+        id: index + 1,
+        name: `Program ${index + 1}`,
+        program: EXPLORE,
+        contentRevision,
+      })),
+    },
+  };
+  assert.deepEqual(readPreviousPrograms(document), {
+    ok: true,
+    items: revisions.map((_, index) => ({
+      kind: "read",
+      name: `Program ${index + 1}`,
+      program: EXPLORE,
+    })),
+  });
+});
+
+// invariant: previous-save-programs-reader
+test("an item of a document of version 9 without the content revision, and one of a version from 1 to 8 with it, is skipped and named", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  const crafted = JSON.parse(
+    '{"id":3,"name":"Proto","program":null,"__proto__":0}',
+  );
+  crafted.program = EXPLORE;
+  const items = (version) => ({
+    version,
+    game: {
+      programs: [
+        { id: 1, name: "Bez", program: EXPLORE },
+        { id: 2, name: "Z", program: EXPLORE, contentRevision: 0 },
+        { id: 4, name: "Inny", program: EXPLORE, revision: 0 },
+        { name: "Bez numeru", program: EXPLORE, contentRevision: 0 },
+        crafted,
+        { id: 5, name: "Dwa", program: EXPLORE, contentRevision: 0, rev: 0 },
+      ],
+    },
+  });
+  // From version 9 only the item with the four keys is read.
+  assert.deepEqual(readPreviousPrograms(items(9)), {
+    ok: true,
+    items: [
+      { kind: "skipped", name: "Bez" },
+      { kind: "read", name: "Z", program: EXPLORE },
+      { kind: "skipped", name: "Inny" },
+      { kind: "skipped", name: "Bez numeru" },
+      { kind: "skipped", name: "Proto" },
+      { kind: "skipped", name: "Dwa" },
+    ],
+  });
+  // Before it only the item with the three keys is read.
+  for (const version of [1, 5, 8]) {
+    const read = readPreviousPrograms(items(version));
+    assert.equal(read.ok, true, `version ${version}`);
+    assert.deepEqual(
+      read.items.map((item) => item.kind === "read"),
+      [true, false, false, false, false, false],
+      `version ${version}`,
+    );
+  }
 });
 
 // invariant: previous-save-programs-reader
@@ -331,7 +426,7 @@ test("an item missing a key is skipped: named when its name is text, by its plac
 
 // invariant: previous-save-programs-reader
 test("an item whose name is spaces or is no text is skipped and named by its place on the list", () => {
-  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming"
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming"
   const document = {
     version: 5,
     game: {
@@ -379,7 +474,7 @@ test("the name read is trimmed of the white space at its start and end", () => {
 
 // invariant: previous-save-programs-reader
 test("a program naming an action, a resource or an item the data lacks is skipped; refusing one refuses no other", () => {
-  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
   const withAction = {
     ...EXPLORE,
     groups: [
@@ -713,11 +808,17 @@ test("nothing of the document beside its version, its game's programs and the it
       },
     });
   const items = [
-    watched({ id: 1, name: "Las", program: EXPLORE, extra: 1 }, "item"),
-    watched({ id: 2, name: "Dom", program: EXPLORE }, "item"),
+    watched(
+      { id: 1, name: "Las", program: EXPLORE, contentRevision: 1, extra: 1 },
+      "item",
+    ),
+    watched(
+      { id: 2, name: "Dom", program: EXPLORE, contentRevision: 2 },
+      "item",
+    ),
   ];
   const game = watched({ programs: items, nextProgramId: 3 }, "game");
-  const document = watched({ version: 5, game, note: "x" }, "document");
+  const document = watched({ version: 9, game, note: "x" }, "document");
   readPreviousPrograms(document);
   const allowed = new Set([
     "document.version",
