@@ -595,10 +595,10 @@ układu komputera zostają takie, jakie są.
 - Kontrolka, której reguła stoi w arkuszu ekranu albo części, trzyma minimum tak samo jak wspólna:
   ekran dokłada je w swoim bloku `@media (width < 1280px)`. Wspólne kontrolki i kontrolki,
   których reguły stoją w `src/browser/styles.css`, trzyma jeden blok tego pliku.
-- Odnośnik wewnątrz zdania trzyma minimum tylko tam, gdzie źródło z faktu `android-touch-target-size`
-  nie zwalnia celu wbudowanego w tekst; cytat faktu takiego zwolnienia nie zawiera, więc odnośnik
-  w zdaniu jest kontrolką i trzyma minimum, a zwolnienie wymaga wpisu w fakcie, z cytatem źródła,
-  i zmiany tego zdania.
+- Odnośnik wewnątrz toczącego się zdania leży poza minimum: cel wysoki na 48 px rozerwałby linię
+  tekstu, a D-396 nazywa kontrolkami przycisk, komórkę wyboru, strzałkę i pozycję menu, nie odnośnik
+  w zdaniu. Odnośnik, który sam jest kontrolką — cały wiersz nawigacji, pozycja menu, odnośnik
+  stojący osobno jako cel podobny do przycisku — trzyma minimum.
 
 Przegląd zmiany czyta każdą kontrolkę zmienionego ekranu wobec minimum, w pomiarze z
 `.claude/skills/loop2-play/SKILL.md` (lista `controlsSmallerThan48`), i każdą czynność wobec
