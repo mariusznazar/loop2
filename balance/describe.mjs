@@ -38,9 +38,20 @@ function conditionText(condition) {
     : `${label} ${condition.value}`;
 }
 
-/** The action as the game words it: the label, and the resource it names where it names one. */
+/** A name of the data with its first letter capital, as the game shows the target of an action. */
+function capitalized(name) {
+  return name.charAt(0).toLocaleUpperCase("pl") + name.slice(1);
+}
+
+/**
+ * The action as the game words it: the label, and the resource or the item it names where it names
+ * one; an item stands with its name capital, as the game shows an item target („Wytwórz —
+ * Opatrunek”). An item the data lack is an error naming it.
+ */
 function actionText(action) {
   const { label } = definitionOf(ACTIONS, "action", action.kind);
+  if (action.item !== undefined)
+    return `${label} — ${capitalized(nameOf(ITEMS, "item", action.item))}`;
   return action.resource === undefined
     ? label
     : `${label} — ${nameOf(RESOURCES, "resource", action.resource)}`;

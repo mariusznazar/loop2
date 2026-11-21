@@ -5,9 +5,16 @@ import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { runOnce } from "../../balance/engine.mjs";
 import { trace } from "../../balance/trace.mjs";
 import {
+  always,
   emptyProgram,
+  explore,
   forestBest,
   forestLoopWithStock,
+  gather,
+  healthBelow,
+  itemBelow,
+  program,
+  walkTo,
 } from "../sim/reference-programs.mjs";
 
 // The trace mode of the instrument, checked against the engine on the same seed: the trace ends in
@@ -65,4 +72,43 @@ test("every started action of a trace is named by a label of the data, and a gat
       `no resource name of the data in: ${line}`,
     );
   }
+});
+
+test("a trace names the item of an action that starts with an item as its target by the name the data give it, as it names a resource, and ends as the engine does", () => {
+  // Gathers two pieces of moss, crafts a bandage of them and dresses with it once the health is hurt.
+  const dressing = program({
+    groups: [
+      {
+        name: "Program",
+        rules: [
+          [healthBelow(100), { kind: "tend", item: "bandage" }],
+          [itemBelow("bandage", 1), { kind: "craft", item: "bandage" }],
+          [itemBelow("moss", 2), gather("moss")],
+          [itemBelow("moss", 2), walkTo("moss")],
+          [always, explore],
+        ],
+      },
+    ],
+  });
+  const seed = 1;
+  const traced = trace({ mapId: "forestDeep", program: dressing, seed });
+  const engine = runOnce({ mapId: "forestDeep", program: dressing, seed });
+  assert.equal(traced.outcome, engine.outcome);
+  assert.equal(traced.minute, engine.minute);
+  const started = traced.lines.filter((line) => line.includes(" start "));
+  assert.ok(
+    started.some((line) => line.endsWith(":: start Wytwórz opatrunek")),
+    "no line of a started „Wytwórz” with its item",
+  );
+  assert.ok(
+    started.some((line) => line.endsWith(":: start Opatrz opatrunek")),
+    "no line of a started „Opatrz” with its item",
+  );
+  assert.ok(
+    !started.some(
+      (line) =>
+        line.endsWith(":: start Wytwórz") || line.endsWith(":: start Opatrz"),
+    ),
+    "a started verb with no item",
+  );
 });
