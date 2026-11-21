@@ -1,11 +1,14 @@
 /**
  * The drawing of the game map in React (D-19, D-70, D-41, D-125): the tiles of the map run with the
  * icons of the resources they hold, the campfire's icon, the outlines of the character and of the
- * step's target, and the line around the hovered tile. It is a picture, not a control: no click
- * handling, hovering its only interaction, and it writes no number of stock on itself (invariant
- * `terrain-drawing-numbers`) — the numbers stand in the line under it and in the table. The hovered
- * tile's key is not the drawing's: the screen holds it and gives it with its setter, so one hovered
- * tile links the drawing, the line under it and the table standing in another area. It imports the
+ * step's target, and the line around the marked tile. It is a picture, not a control: no click
+ * handling, hovering with a mouse and tapping with a finger its only interactions, and it writes no
+ * number of stock on itself (invariant `terrain-drawing-numbers`) — the numbers stand in the line
+ * under it and in the table. The marked tile's key is not the drawing's: the screen holds it and
+ * gives it with its setters, so one marked tile links the drawing, the line under it and the table
+ * standing in another area. A pointer of the kind touch hovers nothing: it comes over a tile when
+ * the finger comes down and leaves when it is lifted, which would undo a mark at the lift, so the
+ * finger marks by its lift, the tap, and the mark stays until the screen takes it off. It imports the
  * pure `terrainPicture` and `tileKey` and builds no element after the pattern of a DOM module
  * (D-265). Nothing runs when the module is imported.
  */
@@ -21,11 +24,19 @@ const MARGIN = 4;
 export type TerrainDrawingProps = {
   /** The game state the drawing draws; it draws no tile while the state holds no map run. */
   state: GameState;
-  /** The key of the hovered tile, „col,row”, or null when none is hovered. */
+  /** The key of the marked tile, hovered or tapped, „col,row”, or null when none is marked. */
   hovered: string | null;
-  /** Called with the key of the tile under the pointer, or null when the pointer is over none. */
+  /** Called with the key of the tile under a mouse or a pen, or null when the pointer is over none. */
   onHover: (key: string | null) => void;
+  /** Called with the key of the tile a finger tapped, or null when the tap was on the drawing beside every tile. */
+  onTap: (key: string | null) => void;
 };
+
+/** The key of the tile an event of the drawing reached, or null where it reached none. */
+function tileKeyOf(target: EventTarget): string | null {
+  const tile = target instanceof Element ? target.closest("[data-tile]") : null;
+  return tile?.getAttribute("data-tile") ?? null;
+}
 
 /**
  * An icon of the drawing: the mask of the icon file, which takes the colour `text-strong` from the
@@ -58,13 +69,14 @@ function Icon({
 /**
  * The drawing: a tile for each tile of the map run, revealed ones with their icons (dimmed at a
  * stock of 0) and the campfire's icon (never dimmed, burning or extinguished), then the outlines on
- * top of every tile, and last the line around the hovered tile, so no neighbour or outline covers it;
- * a hovered tile not revealed gets no line.
+ * top of every tile, and last the line around the marked tile, so no neighbour or outline covers it;
+ * a marked tile not revealed gets no line.
  */
 export function TerrainDrawing({
   state,
   hovered,
   onHover,
+  onTap,
 }: TerrainDrawingProps) {
   const picture = terrainPicture(state);
   const width = picture.width + 2 * MARGIN;
@@ -80,13 +92,14 @@ export function TerrainDrawing({
       height={height}
       viewBox={`${-MARGIN} ${-MARGIN} ${width} ${height}`}
       onPointerOver={(event) => {
-        const tile =
-          event.target instanceof Element
-            ? event.target.closest("[data-tile]")
-            : null;
-        onHover(tile?.getAttribute("data-tile") ?? null);
+        if (event.pointerType !== "touch") onHover(tileKeyOf(event.target));
       }}
-      onPointerLeave={() => onHover(null)}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch") onHover(null);
+      }}
+      onPointerUp={(event) => {
+        if (event.pointerType === "touch") onTap(tileKeyOf(event.target));
+      }}
     >
       {picture.tiles.map((tile) => {
         const key = tileKey(tile);

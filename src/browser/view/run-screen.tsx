@@ -22,8 +22,9 @@
  * an event handler or the clock, never from render or an effect. The screen takes its map run as a parameter and reads
  * no map run of the game state by itself (D-281): it draws from a game state holding the map run it
  * is given, and hands the program panel that state. The program panel keeps its own root; the screen
- * puts its element into the program's area. The screen holds the hovered tile's key, which the
- * drawing, the line under it and the table share, and hands the events of each update to the world
+ * puts its element into the program's area. The screen holds the keys of the hovered tile and of the
+ * tapped one, which the drawing, the line under it and the table share as one marked tile, and takes
+ * the tapped tile's mark off at a tap with a finger anywhere but on the drawing (D-19), and hands the events of each update to the world
  * area for its scene (D-04). A click on „Teraz” or „Potem” in the world area asks the program panel
  * to scroll to the rule the row names (D-336). Nothing runs when the module is imported.
  */
@@ -146,6 +147,8 @@ function RunScreenView({
   onShowRule,
 }: RunScreenViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [tapped, setTapped] = useState<string | null>(null);
+  const marked = hovered ?? tapped;
   const panelPlace = useRef<HTMLDivElement>(null);
   const { windowShown } = useRunScreenSnapshot(reading);
   const covering =
@@ -161,6 +164,19 @@ function RunScreenView({
   useEffect(() => {
     if (covering) document.documentElement.scrollTop = 0;
   }, [covering]);
+
+  // A tap with a finger anywhere but on the drawing takes the tapped tile's mark off; a tap on the
+  // drawing is the drawing's, which moves the mark or, beside every tile, takes it off (D-19).
+  useEffect(() => {
+    const takeOff = (event: PointerEvent) => {
+      const onDrawing =
+        event.target instanceof Element &&
+        event.target.closest(".terrain-drawing") !== null;
+      if (event.pointerType === "touch" && !onDrawing) setTapped(null);
+    };
+    document.addEventListener("pointerup", takeOff);
+    return () => document.removeEventListener("pointerup", takeOff);
+  }, []);
 
   // The program panel is an element outside this tree: the effect puts it into its area and takes it
   // out again at cleanup.
@@ -182,8 +198,9 @@ function RunScreenView({
             <WorldArea
               state={state}
               events={events}
-              hovered={hovered}
+              hovered={marked}
               onHover={setHovered}
+              onTap={setTapped}
               onShowRule={onShowRule}
               onEffectEnd={() => controls.effectEnded()}
             />
@@ -204,7 +221,7 @@ function RunScreenView({
             <TabsArea
               state={state}
               chronicle={chronicle}
-              hovered={hovered}
+              hovered={marked}
               onHover={setHovered}
             />
           )}
