@@ -475,6 +475,10 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
     await press(second);
     await inAct(async () => mock.timers.tick(100));
     await press(buttonNamed(root, "Wejdź"));
+    // The button of a judging goes through the act of the store as „Puść w pętlę” does, and a judging
+    // remembered in the game state would be a change of it (D-440).
+    await press(buttonNamed(root, "Oceń na 12 ziarnach"));
+    await inAct(async () => mock.timers.tick(100));
     await settle();
 
     assert.deepEqual(waitingCalls(held), [], "no act started a save");

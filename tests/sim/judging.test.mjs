@@ -56,6 +56,12 @@ function frozen(value) {
 }
 
 /**
+ * Whether `error` is the judging's own refusal, a plain `Error`, rather than a `TypeError` of code that
+ * read past a missing map, character or program.
+ */
+const ownRefusal = (error) => error.constructor === Error;
+
+/**
  * A knowing game with Ala (1) and Ola (2) in the team, Skraj lasu solved and Las open but not solved,
  * the first program holding `program` and the chest holding `chest`.
  */
@@ -443,11 +449,11 @@ test("a map, a character or a program the game does not have, and a map that is 
     ["no program", { ...asked("forest"), programId: undefined }],
   ];
   for (const [what, ids] of refused)
-    assert.throws(() => judgeOnSeeds(state, ids), Error, what);
+    assert.throws(() => judgeOnSeeds(state, ids), ownRefusal, what);
   const deleted = deleteProgram(createProgram(game()).state, LISTED).state;
   assert.throws(
     () => judgeOnSeeds(deleted, asked("forest")),
-    Error,
+    ownRefusal,
     "a program deleted",
   );
 });

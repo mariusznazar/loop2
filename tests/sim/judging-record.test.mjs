@@ -83,6 +83,12 @@ function frozen(value) {
   return value;
 }
 
+/**
+ * Whether `error` is the judging's own refusal, a plain `Error`, rather than a `TypeError` of code that
+ * read past a missing map, character or program.
+ */
+const ownRefusal = (error) => error.constructor === Error;
+
 /** The kinds of a judging that solved `solved` of the twelve seeds and died on the rest. */
 const kindsOf = (solved) => [
   ...Array(solved).fill("solved"),
@@ -872,7 +878,7 @@ test("the act refuses what the judging refuses, and a character of an earning lo
     { ...LAS, characterId: 99 },
     { ...LAS, programId: 99 },
   ])
-    assert.throws(() => judgeAndRemember(state, asked), Error);
+    assert.throws(() => judgeAndRemember(state, asked), ownRefusal);
   const looping = startLoop(
     state,
     { mapId: "forestEdge", characterId: 1 },

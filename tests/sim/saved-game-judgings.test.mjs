@@ -5,10 +5,6 @@
 // can hold makes the load throw), from D-165 and D-56 (a record names a program of the list and a
 // character of the team) and from D-386 (the load admits every game state the game's own functions make,
 // so equipment the chest no longer holds loads). The expected states and documents are written out here.
-//
-// The version of the shape is raised in a later slice together with the document of
-// `tests/sim/saved-game.test.mjs`, so this file builds its documents from a save of the game state and
-// changes them at one place, whatever the version stands at.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -365,7 +361,7 @@ test("a judging record, a level of the record or the record itself of another sh
     },
     "a judging with a `__proto__` key": (held) => {
       held[1][1].forest = JSON.parse(
-        '{"results":[],"equipment":[],"__proto__":{}}',
+        `{"results":${JSON.stringify(SOLVED_ALL)},"equipment":[],"__proto__":{}}`,
       );
     },
     "a judging that is null": (held) => {

@@ -64,7 +64,7 @@ test("a map run that stands at the cap is a run at the cap, at the minute of the
   assert.equal(result.cause, null);
 });
 
-test("the default cap of a map run is the judging cap the built game holds, not a number of the instrument", () => {
+test("the default cap of a map run equals the judging cap the built game holds", () => {
   assert.equal(DEFAULT_CAP_MINUTES, BALANCE.judgingCapMinutes);
 });
 

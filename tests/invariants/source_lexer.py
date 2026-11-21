@@ -205,8 +205,10 @@ def string_values(text):
     """The texts of every string literal and every piece of template text, each as the readings a
     scan for a name must not miss. A string is read as written between its quotes and with its
     escapes taken off (`'cry\\pto'` reads `crypto`); a template piece is read between its marks
-    and, as the old cut of the balance instrument read it, with every backtick, `$`, `{` and `}`
-    taken off its two ends. A reading that equals another of the same piece stands once."""
+    and with every backtick, `$`, `{` and `}` taken off its two ends, so that a name the scans
+    compare whole still reads as that name where such a character stands as text beside it
+    (`` `{crypto}` `` reads `crypto`). A reading that equals another of the same piece stands
+    once."""
     values = []
     for kind, piece in segments(text):
         if kind == "string":
