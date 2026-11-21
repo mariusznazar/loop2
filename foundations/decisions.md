@@ -6694,6 +6694,21 @@ pack holds no smaller flame of the same fire on the same stones, and the candida
 higher flame, the heap of embers and the same flame on a heap of sticks, do not say to feed the fire
 before it goes out.
 
+### D-444 — How do the game's data tell an item from a resource?
+
+Every item of the game has a row in the items' data, which holds its properties and its words — its name, the plural forms of its name, its icon and the title of its icon — and a resource is an item that some game map holds on its tiles: the resources' data hold one row for each such item, under the item's identifier, and none for an item no game map holds, such as the bandage. An item that is a resource takes its words from its resource row, so that no word stands twice, and gathering a resource gives pieces of the item of the same identifier.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-443
+- **Verification:** an agent compares a change with the decision:
+  - complies: an item no game map holds, such as the bandage, standing as a row of the items' data with words of its own and with no row among the resources; the item of a resource taking its name, plural forms, icon and icon title from the resource's row
+  - violates: an item no game map holds written among the resources of the data; the words of an item that is a resource written again in its item row; a resource whose gathering gives pieces of an item of another identifier
+- **Origin:** none
+
+*Rationale:* items that are made, not gathered, follow the bandage, and a thing that lies on no map is in the backpack, the chest and a price as an item is, though it is no target of what is gathered or walked to. A resource keeps the identifier of its item, so that gathering needs no field that names the item and no join, and the lists of what lies on tiles need no filter. Accepted with it: an item that a resource gives under another identifier needs a field on the resource row and a change of each reader that takes a resource for an item, made when a source asks for one; the words of an item that is a resource stand in its resource row, so a change of its name is made there.
+*Rejected:* items with identifiers of their own and, on each resource row, the item its gathering gives — a one-time change everywhere the code takes the two for one thing; the bandage written among the resources as a resource no map has — fewer changes in the types, but every list of what lies on tiles must filter it out, for each item made after it too
+
 ## Combat
 
 How an encounter with a creature goes, what it reveals and what record of it the player reads.
@@ -7445,7 +7460,8 @@ tile, is open to every character, and an archetype never filters items.
 - **Relations:** derives from D-119
 - **Verification:** tests: a character skill left out of the predispositions taking out of the
   repertoire every action whose pair of verb and target it grows, and only those; with no
-  predisposition the actions no character skill grows, the walks and „Wędruj”, staying open, and
+  predisposition the actions no character skill grows, the walks, „Wędruj”, „Wytwórz” and „Opatrz”
+  with an item as the target, staying open, and
   conditions and items never filtered; an action opened by a branch open only to the character that
   bought the branch, in the program editor and in the simulation.
 - **Origin:** none
@@ -7688,8 +7704,9 @@ of data alone.
 - **Relations:** derives from D-18 · derives from D-118
 - **Verification:** tests: what reveals each action, condition and item, the campfire and the wolf
   standing in the data beside it as one kind of revealing event — the first chill, the first
-  finished exploration, a revealed tile that holds the item, the first gathered stick or berry, the
-  first crafted campfire, the first finished „Zapal”, an attack of the wolf — and nothing standing
+  finished exploration, a revealed tile that holds the item, the first gathered stick, berry or
+  moss, the first crafted campfire, the first piece of an item crafted, the first finished „Zapal”,
+  an attack of the wolf — and nothing standing
   there beside „Zawsze” and „Eksploruj”. For the simulation reading what reveals a thing from the
   data, so that a thing revealed by a kind of revealing event the simulation already handles is
   added, or what reveals it changed, by a change of data alone, an agent compares a change with the
