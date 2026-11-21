@@ -50,7 +50,7 @@
   grid-area: program;
 }
 
-/* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls. */
+/* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls; the phone layout's block below takes the scroll off. */
 .screen-area.run-tabs {
   grid-area: tabs;
   overflow-x: auto;
@@ -63,7 +63,10 @@
 /*
  * The phone layout of the screen of a map run (D-396, D-311, D-282): in a window narrower than 1280 px
  * one column of the three areas in the order of the document, the world, the program and the area with
- * the tabs. It undoes the two columns, the rows and the stretch of the program above.
+ * the tabs. It undoes the two columns, the rows and the stretch of the program above, and the scroll to
+ * the side of the area with the tabs: nothing in the phone layout scrolls to the side, in a frame either,
+ * so the table of revealed tiles fits the area (the rules of its rows are in styles.css) and the area has
+ * no scroll of its own.
  */
 @media (width < 1280px) {
   .run-screen-areas {
@@ -77,6 +80,10 @@
 
   .screen-area.run-program {
     align-self: start;
+  }
+
+  .screen-area.run-tabs {
+    overflow-x: visible;
   }
 }
 
@@ -499,6 +506,23 @@
 }
 
 /*
+ * The end-of-run window in the phone layout (D-396, D-370): as wide as the content column, which is the
+ * width of the window, and so tall that its buttons stay in sight. 80vh above leaves room for the menu
+ * bar in a window 720 px high where the bar is one line; in a page area 360 px wide the bar wraps „Konto”
+ * onto a second line and is 116 px high, and the grid of the screen puts its gap of `--space-xl`, 56 px,
+ * between the bar and the window, so the window starts 172 px down and 80vh of a window 740 px high
+ * (592 px) would end 23 px under its lower edge, the buttons with it. The height is the window's less 220
+ * px: the 172 px, and a line of the row of warnings under the bar, about 48 px, which a failed save puts
+ * there (D-208); a layout dimension, which D-43 leaves out, chosen from the measurement of the bar and
+ * the window in a real browser.
+ */
+@media (width < 1280px) {
+  .end-window {
+    max-height: calc(100vh - 220px);
+  }
+}
+
+/*
  * The rows „Teraz” and „Potem” under the scene (D-334, D-335). „Teraz” has a fixed height of one line,
  * a layout dimension (D-43), and cuts a longer text instead of wrapping it, so a change of its text
  * moves nothing below it. The text stands in `text`, in `positive` after a completion and in `warning`
@@ -570,6 +594,24 @@
 
 .now-text.warning {
   color: var(--warning);
+}
+
+/*
+ * The rows „Teraz” and „Potem” in the phone layout (D-396, D-336): a row that names a rule is a
+ * control, a tap on it scrolls the program, so it is at least `--touch-target-min` high, and its text,
+ * which the flex row centres, stands in the middle of that height. Both rows hold the minimum whether
+ * they name a rule or not, so that a row which gains or loses its rule does not move what is under it.
+ * „Teraz” keeps its fixed height, now the minimum, and cuts a longer text as it does in the computer
+ * layout; the rows are as wide as the world area, far over the minimum.
+ */
+@media (width < 1280px) {
+  .now-row {
+    height: var(--touch-target-min);
+  }
+
+  .next-row {
+    min-height: var(--touch-target-min);
+  }
 }
 
 /*

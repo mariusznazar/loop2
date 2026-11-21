@@ -762,6 +762,76 @@ header .failure-line {
 }
 
 /*
+ * The table of revealed tiles in the phone layout (D-396, D-19, D-421): it fits the width of its area and
+ * nothing in it scrolls to the side, with its numbers still in the rows. The state of the campfire and of
+ * the burning items, which stands in the last cell, is too wide to share a line with the numbers in a page
+ * area 360 px wide (about 195 px for „ognisko — płonie, zostało 42 min” against the 318 px of the area), so
+ * each row is a wrapping line of cells: the label of the tile and the numbers share the first line, the
+ * numbers in columns of one width, the same in the head and in each row, and the last cell takes a line
+ * of its own under them, indented by the width of the label so that it stands under its row's numbers,
+ * where the texts break between one another and, if one still does not fit, at a space. A row with no
+ * state in its last cell has no line for it. The icon of a column heading stands over its name, both at
+ * the right of the column, as the numbers under them. A column is no wider than `max-width`, so in
+ * a wide window of the phone layout the numbers do not spread over the whole area. The markup does not
+ * change; the lengths are layout dimensions, which D-43 leaves out.
+ */
+@media (width < 1280px) {
+  .tile-list,
+  .tile-list thead,
+  .tile-list tbody {
+    display: block;
+  }
+
+  .tile-list tr {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tile-list th,
+  .tile-list td {
+    box-sizing: border-box;
+  }
+
+  .tile-list tr > :first-child {
+    flex: none;
+    width: 8ch;
+  }
+
+  .tile-list th[scope="col"],
+  .tile-list td:not(.tile-fire) {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 12ch;
+  }
+
+  .tile-list thead th {
+    white-space: normal;
+  }
+
+  .tile-list thead .icon-mask {
+    display: block;
+    margin-left: auto;
+  }
+
+  .tile-list thead th:last-child {
+    display: none;
+  }
+
+  .tile-list tbody td.tile-fire {
+    flex: 1 0 100%;
+    padding-left: 8ch;
+  }
+
+  .tile-list tbody td.tile-fire:empty {
+    display: none;
+  }
+
+  .tile-list .tile-fire-text {
+    white-space: normal;
+  }
+}
+
+/*
  * The frames of the sprites of the scene and of the picture band of Siedziba (D-316, D-319, D-317), from CSS at a
  * beat apart from the pace, and only where the system's setting asks for no less motion; under that
  * setting the frames stand on the first. The rule names the classes of two screens, the mage's sheets and
