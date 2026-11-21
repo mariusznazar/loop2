@@ -171,7 +171,10 @@ test("a destructive button has its text in danger at rest, a plain one in text, 
     const colour = (element) =>
       getComputedStyle(element).getPropertyValue("color");
     const destructive = drawnElement(
-      await drawn(document, createElement(ReactButton, { text: "Usuń", kind: "destructive" })),
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "Usuń", kind: "destructive" }),
+      ),
     );
     assert.equal(colour(destructive), "var(--danger)");
     const plain = drawnElement(
@@ -181,7 +184,11 @@ test("a destructive button has its text in danger at rest, a plain one in text, 
     const disabled = drawnElement(
       await drawn(
         document,
-        createElement(ReactButton, { text: "Usuń", kind: "destructive", disabled: true }),
+        createElement(ReactButton, {
+          text: "Usuń",
+          kind: "destructive",
+          disabled: true,
+        }),
       ),
     );
     assert.equal(colour(disabled), "var(--text-disabled)");
