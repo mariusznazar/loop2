@@ -13,7 +13,8 @@ below in the repository's root.
 The rules stay where they are, and this skill does not repeat them; read them before the steps:
 D-271 (where the pictures come from, and that the colour of an effect stands out from the ground it
 stands on), D-317 (how long effects last, and that the scene shows no flash of its whole area), D-349
-(the scene is 672 × 304 px, twice its picture of 336 × 152), D-415 (the human judges the colour of
+(the scene has two sizes, one and two times its picture of 336 × 152 px: 672 × 304 px in the computer
+layout, and in the phone layout the larger of the two that fits the width), D-415 (the human judges the colour of
 an effect against its prop and whether another element covers it, and no threshold decides) and the
 section "The scene of a map run" of `guidelines/styleguide-browser-view.md`.
 
@@ -95,7 +96,8 @@ into a decision, a test or a rule of style.
    node .claude/skills/loop2-scene-art/sheet-frames.mjs measure assets/sprites/mage-idle.png#64 <new-frame-file>#<w>
    ```
 
-   The numbers are in pixels of the scene's picture, which the screen shows twice as large (D-349).
+   The numbers are in pixels of the scene's picture, which the screen shows once or twice as large
+   (D-349): twice in the computer layout, and once or twice in the phone layout.
    Choose the figure to compare with: the mage for a character, the mage or the wolf for a creature.
 
 2. **The colour of an effect against the prop it stands at, and not against the ground alone.**
@@ -123,11 +125,14 @@ into a decision, a test or a rule of style.
 
    The screenshot is the page at its full size, a window of 1280 × 720 px at the pixel ratio 1 giving
    a file of 1280 × 720 px, saved where `--filename` says, as `loop2-play` gives it. The scene is
-   672 × 304 px on the screen, twice its picture (D-349), so the pixel `sx,sy` of the scene's picture
-   is the block of 2 × 2 pixels of the screenshot whose top left lies `round(left) + 2*sx` across
-   and `round(top) + 2*sy` down, with `left` and `top` of the rectangle the second command prints;
-   any of the four pixels of the block is the sample. Where the ratio is not 1, multiply every number
-   by it first.
+   672 × 304 px on the screen in the computer layout, twice its picture (D-349), so the pixel `sx,sy`
+   of the scene's picture is the block of 2 × 2 pixels of the screenshot whose top left lies
+   `round(left) + 2*sx` across and `round(top) + 2*sy` down, with `left` and `top` of the rectangle
+   the second command prints; any of the four pixels of the block is the sample. Where the ratio is
+   not 1, multiply every number by it first. This holds for a window whose page area is 1280 px wide
+   or wider; in the phone layout the scene may stand at the size of its picture, 336 × 152 px, where
+   a pixel of the picture is one pixel of the screenshot, so read the width the second command prints
+   before you count.
 
 3. **Whether the effect is covered by another element of the scene.** Lay the effect and every
    element that may cover it over the forest, in the order the section "The scene of a map run" of
