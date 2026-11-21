@@ -1,5 +1,7 @@
 // The texts of the judging of a program in „Kto idzie” (D-329, D-439, D-440), tested without a
-// browser: the heading of a result, the row of each seed, and the mark beside the list „Program:”.
+// browser: the heading of a result, the row of each seed, the mark beside the list „Program:”, and what
+// „Puść w pętlę” reads of a judging (D-243): the seeds solved, the sentence over the second click and
+// the comparison of two results.
 // Importing the module must not touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -8,9 +10,13 @@ import {
   JUDGE_BUTTON_TEXT,
   JUDGING_COSTS_NOTHING,
   JUDGING_WAITING_TEXT,
+  LOOP_ANYWAY_TEXT,
   judgingHeading,
   markLine,
+  sameLines,
   seedLines,
+  solvedSeeds,
+  unsolvedSentence,
 } from "../../dist/browser/view/judging-lines.js";
 
 const SOLVED = { kind: "solved" };
@@ -138,4 +144,76 @@ test("where the chest holds less than the judging took the note stands, and twel
     markLine({ solved: 9, allSolved: false, stockShort: true, badge: false }),
     { text: "9 z 12", role: "text", note },
   );
+});
+
+test("the seeds solved of a judging are counted, and a seed left undecided or ended in a death is not one of them", () => {
+  // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data"
+  assert.equal(solvedSeeds(judgingOf()), 12);
+  assert.equal(solvedSeeds(judgingOf(death("cold", 30), UNDECIDED)), 10);
+  assert.equal(
+    solvedSeeds({
+      results: Array.from({ length: 12 }, () => UNDECIDED),
+      equipment: [],
+    }),
+    0,
+  );
+});
+
+test("the button after the first click that found a seed unsolved reads „Puść mimo to”, and the sentence over it counts the seeds the program does not solve", () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  assert.equal(LOOP_ANYWAY_TEXT, "Puść mimo to");
+  assert.equal(
+    unsolvedSentence(judgingOf(death("cold", 30), UNDECIDED)),
+    "Na 2 z 12 ziaren program mapy nie rozwiązuje.",
+  );
+  assert.equal(
+    unsolvedSentence(judgingOf(death("hunger", 5))),
+    "Na 1 z 12 ziaren program mapy nie rozwiązuje.",
+  );
+  assert.equal(
+    unsolvedSentence({
+      results: Array.from({ length: 12 }, () => UNDECIDED),
+      equipment: [],
+    }),
+    "Na 12 z 12 ziaren program mapy nie rozwiązuje.",
+  );
+});
+
+test("two results are the same where each of the twelve seeds has the same row: the kind, the cause and the minute", () => {
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  const base = judgingOf(death("cold", 37), UNDECIDED);
+  assert.equal(sameLines(base, judgingOf(death("cold", 37), UNDECIDED)), true);
+  assert.equal(
+    sameLines(base, judgingOf(death("cold", 38), UNDECIDED)),
+    false,
+    "a death a minute later is another row",
+  );
+  assert.equal(
+    sameLines(base, judgingOf(death("hunger", 37), UNDECIDED)),
+    false,
+    "a death of another cause is another row",
+  );
+  assert.equal(
+    sameLines(base, judgingOf(UNDECIDED, death("cold", 37))),
+    false,
+    "the same rows at other seeds are no same result",
+  );
+  assert.equal(sameLines(base, judgingOf(death("cold", 37))), false);
+  assert.equal(
+    sameLines(
+      { results: [SOLVED], equipment: [] },
+      { results: [SOLVED, SOLVED], equipment: [] },
+    ),
+    false,
+    "a result of another length is another result",
+  );
+});
+
+test("the equipment a judging took does not make two results differ, for the screen shows none of it", () => {
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  const withStick = {
+    ...judgingOf(death("cold", 37)),
+    equipment: [{ item: "stick", count: 2 }],
+  };
+  assert.equal(sameLines(withStick, judgingOf(death("cold", 37))), true);
 });

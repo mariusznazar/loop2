@@ -184,11 +184,28 @@
 .maps-who-program,
 .maps-who-actions,
 .maps-who-judge,
-.maps-who-loop-start {
+.maps-who-loop-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs) var(--space-s);
+}
+
+/*
+ * „Puść w pętlę” with what stands over it: after its judging found a seed unsolved, the sentence about the
+ * seeds in `warning`, as the other warnings of the card are (D-243, D-39), stands over the row of the
+ * button, which then reads „Puść mimo to” and is the same plain shared button.
+ */
+.maps-who-loop-start {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.maps-who-loop-unsolved {
+  margin: 0;
+  color: var(--warning);
 }
 
 .maps-who-actions {

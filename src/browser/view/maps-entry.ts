@@ -92,7 +92,9 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
             });
           },
           // An act of the player like a send: the reading is made first, and a changed state is
-          // saved (D-207). The player stays on the screen Mapy (D-329).
+          // saved (D-207). The player stays on the screen Mapy (D-329). The screen asks for it after
+          // the judging of „Puść w pętlę”, which is the `judge` below, or at its second click; it
+          // judges nothing itself, and takes what the chest holds at that moment (D-243).
           startLoop(characterId, looped, programId) {
             mapsAct(() =>
               store.startLoop({ mapId: looped, characterId, programId }),

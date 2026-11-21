@@ -38,12 +38,23 @@ export const JUDGING_COSTS_NOTHING =
 /** The note beside a mark where the chest holds less of an item than the judging took (D-440). */
 const STOCK_SHORT_NOTE = "oceniono z zapasem, którego dziś nie ma w skrzynce";
 
+/** The button of „Puść w pętlę” after its judging found a seed unsolved, which a second click then presses (D-243). */
+export const LOOP_ANYWAY_TEXT = "Puść mimo to";
+
+/** The seeds a judging solved: a seed left undecided or ended in a death is not one of them. */
+export function solvedSeeds(judging: Judging): number {
+  return judging.results.filter((result) => result.kind === "solved").length;
+}
+
+/** The sentence over the button of the second click, counting the seeds the program does not solve (D-243). */
+export function unsolvedSentence(judging: Judging): string {
+  const unsolved = seedCount() - solvedSeeds(judging);
+  return `Na ${unsolved} z ${seedCount()} ziaren program mapy nie rozwiązuje.`;
+}
+
 /** The heading of a result: the seeds solved of all, a seed left undecided or ended in a death not among them. */
 export function judgingHeading(judging: Judging): string {
-  const solved = judging.results.filter(
-    (result) => result.kind === "solved",
-  ).length;
-  return `Ocena na ${seedCount()} ziarnach: ${solved} z ${seedCount()} rozwiązanych`;
+  return `Ocena na ${seedCount()} ziarnach: ${solvedSeeds(judging)} z ${seedCount()} rozwiązanych`;
 }
 
 /** The cause of a death in the words of a row: „mag zamarzł”, the first letter lower. */
@@ -77,6 +88,26 @@ export function seedLines(judging: Judging): SeedLine[] {
     kind: result.kind,
     text: `Ziarno ${index + 1}: ${rowWords(result)}`,
   }));
+}
+
+/**
+ * Whether two results give each of the twelve seeds the same row, as the screen shows it: the same kind, cause
+ * and game minute at the same seed (D-243). The equipment a judging took is no row, so it does not count.
+ */
+export function sameLines(first: Judging, second: Judging): boolean {
+  const rows = seedLines(first);
+  const others = seedLines(second);
+  return (
+    rows.length === others.length &&
+    rows.every((row, at) => {
+      const other = others[at];
+      return (
+        other !== undefined &&
+        row.kind === other.kind &&
+        row.text === other.text
+      );
+    })
+  );
 }
 
 /**

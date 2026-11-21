@@ -4,15 +4,17 @@
  * names with, under it, the section „Kto idzie”. Before a map is named the right area says to pick
  * one. The card is drawn from the map's data (D-327, D-328); under it each character of the team
  * stands with its lines, the two buttons that send it and the button of a judging of its program, whose
- * result unfolds under it (D-329, D-243, D-244, D-287, D-326, D-439, D-440).
+ * result unfolds under it (D-329, D-243, D-244, D-287, D-326, D-439, D-440). „Puść w pętlę” judges the
+ * program anew first, starts the earning loop at once where all twelve seeds are solved, and otherwise
+ * stands on the result as „Puść mimo to”, whose second click starts it (D-243).
  *
  * The page holds the screen behind one boundary, `createMapsScreen` (D-36), as it holds the screen
  * Postać: an element of its own for the page to place, a first render that is synchronous,
  * `update(props)`, `focus()` and `dispose()`. The page calls them from an event handler or the
  * continuation of an answer, never from render or an effect. The screen performs nothing itself:
  * the five acts of a character go to the page through `controls`, which turns them into the
- * simulation's calls. What stands of a judging after its call (the result, the waiting button) lives in
- * the screen alone (D-407). Nothing runs when the module is imported.
+ * simulation's calls. What stands of a judging after its call (the result, the waiting button, the
+ * second click that waits) lives in the screen alone (D-407). Nothing runs when the module is imported.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
@@ -33,7 +35,14 @@ import type {
 import { ReactButton } from "./controls/react-button.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
 import { JudgingMarkLine, JudgingResult } from "./judging-result.js";
-import { JUDGE_BUTTON_TEXT, JUDGING_WAITING_TEXT } from "./judging-lines.js";
+import {
+  JUDGE_BUTTON_TEXT,
+  JUDGING_WAITING_TEXT,
+  LOOP_ANYWAY_TEXT,
+  sameLines,
+  solvedSeeds,
+  unsolvedSentence,
+} from "./judging-lines.js";
 import {
   attackerLines,
   capLines,
@@ -68,7 +77,10 @@ export type MapsScreenControls = {
   pick(characterId: CharacterId, programId: ProgramId): void;
   /** Sends a character into a manual map run on the map, with the program its list shows. */
   enter(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
-  /** Puts a character into an earning loop on a solved map, with the program its list shows. */
+  /**
+   * Puts a character into an earning loop on a solved map, with the program its list shows; the screen
+   * asks for it after the judging of „Puść w pętlę” or at the second click, and it judges nothing (D-243).
+   */
   startLoop(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
   /** Stops a character's earning loop at once. */
   stop(characterId: CharacterId): void;
@@ -96,7 +108,7 @@ export type MapsScreen = {
 };
 
 /** A control of a character that the keyboard's focus can be sent to once the screen is drawn. */
-type FocusTarget = "stop" | "enter" | "program" | "judge";
+type FocusTarget = "stop" | "enter" | "program" | "judge" | "loop";
 
 /** The elements the focus can be sent to. */
 type FocusControl = HTMLButtonElement | HTMLSelectElement;
@@ -104,7 +116,7 @@ type FocusControl = HTMLButtonElement | HTMLSelectElement;
 /** The control the focus is owed to, asked by the click that makes the pressed button leave or stand inactive. */
 type OwedFocus = {
   characterId: CharacterId;
-  target: "stop" | "enter" | "judge";
+  target: "stop" | "enter" | "judge" | "loop";
 };
 
 /** The controls a move of focus tries, in order, by the control that was pressed. */
@@ -112,24 +124,44 @@ const OWED_TARGETS: Record<OwedFocus["target"], FocusTarget[]> = {
   stop: ["stop"],
   enter: ["enter", "program"],
   judge: ["judge"],
+  loop: ["loop"],
 };
 
-/** The result of a judging that stands at a character, with what it was made for. */
-type ShownJudging = { mapId: MapId; programId: ProgramId; judging: Judging };
+/**
+ * The result of a judging that stands at a character, with what it was made for. `asking` is set where the
+ * result is that of the first click of „Puść w pętlę” and the earning loop waits for the second (D-243).
+ */
+type ShownJudging = {
+  mapId: MapId;
+  programId: ProgramId;
+  judging: Judging;
+  asking: boolean;
+};
+
+/** The click a judging answers: the button of a judging, or the first click of „Puść w pętlę” (D-243). */
+type JudgingAct = "judge" | "loop";
 
 /** What a character's row gets from the screen for the judging: what waits, what stands, and the two acts on them. */
 type JudgingPlumbing = {
-  /** The characters whose button of a judging waits for the result. */
-  waiting: readonly CharacterId[];
+  /** The characters whose button waits for the result, and which button it is. */
+  waiting: readonly { characterId: CharacterId; act: JudgingAct }[];
   /** The result standing at each character that has one. */
   shown: Readonly<Partial<Record<CharacterId, ShownJudging>>>;
-  /** Starts a judging: the waiting button is drawn first, and the page is asked after the browser has painted it. */
+  /**
+   * Starts a judging for a click: the waiting button is drawn first, and the page is asked after the browser
+   * has painted it. `standing` is the result that stands at the character for that program and map, where
+   * the click is the first of „Puść w pętlę”, which starts the earning loop at once on the same result (D-243).
+   */
   start(
+    act: JudgingAct,
     characterId: CharacterId,
     mapId: MapId,
     programId: ProgramId,
     hadFocus: boolean,
+    standing?: Judging,
   ): void;
+  /** Spends the wait for the second click of „Puść w pętlę”: the click starts the earning loop (D-243). */
+  spend(characterId: CharacterId): void;
   /** Takes away the result standing at a character, where its list shows another program. */
   clear(characterId: CharacterId): void;
 };
@@ -311,7 +343,12 @@ function CharacterRow({
   const warning = tripWarning(plan, capacity, map);
   const emptyLoop = solved ? emptyLoopMark(plan) : null;
   const run = state.run;
-  const waiting = judging.waiting.includes(id);
+  const waiting = judging.waiting.some(
+    (each) => each.characterId === id && each.act === "judge",
+  );
+  const loopWaiting = judging.waiting.some(
+    (each) => each.characterId === id && each.act === "loop",
+  );
   const held = judging.shown[id];
   const shown =
     held !== undefined && held.mapId === mapId && held.programId === program.id
@@ -323,6 +360,10 @@ function CharacterRow({
     state.team.chest,
   );
   const judgeText = waiting ? JUDGING_WAITING_TEXT : JUDGE_BUTTON_TEXT;
+  // The first click of „Puść w pętlę” found a seed unsolved: the sentence stands over the button, which reads
+  // „Puść mimo to” and starts the earning loop at its click (D-243).
+  const asking = shown !== undefined && shown.asking;
+  const loopText = asking ? LOOP_ANYWAY_TEXT : "Puść w pętlę";
   return (
     <li className="maps-who-member">
       <a
@@ -393,6 +434,7 @@ function CharacterRow({
             onClick={(event) => {
               const button = event.currentTarget;
               judging.start(
+                "judge",
                 id,
                 mapId,
                 program.id,
@@ -403,18 +445,39 @@ function CharacterRow({
         </div>
         {solved ? (
           <div className="maps-who-loop-start">
-            <ReactButton
-              text="Puść w pętlę"
-              label={`Puść w pętlę: ${character.name}, mapa ${map.name}`}
-              disabled={run?.character.id === id || inLoop}
-              onClick={() => {
-                focus.owe({ characterId: id, target: "stop" });
-                controls.startLoop(id, mapId, program.id);
-              }}
-            />
-            {emptyLoop === null ? null : (
-              <span className="maps-who-empty-loop">{emptyLoop}</span>
-            )}
+            {asking ? (
+              <p className="maps-who-loop-unsolved warning">
+                {unsolvedSentence(shown.judging)}
+              </p>
+            ) : null}
+            <div className="maps-who-loop-row">
+              <ReactButton
+                text={loopText}
+                label={`${loopText}: ${character.name}, mapa ${map.name}`}
+                disabled={run?.character.id === id || inLoop || loopWaiting}
+                buttonRef={focus.keep(id, "loop")}
+                onClick={(event) => {
+                  if (asking) {
+                    judging.spend(id);
+                    focus.owe({ characterId: id, target: "stop" });
+                    controls.startLoop(id, mapId, program.id);
+                    return;
+                  }
+                  const button = event.currentTarget;
+                  judging.start(
+                    "loop",
+                    id,
+                    mapId,
+                    program.id,
+                    button.ownerDocument.activeElement === button,
+                    shown?.judging,
+                  );
+                }}
+              />
+              {emptyLoop === null ? null : (
+                <span className="maps-who-empty-loop">{emptyLoop}</span>
+              )}
+            </div>
           </div>
         ) : null}
       </div>
@@ -424,6 +487,31 @@ function CharacterRow({
       {shown === undefined ? null : <JudgingResult judging={shown.judging} />}
     </li>
   );
+}
+
+/** The results that stand, without the one at a character. */
+function without(
+  now: JudgingPlumbing["shown"],
+  characterId: CharacterId,
+): JudgingPlumbing["shown"] {
+  return Object.fromEntries(
+    Object.entries(now).filter(([id]) => id !== String(characterId)),
+  );
+}
+
+/**
+ * What stands at the characters after a judging of „Puść w pętlę” that started the earning loop at once: the
+ * result that stood stays where the new one gives the same twelve rows, and goes where the judging solved all
+ * twelve seeds in place of one that failed (D-243).
+ */
+function resultKept(
+  now: JudgingPlumbing["shown"],
+  characterId: CharacterId,
+  standing: Judging | undefined,
+  judged: Judging,
+): JudgingPlumbing["shown"] {
+  if (standing !== undefined && sameLines(standing, judged)) return now;
+  return without(now, characterId);
 }
 
 /** The screen: the list of open maps and the right area with the card and „Kto idzie”, or the sentence to pick. */
@@ -437,7 +525,7 @@ function MapsView({
   const { state, mapId } = props;
   const elements = useRef(new Map<string, FocusControl>());
   const owed = useRef<OwedFocus | null>(null);
-  const [waiting, setWaiting] = useState<readonly CharacterId[]>([]);
+  const [waiting, setWaiting] = useState<JudgingPlumbing["waiting"]>([]);
   const [shown, setShown] = useState<JudgingPlumbing["shown"]>({});
   const [shownOn, setShownOn] = useState(mapId);
   const alive = useRef(false);
@@ -485,40 +573,62 @@ function MapsView({
   const judging: JudgingPlumbing = {
     waiting,
     shown,
-    start: (characterId, judgedMap, programId, hadFocus) => {
-      setWaiting((now) => [...now, characterId]);
+    start: (act, characterId, judgedMap, programId, hadFocus, standing) => {
+      setWaiting((now) => [...now, { characterId, act }]);
       // The button is drawn waiting before the simulation runs, which blocks the page until it has
-      // counted the twelve runs: the browser gets a frame to paint the button, and the page is asked
-      // in the task after it.
+      // counted the twelve runs: the browser gets a frame to paint the button, and the page is asked in
+      // the task after it.
       const judge = () => {
         if (!alive.current) return;
         let judged: Judging | null = null;
+        let starting = false;
         try {
           judged = controls.judge(characterId, judgedMap, programId);
+          // The first click of „Puść w pętlę” starts the earning loop at once where the judging solves all
+          // twelve seeds, or gives each of them the row of the result that stands (D-243).
+          starting =
+            act === "loop" &&
+            (solvedSeeds(judged) === judged.results.length ||
+              (standing !== undefined && sameLines(standing, judged)));
+          if (starting) {
+            focus.owe({ characterId, target: "stop" });
+            controls.startLoop(characterId, judgedMap, programId);
+          }
         } finally {
-          if (hadFocus) focus.owe({ characterId, target: "judge" });
-          setWaiting((now) => now.filter((id) => id !== characterId));
+          if (hadFocus && !starting) focus.owe({ characterId, target: act });
+          setWaiting((now) =>
+            now.filter(
+              (each) => each.characterId !== characterId || each.act !== act,
+            ),
+          );
           if (judged !== null) {
             const done = judged;
-            setShown((now) => ({
-              ...now,
-              [characterId]: {
-                mapId: judgedMap,
-                programId,
-                judging: done,
-              },
-            }));
+            setShown((now) =>
+              starting
+                ? resultKept(now, characterId, standing, done)
+                : {
+                    ...now,
+                    [characterId]: {
+                      mapId: judgedMap,
+                      programId,
+                      judging: done,
+                      asking: act === "loop",
+                    },
+                  },
+            );
           }
         }
       };
       window.requestAnimationFrame(() => window.setTimeout(judge, 0));
     },
-    clear: (characterId) =>
-      setShown((now) =>
-        Object.fromEntries(
-          Object.entries(now).filter(([id]) => id !== String(characterId)),
-        ),
-      ),
+    spend: (characterId) =>
+      setShown((now) => {
+        const held = now[characterId];
+        return held === undefined
+          ? now
+          : { ...now, [characterId]: { ...held, asking: false } };
+      }),
+    clear: (characterId) => setShown((now) => without(now, characterId)),
   };
 
   // A map the list does not hold draws no card: sending to it is refused (D-149).

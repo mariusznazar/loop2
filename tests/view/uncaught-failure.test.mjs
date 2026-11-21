@@ -463,13 +463,25 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
 
     await inAct(() => reportError(new TypeError(QUOTED)));
     await press(buttonNamed(root, "Puść w pętlę"));
+    // „Puść w pętlę” judges the program first and starts the earning loop only at the second click, or at
+    // once where it solves all twelve seeds (D-243), so the case lets the page judge and then presses the
+    // second click, which the program of a new game, dying on some seed of Las, asks for.
+    await inAct(async () => mock.timers.tick(100));
+    const second = buttonNamed(root, "Puść mimo to");
+    assert.ok(
+      second,
+      "precondition: the judging of the new game's program asks for a second click",
+    );
+    await press(second);
+    await inAct(async () => mock.timers.tick(100));
     await press(buttonNamed(root, "Wejdź"));
     await settle();
 
     assert.deepEqual(waitingCalls(held), [], "no act started a save");
-    assert.ok(
-      buttonNamed(root, "Puść w pętlę"),
-      "no earning loop took the button",
+    assert.equal(
+      buttonNamed(root, "Zatrzymaj"),
+      undefined,
+      "no earning loop was started",
     );
     assert.equal(address.current, "#/mapy/forest", "no map run was opened");
   });

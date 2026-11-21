@@ -699,14 +699,17 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 });
 
 // D-243, D-274: „Wejdź” in the main look at each map, „Puść w pętlę” the plain button and only
-// at a solved map; both act with the program the row shows.
+// at a solved map; both act with the program the row shows. „Puść w pętlę” judges the program first
+// (D-243), so the page is asked to judge before it is asked to start the earning loop.
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
   // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
   // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
-    const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));
+    const { screen, calls } = await mount(page, propsOf(unsolved, "forest"), {
+      judge: () => judgedOf(),
+    });
     const enter = buttonLabelled(page.root, "Wejdź: Ala, mapa Las");
     assert.equal(enter.textContent, "Wejdź");
     assert.ok(enter.classList.contains("main"), "the main look");
@@ -724,8 +727,11 @@ test("„Wejdź” is the main button at each map, „Puść w pętlę” the pl
     assert.equal(loop.textContent, "Puść w pętlę");
     assert.equal(loop.className, "button", "the plain button");
     await press(loop);
-    assert.deepEqual(calls[1], ["startLoop", 1, "forest", programId]);
-    assert.equal(calls.length, 2);
+    await until(() => calls.length === 3);
+    assert.deepEqual(calls.slice(1), [
+      ["judge", 1, "forest", programId],
+      ["startLoop", 1, "forest", programId],
+    ]);
   });
 });
 
@@ -735,7 +741,9 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const empty = solved(teamOf("Ala"));
-    const { screen, calls } = await mount(page, propsOf(empty, "forest"));
+    const { screen, calls } = await mount(page, propsOf(empty, "forest"), {
+      judge: () => judgedOf(),
+    });
     const mark = page.root.querySelector(".maps-who-empty-loop");
     assert.equal(mark.textContent, "Pętla nic nie zarobi do skrzynki");
     const loop = buttonLabelled(page.root, "Puść w pętlę: Ala, mapa Las");
@@ -746,7 +754,12 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
     );
     assert.equal(loop.disabled, false);
     await press(loop);
-    assert.equal(calls.length, 1);
+    await until(() => calls.length === 2);
+    assert.deepEqual(
+      calls.map(([name]) => name),
+      ["judge", "startLoop"],
+      "the button acts, after its judging",
+    );
     await inAct(() =>
       screen.update(
         propsOf(
@@ -1437,15 +1450,459 @@ test("the entry judges through the store's act, remembers the judging for the ch
   });
 });
 
+// --- „Puść w pętlę” judges first ----------------------------------------------------------
+
+const loopButton = (member) =>
+  member.querySelector(".maps-who-loop-start button");
+const loopSentence = (member) =>
+  member.querySelector(".maps-who-loop-unsolved");
+const countOf = (calls, name) =>
+  calls.filter(([called]) => called === name).length;
+/** The label and text of the button as the player meets it: what it reads and the sentence over it. */
+const loopStand = (member) => ({
+  text: loopButton(member).textContent,
+  sentence: loopSentence(member)?.textContent ?? null,
+});
+const ORDINARY = { text: "Puść w pętlę", sentence: null };
+const SECOND_CLICK = {
+  text: "Puść mimo to",
+  sentence: "Na 4 z 12 ziaren program mapy nie rozwiązuje.",
+};
+
+// D-243: the click draws the button inactive with its own text before the page judges; where all twelve
+// seeds are solved the earning loop starts at once, with no sentence and no second click.
+test("„Puść w pętlę” judges the program the list shows on the map of the card with its text kept, and where all twelve seeds are solved starts the earning loop at once", async () => {
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”, which its click first judges anew (D-439)."
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => judgedOf(),
+    });
+    const [ala, bob] = members(page.root);
+    await press(loopButton(ala));
+    assert.deepEqual(
+      loopStand(ala),
+      ORDINARY,
+      "the text stays while it counts",
+    );
+    assert.equal(
+      loopButton(ala).disabled,
+      true,
+      "and no second click is taken",
+    );
+    assert.equal(
+      judgeButton(ala).textContent,
+      "Oceń na 12 ziarnach",
+      "the button of a judging waits for nothing: the click is not its own",
+    );
+    assert.equal(loopButton(bob).disabled, false);
+    assert.deepEqual(calls, [], "the screen is drawn before the page is asked");
+
+    await until(() => calls.length === 2);
+    const programId = state.programs[0].id;
+    assert.deepEqual(calls, [
+      ["judge", 1, "forest", programId],
+      ["startLoop", 1, "forest", programId],
+    ]);
+    assert.equal(loopSentence(members(page.root)[0]), null);
+    assert.equal(
+      resultOf(members(page.root)[0]),
+      null,
+      "no result is shown where the earning loop starts at once",
+    );
+    assert.equal(loopButton(members(page.root)[0]).disabled, false);
+  });
+});
+
+// D-243: with a seed unsolved the result stands under the character, the sentence over the button, the
+// button reads „Puść mimo to”, and the second click starts the earning loop without judging again.
+test("a seed unsolved shows the result under the character and the sentence over the button, the button reads „Puść mimo to”, and the second click starts the earning loop", async () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  // decision: D-326 "Where the bring list of the program picked is empty, „Pętla nic nie zarobi do skrzynki” stands in `warning` beside „Puść w pętlę”, and the button still acts."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const looping = { ...state, loops: { 1: LOOP } };
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => MIXED,
+      startLoop: (shown) => shown.update(propsOf(looping, "forest")),
+      stop: (shown) => shown.update(propsOf(state, "forest")),
+    });
+    await press(loopButton(members(page.root)[0]));
+    await until(() => calls.length === 1);
+    const [ala, bob] = members(page.root);
+    assert.deepEqual(calls, [["judge", 1, "forest", state.programs[0].id]]);
+    assert.equal(
+      text(resultOf(ala), ".judging-heading"),
+      "Ocena na 12 ziarnach: 8 z 12 rozwiązanych",
+      "the result stands under the character",
+    );
+    assert.equal(kinds(ala).at(-1), "judging-result");
+    assert.equal(resultOf(bob), null, "and at no other character");
+    assert.deepEqual(loopStand(ala), SECOND_CLICK);
+    assert.deepEqual(loopStand(bob), ORDINARY);
+
+    const sentence = loopSentence(ala);
+    const button = loopButton(ala);
+    assert.equal(roleOf(sentence), "warning", "the sentence is in warning");
+    assert.equal(button.className, "button", "the plain shared button");
+    assert.equal(button.disabled, false);
+    assert.equal(
+      button.getAttribute("aria-label"),
+      "Puść mimo to: Ala, mapa Las",
+      "the name of the button says what it reads",
+    );
+    assert.equal(
+      sentence.parentElement,
+      button.closest(".maps-who-loop-start"),
+      "the sentence stands in the place of the button",
+    );
+    assert.ok(
+      sentence.compareDocumentPosition(button) &
+        sentence.ownerDocument.defaultView.Node.DOCUMENT_POSITION_FOLLOWING,
+      "above the button",
+    );
+    // D-326: the sentence of an empty list stands beside the button, which acts.
+    const empty = ala.querySelector(".maps-who-empty-loop");
+    assert.equal(empty.textContent, "Pętla nic nie zarobi do skrzynki");
+    assert.equal(empty.parentElement, button.parentElement);
+
+    await press(button);
+    assert.deepEqual(calls.slice(1), [
+      ["startLoop", 1, "forest", state.programs[0].id],
+    ]);
+    assert.equal(countOf(calls, "judge"), 1, "the second click judges no more");
+
+    // The loop runs and the second click is spent: once it is stopped the button is „Puść w pętlę” again.
+    assert.equal(loopButton(members(page.root)[0]).disabled, true);
+    await press(buttonLabelled(page.root, "Zatrzymaj: Ala"));
+    assert.deepEqual(loopStand(members(page.root)[0]), ORDINARY);
+    assert.ok(
+      resultOf(members(page.root)[0]),
+      "the result stands until the player leaves the card",
+    );
+  });
+});
+
+// D-243: the waiting second click goes with what makes the result go; the chest changing alone is no
+// such thing, for the second click starts the loop on what the chest holds then.
+test("the waiting second click goes where another program is picked, a new judging is made or the player leaves the card, and stays where the chest or the time changes alone", async () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const state = solved(createProgram(teamOf("Ala")).state);
+    const [first, second] = state.programs;
+    const answers = [];
+    const { screen, calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => answers.shift(),
+      pick: (shown, characterId, programId) =>
+        shown.update(
+          propsOf(
+            { ...state, pickedPrograms: { [characterId]: programId } },
+            "forest",
+          ),
+        ),
+    });
+    const ala = () => members(page.root)[0];
+    /** The first click with `answer` as the result of the judging, awaited until the page has judged. */
+    const clickLoop = async (answer) => {
+      answers.push(answer);
+      const before = countOf(calls, "judge");
+      await press(loopButton(ala()));
+      await until(() => countOf(calls, "judge") === before + 1);
+    };
+
+    await clickLoop(MIXED);
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+
+    // The chest and the time change: the second click stays, with the result.
+    await inAct(() =>
+      screen.update(
+        propsOf(withChest(state, { stick: 3 }), "forest", NOW + HOUR),
+      ),
+    );
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+    assert.ok(resultOf(ala()));
+
+    // Another program picked on the list: the result and the second click go, and they stay gone.
+    const list = page.root.querySelector('select[aria-label="Program: Ala"]');
+    await inAct(() => {
+      list.value = String(second.id);
+      fire(list, "change");
+    });
+    assert.deepEqual(loopStand(ala()), ORDINARY);
+    assert.equal(resultOf(ala()), null);
+    await inAct(() => {
+      list.value = String(first.id);
+      fire(list, "change");
+    });
+    assert.deepEqual(
+      loopStand(ala()),
+      ORDINARY,
+      "picked back it is not asked again",
+    );
+
+    // A new judging by the button of a judging replaces the result: no second click is left.
+    await clickLoop(MIXED);
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+    answers.push(judgedOf());
+    await press(judgeButton(ala()));
+    await until(() => countOf(calls, "judge") === 3);
+    assert.deepEqual(loopStand(ala()), ORDINARY);
+    assert.equal(
+      text(resultOf(ala()), ".judging-heading"),
+      "Ocena na 12 ziarnach: 12 z 12 rozwiązanych",
+    );
+    assert.equal(countOf(calls, "startLoop"), 0, "no earning loop was started");
+
+    // Leaving the card: coming back finds neither.
+    await clickLoop(MIXED);
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+    await inAct(() => screen.update(propsOf(state, "forestDeep")));
+    await inAct(() => screen.update(propsOf(state, "forest")));
+    assert.deepEqual(loopStand(ala()), ORDINARY);
+    assert.equal(resultOf(ala()), null);
+  });
+});
+
+// D-243, task Q14: a result with a failure that stands from the button of a judging does not count as
+// seen: „Puść w pętlę” judges anew, starts at once on the same result and waits on a different one.
+test("where a result with a failure already stands under the character, „Puść w pętlę” judges anew, starts at once on the same twelve rows and waits for the second click on a different result", async () => {
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const answers = [];
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => answers.shift(),
+    });
+    const at = (index) => members(page.root)[index];
+    const judgeWith = async (button, answer, count) => {
+      answers.push(answer);
+      await press(button);
+      await until(() => countOf(calls, "judge") === count);
+    };
+    const heading = (index) => text(at(index), ".judging-heading");
+
+    // Bob's result stands from the button of a judging, Ala's from nowhere: a result at another
+    // character is no result seen at this one.
+    await judgeWith(judgeButton(at(1)), MIXED, 1);
+    await judgeWith(loopButton(at(0)), MIXED, 2);
+    assert.equal(countOf(calls, "startLoop"), 0, "Bob's result is not Ala's");
+    assert.deepEqual(loopStand(at(0)), SECOND_CLICK);
+    assert.equal(heading(0), "Ocena na 12 ziarnach: 8 z 12 rozwiązanych");
+
+    // The button of a judging replaces Ala's result with one of its own, which asks for no second click.
+    await judgeWith(judgeButton(at(0)), MIXED, 3);
+    assert.deepEqual(loopStand(at(0)), ORDINARY, "the second click went");
+
+    // The same twelve rows: the earning loop starts at once, and the result stays.
+    await judgeWith(
+      loopButton(at(0)),
+      judgedOf(...MIXED.results.slice(0, 4)),
+      4,
+    );
+    await until(() => countOf(calls, "startLoop") === 1);
+    assert.deepEqual(calls.at(-2), [
+      "judge",
+      1,
+      "forest",
+      state.programs[0].id,
+    ]);
+    assert.deepEqual(calls.at(-1), [
+      "startLoop",
+      1,
+      "forest",
+      state.programs[0].id,
+    ]);
+    assert.deepEqual(loopStand(at(0)), ORDINARY);
+    assert.equal(heading(0), "Ocena na 12 ziarnach: 8 z 12 rozwiązanych");
+
+    // A different result (a death a minute later): it replaces the one that stands and waits.
+    const other = judgedOf(
+      death("cold", 38),
+      death("hunger", 412),
+      death("combat", 5),
+      UNDECIDED,
+    );
+    await judgeWith(judgeButton(at(0)), MIXED, 5);
+    await judgeWith(loopButton(at(0)), other, 6);
+    assert.equal(countOf(calls, "startLoop"), 1, "no new start");
+    assert.deepEqual(loopStand(at(0)), SECOND_CLICK);
+    assert.equal(
+      text(at(0), ".judging-row"),
+      "Ziarno 1: mag zamarzł w 38. minucie",
+      "the new result stands in place of the old",
+    );
+    assert.equal(all(page.root, ".judging-result").length, 2);
+
+    // A different result where the old one failed and the new one solves all twelve: no failure, so no wait.
+    await judgeWith(judgeButton(at(1)), MIXED, 7);
+    await judgeWith(loopButton(at(1)), judgedOf(), 8);
+    await until(() => countOf(calls, "startLoop") === 2);
+    assert.equal(loopSentence(at(1)), null);
+    assert.equal(
+      resultOf(at(1)),
+      null,
+      "the result that stood is gone where the new judging solves all twelve seeds",
+    );
+  });
+});
+
+// D-243 (the styleguide's rule "Focus does not fall to the page"): the button that turns inactive while
+// „Puść w pętlę” judges gets the focus back as „Puść mimo to”; a focus the player moved meanwhile stays.
+test("the focus stays on „Puść w pętlę” through its judging and comes back to it as „Puść mimo to”, and a focus that stood elsewhere at the click is not taken", async () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const { document } = page;
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => MIXED,
+    });
+    const [ala, bob] = members(page.root);
+    loopButton(ala).focus();
+    await press(loopButton(ala));
+    assert.equal(loopButton(ala).disabled, true);
+    await until(() => calls.length === 1);
+    assert.equal(
+      document.activeElement,
+      loopButton(members(page.root)[0]),
+      "the focus is on the button again, which now reads „Puść mimo to”",
+    );
+
+    // Bob's click leaves the focus on his list: the judging that ends there does not take it.
+    const bobsList = bob.querySelector("select");
+    bobsList.focus();
+    await press(loopButton(members(page.root)[1]));
+    await until(() => calls.length === 2);
+    assert.equal(document.activeElement, bobsList);
+  });
+});
+
+// D-407: the wait lives in the screen: one taken down while „Puść w pętlę” judges asks the page for nothing.
+test("a screen taken down while „Puść w pętlę” judges never asks the page to judge or to start the earning loop", async () => {
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  await withPage(async (page) => {
+    const { screen, calls } = await mount(
+      page,
+      propsOf(solved(teamOf("Ala")), "forest"),
+      { judge: () => judgedOf() },
+    );
+    await press(loopButton(members(page.root)[0]));
+    await inAct(() => screen.dispose());
+    await inAct(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+    assert.deepEqual(calls, []);
+  });
+});
+
+// The styleguide's rule „The screen Mapy”: the sentence over „Puść mimo to” is `warning` and the button
+// the plain shared one. jsdom resolves no custom property, so the case reads the token the rule lands on.
+test("the sentence over „Puść mimo to” takes the role warning from the stylesheet, and the button keeps the plain look", async () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText();
+    page.document.head.append(style);
+    const { calls } = await mount(
+      page,
+      propsOf(solved(teamOf("Ala")), "forest"),
+      { judge: () => MIXED },
+    );
+    await press(loopButton(members(page.root)[0]));
+    await until(() => calls.length === 1);
+    const ala = members(page.root)[0];
+    const colourOf = (element) => page.window.getComputedStyle(element).color;
+    assert.equal(colourOf(loopSentence(ala)), "var(--warning)");
+    assert.equal(
+      colourOf(loopButton(ala)),
+      colourOf(judgeButton(ala)),
+      "as plain as the button of a judging beside it",
+    );
+  });
+});
+
+// D-243: the click acts on the state at its moment through the act of the store, as the button of a
+// judging does; the second click is a start of the store and judges nothing.
+test("the entry judges and remembers through one act of the store at the first click, starts the loop where the judging solves all twelve, and at the second click starts it with no judging", async () => {
+  // decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation."
+  // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
+  await withPage(async (page) => {
+    let state = solved(teamOf("Ala"));
+    const log = [];
+    const store = {
+      get: () => state,
+      moment: () => NOW,
+      act(body) {
+        log.push("act");
+        body((result) => {
+          state = result.state;
+        });
+      },
+      send: () => log.push("send"),
+      startLoop: (ids) => log.push(["startLoop", ids]),
+    };
+    let instance = null;
+    await inAct(() => {
+      instance = createMapsEntry({ store }).build(
+        {
+          current: () => ({ kind: "map", mapId: "forest" }),
+          show() {},
+          focusShown() {},
+          focusIfLost() {},
+        },
+        { kind: "map", mapId: "forest" },
+      );
+      page.root.append(instance.element);
+    });
+    const programId = state.programs[0].id;
+    await press(loopButton(members(page.root)[0]));
+    await until(() => log.length > 0);
+    const remembered = state.judgings[1][programId].forest;
+    const unsolvedSeeds = remembered.results.filter(
+      (result) => result.kind !== "solved",
+    ).length;
+    assert.ok(
+      unsolvedSeeds > 0,
+      "precondition: the default program does not solve all twelve seeds of Las",
+    );
+    assert.deepEqual(
+      log,
+      ["act"],
+      "one act judges and remembers, nothing starts",
+    );
+    assert.equal(remembered.results.length, 12);
+    assert.equal(
+      text(members(page.root)[0], ".maps-who-program .maps-who-mark"),
+      `${12 - unsolvedSeeds} z 12`,
+      "the judging is remembered beside the list",
+    );
+    assert.deepEqual(loopStand(members(page.root)[0]), {
+      text: "Puść mimo to",
+      sentence: `Na ${unsolvedSeeds} z 12 ziaren program mapy nie rozwiązuje.`,
+    });
+
+    await press(loopButton(members(page.root)[0]));
+    assert.deepEqual(
+      log,
+      ["act", ["startLoop", { mapId: "forest", characterId: 1, programId }]],
+      "the second click is a start of the store and no judging",
+    );
+    await inAct(() => instance.dispose());
+  });
+});
+
 // --- focus and the screen's life -----------------------------------------------------------
 
-// The button that was pressed turns inactive or leaves, so the focus goes to its neighbour.
+// The button that was pressed turns inactive or leaves, so the focus goes to its neighbour. „Puść w
+// pętlę” judges first (D-243), so the loop starts, and „Zatrzymaj” stands, after the judging.
 test("after „Puść w pętlę” the focus goes to that character's „Zatrzymaj”, and after „Zatrzymaj” to its „Wejdź”", async () => {
   await withPage(async (page) => {
     const idle = solved(teamOf("Ala", "Bob"));
     const looping = { ...idle, loops: { 1: LOOP } };
     const { document } = page;
     const { screen } = await mount(page, propsOf(idle, "forest"), {
+      judge: () => judgedOf(),
       startLoop: (shown) => shown.update(propsOf(looping, "forest")),
       stop: (shown) => shown.update(propsOf(idle, "forest")),
     });
@@ -1453,6 +1910,9 @@ test("after „Puść w pętlę” the focus goes to that character's „Zatrzym
     loop.focus();
     assert.equal(document.activeElement, loop);
     await press(loop);
+    await until(
+      () => buttonLabelled(page.root, "Zatrzymaj: Ala") !== undefined,
+    );
     const stop = buttonLabelled(page.root, "Zatrzymaj: Ala");
     assert.ok(stop, "„Zatrzymaj” stands once the earning loop runs");
     assert.equal(document.activeElement, stop);
