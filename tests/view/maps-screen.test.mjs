@@ -8,6 +8,9 @@
 import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
+import { createElement } from "react";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
@@ -1928,6 +1931,44 @@ test("after „Puść w pętlę” the focus goes to that character's „Zatrzym
     bobsList.focus();
     await inAct(() => screen.update(propsOf(idle, "forest", NOW + MINUTE)));
     assert.equal(document.activeElement, bobsList);
+  });
+});
+
+// D-243 (the styleguide's rule "Focus does not fall to the page"): the page's store redraws the other
+// screens with `flushSync` while it starts the earning loop, and that flush takes the screen's own queued
+// updates with it, so the second click must not leave an update queued before the loop is drawn.
+test("the focus goes to „Zatrzymaj” after the second click, „Puść mimo to”, also where starting the earning loop redraws another screen on its way", async () => {
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const idle = solved(teamOf("Ala", "Bob"));
+    const looping = { ...idle, loops: { 1: LOOP } };
+    const { document } = page;
+    const host = document.createElement("div");
+    page.root.append(host);
+    const other = createRoot(host);
+    const { calls } = await mount(page, propsOf(idle, "forest"), {
+      judge: () => MIXED,
+      startLoop: (shown) => {
+        // What the store does on its way: it redraws another root synchronously, which flushes what
+        // the maps screen has queued, before it draws the maps screen itself.
+        flushSync(() => other.render(createElement("p", null, "redrawn")));
+        shown.update(propsOf(looping, "forest"));
+      },
+    });
+    const loop = buttonLabelled(page.root, "Puść w pętlę: Ala, mapa Las");
+    loop.focus();
+    await press(loop);
+    await until(() => calls.length === 1);
+    const second = buttonLabelled(page.root, "Puść mimo to: Ala, mapa Las");
+    assert.ok(second, "precondition: the second click stands");
+    second.focus();
+    await press(second);
+    assert.equal(countOf(calls, "startLoop"), 1);
+    assert.equal(
+      document.activeElement,
+      buttonLabelled(page.root, "Zatrzymaj: Ala"),
+      "the focus is on „Zatrzymaj”, not on the page",
+    );
   });
 });
 

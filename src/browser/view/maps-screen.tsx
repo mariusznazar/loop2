@@ -458,9 +458,12 @@ function CharacterRow({
                 buttonRef={focus.keep(id, "loop")}
                 onClick={(event) => {
                   if (asking) {
-                    judging.spend(id);
                     focus.owe({ characterId: id, target: "stop" });
                     controls.startLoop(id, mapId, program.id);
+                    // After the start: the page's store redraws other screens with `flushSync` on its
+                    // way, which would commit this update, and consume the owed focus, before the
+                    // screen draws „Zatrzymaj”.
+                    judging.spend(id);
                     return;
                   }
                   const button = event.currentTarget;
