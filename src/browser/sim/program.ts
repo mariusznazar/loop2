@@ -62,12 +62,15 @@ export type ActionPrice = {
 /**
  * The price of an action for a character of `skills`, as the data gives it: what crafting, lighting,
  * feeding and eating use up of the piece the data marks for that use (the same first piece the
- * reason of a rule names, D-310), and the nature energy of a spell (D-175). A strike uses up
+ * reason of a rule names, D-310), and the nature energy of a spell (D-175). An action with a target
+ * is priced by it, given as `item`: „Wytwórz” by the recipe's pieces of its target, „Opatrz” by one
+ * piece of it (D-363, D-443); the bare verb, with no target, uses up nothing. A strike uses up
  * nothing (D-145), nor does any action of walking, gathering or combat. Pure.
  */
 export function actionPrice(
   kind: Action["kind"],
   skills: CharacterSkills,
+  item?: ItemId,
 ): ActionPrice {
   const natureEnergy = (ACTIONS[kind] as ActionDef).natureEnergy ?? 0;
   const pieces: ActionPrice["pieces"] = [];
@@ -89,6 +92,15 @@ export function actionPrice(
       break;
     case "eat":
       pieces.push({ item: firstItemFor("food"), count: 1 });
+      break;
+    case "craft":
+      if (item !== undefined)
+        pieces.push(
+          ...(ITEMS[item].recipe?.uses ?? []).map((use) => ({ ...use })),
+        );
+      break;
+    case "tend":
+      if (item !== undefined) pieces.push({ item, count: 1 });
       break;
     default:
       break;

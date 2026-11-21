@@ -281,8 +281,9 @@ function eventOf<K extends GameEvent["kind"]>(
  * The revealing events that happened in a game minute, read from the map run before the minute and
  * after it up to the pick, and from the events of that minute: the chill from the body after its
  * step; a finished exploration from its revealed tile and the items that tile holds; a gathering
- * from the pieces that entered the backpack; a crafting from the campfire put on the tile; a
- * lighting from its successful effect. The effect of an action takes hold only where the character
+ * from the pieces that entered the backpack; a crafting from the campfire put on the tile, and a
+ * „Wytwórz” from the piece of its target that entered the backpack; a lighting from its successful
+ * effect. The effect of an action takes hold only where the character
  * lives, so in the minute of death only the body's event happens.
  */
 function happened(
@@ -300,7 +301,8 @@ function happened(
 
   const finished = eventOf(events, "activityFinished");
   if (finished?.activity.kind !== "rule") return found;
-  switch (finished.activity.action.kind) {
+  const action = finished.activity.action;
+  switch (action.kind) {
     case "explore": {
       found.push({ kind: "explored" });
       const revealed = events.filter((event) => event.kind === "tileRevealed");
@@ -329,6 +331,13 @@ function happened(
     case "lightItem":
       if ((after.practice.flameSpell ?? 0) > (before.practice.flameSpell ?? 0))
         found.push({ kind: "lit" });
+      break;
+    case "craft":
+      if (
+        after.character.backpack[action.item] >
+        before.character.backpack[action.item]
+      )
+        found.push({ kind: "crafted", item: action.item });
       break;
     default:
       break;
