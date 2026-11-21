@@ -22,6 +22,7 @@ import {
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
 } from "../../dist/browser/sim/programs.js";
+import { readPreviousPrograms } from "../../dist/browser/sim/previous-programs.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
@@ -180,6 +181,40 @@ test("a new game holds its first program at content revision 0, and a created pr
   const asNew = saveCopyAsNewProgram(edited, "Nowy").state;
   assert.deepEqual(
     asNew.programs.map(({ id, contentRevision }) => [id, contentRevision]),
+    [
+      [1, 3],
+      [2, 0],
+    ],
+  );
+});
+
+test("a program pulled from a previous save whose item held the content revision 7 is made at 0: what the reader gives, appended, starts at 0 and keeps the program", () => {
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were"
+  const document = {
+    version: 9,
+    game: {
+      programs: [{ id: 5, name: "Stara", program: BASE, contentRevision: 7 }],
+    },
+  };
+  const read = readPreviousPrograms(document);
+  assert.equal(read.ok, true, "precondition: the document is readable");
+  assert.deepEqual(
+    read.items.map(({ kind }) => kind),
+    ["read"],
+    "precondition: the item is read",
+  );
+  const pulled = appendPrograms(
+    seeded(),
+    read.items.map(({ name, program }) => ({ name, program })),
+  );
+  assert.deepEqual(pulled.programs.at(-1), {
+    id: 2,
+    name: "Stara",
+    program: BASE,
+    contentRevision: 0,
+  });
+  assert.deepEqual(
+    pulled.programs.map(({ id, contentRevision }) => [id, contentRevision]),
     [
       [1, 3],
       [2, 0],
