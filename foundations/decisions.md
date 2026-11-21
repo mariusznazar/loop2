@@ -10400,8 +10400,8 @@ The layout of the screen of a map run, its rows and tabs, what pausing and leavi
 
 The drawing of the game map is a picture, not a control: its only interactions are hovering a tile
 and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of
-stock stand in that list and in the line under the drawing, which shows the hovered tile or else the
-character's tile, never on the drawing. A tap with a finger on a tile keeps its row marked until a
+stock stand in that list and in the line under the drawing, which shows the hovered or the tapped
+tile or else the character's tile, never on the drawing. A tap with a finger on a tile keeps its row marked until a
 tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a
 click of a mouse on a tile changes nothing.
 
@@ -10421,10 +10421,12 @@ click of a mouse on a tile changes nothing.
     screen of a map run is picked (D-311); a tap with a finger on a revealed tile marking its row
     in that list while the tab is picked, a tap on another tile moving the mark to the row of that
     tile, and a tap elsewhere on the page taking the mark off, a click of a mouse on the tile
-    marking nothing
+    marking nothing; the line under the drawing giving the tapped tile while its row is marked, and
+    the character's tile again after a tap elsewhere
   - violates: a double click or a drag on a tile that sends the character there or changes the
     program; a tap on a tile that leaves its row unmarked, or a mark that stays after a tap
-    elsewhere; a tap on a tile not revealed that marks a row
+    elsewhere; a tap on a tile not revealed that marks a row; the line under the drawing still
+    giving the character's tile while a tapped tile's row is marked
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
