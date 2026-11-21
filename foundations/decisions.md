@@ -9346,8 +9346,9 @@ header of the rule group it changes, on both screens, and taking no column of it
 moves on to the next field, conditions, actions and targets stand as cells in groups that the
 keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed
 with its reason. Rules move by a handle with a line showing where they land, by arrows, and between
-groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a
-rule group.
+groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header,
+one place at a time as the arrows of a rule do, in every layout; the drag by a handle is for the
+mouse of a computer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9360,12 +9361,15 @@ rule group.
   columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
   greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
   handle, with the line „tu wyląduje” where they land and no line over their own place, over the
-  panel or after the drag ends; rule groups moved by a handle with such a line, and no arrows in
-  the header of a rule group. For the cells of actions and targets reached by the keyboard, an
-  agent compares a change with the part no invariant and no test holds:
+  panel or after the drag ends; rule groups moved by a handle with such a line. For the cells of
+  actions and targets reached by the keyboard, and for the arrows of a rule group, an agent compares
+  a change with the part no invariant and no test holds:
   - complies: the arrow keys moving among the cells of the action and of its target as they do
-    among the conditions
-  - violates: the cells of the actions reached by the mouse alone
+    among the conditions; in the header of every rule group „↑” and „↓”, in the computer layout and
+    in the phone layout, „↓” moving the group one place down and „↑” one place up, „↑” disabled on
+    the first group and „↓” on the last
+  - violates: the cells of the actions reached by the mouse alone; a rule group that only a drag
+    with a handle moves; the arrows of a rule group present in the computer layout alone
 - **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
@@ -9393,26 +9397,29 @@ of thin air, and users of Unreal who found nodes missing from a filtered menu as
 do not fit to be greyed rather than hidden. The reasons from other games are carried over to this
 one by inference: no source measured how long a rule takes to write or how many clicks it costs in
 any game. Cells give a condition one click and keep one control for
-every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
-Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
-conditions wrap into two lines, rule groups cannot be moved from the keyboard, which the
-accessibility requirements (D-42) do not ask for, and on Programy, where width is not wanting, the
+every pick. Arrows move a single rule up or down, and the same arrows in the header of a rule group
+move the group, one mechanic for rules and groups; dragging is of the mouse alone (D-297), so a
+phone moves a group by its arrows, and the keyboard reaches them too. The handle stays
+for the mouse of a computer, where its line shows where the group lands. Accepted with it: the
+pickers need keyboard handling that native lists gave for free, long names of
+conditions wrap into two lines, a group far from its place takes one press of an arrow for each place
+it moves, and on Programy, where width is not wanting, the
 panel opens in place all the same, so the editor has one way of opening it on both screens.
 *Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
 lists in the header of a rule group — the form stays; the pick in a window in the middle, as in loop
 — it covers the world and the program; hiding what may not be picked — the player asks where it
 went; a select list for conditions in the panel — two
 clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
-second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
-way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
-keyboard handling of its own and one sentence more in the decision; the panel in a column beside the rows on the
+second keyboard handling; a way from the keyboard for rule groups other than arrows in the header,
+such as keys on the handle — keyboard handling of its own and one sentence more in the decision; the panel in a column beside the rows on the
 screen of a map run, with the split of widths unchanged — the program stays narrow, and each new
 line at a rule wraps further; a smaller scene with the split of widths unchanged (D-349) — what was
 wanted was the width of the program as in loop, not a smaller scene; the panel beside the editor on Programy alone — the editor has two
 ways of opening the panel by screen, the player sees the same rule edited beside it once and on the
 list another time, and in a narrow window of Programy the panel still lands under the whole editor;
-the right column wrapped under the world in a narrower window, with the panel opening under the
-whole area of the world — a part of the way that shrinks the scene, which D-349 rejects.
+the right column wrapped under the world in a window of the computer layout, with the panel opening
+under the whole area of the world — a part of the way that shrinks the scene there, which D-349
+rejects.
 
 ### D-292 — How does the program editor number rule groups and program rules?
 
@@ -10391,10 +10398,12 @@ The layout of the screen of a map run, its rows and tabs, what pausing and leavi
 
 ### D-19 — How does the player interact with the drawing of the game map?
 
-The drawing of the game map is a picture, not a control: its only interaction is hovering, which
-links a tile with its row in the list of revealed tiles, and the numbers of stock
-stand in that list and in the line under the drawing, which shows the hovered tile or else the
-character's tile, never on the drawing.
+The drawing of the game map is a picture, not a control: its only interactions are hovering a tile
+and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of
+stock stand in that list and in the line under the drawing, which shows the hovered tile or else the
+character's tile, never on the drawing. A tap with a finger on a tile keeps its row marked until a
+tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a
+click of a mouse on a tile changes nothing.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10405,19 +10414,25 @@ character's tile, never on the drawing.
   marking no row; the numbers of stock standing in the
   rows of the list and in the line under the drawing, which gives the hovered tile, or the
   character's tile where none is hovered or the key names no tile. For hovering as a real browser
-  delivers it, and for what the player does on the drawing other than a click, an agent compares a
-  change with the part no invariant and no test holds:
+  delivers it, for the tap, and for what the player does on the drawing other than a click, an
+  agent compares a change with the part no invariant and no test holds:
   - complies: in a browser, hovering a tile marks its row in the list of revealed tiles, and
     hovering that row marks the tile, while the tab „Teren” of the area under the world on the
-    screen of a map run is picked (D-311)
+    screen of a map run is picked (D-311); a tap with a finger on a revealed tile marking its row
+    in that list while the tab is picked, a tap on another tile moving the mark to the row of that
+    tile, and a tap elsewhere on the page taking the mark off, a click of a mouse on the tile
+    marking nothing
   - violates: a double click or a drag on a tile that sends the character there or changes the
-    program
+    program; a tap on a tile that leaves its row unmarked, or a mark that stays after a tap
+    elsewhere; a tap on a tile not revealed that marks a row
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
 a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
-numbers without writing them on it. The drawing shows a resource as an icon with no number, dimmed
+numbers without writing them on it, and on a phone, where nothing hovers, a tap does the same, so
+the player there reads the numbers of a tile as a player with a mouse does; the mark stays after the
+tap, since a finger leaves the screen, and a tap elsewhere takes it off. The drawing shows a resource as an icon with no number, dimmed
 at stock zero, and only draws what it is given. The list stands under a tab of the area under the
 world, which may show the chronicle instead, so the line under the drawing keeps the numbers beside
 the program while the player writes. That area stands under the world, with the drawing of the map
@@ -10867,21 +10882,32 @@ two contents at once, against D-311.
 
 ### D-349 — What size is the scene on the screen of a map run?
 
-The scene has one size, 672 × 304 px, twice the size of its picture, and the game keeps no second
-scale of it. Whatever the scene draws is drawn for this size alone.
+The scene has two sizes, one and two times its picture of 336 × 152 px: 672 × 304 px in the
+computer layout, and in the phone layout the larger of the two that fits the width of the page area,
+so 336 × 152 px at a page area 360 px wide; the game keeps no fractional scale of it. Where a few
+pixels of the width are missing for the whole picture, the sides of the scene are cropped slightly,
+and the crop hides nothing the player acts with, such as a creature or an item.
+
+Whatever the scene draws is drawn for these two sizes, and its small elements, such as the icon on
+the plaque of a discovery and the badge over the mage's head, stay readable at either, drawn at a
+size of their own, independent of the scale of the scene, where shrunk with it they are not.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-316
 - **Verification:** tests: the scene's picture given 672 × 304 px, twice its picture of 336 × 152,
-  in a narrow window and in a wide one and in another state of the game, the frame sized by its
-  picture alone. For the size the style sheet draws the scene at and what the scene draws, an agent
-  compares a change with the part no invariant and no test holds:
+  in another state of the game, the frame sized by its picture alone. For the size the style sheet
+  draws the scene at, the crop and what the scene draws, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: the scene of a map run drawn 672 × 304 px in a window 1280 px wide and in one 1920 px
-    wide; an effect of the scene made for that size
-  - violates: a style rule that draws the scene at a second size, such as 336 × 152 px, or at a
-    fraction of twice its picture, such as one and a half times; an effect of the scene made for a
-    second size of it
+    wide; drawn 336 × 152 px in the phone layout at a page area 360 px wide, its sides cropped
+    slightly, the mage standing at the right edge of the forest and a creature at an edge in full
+    sight; the icon on the plaque of a discovery and the badge over the mage's head legible at
+    336 × 152 px, at a size of their own; an effect of the scene made for these two sizes
+  - violates: a style rule that draws the scene at a fraction of its picture, such as one and a half
+    times, or at three times it; the scene at 336 × 152 px in the computer layout; a crop that hides
+    the mage at the edge of the forest or a creature; a small element of the scene shrunk with it to a
+    size that is hard to read; an effect of the scene made for a third size of it
 - **Origin:** none
 
 *Rationale:* what counts is the width of the program of the original loop, not the
@@ -10891,9 +10917,18 @@ the two columns of the screen (D-311), not from a smaller scene, so the scene st
 is; the editing of a rule in place has to be done for a narrow window anyway, as loop does it, and
 done in every window it leaves no need to shrink the scene, only to join two columns into one. A
 pixel picture drawn at twice its size keeps all its pixels equal, and one drawn at a
-fraction of that has unequal pixels and shakes in motion; one size also leaves the effects of the
-scene a single size to be made for.
-*Rejected:* the scene at 336 × 152 px with the split of widths unchanged — the program would have
+fraction of that has unequal pixels and shakes in motion. In the phone layout the width holds the
+picture itself and little more, so the scene keeps the largest whole multiple that fits and loses a
+few pixels at the sides rather than its equal pixels or the scene altogether, the main picture of the
+game; two sizes leave the effects of the scene two sizes to be made for, both whole multiples of the
+same picture. A small element drawn at its own size does not follow the scale of the scene, so it is
+as legible at the smaller scene as at the larger one. Accepted with it: a few pixels of the forest
+at the sides of the scene are cropped in the phone layout, and the scene is drawn smaller there than
+the width of a wide phone layout would allow, since it has two sizes and no more.
+*Rejected:* the scene at 672 × 304 px cropped to the width of the screen around the mage — about
+half of the forest shows, a creature at the side or an item at the edge may fall outside the frame,
+and the frame would have to follow the mage, which the game does not do; the scene fitted exactly to
+the width, reduced by a fraction — the pixels are unequal and the mage shakes in motion; no scene in the phone layout — the main picture of the game is gone; the scene at 336 × 152 px with the split of widths unchanged — the program would have
 510 px in a window 1280 px wide and 606 px at the full width of the content, hardly less than the
 526 and 622 px that the large scene gives with the panel in place (computed from the layout, not
 measured; D-288); the
@@ -10905,8 +10940,9 @@ narrower window — a pixel picture at a scale of one and a half or one and six 
 pixels and the mage shakes in motion, in a window 1280 px wide with three columns the program has
 342 px, it changes the limit of the content width of D-280, and the
 panel of a rule then opens under the whole area of the world; a large scene in a wide window and a
-small one in a narrower window — the content is at most 1344 px wide, so with the large scene the
-program never has more than a narrow column, and the way ends in a small scene all the same.
+small one in a narrower window of the computer layout — the content is at most 1344 px wide, so with
+the large scene the program never has more than a narrow column, and the way ends in a small scene
+all the same.
 
 ### D-368 — What does the end-of-run window say, and how does it open and close?
 
@@ -11959,8 +11995,8 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 
 The scene shows frost on the edges of its frame, never over its whole area (D-317), that follows the
 temperature of the character's body: none at 37 °C, growing in thickness as the body cools to
-35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) at its
-deepest while the character is chilled, and taken back as the character warms at a fire. Its inner
+35 °C, at 36 °C half of its full thickness, 16 pixels of the scene at its deepest while the
+character is chilled, whatever the size of the scene on the screen, and taken back as the character warms at a fire. Its inner
 edge is ragged, so its thickness is the depth of its deepest teeth, and at the first pixel of
 thickness it is the outline alone, the fill coming with the next pixels. The frost lies over the layer of the tint (D-315).
 
@@ -11984,7 +12020,9 @@ it fills the first minutes of a map run; a frost that is full while the
 character is chilled and goes with the warming at a fire shows the race of the fire with the cold,
 which a number in the row of the body leaves unseen. Half of the thickness is half, since the
 colours of the frost keep their opacity. Accepted with it: frost shows worse on white (D-314), and
-snow lies also on a map of 25 °C.
+snow lies also on a map of 25 °C. The thickness is counted in the pixels of the scene alone, so
+it follows the scale of the scene: 32 px on the screen at the larger size of the scene and 16 px at
+the smaller (D-349).
 *Rejected:* frost only below 35 °C — nothing warns before the loss of health and the frost comes at
 once; frost that goes on growing below 35 °C up to a death of cold — the temperature has no lower
 bound, so a temperature at which it is full has to be invented, and it overlaps the effect of a death
