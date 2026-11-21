@@ -1,0 +1,14 @@
+tests/sim/action-targets.test.mjs:381: the quotation does not begin a sentence of `D-310`
+tests/sim/craft-and-tend.test.mjs:161: the quotation does not begin a sentence of `D-71`
+tests/sim/craft-and-tend.test.mjs:215: the quotation does not begin a sentence of `D-71`
+tests/sim/craft-and-tend.test.mjs:385: the quotation does not begin a sentence of `D-309`
+tests/sim/craft-and-tend.test.mjs:474: the quotation does not begin a sentence of `D-380`
+tests/sim/craft-and-tend.test.mjs:485: the quotation does not begin a sentence of `D-380`
+tests/sim/craft-and-tend.test.mjs:520: the quotation stands in no binding sentence of `D-363`
+tests/sim/craft-and-tend.test.mjs:582: the quotation does not begin a sentence of `D-121`
+tests/sim/craft-and-tend.test.mjs:608: the quotation does not begin a sentence of `D-121`
+tests/sim/craft-and-tend.test.mjs:644: the quotation does not begin a sentence of `D-121`
+tests/sim/craft-and-tend.test.mjs:690: the quotation does not begin a sentence of `D-121`
+tests/sim/previous-programs.test.mjs:574: the quotation does not begin a sentence of `D-401`
+tests/view/rule-editor.test.mjs:1528: the quotation stands in no binding sentence of `D-290`
+13 errors
