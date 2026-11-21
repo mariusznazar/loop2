@@ -62,10 +62,13 @@ import type {
   ProgramCopy,
   ProgramId,
   ResourceId,
+  RememberedJudging,
+  RememberedJudgings,
   RuleId,
   RunCharacter,
   RunRecord,
   SavedProgram,
+  SeedResult,
   Team,
   Tile,
   Traits,
@@ -1240,6 +1243,50 @@ function awayReport(value: unknown, records: Records): AwayReportLine[] {
   return lines;
 }
 
+const SEED_KINDS: Record<SeedResult["kind"], true> = {
+  solved: true,
+  death: true,
+  undecided: true,
+};
+
+/**
+ * A judging as the game state remembers it (D-440): one kind for each of the data's judging seeds,
+ * and the equipment as a trip list is read. The cause and the game minute of a death are no part of
+ * it, so a result that carries them is no kind. The equipment is compared with neither the chest, the
+ * carrying capacity nor the map's entry cap, as none of them erases a remembered judging.
+ */
+function rememberedJudging(value: unknown): RememberedJudging {
+  const read = fields(value, ["results", "equipment"]);
+  const results = list(read.results).map((kind) => oneOf(kind, SEED_KINDS));
+  if (results.length !== BALANCE.judgingSeeds.length) refuse();
+  return { results, equipment: tripList(read.equipment) };
+}
+
+/**
+ * The remembered judgings by character, program and map (D-440): a character of the team (D-56), a
+ * program of the list, whose deletion erases its judgings (D-165), and a map of the data, each
+ * level holding the keys it names and a level with no judging left admitted empty.
+ */
+function rememberedJudgings(
+  value: unknown,
+  records: Records,
+): RememberedJudgings {
+  const byCharacter: RememberedJudgings = {};
+  for (const [characterEntry, programs] of entries(value)) {
+    const character = characterKey(characterEntry, records, []);
+    const byProgram: NonNullable<RememberedJudgings[CharacterId]> = {};
+    for (const [programEntry, maps] of entries(programs)) {
+      const program = listedProgram(identityKey(programEntry), records);
+      const byMap: NonNullable<(typeof byProgram)[ProgramId]> = {};
+      for (const [mapKey, judging] of entries(maps))
+        byMap[oneOf(mapKey, MAPS)] = rememberedJudging(judging);
+      byProgram[program] = byMap;
+    }
+    byCharacter[character] = byProgram;
+  }
+  return byCharacter;
+}
+
 const GAME_KEYS = [
   "programs",
   "nextProgramId",
@@ -1261,6 +1308,7 @@ const GAME_KEYS = [
   "loops",
   "stoppedLoops",
   "awayReport",
+  "judgings",
   "saveTimeMs",
 ] as const;
 
@@ -1360,6 +1408,7 @@ function game(value: unknown): GameState {
       ...looping,
     ]),
     awayReport: awayReport(read.awayReport, records),
+    judgings: rememberedJudgings(read.judgings, records),
     saveTimeMs: integer(read.saveTimeMs),
   };
 }

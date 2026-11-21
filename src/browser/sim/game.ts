@@ -407,6 +407,7 @@ export function newGame(): GameState {
     loops: {},
     stoppedLoops: {},
     awayReport: [],
+    judgings: {},
     saveTimeMs: null,
   };
 }
