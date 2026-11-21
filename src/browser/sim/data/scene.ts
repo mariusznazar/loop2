@@ -35,9 +35,11 @@ export type SceneSpot = {
 export type ScenePropSpot = SceneSpot & { mageFaces: "right" | "left" };
 
 /**
- * The size of one pixel of a picture of the game on the screen, in CSS pixels: every picture is drawn at
- * twice its size, the scene's 336 × 152 forest as 672 × 304 and the picture band's 672 × 48 clearing as 1344 × 96,
- * so that every pixel stays equal in size and nothing shakes in motion (D-349).
+ * The size of one pixel of a picture of the game on the screen, in CSS pixels, at the size the picture is
+ * given: twice its size, the scene's 336 × 152 forest as 672 × 304 and the picture band's 672 × 48 clearing
+ * as 1344 × 96, so that every pixel stays equal in size and nothing shakes in motion (D-349). The scene has
+ * a second size, its picture once, 336 × 152, which the stylesheet draws in a phone layout too narrow for
+ * 672 px; that is a whole multiple too, and no picture is drawn at a fraction of its size (D-349).
  */
 export const PICTURE_PIXEL = 2;
 

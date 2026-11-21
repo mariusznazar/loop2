@@ -277,8 +277,9 @@ header .failure-line {
  * map run, whose picture is 336 px wide (D-349), loses at most 32 px of it to its crop in a window with a page
  * area 360 px wide: the mage at the right edge ends on column 319 of 336 (`SCENE.rightEdgeX` in
  * src/browser/sim/data/scene.ts), so 304 px must stay. The world area then holds 360 - 2 × 8 (the page) -
- * 2 × (12 + 1) (the area and its frame) = 318 px, a crop of 9 px a side. The menu bar wraps its name, its
- * items and „Konto” onto as many lines as the width needs.
+ * 2 × (12 + 1) (the area and its frame) = 318 px; the place of the scene takes the area's side padding of
+ * 12 px too (run-screen.css), so the scene has 342 px there and stands whole. The menu bar wraps its name,
+ * its items and „Konto” onto as many lines as the width needs.
  */
 @media (width < 1280px) {
   body {

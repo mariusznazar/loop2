@@ -202,7 +202,7 @@ const tileOf = (container, key) =>
 const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
-// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene,
+// Catches a scene whose place is not the first part, „Teraz” and „Potem” anywhere but right under it,
 // a paragraph of the last encounter standing in the world area, which the chronicle holds (D-147), a
 // part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
 // the world area, which the window of the end holds (D-185, D-216, D-311).
@@ -226,7 +226,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     });
     const { container, show } = await draw(document, going);
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -259,7 +259,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     // and the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -284,7 +284,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     assert.equal(usedUp.run.deathSettlement.kind, "progressLost");
     await show(withRun(usedUp, { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -369,7 +369,7 @@ test("Teraz and Potem name the action under way with its rule and minutes and th
     assert.equal(rowsOf(container).now, now);
     assert.equal(textsOf(now).right, "reguła 1.1 · zostało 15 z 20 min");
     assert.deepEqual(classesOf(container).slice(0, 3), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
     ]);
@@ -522,10 +522,15 @@ test("the scene is the picture of the forest at 672 × 304 px, with no text insi
         "the frame is sized by its picture alone",
       );
     }
+    // The scene stands alone in its place, the first part of the world area, which clips and centres
+    // it and gives it no size: the frame keeps its picture's (D-349).
     const world = worldOf(container);
-    const scene = world.firstElementChild;
+    const place = world.firstElementChild;
+    assert.equal(place.className, "scene-place");
+    assert.equal(place.children.length, 1);
+    assert.equal(place.getAttribute("style"), null);
+    const scene = place.firstElementChild;
     assert.equal(scene.className, "scene");
-    assert.equal(scene.parentElement, world);
     const background = scene.querySelector(".scene-background");
     assert.equal(background.nodeName, "IMG");
     assert.equal(background.getAttribute("src"), "/sprites/forest-scene.png");

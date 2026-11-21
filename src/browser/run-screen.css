@@ -620,11 +620,19 @@
  * the numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM
  * modules.
  *
- * The scene (D-316, D-320, D-322): the forest picture sets the frame's size from its width and
- * height attributes, and every other part lies over it at the place and size TypeScript gives as
- * percentages of the frame, so the stylesheet holds no length of a sprite. A sheet holds all frames
- * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
- * where it stands still. The scene's motion stands in the rules after the badge.
+ * The scene (D-316, D-320, D-322, D-349): the forest picture sets the frame's size, and every other
+ * part lies over it at the place and size TypeScript gives as percentages of the frame, so the
+ * stylesheet holds no length of a sprite and every part keeps its place at either size of the scene.
+ * A sheet holds all frames of a picture side by side; `--frames` is their number, and the sheet shows
+ * one of them, the first where it stands still. The scene's motion stands in the rules after the
+ * badge.
+ *
+ * The scene has two sizes, once and twice its picture of 336 × 152 px, and never a fraction of it
+ * (D-349). The picture's width and height attributes give the larger, 672 × 304 px, which the computer
+ * layout draws and the phone layout draws where it holds it; the block `@media (width < 707px)` below
+ * draws the smaller. The frame keeps the size of its picture and never shrinks; its place, the
+ * element around it, centres it and clips what of it the place cannot hold, so where a few pixels of
+ * the width are missing the two sides are cropped evenly, a picture cropped and not scrolled.
  *
  * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322, D-372): the forest, the props,
  * the fire, the dust, the creature that attacks, the mage, the cloud of the scuffle, the flying icon on
@@ -633,19 +641,36 @@
  * and the badge over the mage's head. The scene isolates its layers, so the tint and the cold layer
  * blend with what lies under them in the scene and with nothing else on the page.
  */
+.scene-place {
+  display: flex;
+  justify-content: center;
+  overflow-x: clip;
+}
+
 .scene {
+  flex: none;
   position: relative;
   isolation: isolate;
-  width: fit-content;
-  max-width: 100%;
   overflow: hidden;
 }
 
 .scene-background {
   display: block;
-  max-width: 100%;
-  height: auto;
   image-rendering: pixelated;
+}
+
+/*
+ * The place of the scene in the phone layout (D-396, D-349): it takes the side padding of the world
+ * area, `--space-m` there (the phone block of `.screen-area` in styles.css), so the scene may reach the
+ * area's frame before its sides are cropped. In a page area 360 px wide the place is
+ * 360 - 2 × 8 (the page) - 2 × 1 (the area's frame) = 342 px and holds the whole picture of 336 px,
+ * 3 px to spare on each side: the creature that fights the mage at the berry bush, whose frame ends on
+ * column 334 of 336, and the mage at the right edge, whose figure ends on column 319, stand whole.
+ */
+@media (width < 1280px) {
+  .scene-place {
+    margin-inline: calc(-1 * var(--space-m));
+  }
 }
 
 .scene-prop,
@@ -814,11 +839,12 @@
  * the progress, the fill in `positive` on a track in `highlight`. It is no part of the mage's element,
  * which lies under the tint of the light that the badge must stay clear of: its own element, the badge's
  * carrier, has the mage's box and walks with it (the walk's rules below name both). It sits just above
- * the head, at the middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
- * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
- * pixels of the picture drawn at twice its size; the padding and the gap are steps of the spacing
- * scale, and the bar's thickness is `--bar-width` doubled, as the whole scene is drawn at twice its
- * picture (D-349), so the bar keeps its proportion.
+ * the head, at the middle of the mage's frame. Its sizes are its own and do not follow the scale of the
+ * scene, so it is as legible over the scene at its picture's size as over the scene at twice it (D-349).
+ * The icon's side is a layout dimension that D-43 leaves out, chosen by viewing the scene at its larger
+ * size: 32 px, about two thirds of the width of the mage's figure, 25 pixels of the picture drawn at
+ * twice its size; the padding and the gap are steps of the spacing scale, and the bar's thickness is
+ * `--bar-width` doubled, `calc(var(--bar-width) * 2)`, at either size of the scene.
  */
 .scene-badge {
   position: absolute;
@@ -858,7 +884,8 @@
  * system's setting for reduced motion, which leaves only its movement out, so the icon then stands
  * on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
  * gives. The plaque is a solid `panel` like the badge over the head (D-320), the icon on it of the
- * side of 24 px, a layout dimension chosen by viewing the scene at its one size (D-349), the icon
+ * side of 24 px, a layout dimension chosen by viewing the scene at its larger size and kept at either
+ * size, a size of its own that does not follow the scale of the scene (D-349), the icon
  * the mask of `.icon-mask` in `text-strong`, as the icon over the head is, though no text stands
  * beside it (D-40, D-43). The flight is laid over the whole frame in two layers, so that the
  * percentages of `translate` are parts of the frame: the outer one carries the icon across, the
@@ -1096,8 +1123,10 @@
 /*
  * The plaques of a discovery (D-322, D-39, D-320): the icon of each thing
  * the discovery revealed that the game's data gives an icon, each on a solid `panel` like the badge over
- * the mage's head, with a frame in `discovery` of the bar's thickness, one pixel of the scene at its one
- * size (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on it. They lie over the
+ * the mage's head, with a frame in `discovery` of the bar's thickness, a size of its own that does not
+ * follow the scale of the scene (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on
+ * it. At the smaller size of the scene the plaque takes a smaller size of its own, in the block of that
+ * size below. They lie over the
  * tint of the light, like the badge, so the frame keeps the role's colour. Each item is laid over the
  * whole frame so that its percentages are parts of the frame, as the flight of an icon is; the plaque
  * stands at its place over the clearing, where TypeScript gives it.
@@ -1110,6 +1139,39 @@
 
 .scene-discovery-plaque {
   border: var(--bar-width) solid var(--discovery);
+}
+
+/*
+ * The smaller size of the scene (D-349, D-396): its picture once, 336 × 152 px, in a phone layout too
+ * narrow for 672 px. This is the one threshold of width other than 1280 px, the window at which the
+ * place of the scene holds 672 px: 672 + 2 × 8 (the page's side padding in the phone layout) + 2 × 1
+ * (the frame of the world area) + 17 (the widest classic scrollbar, which a media query counts in the
+ * window's width though the page loses it) = 707 px. A browser that draws no classic scrollbar, as a
+ * phone does, could hold 672 px from 690 px and draws the smaller size between the two, so that no
+ * classic scrollbar crops the larger scene: its creature at the berry bush has 2 px to spare at the
+ * right edge.
+ *
+ * The plaques of a discovery stand 22 pixels of the scene apart, centre to centre, so at the smaller
+ * size they stand 22 px apart and a plaque of the larger size, 36 px, would cover its neighbour: each
+ * takes a size of its own here, the icon 16 px with no padding, a plaque of 20 px with its frame,
+ * which leaves 2 px between two. The icon's side is a layout dimension that D-43 leaves out, the side
+ * of the icons in the head of the table of revealed tiles; it is no fraction of the larger plaque's.
+ * The badge over the mage's head and the plaque of the flying icon keep their sizes, which stand alone
+ * and are legible at either size of the scene.
+ */
+@media (width < 707px) {
+  .scene-background {
+    width: 336px;
+    height: 152px;
+  }
+
+  .scene-discovery-plaque {
+    padding: 0;
+  }
+
+  .scene-discovery-plaque .icon-mask {
+    height: 16px;
+  }
 }
 
 /*

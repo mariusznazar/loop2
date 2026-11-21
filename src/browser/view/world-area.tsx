@@ -25,8 +25,10 @@ import { tileLine } from "./tile-list.js";
 import { solvedRunText, tripTexts } from "./trip-lines.js";
 
 /**
- * The one size the scene is drawn at, 672 × 304 pixels, twice its picture of 336 × 152, the forest of
- * D-314 (D-349): a whole multiple, so every pixel of the picture stays equal in size.
+ * The size the scene's picture is given, 672 × 304 pixels, twice its picture of 336 × 152, the forest
+ * of D-314: the larger of the scene's two sizes, the one of the computer layout (D-349). The stylesheet
+ * draws it once its picture, 336 × 152, in a phone layout too narrow for the larger; both are whole
+ * multiples, so every pixel of the picture stays equal in size.
  */
 const SCENE_WIDTH = SCENE.background.width * PICTURE_PIXEL;
 const SCENE_HEIGHT = SCENE.background.height * PICTURE_PIXEL;
@@ -51,7 +53,10 @@ export type WorldAreaProps = {
 
 /**
  * The world area. The scene is a picture drawn from the game state, with no text on it or over it
- * and nothing in it to take a click or the keyboard (D-272, D-321). The paragraph of the last encounter
+ * and nothing in it to take a click or the keyboard (D-272, D-321). It stands in a place of its own,
+ * which keeps the scene's frame at the size of its picture, so every part placed in it by a
+ * percentage stays where it is, and centres it and crops its sides evenly where the place is a few
+ * pixels narrower than the picture (D-349). The paragraph of the last encounter
  * stands in the chronicle in the area with the tabs, not here (D-311, D-147); the deposit and the
  * settlement of a death stand in the end-of-run window, not here (D-185, D-216). A value of the body
  * row below its threshold stands in `danger`, as do „marznie” and „głoduje” under it (D-39); the other
@@ -75,13 +80,15 @@ export function WorldArea({
   const line = tileLine(state, hovered);
   return (
     <div className="world-area">
-      <Scene
-        state={state}
-        width={SCENE_WIDTH}
-        height={SCENE_HEIGHT}
-        events={events}
-        onEffectEnd={onEffectEnd}
-      />
+      <div className="scene-place">
+        <Scene
+          state={state}
+          width={SCENE_WIDTH}
+          height={SCENE_HEIGHT}
+          events={events}
+          onEffectEnd={onEffectEnd}
+        />
+      </div>
       <NowRows state={state} onShowRule={onShowRule} />
       <div className="body-row">
         <div className="body-cells">
