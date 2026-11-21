@@ -491,3 +491,20 @@
 .rule-panel-cell > .pick-cell {
   width: 100%;
 }
+
+/*
+ * The rows and headers of the rule list in the phone layout (D-396, D-288): a row of a rule and the header
+ * of a group are controls the keyboard reaches, so each holds the touch target of the minimum high
+ * and wide, as the buttons in them do (styles.css). The buttons already make a row higher than the
+ * minimum; the rule keeps that so where a row holds none. At a page area 360 px wide the condition
+ * with the action and the buttons stand on two lines of the wrapping row, and nothing in it is wider
+ * than the row.
+ */
+@media (width < 1280px) {
+  .rule-list-header,
+  .rule-list-row {
+    box-sizing: border-box;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
