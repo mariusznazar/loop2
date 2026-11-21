@@ -341,6 +341,7 @@ test("the section credits the wolf's icon, by Lorc, after the actions' icons and
 
 test("the section credits the elemental mage's icon, the cultist by Lorc, after the wolf's and before the packs", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names"
   const items = itemsOf(sectionMarkup());
   const at = ACTIONS_AT + ACTION_ICONS.length + CREATURE_ICONS.length;
   assert.equal(
@@ -356,6 +357,7 @@ test("the section credits the elemental mage's icon, the cultist by Lorc, after 
 
 test("the elemental mage's data names the icon file cultist.svg and its title on game-icons.net, and the file exists", () => {
   // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names, and it stands before the archetype's name, drawn as a mask in the colour of that name"
   assert.equal(ARCHETYPES.elementalMage.icon, "cultist");
   assert.equal(ARCHETYPES.elementalMage.iconTitle, "Cultist icon");
   assert.ok(existsSync(`${ICONS}cultist.svg`));

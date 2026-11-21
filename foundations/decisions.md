@@ -4879,7 +4879,7 @@ At the top of the left area of the screen Postać, beside the character's name, 
   - complies: the frames of the figure changing at the beat of the frames of the picture band by CSS,
     and standing on the first frame under the system's setting for reduced motion
   - violates: a loop of drawing that moves the figure; a figure that moves under the setting for
-    reduced motion; a figure that walks while its character is in an earning loop
+    reduced motion
 - **Origin:** none
 
 *Rationale:* the screen of a character showed only text, and the predecessor game, loop, which was the measure of this screen, shows the character beside its name. The figure is the one the player already sees at the campfire of Siedziba, so the player knows it at once, and it moves as it moves there, by the same frames and beat. It stands in the same pose whatever the character does, as in loop, since the frame of what the character does says it in words (D-447). Accepted with it: a pixel picture with an outline on a flat background may look like a sticker (D-389, D-272), and the figure tells nothing of what the character does.
@@ -4894,12 +4894,12 @@ Beside the figure of a character (D-445) stand the character's name as the headi
 - **Relations:** derives from D-27 · derives from D-217 · derives from D-218
 - **Verification:** tests: beside the figure, the name as the heading, under it the line of the
   generation from 2 up, the archetype's icon and the archetype's name, and under that line the line of
-  the resurrection; the icon the mask of the file the archetype's data names, before the name. For
-  where the icon of an archetype comes from, an agent compares a change with the part no test holds:
-  - complies: the icon `cultist` of game-icons.net in `assets/icons/`, named by the data of the
-    elemental mage and credited in „Autorzy grafiki”
-  - violates: the name of the icon file of an archetype written in the code of the view; the icon of
-    an archetype drawn as a picture of its file, in a colour of its own
+  the resurrection; the icon the mask of the file the archetype's data names, before the name; the
+  icon the elemental mage's data names a file of `assets/icons/` credited with its page on
+  game-icons.net. For where the view takes the name of that file from, an agent compares a change with
+  the part no test holds:
+  - complies: the view reading the name of the icon file of an archetype from the archetype's data
+  - violates: the name of the icon file of an archetype written in the code of the view
 - **Origin:** none
 
 *Rationale:* the screen shows of the character what it showed before — its name, its generation, its archetype and its resurrection — in the order of the predecessor game, loop, with the sign of the archetype before its name, as loop has it, so that the line is no text alone beside loop's picture. The sign of the elemental mage is the icon `cultist`, the hooded figure loop gives that archetype, so the sign is the same on both sides of a comparison of the two screens. The icon stands in the archetype's data, as the icons of items and creatures do, so the card of a character on Siedziba can take it too. Accepted with it: loop shows besides a renaming of the character and a note of the player about it, which this screen does not.
@@ -7367,14 +7367,12 @@ Below the body row the map-run view shows a line in the role `text`, „Wprawa w
 - **Relations:** derives from D-194
 - **Verification:** tests: the words of the line, listing the skills with positive practice of the
   run, below the body row of the map-run view, also after a death; the words of the line of a manual
-  run of a solved map in its place, and its role `text-secondary` through the real stylesheet; no
-  line for a run with no positive practice, and no zero-valued skill in it. For the role `text` of
-  the line of a run that pays and the line staying after a completion until „Restart” or „Zakończ”,
-  an agent compares a change with the part no test holds:
-  - complies: the same positive practice line, in the role `text`, standing after a completion
-    until „Zakończ”
-  - violates: hiding the line immediately on completion; the line of a run that pays drawn in
-    `text-secondary`
+  run of a solved map in its place, and its role `text-secondary` through the real stylesheet; the
+  line of a run that pays in the role `text` through the real stylesheet; no line for a run with no
+  positive practice, and no zero-valued skill in it. For the line staying after a completion until
+  „Restart” or „Zakończ”, an agent compares a change with the part no test holds:
+  - complies: the same positive practice line standing after a completion until „Zakończ”
+  - violates: hiding the line immediately on completion
 - **Origin:** none
 
 *Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it. A manual run of a solved map pays no practice and says so in the line above (D-215), so its line of practice says what that practice is and that it does not enter the character, in the words of the section „Umiejętności” of the screen Postać, rather than read as a gain beside a sentence that denies it; it stands in `text-secondary`, as that sentence does, since it explains and pays nothing.
