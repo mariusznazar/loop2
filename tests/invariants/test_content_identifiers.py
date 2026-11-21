@@ -60,6 +60,7 @@ ENTRIES = (
     {"kind": "item", "id": "berry", "name": "jagoda"},
     {"kind": "item", "id": "moss", "name": "mech"},
     {"kind": "item", "id": "fiber", "name": "włókno"},
+    {"kind": "item", "id": "bandage", "name": "opatrunek"},
     {"kind": "archetype", "id": "elementalMage", "name": "Mag żywiołów"},
 )
 

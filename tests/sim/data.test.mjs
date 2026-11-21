@@ -203,7 +203,7 @@ test("the wolf has its icon, 24 health, bites for 7 and keeps its ordered combat
 // D-290: the group of each action and the section and place of each condition in the pick of the
 // rule panel, written out in the order the pick shows them.
 test("each action names its group and each condition its section and place in the pick", () => {
-  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+  // decision: D-290 "The pick of the rule panel sets the actions in five named groups"
   // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   assert.deepEqual(
     Object.entries(ACTIONS).map(([id, action]) => [id, action.group]),
@@ -219,9 +219,11 @@ test("each action names its group and each condition its section and place in th
       ["lightItem", "fire"],
       ["feedCampfire", "fire"],
       ["eat", "foodAndCombat"],
+      ["tend", "foodAndCombat"],
       ["strikeWithStick", "foodAndCombat"],
       ["kick", "foodAndCombat"],
       ["dodge", "foodAndCombat"],
+      ["craft", "crafting"],
     ],
   );
   const written = {
@@ -367,9 +369,16 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
 
 // The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
 // those of D-387.
-test("the items are the four resources of Las, with their words and their uses", () => {
+test("the items are the four resources of Las and the bandage, with their words and their uses", () => {
   // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
-  assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
+  assert.deepEqual(Object.keys(ITEMS), [
+    "stick",
+    "berry",
+    "moss",
+    "fiber",
+    "bandage",
+  ]);
   assert.deepEqual(ITEMS.stick, {
     name: "patyk",
     plural: { few: "patyki", many: "patyków" },
@@ -401,6 +410,48 @@ test("the items are the four resources of Las, with their words and their uses",
     iconTitle: "Flax icon",
     revealedBy: { kind: "tileHolds", item: "fiber" },
   });
+  assert.deepEqual(ITEMS.bandage, {
+    name: "opatrunek",
+    plural: { few: "opatrunki", many: "opatrunków" },
+    icon: "first-aid-kit",
+    iconTitle: "First aid kit icon",
+    revealedBy: { kind: "gathered", item: "moss" },
+    recipe: { uses: [{ item: "moss", count: 2 }], minutes: 10 },
+    healing: { health: 25 },
+  });
+});
+
+test("the bandage is no resource and lies on no map", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
+  assert.equal("bandage" in RESOURCES, false);
+  for (const [id, map] of Object.entries(MAPS))
+    for (const entry of map.resources)
+      assert.notEqual(entry.id, "bandage", `map ${id} lays the bandage`);
+});
+
+test("every recipe uses at least one piece of an item of the data, and every healing property is a positive number", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
+  for (const [id, item] of Object.entries(ITEMS)) {
+    if (item.recipe !== undefined) {
+      assert.ok(item.recipe.uses.length >= 1, `${id} recipe uses no piece`);
+      for (const use of item.recipe.uses) {
+        assert.ok(use.item in ITEMS, `${id} recipe uses ${use.item}`);
+        assert.ok(
+          Number.isInteger(use.count) && use.count >= 1,
+          `${id} recipe count ${use.count}`,
+        );
+      }
+      assert.ok(
+        Number.isInteger(item.recipe.minutes) && item.recipe.minutes >= 1,
+        `${id} recipe minutes ${item.recipe.minutes}`,
+      );
+    }
+    if (item.healing !== undefined)
+      assert.ok(
+        typeof item.healing.health === "number" && item.healing.health > 0,
+        `${id} healing ${item.healing.health}`,
+      );
+  }
 });
 
 // The sticks to craft and to light a campfire, its minutes of burning and its warmth are those of
@@ -425,8 +476,10 @@ test("the campfire holds its name, costs, burning minutes, warmth and icon", () 
   });
 });
 
-test("every item and every item of the campfire names an item of the data", () => {
+test("every item of a resource takes its words from the resource, and every item of the campfire names an item of the data", () => {
+  // The bandage is the one item that no resource gives its words to (D-443, D-121).
   for (const [id, item] of Object.entries(ITEMS)) {
+    if (id === "bandage") continue;
     assert.ok(id in RESOURCES, `item ${id} is a resource of the data`);
     for (const word of ["name", "plural", "icon", "iconTitle"])
       assert.deepEqual(item[word], RESOURCES[id][word], `${id} ${word}`);
@@ -489,7 +542,13 @@ test("the character skills grow the listed pairs of verb and target, and the wal
   const grown = Object.values(SKILLS).flatMap((skill) => skill.actions);
   assert.equal(new Set(grown).size, grown.length, "an action in two skills");
   const free = Object.keys(ACTIONS).filter((id) => !grown.includes(id));
-  assert.deepEqual(free, ["wander", "walkTo", "walkToCampfire"]);
+  assert.deepEqual(free, [
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "tend",
+    "craft",
+  ]);
 });
 
 test("the elemental mage has all listed skills as predispositions", () => {
@@ -550,6 +609,20 @@ const ROWS = [
     event: { kind: "gathered", item: "berry" },
     actions: ["eat"],
     conditions: ["satietyBelow"],
+    items: [],
+  },
+  {
+    // D-121: the first gathered moss brings the bandage and „Wytwórz”.
+    event: { kind: "gathered", item: "moss" },
+    actions: ["craft"],
+    conditions: [],
+    items: ["bandage"],
+  },
+  {
+    // D-121: the first piece of the bandage crafted brings „Opatrz”.
+    event: { kind: "crafted", item: "bandage" },
+    actions: ["tend"],
+    conditions: [],
     items: [],
   },
   {
@@ -644,7 +717,13 @@ test("the campfire is revealed by the first gathered stick and has an identifier
   assert.deepEqual(CAMPFIRE.revealedBy, { kind: "gathered", item: "stick" });
   assert.equal(CAMPFIRE.id, "campfire");
   assert.ok(!(CAMPFIRE.id in ITEMS));
-  assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
+  assert.deepEqual(Object.keys(ITEMS), [
+    "stick",
+    "berry",
+    "moss",
+    "fiber",
+    "bandage",
+  ]);
 });
 
 // Validation of ids and programs against the data: the ids come from the data files.
@@ -807,7 +886,7 @@ test("every map step and every fixed action duration is a whole number of minute
       map.stepMinutes,
     ]),
     ...Object.entries(ACTIONS)
-      .filter(([, action]) => action.minutes !== null)
+      .filter(([, action]) => typeof action.minutes === "number")
       .map(([id, action]) => [`action ${id} minutes`, action.minutes]),
     ["BALANCE.waitMinutes", BALANCE.waitMinutes],
   ];
