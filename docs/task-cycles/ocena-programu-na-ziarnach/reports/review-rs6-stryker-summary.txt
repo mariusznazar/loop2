@@ -1,0 +1,42 @@
+﻿
+>   ✓ tests/sim/saved-game.test.mjs (killed 42)
+  
+> [Survived] BooleanLiteral
+> src/browser/sim/saved-game.ts:1255:11
+  -     solved: true,
+  +     solved: false,
+  Tests ran:
+      tests/sim/saved-game.test.mjs
+  
+> [Survived] BooleanLiteral
+> src/browser/sim/saved-game.ts:1256:10
+  -     death: true,
+  +     death: false,
+  Tests ran:
+      tests/sim/saved-game.test.mjs
+  
+> [Survived] BooleanLiteral
+> src/browser/sim/saved-game.ts:1257:14
+  -     undecided: true,
+  +     undecided: false,
+  Tests ran:
+      tests/sim/saved-game.test.mjs
+  
+> [Survived] ArrayDeclaration
+> src/browser/sim/saved-game.ts:1284:61
+  -       const character = characterKey(characterEntry, records, []);
+  +       const character = characterKey(characterEntry, records, ["Stryker was here"]);
+  Tests ran:
+      tests/sim/saved-game.test.mjs
+  
+>                | % Mutation score |          |           |            |          |          |
+> File           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+  ---------------|--------|---------|----------|-----------|------------|----------|----------|
+> All files      |  91.30 |   91.30 |       42 |         0 |          4 |        0 |        0 |
+>  saved-game.ts |  91.30 |   91.30 |       42 |         0 |          4 |        0 |        0 |
+  ---------------|--------|---------|----------|-----------|------------|----------|----------|
+  [32m02:13:50 (38632) INFO JsonReporter[39m Your report can be found at: file:///.runs/worktr
+ees/ocena-programu-na-ziarnach/.runs/review-rs6/wt/.runs/stryker-review/mutation.json
+  [32m02:13:50 (38632) INFO MutationTestExecutor[39m Done in 4 minutes and 6 seconds.
+
+

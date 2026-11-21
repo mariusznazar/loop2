@@ -1,0 +1,85 @@
+// Review probe of review rv (kept as evidence; it was run as tests/view/zz-review-probe.test.mjs in a
+// detached worktree of 25d1494d with `npm test -- tests/view/zz-review-probe.test.mjs`, exit 0, and is in
+// no commit). It shows what „Puść w pętlę” does where the result standing under the character came from
+// an earlier „Puść w pętlę” whose second click was pressed, and not from the button of a judging.
+// Output: PROBE calls ["judge","startLoop","stop","judge","startLoop"] — the third click started the
+// earning loop at once, with no „Puść mimo to”, on a judging with a death.
+import { assert, inAct, press, withPage } from "./page-document.mjs";
+import { test } from "node:test";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
+import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
+import { createMapsScreen } from "../../dist/browser/view/maps-screen.js";
+
+const NOW = 1_800_000_000_000;
+const SOLVED = { kind: "solved" };
+const death = (cause, minute) => ({ kind: "death", cause, minute });
+const MIXED = {
+  results: [death("cold", 37), ...Array(11).fill(SOLVED)],
+  equipment: [],
+};
+const LOOP = {
+  runNumber: 3,
+  completed: 2,
+  inARow: 0,
+  loopRecord: 0,
+  run: { mapId: "forest", minute: 212 },
+};
+
+function base() {
+  let state = newGame();
+  state = createCharacter(state, "Ala").state;
+  state = withEdgeSolved(state);
+  return { ...state, solvedMaps: ["forestEdge", "forest"] };
+}
+
+const propsOf = (state) => ({ state, nowMs: NOW, mapId: "forest" });
+
+async function until(done) {
+  await inAct(async () => {
+    for (let round = 0; round < 400 && !done(); round += 1)
+      await new Promise((resolve) => setTimeout(resolve, 5));
+  });
+}
+
+test("probe: a result left by „Puść mimo to” and a stop, then „Puść w pętlę” on the same rows", async () => {
+  await withPage(async (page) => {
+    const idle = base();
+    const looping = { ...idle, loops: { 1: LOOP } };
+    const calls = [];
+    let screen = null;
+    const reaction = {
+      judge: () => MIXED,
+      startLoop: () => screen.update(propsOf(looping)),
+      stop: () => screen.update(propsOf(idle)),
+    };
+    const controls = Object.fromEntries(
+      ["pick", "enter", "startLoop", "stop", "judge"].map((name) => [
+        name,
+        (...values) => {
+          calls.push(name);
+          return reaction[name]?.(...values);
+        },
+      ]),
+    );
+    await inAct(() => {
+      screen = createMapsScreen({ controls, props: propsOf(idle) });
+      page.root.append(screen.element);
+    });
+    const loopButton = () =>
+      page.root.querySelector(".maps-who-loop-start button");
+    await press(loopButton());
+    await until(() => calls.length === 1);
+    assert.equal(loopButton().textContent, "Puść mimo to");
+    await press(loopButton());
+    assert.deepEqual(calls, ["judge", "startLoop"]);
+    const stop = [...page.root.querySelectorAll("button")].find(
+      (button) => button.textContent === "Zatrzymaj",
+    );
+    await press(stop);
+    assert.equal(loopButton().textContent, "Puść w pętlę");
+    await press(loopButton());
+    await until(() => calls.length >= 5);
+    console.log("PROBE calls", JSON.stringify(calls));
+    console.log("PROBE button", loopButton().textContent);
+  });
+});

@@ -1,0 +1,69 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/maps-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ with no map named the list holds the open maps alone and the right area says to pick from it (39.1915ms)
+✔ a row is a link to the map's address, a solved map says so after its name and the map named is the marked row (24.6475ms)
+✔ a map named whose opener is unsolved draws no card (9.6791ms)
+✔ the card of Skraj lasu holds its heading, what it asks, its terrain and its sticks and berries alone (18.2558ms)
+✔ the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks (13.8064ms)
+✔ the card of Las — głębiej names its opener, shows the wolf and the mean gap, and the Understanding stays as it was (23.4051ms)
+✔ a step other than the usual one, a resource that does not renew and the entry and exit caps stand in their roles (15.7895ms)
+✔ a team with no character reads the sentence under the heading of „Kto idzie” (10.8446ms)
+✔ the characters stand in the order of their creation, each with its lines from the top (15.8264ms)
+✔ a resurrection at zero uses reads the time to the next use in danger at each character, and a returned use turns it to text-secondary (15.194ms)
+✔ the list „Program:” shows the program of the row in the order of the player's list and a change hands the page the pick (15.1768ms)
+✔ „Wejdzie: …” is what a send takes from the chest, at an unsolved map and at a solved one alike, and „nic” where it takes none (16.2086ms)
+✔ a map that cuts the plan shows the clipped-plan line and what enters cut (11.5754ms)
+✔ „Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program (56.0036ms)
+✔ an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” beside „Puść w pętlę”, which still acts (50.3289ms)
+✔ a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands (10.9299ms)
+✔ a manual map run going on, waiting and ended keeps „Wejdź” inactive and „Puść w pętlę” inactive at its character alone, with the sentence at each character (26.2713ms)
+✔ „Oceń na 12 ziarnach” stands beside „Wejdź” at each character on a map not yet solved and on a solved one, as the plain shared button (20.2907ms)
+✔ the button of a judging stays active at a character in an earning loop and while a manual map run goes on, waits or has ended (28.9673ms)
+✔ a click draws the button disabled as „Oceniam…” before the page judges, and the result then stands under that character alone (52.8737ms)
+✔ a result stands through draws, goes where another program is picked at its character, is replaced by a new judging and goes where the player leaves the card (147.4881ms)
+✔ a result stands only while the list shows the program it was judged for, whoever changed what the list shows (57.1149ms)
+✔ beside the list „Program:” stands the badge for twelve of twelve and „{n} z 12” for less, for the program the list shows at that character on that map (22.5815ms)
+✔ where the chest holds less than the judging took the mark keeps its count with the note and loses its badge, and with more it stands as it was (26.7147ms)
+✔ the parts of the judging take the role of the styleguide from the stylesheet: heading text-strong, rows positive, danger and warning, sentence text-secondary, badge positive, count text, note warning (218.6533ms)
+✔ the focus stays on the button of a judging through its waiting, and a focus that stood elsewhere at the click is not taken (104.2639ms)
+✔ a screen taken down while its button waits never asks the page to judge (91.9425ms)
+✔ the entry judges through the store's act, remembers the judging for the character, program and map, and changes nothing else of the game state (56.9612ms)
+✔ „Puść w pętlę” judges the program the list shows on the map of the card with its text kept, and where all twelve seeds are solved starts the earning loop at once (56.5941ms)
+✔ a seed unsolved shows the result under the character and the sentence over the button, the button reads „Puść mimo to”, and the second click starts the earning loop (56.3311ms)
+✔ the waiting second click goes where another program is picked, a new judging is made or the player leaves the card, and stays where the chest or the time changes alone (197.0336ms)
+✔ where a result with a failure already stands under the character, „Puść w pętlę” judges anew, starts at once on the same twelve rows and waits for the second click on a different result (385.0672ms)
+✔ the focus stays on „Puść w pętlę” through its judging and comes back to it as „Puść mimo to”, and a focus that stood elsewhere at the click is not taken (93.0932ms)
+✔ a screen taken down while „Puść w pętlę” judges never asks the page to judge or to start the earning loop (104.616ms)
+✔ the sentence over „Puść mimo to” takes the role warning from the stylesheet, and the button keeps the plain look (72.7725ms)
+✔ the entry judges and remembers through one act of the store at the first click, starts the loop where the judging solves all twelve, and at the second click starts it with no judging (62.701ms)
+✔ after „Puść w pętlę” the focus goes to that character's „Zatrzymaj”, and after „Zatrzymaj” to its „Wejdź” (63.199ms)
+✖ the focus goes to „Zatrzymaj” after the second click, „Puść mimo to”, also where starting the earning loop redraws another screen on its way (59.961ms)
+✔ after „Zatrzymaj” with „Wejdź” inactive the focus goes to the character's list „Program:” (14.715ms)
+✔ update draws the screen anew and keeps the controls, focus, and dispose takes the screen out of the page (12.1974ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 39
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3081.5075
+
+✖ failing tests:
+
+test at tests\view\maps-screen.test.mjs:1940:1
+✖ the focus goes to „Zatrzymaj” after the second click, „Puść mimo to”, also where starting the earning loop redraws another screen on its way (59.961ms)
+  Error: the focus is on „Zatrzymaj”, not on the page: expected <button class="button destructive">, got <body>
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/maps-screen.test.mjs:1967:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/maps-screen.test.mjs:1942:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

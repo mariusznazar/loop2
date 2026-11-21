@@ -1,0 +1,39 @@
+own save: true
+judgings missing: refused shape
+judgings null: refused shape
+judgings array: refused shape
+character 99: refused shape
+character key 01: refused shape
+character key -1: refused shape
+character __proto__: refused shape
+program 99: refused shape
+program 1.5: refused shape
+program __proto__ key: refused shape
+map unknown: refused shape
+map constructor: refused shape
+map __proto__: refused shape
+11 results: refused shape
+13 results: refused shape
+result object with cause: refused shape
+result unknown kind: refused shape
+result toString: refused shape
+result number: refused shape
+results string: refused shape
+foreign key in judging: refused shape
+equipment missing: refused shape
+equipment unknown item: refused shape
+equipment count 0: refused shape
+equipment count -1: refused shape
+equipment count 1.5: refused shape
+equipment count 2^53: refused shape
+equipment count string: refused shape
+equipment item twice: refused shape
+equipment huge safe count (loads?): loaded
+loop inARow above record: refused shape
+loop record negative: refused shape
+loop record 1.5: refused shape
+loop record string: refused shape
+loop record 1e308: refused shape
+loop record missing: refused shape
+loop foreign key: refused shape
+loop record above completed (loads?): loaded

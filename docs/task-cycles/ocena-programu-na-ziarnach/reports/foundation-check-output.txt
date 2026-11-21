@@ -1,0 +1,8 @@
+tests/sim/loop.test.mjs:237: the quotation stands in no binding sentence of `D-243`
+tests/sim/loop.test.mjs:304: the quotation stands in no binding sentence of `D-243`
+tests/view/account-screen.test.mjs:2683: the quotation stands in no binding sentence of `D-243`
+tests/view/account-screen.test.mjs:2807: the quotation stands in no binding sentence of `D-243`
+tests/view/account-screen.test.mjs:2975: the quotation stands in no binding sentence of `D-243`
+tests/view/maps-screen.test.mjs:494: the quotation stands in no binding sentence of `D-243`
+tests/view/maps-screen.test.mjs:700: the quotation stands in no binding sentence of `D-243`
+7 errors

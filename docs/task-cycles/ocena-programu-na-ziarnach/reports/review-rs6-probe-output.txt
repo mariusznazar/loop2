@@ -1,0 +1,77 @@
+﻿version 9, document version 9
+chars 1,2, programs 1,2, loops 1
+judgings ["1","2"]
+the game's own document loads: true
+as the server hands it back: true
+shape  inARow text
+shape  inARow 1.5
+shape  inARow -1
+LOADED  inARow -0
+shape  inARow NaN
+shape  inARow Infinity
+shape  inARow true
+shape  inARow []
+shape  inARow {}
+shape  inARow 1e308 and record 1e308
+shape  inARow 2**53 and record 2**53
+shape  inARow above record
+shape  record BigInt
+shape  record Number object
+shape  inARow missing
+shape  loopRecord missing
+shape  foreign key on loop
+shape  inARow inherited only
+shape  judgings __proto__ at character
+shape  judgings __proto__ at program
+shape  judgings __proto__ at map
+shape  map key constructor
+shape  map key toString
+shape  program key toString
+shape  character key 1.0
+shape  character key ' 1'
+shape  character key -1
+shape  character key 0
+shape  character key 1e0
+shape  character key 99
+shape  program key 99
+shape  program key nextProgramId
+shape  program key 0
+shape  program key 01
+shape  map key desert
+shape  map key FORESTEDGE
+shape  results 0
+shape  results 11
+shape  results 13
+shape  results 1000
+shape  results sparse 12
+shape  results object length 12
+shape  results string
+shape  results null
+shape  result SOLVED
+shape  result null
+shape  result undefined
+shape  result __proto__
+shape  result hasOwnProperty
+shape  result nested deep
+shape  results with extra own prop
+shape  equipment null
+shape  equipment entry without count
+shape  equipment item __proto__
+shape  equipment item constructor
+shape  equipment count -1
+shape  equipment count 1e21
+shape  equipment count NaN
+shape  equipment entry array
+shape  equipment entry null
+shape  equipment huge list
+shape  judging with prototype key results
+shape  judgings a Map
+shape  judgings a class instance
+shape  judgings a string
+shape  judgings level of a number
+shape  judgings map level a list
+shape  judgings missing
+shape  judgings of a deleted char via key of c2 removed from team
+result shares something with the document: false
+equipment of the remembered judging: []
+unexpected outcomes: 1
