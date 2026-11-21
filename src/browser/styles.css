@@ -595,6 +595,15 @@ header .failure-line {
     align-items: center;
     justify-content: center;
   }
+
+  /*
+   * The secondary action has no padding at its sides so that its text begins level with the fields
+   * (D-275); where its text is narrower than the minimum, the minimum would centre the text and push
+   * its start off that line, so the text stays at the left of its target.
+   */
+  .button.secondary {
+    text-align: left;
+  }
 }
 
 /* A form that sends its fields to the server: its fields, its button and one sentence under it. */

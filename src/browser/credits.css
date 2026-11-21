@@ -43,3 +43,26 @@
 .credits a {
   color: inherit;
 }
+
+/*
+ * The phone layout (D-396, styleguide rule "Everything is done by touch, and every control holds the
+ * touch target"): the summary „Autorzy grafiki” is a control of its own, the one that opens the section,
+ * so it holds the minimum of the touch target, `--touch-target-min`, high and wide; the links inside the
+ * rows of the credits are links inside running sentences and keep their size. The target grows by
+ * padding above and below the line, which half of what the minimum leaves over the line takes each, so
+ * the text stands in the middle of the target; the section's own top padding is not needed with it.
+ */
+@media (width < 1280px) {
+  .account-card details,
+  .headquarters details {
+    padding-top: 0;
+  }
+
+  .account-card summary,
+  .headquarters summary {
+    box-sizing: border-box;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding-block: calc((var(--touch-target-min) - 1lh) / 2);
+  }
+}
