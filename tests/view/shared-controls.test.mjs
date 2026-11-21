@@ -818,6 +818,55 @@ test("a pick cell with the icon of an action draws it as a hidden mask of that f
   });
 });
 
+// Breaks: a cell whose name is a bare text node beside the icon cannot drop under the icon when its
+// longest word does not fit beside it, so in a narrow grid the word crosses the cell's frame.
+test("a pick cell holds its name in an element of its own, after the icon and before the reason", async () => {
+  await withPage(async ({ document }) => {
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, {
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+    assert.deepEqual(
+      [...cell.children].map((child) => child.getAttribute("class")),
+      ["icon-mask", "pick-cell-name", "pick-cell-reason"],
+    );
+    assert.equal(cell.children[1].textContent, PICK_TEXT);
+  });
+});
+
+// Breaks: the rules that let a name wrap and break inside its cell, deleted or overridden, bring
+// back the fault of a name crossing the frame of its cell in a narrow window. jsdom resolves the
+// cascade, not the layout, so the case reads which declarations the real stylesheets give.
+test("the stylesheets let the name of a pick cell wrap beside its icon and break where no space helps", async () => {
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, { text: PICK_TEXT, icon: PICK_ICON }),
+      ),
+    );
+    const cellStyle = window.getComputedStyle(cell);
+    assert.equal(cellStyle.display, "inline-flex");
+    assert.equal(cellStyle.flexWrap, "wrap");
+    assert.equal(cellStyle.overflowWrap, "break-word");
+    const nameStyle = window.getComputedStyle(
+      cell.querySelector(".pick-cell-name"),
+    );
+    assert.equal(nameStyle.minWidth, "0px");
+    assert.equal(nameStyle.flexShrink, "1");
+  });
+});
+
 // Breaks: a cell that takes its tab index from an effect of its panel instead of from the property
 // has none at its first drawing, so the keyboard finds it out of the order of Tab; a cell that sets
 // a tab index when none is given puts every cell of a grid in the order of Tab, which D-306 forbids.

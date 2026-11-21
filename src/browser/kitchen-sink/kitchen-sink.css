@@ -39,8 +39,9 @@
 }
 
 /*
- * The samples of the destructive button under the pointer and at the focus: its text in `danger`, as
- * styles.css draws `.button.destructive:hover` and `:focus-visible`, which a class does not reach.
+ * The samples of the destructive button under the pointer and at the focus keep its text in
+ * `danger`, as styles.css draws it at rest and in every state (`.button.destructive`); the sample
+ * under the pointer takes the background `highlight` from the rule above, as the page does.
  */
 .sample-hover .button.destructive,
 .sample-focus .button.destructive {
