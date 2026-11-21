@@ -653,7 +653,7 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-39 · D-40
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40
 - **Invariant:** none
 - **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
 - **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
@@ -686,7 +686,10 @@ listę otwartych map, po prawej kartę wybranej mapy.
   „Puść w pętlę” zwykłym przyciskiem, a obok „Pętla nic nie zarobi do
   skrzynki” w `warning`, gdy lista „Wynieś” jest pusta (D-326); zdanie
   o przejściu ręcznym, które czeka albo się skończyło, pod wyłączonymi
-  przyciskami każdej postaci, w `text-secondary` (D-287).
+  przyciskami każdej postaci, w `text-secondary` (D-287); jego druga część,
+  „Wróć do niego i je zakończ, żeby wysłać postać.”, jest odnośnikiem do ekranu
+  tego przejścia (D-281), tego samego w każdym wierszu, w tej samej roli
+  `text-secondary`.
 - Ocena programu przy postaci (D-439, D-440, D-329, D-243): przycisk „Oceń na
   12 ziarnach” stoi obok „Wejdź” przy każdej postaci, na mapie rozwiązanej
   i nierozwiązanej, jako zwykły wspólny przycisk — nie w głównym wyglądzie — a na

@@ -176,6 +176,13 @@
   color: var(--text-secondary);
 }
 
+/* The second part of that sentence is a link to the screen of the manual map run (D-287): it keeps the role of the
+ * sentence, `text-secondary`, and the underline of a link inside a sentence. Focus is the one :focus-visible rule of
+ * styles.css. */
+.maps-who-run-link {
+  color: var(--text-secondary);
+}
+
 .maps-who-resurrection.danger {
   color: var(--danger);
 }

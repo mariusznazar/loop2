@@ -934,6 +934,61 @@ test("a manual map run going on, waiting and ended keeps „Wejdź” inactive a
   });
 });
 
+// D-287, D-281. Catches a sentence that stays plain text, a link that leads to the screen Postać of the
+// character of its row instead of the map run's character, a link that covers the first part of the
+// sentence or none of it, a link that goes on standing after „Zakończ”, and a link that takes another
+// role than the sentence's `text-secondary`.
+test("while a manual map run waits and after it ended, the second part of the sentence at every character is a link to the screen of that map run, and „Zakończ” takes it away", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone. Stopnie kupisz po jego zakończeniu.” Wherever the sentence under the buttons of a character stands, „Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of that manual map run"
+  // decision: D-281 "An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/mapy`, `#/mapy/{map}`, `#/programy`, `#/programy/{n}`, `#/wiedza` and `#/postac/{n}/przejscie`"
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText();
+    page.document.head.append(style);
+    const base = solved(teamOf("Ala", "Bob"));
+    const bobsRun = send(base, { mapId: "forest", characterId: 2 }, 1).state;
+    const { screen } = await mount(page, propsOf(bobsRun, "forest"));
+    const cases = [
+      [waitingRun(base), "#/postac/1/przejscie"],
+      [endedRun(base), "#/postac/1/przejscie"],
+      [setPaused(bobsRun, true).state, "#/postac/2/przejscie"],
+    ];
+    for (const [state, address] of cases) {
+      await inAct(() => screen.update(propsOf(state, "forest")));
+      assert.equal(members(page.root).length, 2, "both characters stand");
+      for (const member of members(page.root)) {
+        const note = member.querySelector(".maps-who-run-note");
+        assert.equal(note.textContent, RUN_SENTENCE);
+        const links = all(note, "a");
+        assert.equal(links.length, 1, "one link in the sentence");
+        assert.equal(
+          links[0].textContent,
+          "Wróć do niego i je zakończ, żeby wysłać postać.",
+        );
+        assert.equal(
+          links[0].getAttribute("href"),
+          address,
+          "the same screen in every row: the map run's, not the row's character",
+        );
+        assert.equal(
+          page.window.getComputedStyle(links[0]).color,
+          "var(--text-secondary)",
+          "the link keeps the sentence's role",
+        );
+      }
+    }
+    await inAct(() => screen.update(propsOf(base, "forest")));
+    assert.equal(page.root.querySelector(".maps-who-run-note"), null);
+    assert.deepEqual(
+      all(page.root, ".maps-who-member a").map((link) =>
+        link.getAttribute("href"),
+      ),
+      ["#/postac/1", "#/postac/2"],
+      "no run, so no link but the names of the characters",
+    );
+  });
+});
+
 // --- the judging of a program --------------------------------------------------------------
 
 const SOLVED = { kind: "solved" };

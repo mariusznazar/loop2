@@ -492,10 +492,40 @@ function CharacterRow({
         ) : null}
       </div>
       {run === null ? null : (
-        <p className="maps-who-run-note">{runWaitingSentence(run.mapId)}</p>
+        <RunWaitingNote
+          sentence={runWaitingSentence(run.mapId)}
+          runCharacterId={run.character.id}
+        />
       )}
       {shown === undefined ? null : <JudgingResult judging={shown.judging} />}
     </li>
+  );
+}
+
+/** The part of the sentence of a manual map run that waits or has ended which leads back to the map run (D-287). */
+const RUN_LINK_TEXT = "Wróć do niego i je zakończ, żeby wysłać postać.";
+
+/**
+ * The sentence under the buttons of a character while a manual map run waits or has ended: its second part is
+ * a link to the screen of that map run, the one the map run's character has, the same in every row (D-287, D-281).
+ */
+function RunWaitingNote({
+  sentence,
+  runCharacterId,
+}: {
+  sentence: string;
+  runCharacterId: CharacterId;
+}) {
+  return (
+    <p className="maps-who-run-note">
+      {sentence.slice(0, sentence.length - RUN_LINK_TEXT.length)}
+      <a
+        className="maps-who-run-link"
+        href={screenAddress({ kind: "run", characterId: runCharacterId })}
+      >
+        {RUN_LINK_TEXT}
+      </a>
+    </p>
   );
 }
 
