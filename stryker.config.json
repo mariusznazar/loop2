@@ -48,7 +48,6 @@
       "tests/sim/repertoire.test.mjs",
       "tests/sim/rule-signs.test.mjs",
       "tests/sim/run-record.test.mjs",
-      "tests/sim/saved-game-judgings.test.mjs",
       "tests/sim/saved-game.test.mjs",
       "tests/sim/skills.test.mjs",
       "tests/sim/streak.test.mjs",

@@ -2,11 +2,7 @@ import { newBackpack } from "./character.js";
 import { BALANCE } from "./data/balance.js";
 import { MAPS } from "./data/maps.js";
 import { canSendMap, programOf, type GameResult } from "./game.js";
-import {
-  recordOfJudging,
-  withRememberedJudging,
-  type JudgingRecord,
-} from "./judging-record.js";
+import { recordOfJudging, type JudgingRecord } from "./judging-record.js";
 import { programById } from "./programs.js";
 import { mapRunEnded, newMapRun, stepMinute } from "./run.js";
 import { sendTake } from "./trip.js";
@@ -92,30 +88,6 @@ export function judgeOnSeeds(
     return resultOf(run);
   });
   return { results, equipment };
-}
-
-/**
- * The act of a judging (D-440): the judging `judgeOnSeeds` gives for `ids`, with the twelve results as
- * they are, cause and game minute included, and the game state in which it replaces the judging
- * remembered for its character, program and map, in the kinds and the equipment the game state holds
- * (`rememberedOf`). Nothing else of the game state changes, for a judging is no send (D-170, D-243) and no
- * map run of the character (D-439): not the clock, the last seed, the chest, a character, the pick of the
- * list „Program:”, the program used last, a map run or an earning loop. It passes no game time and takes no
- * real moment; the store that runs it counts the time first (D-409). Throws as `judgeOnSeeds` does.
- */
-export function judgeAndRemember(
-  state: GameState,
-  ids: { mapId: MapId; characterId: CharacterId; programId: ProgramId },
-): GameResult & { judging: Judging } {
-  const judging = judgeOnSeeds(state, ids);
-  return {
-    state: {
-      ...state,
-      judgings: withRememberedJudging(state.judgings, ids, judging),
-    },
-    events: [],
-    judging,
-  };
 }
 
 /**

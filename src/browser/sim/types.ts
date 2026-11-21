@@ -390,28 +390,6 @@ export type SeedResult =
 export type Judging = { results: SeedResult[]; equipment: TripEntry[] };
 
 /**
- * A judging as the game state remembers it (D-440): the kind of each of the twelve results, in the
- * order of the data's seeds, with the cause and the game minute of a death left out (they stand only in
- * the result shown after the judging), and the equipment the judging entered with, as `Judging` holds it.
- */
-export type RememberedJudging = {
-  results: SeedResult["kind"][];
-  equipment: TripEntry[];
-};
-
-/**
- * The judgings the game state remembers, by the character they were made for, the program of the
- * player's list and the map: the last of each triple (D-440). A level that holds no judging may stand
- * as an empty record.
- */
-export type RememberedJudgings = Partial<
-  Record<
-    CharacterId,
-    Partial<Record<ProgramId, Partial<Record<MapId, RememberedJudging>>>>
-  >
->;
-
-/**
  * An earning loop of one character (D-241): the content of the program taken at its start, a plain
  * map run, which always goes on, since the function that reaches its end deals with that end at
  * once, the number of that map run from 1, the map runs completed, and the practice gathered from
@@ -545,8 +523,6 @@ export type GameState = {
   stoppedLoops: Partial<Record<CharacterId, Practice>>;
   /** The report the player reads and closes (D-246); it lies here, so it survives a reload. */
   awayReport: AwayReportLine[];
-  /** The last judging of each character, program and map (D-440); none in a new game. */
-  judgings: RememberedJudgings;
   /**
    * The real moment of the save the state came from (D-248), written on the way to the document
    * only; null in a game that never came from a save. Only the catch-up reads it, on a loaded state.

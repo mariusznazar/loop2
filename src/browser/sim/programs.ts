@@ -1,7 +1,6 @@
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import type { GameResult } from "./game.js";
-import { judgingsAfterSave, judgingsWithoutProgram } from "./judging-record.js";
 import { conditionNumber, onStep } from "./program.js";
 import { mapRunEnded, type GameEvent } from "./run.js";
 import type {
@@ -407,27 +406,6 @@ export function withProgramContent(
 }
 
 /**
- * The two fields of the game state that saving content into the program numbered `id` changes: the
- * list with its content replaced by `program` and its content revision raised where the content
- * differs (D-442), and the judgings remembered for that program erased
- * where its rules, rule groups in their order or trip plan come out different (D-440). Every place
- * that saves content into a program of the list takes them from here.
- */
-export function withProgramSaved(
-  state: GameState,
-  id: ProgramId,
-  program: Program,
-): Pick<GameState, "programs" | "judgings"> {
-  const was = programById(state.programs, id);
-  return {
-    programs: withProgramContent(state.programs, id, program),
-    judgings: was
-      ? judgingsAfterSave(state.judgings, id, was.program, program)
-      : state.judgings,
-  };
-}
-
-/**
  * The name a program takes from typed text (D-169): the text without white space at its start and
  * end. It is refused as `empty` where nothing is left, and as `taken` where the name of a program
  * other than `ownId` equals it regardless of letter case; a program's own name in another letter
@@ -560,8 +538,7 @@ export function renameProgram(
  * Deletes the program numbered `programId`; throws on a program not on the list and while the list
  * holds one program. Where the map run's copy belongs to it, the copy's number becomes none and the
  * copy keeps the name the program had; where the counts stand beside it after „Zakończ”, they are
- * cleared. Records that name it find no program from then on, and the judgings remembered for it are
- * removed (D-440).
+ * cleared. Records that name it find no program from then on.
  */
 export function deleteProgram(
   state: GameState,
@@ -585,7 +562,6 @@ export function deleteProgram(
           },
         }),
       ...(countsLoseProgram && { ruleCounts: null, countsProgram: null }),
-      judgings: judgingsWithoutProgram(state.judgings, programId),
     },
     events: [],
   };
@@ -594,10 +570,8 @@ export function deleteProgram(
 /**
  * Replaces the content of the program numbered `programId`, checked against the resources of every
  * map; throws on a program not on the list and on a program outside the closed lists. Where the
- * counts stand beside that program after „Zakończ”, they are reconciled with the new content, and
- * where the rules, the rule groups in their order or the trip plan come out different the judgings
- * remembered for the program are erased (D-440). It never changes the map run, its copy, its streak,
- * its beaten attacks or its counts during one.
+ * counts stand beside that program after „Zakończ”, they are reconciled with the new content. It
+ * never changes the map run, its copy, its streak, its beaten attacks or its counts during one.
  */
 export function editProgram(
   state: GameState,
@@ -609,7 +583,7 @@ export function editProgram(
   return {
     state: {
       ...state,
-      ...withProgramSaved(state, programId, checked),
+      programs: withProgramContent(state.programs, programId, checked),
       ...(state.countsProgram === programId && {
         ruleCounts: reconcileCounts(state.ruleCounts, edited.program, checked),
       }),
@@ -726,8 +700,7 @@ function requireMapRun(state: GameState, operation: string): GameMapRun {
 
 /**
  * Saves the map run's copy into its program: the program's content and the copy's base become the
- * copy, which erases the judgings remembered for the program where it differs in rules, rule groups or
- * trip plan (D-440). The copy, the streak, the beaten attacks and the counts stay, and nothing asks for
+ * copy. The copy, the streak, the beaten attacks and the counts stay, and nothing asks for
  * confirmation where the program has changes the copy lacks. Allowed also in a map run ended in
  * death or a completion. Throws without a map run, without unsaved changes and with the copy's
  * program gone.
@@ -742,7 +715,7 @@ export function saveCopyIntoProgram(state: GameState): GameResult {
   return {
     state: {
       ...state,
-      ...withProgramSaved(state, owner.id, run.copy.program),
+      programs: withProgramContent(state.programs, owner.id, run.copy.program),
       run: { ...run, copy: { ...run.copy, base: run.copy.program } },
     },
     events: [],
