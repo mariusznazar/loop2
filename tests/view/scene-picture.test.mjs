@@ -158,6 +158,12 @@ test("Zapal — patyk and Zjedz leave the mage where it stands", () => {
   }
 });
 
+test("Wytwórz and Opatrz with an item as the target leave the mage where it stands", () => {
+  // decision: D-318 "Where its action leads nowhere"
+  assert.deepEqual(goalOf(doing({ kind: "craft", item: "bandage" })), STAYS);
+  assert.deepEqual(goalOf(doing({ kind: "tend", item: "bandage" })), STAYS);
+});
+
 test("Eksploruj, Wędruj, Idź and Idź — ognisko lead the mage to the right edge, always the same place", () => {
   // decision: D-318 "The mage walks to the place its current action leads it to"
   const actions = [
@@ -359,6 +365,17 @@ test("the badge shows the icon of the action, the file of the rule's row, for ea
     sceneDrawing(doing({ kind: "lightItem" })).badge.href,
     "/icons/match-tip.svg",
   );
+});
+
+test("the badge of „Wytwórz” and „Opatrz” is the icon of the verb, and neither bends the mage", () => {
+  // decision: D-320 "Over the mage's head stands a badge"
+  // decision: D-318 "Where its action leads nowhere"
+  const craft = sceneDrawing(doing({ kind: "craft", item: "bandage" }));
+  assert.equal(craft.badge.href, "/icons/claw-hammer.svg");
+  assert.equal(craft.mage.bending, false);
+  const tend = sceneDrawing(doing({ kind: "tend", item: "bandage" }));
+  assert.equal(tend.badge.href, "/icons/bandage-roll.svg");
+  assert.equal(tend.mage.bending, false);
 });
 
 test("the progress is 0 at the start of the action, 0.45 midway with a carry, and 1 at its end", () => {
@@ -736,6 +753,27 @@ test("no effect where an action that takes pieces out of the backpack ended in t
     effectOf("stick", 2, 3, [finished({ kind: "explore" }), finished(STICK)])
       .kind,
     "flight",
+  );
+});
+
+// D-367. Catches „Wytwórz” or „Opatrz” treated as a gathering, which would show a flight or a cloud of
+// dust at the end of a bandage; both take pieces out of the backpack, so no net change tells a hit.
+test("the end of „Wytwórz” or „Opatrz” starts no effect of a gathering, alone or beside one", () => {
+  // decision: D-367 "The scene shows an effect of the end of a gathering"
+  // decision: D-318 "Where its action leads nowhere"
+  const craft = { kind: "craft", item: "bandage" };
+  const tend = { kind: "tend", item: "bandage" };
+  assert.equal(effectOf("stick", 2, 2, [finished(craft)]), null, "craft alone");
+  assert.equal(effectOf("stick", 2, 2, [finished(tend)]), null, "tend alone");
+  assert.equal(
+    effectOf("stick", 2, 3, [finished(STICK), finished(craft)]),
+    null,
+    "craft beside a gathering",
+  );
+  assert.equal(
+    effectOf("stick", 2, 3, [finished(STICK), finished(tend)]),
+    null,
+    "tend beside a gathering",
   );
 });
 
@@ -1197,6 +1235,23 @@ test("a discovery of the wolf alone shows its head on one plaque in the middle o
   assert.deepEqual(
     moment.plaques.map((p) => [p.href, p.x, p.y, p.from]),
     [["/icons/wolf-head.svg", 176, 56, { x: 265, y: 50 }]],
+  );
+});
+
+// Catches a discovery that shows the bandage's icon from anywhere but its row, or the verb's icon
+// missing from the plaques of a discovery of „Opatrz”: the verb's icon comes first, the actions before
+// the items, each on its own plaque in a centred row.
+test("a discovery of „Opatrz” and of the bandage shows the verb's icon and the bandage's, from its row", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  const moment = momentOf(
+    discovering({ actions: ["tend"], items: ["bandage"] }),
+  );
+  assert.deepEqual(
+    moment.plaques.map((p) => [p.href, p.x]),
+    [
+      ["/icons/bandage-roll.svg", 165],
+      ["/icons/first-aid-kit.svg", 187],
+    ],
   );
 });
 
