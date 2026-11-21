@@ -158,6 +158,8 @@ export function startLoop(
         run: started.run,
         runNumber: 1,
         completed: 0,
+        inARow: 0,
+        loopRecord: 0,
         practice: {},
       },
     ),
@@ -310,6 +312,8 @@ function takeEnd(
   let chest = team.chest;
   let practice = loop.practice;
   let completed = loop.completed;
+  let inARow = loop.inARow;
+  let loopRecord = loop.loopRecord;
   if (run.death) {
     // The practice gathered at the earning loop is what the death takes with the rest (D-190); the run that
     // died pays nothing, so it is no part of it.
@@ -328,6 +332,8 @@ function takeEnd(
       };
     }
     kind = settled.settlement.kind === "noPractice" ? "noPractice" : "covered";
+    // A death that leaves the earning loop going starts the run of map runs with no death anew.
+    inARow = 0;
   } else {
     const pieces = { ...chest.pieces };
     for (const { item, count } of tripLoot(
@@ -342,6 +348,8 @@ function takeEnd(
     chest = { pieces };
     practice = sumPractice(practice, run.practice);
     completed += 1;
+    inARow += 1;
+    loopRecord = Math.max(loopRecord, inARow);
   }
   const settledState: GameState = { ...state, team: { ...team, chest } };
   const next = beginRun(
@@ -361,6 +369,8 @@ function takeEnd(
         run: next.run,
         runNumber: loop.runNumber + 1,
         completed,
+        inARow,
+        loopRecord,
         practice,
       },
     ),
@@ -373,13 +383,15 @@ function takeEnd(
  * Takes the end a character's earning loop run reached, at the real moment `nowMs`, and starts the next map
  * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
  * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
- * to the earning loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
+ * to the earning loop's (what „Odbierz” took earlier is no longer in the run), and counts it, one more map
+ * run in a row with no death, the loop record raised to it where it is the larger (D-241). A death is
  * settled at `nowMs` as a manual one is, by the uses of the team's resurrection (`teamAfterDeath`): the
  * practice gathered at the earning loop counts as the character's practice. A character with no practice
  * leaves the uses as they were, whether one is left or not, and the earning loop goes on; otherwise, with a
  * use left one is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; with
  * none left the character loses its practice and ranks and the earning loop is dropped with what it
- * gathered. The carried items go with the run and the chest stays as it stood. One `loopRunEnded` event
+ * gathered; where the earning loop goes on, the run of map runs with no death starts anew at 0 and the
+ * loop record stays. The carried items go with the run and the chest stays as it stood. One `loopRunEnded` event
  * follows for the end.
  * With no earning loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
  * `nowMs` that is no safe integer is a RangeError.

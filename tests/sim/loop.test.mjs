@@ -234,7 +234,7 @@ const ala = (state) => state.team.characters[0];
 test("the first map run of an earning loop goes on the program of its row, from the seed a send takes, and the earning loop holds the content of the program and nothing of its copy", () => {
   // decision: D-22 "The first map run of an earning loop, with none before it, takes a new seed, as a send of a character does"
   // decision: D-241 "The game state holds its earning loops beside the one manual map run, by character number, so a character has at most one, each with the content of the program taken at its start, its map run going on, the number of that map run, the count of its completions and the practice gathered from those completions since the player last took the practice waiting with „Odbierz”"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   const state = game(withTrip(EMPTY, [], []));
   const result = startLoop(state, FOREST, T0);
   const loop = result.state.loops[1];
@@ -242,6 +242,8 @@ test("the first map run of an earning loop goes on the program of its row, from 
   assert.deepEqual(loop.program, state.programs[0].program);
   assert.deepEqual(Object.keys(loop).sort(), [
     "completed",
+    "inARow",
+    "loopRecord",
     "practice",
     "program",
     "run",
@@ -249,6 +251,8 @@ test("the first map run of an earning loop goes on the program of its row, from 
   ]);
   assert.equal(loop.runNumber, 1);
   assert.equal(loop.completed, 0);
+  assert.equal(loop.inARow, 0);
+  assert.equal(loop.loopRecord, 0);
   assert.deepEqual(loop.practice, {});
   assert.equal(loop.run.minute, 0);
   assert.equal(loop.run.mapId, "forest");
@@ -301,7 +305,7 @@ test("an earning loop starts beside a manual map run of another character, which
 
 test("without a program number an earning loop takes the program of the character's row: the pick, else the one used last", () => {
   // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   let state = game();
   state = editProgram(
     state,

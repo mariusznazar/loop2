@@ -409,13 +409,18 @@ export type RememberedJudgings = Partial<
  * them since the player last took it with „Odbierz” (D-189), which empties it together with the
  * practice of the map run going on, so what the earning loop and that map run hold is exactly what waits to
  * be paid. Each map run binds its lists anew from `program`, so the earning loop keeps no copy of a manual
- * map run and no link to the player's programs.
+ * map run and no link to the player's programs. It also counts, from its start, the map runs completed in a
+ * row with no death between them (`inARow`), which a death that does not stop the earning loop sets back
+ * to 0, and the largest such number, its loop record (`loopRecord`); both are 0 at the start, `inARow`
+ * is never above `loopRecord`, and both go with the earning loop.
  */
 export type EarningLoop = {
   program: Program;
   run: MapRun;
   runNumber: number;
   completed: number;
+  inARow: number;
+  loopRecord: number;
   practice: Practice;
 };
 

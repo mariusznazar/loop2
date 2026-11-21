@@ -1126,7 +1126,8 @@ function characterKey(
 /**
  * The earning loop of `characterId`: its program by the program check, and a `MapRun` that is that
  * character's, goes on (D-241) and stands on a map among the solved maps, since no earning loop's map run
- * adds to them. Completions stand below the number of the map run going on.
+ * adds to them. Completions stand below the number of the map run going on, and the map runs completed
+ * in a row with no death between them are whole numbers from 0, not above the loop record.
  */
 function earningLoop(
   value: unknown,
@@ -1138,6 +1139,8 @@ function earningLoop(
     "run",
     "runNumber",
     "completed",
+    "inARow",
+    "loopRecord",
     "practice",
   ]);
   const run = plainMapRun(fields(read.run, MAP_RUN_KEYS), records);
@@ -1150,11 +1153,16 @@ function earningLoop(
   const runNumber = identity(read.runNumber);
   const completed = count(read.completed);
   if (completed >= runNumber) refuse();
+  const inARow = count(read.inARow);
+  const loopRecord = count(read.loopRecord);
+  if (inARow > loopRecord) refuse();
   return {
     program: program(read.program),
     run,
     runNumber,
     completed,
+    inARow,
+    loopRecord,
     practice: practice(read.practice),
   };
 }
