@@ -10127,7 +10127,7 @@ map is inactive (D-55) and the player has to go back and end the map run; no but
 
 ### D-325 — What does the screen Mapy show?
 
-The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439).
+The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439), the card standing under the list in the phone layout (D-282, D-396).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10137,11 +10137,14 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
   map the address names, with what it asks, its terrain, what lies there, what lurks there and what
   it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
   and „Puść w pętlę”, and „Oceń na 12 ziarnach” at each character, on a map not yet solved and on a
-  solved one. For the list standing on the left and the card on the right, an agent compares a
-  change with the part no test holds:
-  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
-    the right the card of Las with the section „Kto idzie” under it
-  - violates: the list of the maps standing on the right of the card or under it
+  solved one. For the list standing on the left and the card on the right in the computer layout,
+  and the card under the list in the phone layout, an agent compares a change with the part no test
+  holds:
+  - complies: in the computer layout the screen Mapy at `#/mapy/forest` with the list of the open
+    maps on the left, and on the right the card of Las with the section „Kto idzie” under it; in the
+    phone layout at a page area 360 px wide the list of the open maps with the card of Las under it
+  - violates: the list of the maps standing on the right of the card or under it in the computer
+    layout; the card and the list side by side in the phone layout
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
@@ -10261,12 +10264,12 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 
 ### D-331 — What does the screen Mapy show before a map is picked, and how does a row of the list look?
 
-Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map and, at a solved map, „rozwiązana” in `positive` after it, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left.
+Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right, under the list in the phone layout (D-282, D-396), in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map and, at a solved map, „rozwiązana” in `positive` after it, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-134 · derives from D-281 · derives from D-325
-- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the right area, with no
+- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the area of the card, with no
   card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map and,
   at a solved map, „rozwiązana” after it, and the row of the map the address names the one marked
   as picked. For the roles of the sentence and of „rozwiązana” and for the look of the picked row,

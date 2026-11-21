@@ -828,20 +828,21 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40 · D-282 · D-396
 - **Invariant:** none
-- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
-- **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
+- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
+- **Bad:** Obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
 
-Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: po lewej
-listę otwartych map, po prawej kartę wybranej mapy.
+Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: w układzie
+komputera po lewej listę otwartych map, po prawej kartę wybranej mapy, a w układzie
+telefonu karta stoi pod listą (D-282, D-396).
 
 - Lista: każdy wiersz to odnośnik do `#/mapy/{map}` z nazwą mapy w `text`; przy
   mapie rozwiązanej po nazwie stoi „rozwiązana” w `positive` (D-134). Wybrany
   wiersz ma tekst w `text-strong` i belkę w `selected` o grubości `--bar-width`
   po lewej, jak wybrany program na liście programów (D-331, D-40); niewybrany
   wygląda jak niewybrany program na tej liście; pod kursorem tło `highlight`.
-  Przed wyborem mapy, pod `#/mapy`, po prawej stoi „Wybierz mapę z listy.” w
+  Przed wyborem mapy, pod `#/mapy`, w obszarze karty stoi „Wybierz mapę z listy.” w
   `text-secondary` (D-331).
 - Karta mapy (D-327): nagłówek z nazwą mapy w `text-strong`, a przy mapie
   rozwiązanej obok „rozwiązana” w `positive`; przy mapie otwieranej przez inną
