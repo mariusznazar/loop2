@@ -365,6 +365,22 @@ export type RunRecord = Pick<
 >;
 
 /**
+ * How a judging's map run on one seed ended (D-439): the map solved, the character dead of `cause`
+ * in game minute `minute`, or neither by the cap of game minutes, so undecided.
+ */
+export type SeedResult =
+  | { kind: "solved" }
+  | { kind: "death"; cause: DeathCause; minute: number }
+  | { kind: "undecided" };
+
+/**
+ * A judging of a program on a map (D-439): the result of each of the twelve seeds in the order of the
+ * data's seeds, and the equipment every one of the twelve runs entered with: the take list cut by the
+ * chest, the carrying capacity and the map's entry cap, none of which leaves the chest.
+ */
+export type Judging = { results: SeedResult[]; equipment: TripEntry[] };
+
+/**
  * An earning loop of one character (D-241): the content of the program taken at its start, a plain
  * map run, which always goes on, since the function that reaches its end deals with that end at
  * once, the number of that map run from 1, the map runs completed, and the practice gathered from
