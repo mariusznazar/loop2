@@ -65,25 +65,31 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // and `resurrectionNextReturnAtMs` replace `resurrectionReadyAtMs` (D-190); the game refuses it as
 // another version since version 9.
 //
-// The document of the current version, version 9, is that of version 8 with the two counts of each
-// earning loop, `inARow` and `loopRecord` (D-241, D-206), the content revision of each program,
-// `contentRevision` beside its number, name and content (D-442), and the real moment the game was made,
-// `madeAtMs` (D-04, D-386). It holds no judging: the browser remembers the judgings in its own storage
-// and the game state is whole without them (D-441). It fills every optional branch of the game state, the
-// new ones among them: programs of content revision 0 and above, and an earning loop whose two counts
-// stand above 0 with the run below the longest. It also fills the others: a map run with a
+// The document of version 9 is that of version 8 with the two counts of each earning loop,
+// `inARow` and `loopRecord` (D-241, D-206), the content revision of each program, `contentRevision`
+// beside its number, name and content (D-442), and the real moment the game was made, `madeAtMs`
+// (D-04, D-386). It holds no judging: the browser remembers the judgings in its own storage and the
+// game state is whole without them (D-441). It holds the four items the data had then, and no
+// minute counted to „Wytwórz” or „Opatrz”; the game refuses it as another version since version 10.
+//
+// The document of the current version, version 10, is that of version 9 with the bandage, the item
+// that no map holds, and the two ordinary actions „Wytwórz” and „Opatrz” (D-443, D-206): the
+// backpacks hold the bandage beside the four items, the keys of `minutesByAction` hold `craft` and
+// `tend`, and programs, a copy and its base, an earning loop's program and the activities hold
+// rules of both verbs with the bandage as their target. It fills every optional branch of the game
+// state, the new ones among them: the chest, the Understanding, the report's chest and the trip
+// lists naming the bandage, programs of content revision 0 and above, and an earning loop whose two
+// counts stand above 0 with the run below the longest. It also fills the others: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
-// plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
+// plan, known trees, practice of the map run and of its combat, and ranks bought; an
 // earning loop with an activity going on; a stopped earning loop that gathered practice; and report lines
 // open, stopped away and stopped in the open game. `HEADQUARTERS` below holds the counts beside a
 // program of the list, which a game state holds only outside a map run, and an earning loop in a
 // combat going on, with no manual map run. Its map run is written paused, so the load's pause
 // changes nothing in it. A change of the game state's shape makes the load refuse this document; it
 // is rewritten only together with a raised version, or while no saved game state of the current
-// version exists anywhere. The content revision and the moment of the game are added to it without a
-// raise of the version, since version 9 was raised for the counts and no saved game state of version 9
-// exists anywhere: the change has not reached a server.
+// version exists anywhere.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -634,13 +640,13 @@ const DOCUMENT_V3 = {
 };
 
 /**
- * The record of the map run of the document, written out by hand: 212 game minutes of which 5 are
+ * The record of the map run of the document of version 4, written out by hand: 212 game minutes of which 5 are
  * the fight the map run's last combat tells of (game minutes 191 to 195, attacked at 190), the
  * longest streak of 40 above the streak going on (16) and below the game minute, and the sticks the
  * character took from the chest at the start (the backpack holds 4 sticks, 2 berries and 1 moss
  * now; the comments of the document give the 6 sticks the chest held before the map run took 4).
  */
-const RUN_RECORD = {
+const RUN_RECORD_V4 = {
   longestStreak: 40,
   minutesByAction: {
     explore: 40,
@@ -665,7 +671,7 @@ const DOCUMENT_V4 = {
   version: 4,
   game: {
     ...DOCUMENT_V3.game,
-    run: { ...DOCUMENT_V3.game.run, ...RUN_RECORD },
+    run: { ...DOCUMENT_V3.game.run, ...RUN_RECORD_V4 },
   },
 };
 
@@ -739,13 +745,15 @@ const countedLoop = (loop, inARow, loopRecord) => ({
 });
 
 /**
- * The document of the current version, version 9: version 8 with the two counts of Ola's earning loop,
- * 2 map runs completed in a row below its loop record of 3, the three runs it completed, the content
- * revision of each program (0 for the program made with the game, 4 for the one saved four times with
- * other content) and the real moment the game was made, before the save. It holds no judging: the
- * browser remembers the judgings in its own storage, and the game state is whole without them (D-441).
+ * The document of version 9: version 8 with the two counts of Ola's earning loop, 2 map runs
+ * completed in a row below its loop record of 3, the three runs it completed, the content revision
+ * of each program (0 for the program made with the game, 4 for the one saved four times with other
+ * content) and the real moment the game was made, before the save. It holds no judging: the browser
+ * remembers the judgings in its own storage, and the game state is whole without them (D-441). Its
+ * backpacks hold the four items of the data then and its record counts no minute to „Wytwórz” or
+ * „Opatrz”; the game refuses it as another version since version 10.
  */
-const DOCUMENT = {
+const DOCUMENT_V9 = {
   version: 9,
   game: {
     ...DOCUMENT_V8.game,
@@ -758,6 +766,162 @@ const DOCUMENT = {
   },
 };
 
+/** `rules` of the first group of `program`, then the rules added to its end and the next rule number. */
+function withRules(program, added, nextRuleId) {
+  const [group, ...others] = program.groups;
+  return {
+    ...program,
+    groups: [{ ...group, rules: [...group.rules, ...added] }, ...others],
+    nextRuleId,
+  };
+}
+
+/** The rule making a bandage, taken when fewer than 2 are held, and the rule tending with one, below 40 health. */
+const craftRule = (id) => ({
+  id,
+  condition: { kind: "itemBelow", item: "bandage", value: 2 },
+  action: { kind: "craft", item: "bandage" },
+});
+const tendRule = (id) => ({
+  id,
+  condition: { kind: "healthBelow", value: 40 },
+  action: { kind: "tend", item: "bandage" },
+});
+
+/**
+ * Program 3 with the two verbs: „Wytwórz” (rule 4) and „Opatrz” (rule 5) added to the end of its first
+ * group, and the bandage on its take list, after the berries.
+ */
+const PROGRAM_10 = {
+  ...withRules(PROGRAM_3, [craftRule(4), tendRule(5)], 6),
+  tripPlan: {
+    take: [
+      { item: "berry", count: 2 },
+      { item: "bandage", count: 1 },
+    ],
+    bring: [{ item: "stick", count: 12 }],
+  },
+};
+
+/** The base of the copy with the two verbs, the rules 4 and 5 after its three. */
+const COPY_BASE_10 = withRules(COPY_BASE, [craftRule(4), tendRule(5)], 6);
+
+/** The copy: the base with its two verbs and the rule 6 the player added, lighting an item. */
+const COPY_PROGRAM_10 = withRules(
+  COPY_BASE_10,
+  [{ ...COPY_PROGRAM.groups[0].rules[3], id: 6 }],
+  7,
+);
+
+/** An activity going on, at the game minute 40 of a run, ten game minutes long, of the rule `ruleId` doing `action`. */
+const activityOf = (ruleId, action) => ({
+  activity: { kind: "rule", ruleId, action },
+  startMinute: 40,
+  endMinute: 50,
+  stepTo: null,
+});
+
+/** The map run of an earning loop of version 10: its backpack holds no bandage, and it is tending one. */
+function loopRun10(id) {
+  const run = loopRun(id);
+  return {
+    ...run,
+    character: {
+      ...run.character,
+      backpack: { ...run.character.backpack, bandage: 0 },
+    },
+    current: activityOf(5, { kind: "tend", item: "bandage" }),
+  };
+}
+
+/** An earning loop of version 10: in its fourth run, three completed, with the content of program 10. */
+const loopOf10 = (id) => ({
+  ...loopOf(id),
+  program: PROGRAM_10,
+  run: loopRun10(id),
+});
+
+/**
+ * The record of the map run of the document of the current version, written out by hand: 212 game
+ * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage and
+ * 5 the tending with one, the longest streak of 40 above the streak going on (16) and below the game
+ * minute, and the sticks the character took from the chest at the start.
+ */
+const RUN_RECORD = {
+  longestStreak: 40,
+  minutesByAction: {
+    explore: 40,
+    wander: 30,
+    walkTo: 20,
+    walkToCampfire: 10,
+    gather: 55,
+    patrol: 0,
+    craftCampfire: 20,
+    lightCampfire: 5,
+    lightItem: 0,
+    feedCampfire: 5,
+    eat: 5,
+    tend: 5,
+    craft: 10,
+    wait: 2,
+    combat: 5,
+  },
+  enteredWith: [{ item: "stick", count: 4 }],
+};
+
+/**
+ * The document of the current version, version 10: version 9 with the bandage. The backpack of the
+ * map run holds one and the chest one, Ola's earning loop is tending one with its backpack at none,
+ * the programs, the copy and its base and the earning loop's program hold rules of „Wytwórz” and
+ * „Opatrz” with the bandage as their target, the map run is making a bandage, the record counts game
+ * minutes to both verbs, the Understanding holds both actions and the bandage, and the open line of
+ * the report holds two bandages in its chest. The counts stand beside the rules of the copy, six of them.
+ */
+const DOCUMENT = {
+  version: 10,
+  game: {
+    ...DOCUMENT_V9.game,
+    programs: [
+      DOCUMENT_V9.game.programs[0],
+      { ...DOCUMENT_V9.game.programs[1], program: PROGRAM_10 },
+    ],
+    understanding: {
+      ...DOCUMENT_V9.game.understanding,
+      actions: [...DOCUMENT_V9.game.understanding.actions, "tend", "craft"],
+      items: [...DOCUMENT_V9.game.understanding.items, "bandage"],
+    },
+    ruleCounts: { 1: 3, 2: 9, 3: 4, 4: 0, 5: 0, 6: 0 },
+    team: {
+      ...DOCUMENT_V9.game.team,
+      chest: { pieces: { stick: 2, berry: 0, bandage: 1 } },
+    },
+    run: {
+      ...DOCUMENT_V9.game.run,
+      ...RUN_RECORD,
+      character: {
+        ...DOCUMENT_V9.game.run.character,
+        backpack: { stick: 4, berry: 2, moss: 1, fiber: 0, bandage: 1 },
+      },
+      current: {
+        ...activityOf(4, { kind: "craft", item: "bandage" }),
+        startMinute: 210,
+        endMinute: 220,
+      },
+      copy: {
+        ...DOCUMENT_V9.game.run.copy,
+        program: COPY_PROGRAM_10,
+        base: COPY_BASE_10,
+      },
+    },
+    loops: { 2: countedLoop(loopOf10(2), 2, 3) },
+    awayReport: DOCUMENT_V9.game.awayReport.map((line) =>
+      line.characterId === 2
+        ? { ...line, chest: { ...line.chest, bandage: 2 } }
+        : line,
+    ),
+  },
+};
+
 /**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on, and the team's resurrection with no use spent and
@@ -766,7 +930,7 @@ const DOCUMENT = {
  * the page gives none.
  */
 const HEADQUARTERS = {
-  version: 9,
+  version: 10,
   game: {
     programs: [
       { id: 1, name: "Program", program: PROGRAM_1, contentRevision: 1 },
@@ -809,9 +973,9 @@ const HEADQUARTERS = {
     realMsCarry: 0,
     loops: {
       1: {
-        ...countedLoop(loopOf(1), 3, 3),
+        ...countedLoop(loopOf10(1), 3, 3),
         run: {
-          ...loopRun(1),
+          ...loopRun10(1),
           current: null,
           activeCombat: {
             creatureId: "wolf",
@@ -850,13 +1014,13 @@ test("the server's save of the current version loads into the game it holds, its
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const save = {
-    version: 9,
+    version: 10,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 9 is the current version since the raise, so 8 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 8 }), {
+  // D-206: 10 is the current version since the raise, so 9 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 9 }), {
     ok: false,
     reason: "version",
   });
@@ -1075,8 +1239,8 @@ test("the team's moment of the next return below zero loads, as it is a safe int
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
-  // D-206: 9 is the current version since the raise, so 8 and 10 stand in for another one.
-  for (const version of [0, 7, 8, 10, -1]) {
+  // D-206: 10 is the current version since the raise, so 9 and 11 stand in for another one.
+  for (const version of [0, 8, 9, 11, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -1084,14 +1248,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 10 of another shape",
-    { version: 10, game: "Las" },
+    "version 11 of another shape",
+    { version: 11, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 10 with an archetype absent from the data",
+    "version 11 with an archetype absent from the data",
     changed((document) => {
-      document.version = 10;
+      document.version = 11;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -1204,13 +1368,12 @@ test("the document of version 7 is refused as version, whatever its game holds",
 // invariant: save-version
 // D-206: the document of version 8 is discarded whole, whatever it holds, though its game state is
 // sound but for the two counts of an earning loop, the content revision of each program and the
-// moment of the game it lacks; the current version is the one after it, raised once for the changes
-// of the shape (D-241, D-442, D-04). The same game under the current version is no document of it,
-// as it lacks the new keys, and is refused as shape.
+// moment of the game it lacks; version 9 is the one after it, raised once for the changes of the
+// shape (D-241, D-442, D-04). The same game under the current version is no document of it, as it
+// lacks the new keys, and is refused as shape.
 test("the document of version 8 is refused as version, whatever its game holds", () => {
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   assert.equal(DOCUMENT_V8.version, 8);
-  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V8.version + 1);
   assertRefused(
     "the document of version 8",
     structuredClone(DOCUMENT_V8),
@@ -1224,6 +1387,32 @@ test("the document of version 8 is refused as version, whatever its game holds",
   assertRefused(
     "the game of version 8 held under the current version",
     { ...structuredClone(DOCUMENT_V8), version: SAVED_GAME_VERSION },
+    "shape",
+  );
+});
+
+// invariant: save-version
+// D-206: the document of version 9 is discarded whole, whatever it holds, though its game state is
+// sound but for the bandage its backpacks lack and the two kinds its game minutes by action lack, which
+// the bandage and the actions „Wytwórz” and „Opatrz” add (D-443); the current version is the one
+// after it. The same game under the current version is no document of it, and is refused as shape.
+test("the document of version 9 is refused as version, whatever its game holds", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  assert.equal(DOCUMENT_V9.version, 9);
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V9.version + 1);
+  assertRefused(
+    "the document of version 9",
+    structuredClone(DOCUMENT_V9),
+    "version",
+  );
+  assertRefused(
+    "the document of version 9 with the bandage of the current version",
+    { ...structuredClone(DOCUMENT), version: 9 },
+    "version",
+  );
+  assertRefused(
+    "the game of version 9 held under the current version",
+    { ...structuredClone(DOCUMENT_V9), version: SAVED_GAME_VERSION },
     "shape",
   );
 });
@@ -1995,7 +2184,7 @@ const CRAFTED = {
     (document.game.run.enteredWith[3] = { item: "berry", count: 1 }),
   "a key added to what it entered with": (document) =>
     (document.game.run.enteredWith.extra = 1),
-  // The game writes the entries in the order of the data's items (stick, berry, moss, fiber) and
+  // The game writes the entries in the order of the data's items (stick, berry, moss, fiber, bandage) and
   // their counts sum to at most the character's carrying capacity (15 in this document).
   "what it entered with out of the order of the data's items": (document) =>
     (document.game.run.enteredWith = [
@@ -2519,6 +2708,179 @@ const CRAFTED = {
     (document.game.programs[0].program.groups = nested(100000)),
 };
 
+// The bandage and the two verbs „Wytwórz” and „Opatrz” (D-443): a backpack holds exactly the data's
+// items, the bandage among them; no tile holds a bandage, which is no resource; and the game minutes
+// by action hold exactly the kinds of the data's ordinary actions, both verbs among them.
+Object.assign(CRAFTED, {
+  "the map run's backpack without the bandage": (document) =>
+    delete document.game.run.character.backpack.bandage,
+  "an earning loop's backpack without the bandage": (document) =>
+    delete olaLoop(document).run.character.backpack.bandage,
+  "the map run's backpack of version 9: the four items alone": (document) =>
+    (document.game.run.character.backpack = {
+      stick: 4,
+      berry: 2,
+      moss: 1,
+      fiber: 0,
+    }),
+  "the map run's backpack with a bandage count below 0": (document) =>
+    (document.game.run.character.backpack.bandage = -1),
+  "the map run's backpack with a fractional bandage count": (document) =>
+    (document.game.run.character.backpack.bandage = 0.5),
+  "the map run's backpack with a bandage count as text": (document) =>
+    (document.game.run.character.backpack.bandage = "1"),
+  "the map run's backpack with a bandage count of none": (document) =>
+    (document.game.run.character.backpack.bandage = null),
+  "the map run's backpack with a bandage count beyond the safe integers": (
+    document,
+  ) => (document.game.run.character.backpack.bandage = 2 ** 53),
+  "the map run's backpack with the bandage and an item the data lack": (
+    document,
+  ) => (document.game.run.character.backpack.sword = 0),
+  "a tile whose stock names the bandage": (document) =>
+    (document.game.run.tiles[2].stock = { bandage: 1 }),
+  "a tile whose stock names the bandage beside a resource": (document) =>
+    (document.game.run.tiles[1].stock = { stick: 12, berry: 8, bandage: 1 }),
+  "a tile of an earning loop's map run whose stock names the bandage": (
+    document,
+  ) => (olaLoop(document).run.tiles[2].stock = { bandage: 1 }),
+  "what it entered with holding the bandage before the sticks": (document) =>
+    (document.game.run.enteredWith = [
+      { item: "bandage", count: 1 },
+      { item: "stick", count: 4 },
+    ]),
+  "the chest holding a bandage count below 0": (document) =>
+    (document.game.team.chest.pieces.bandage = -1),
+  "the chest holding a fractional bandage count": (document) =>
+    (document.game.team.chest.pieces.bandage = 0.5),
+  "the chest holding the bandage beyond its capacity": (document) =>
+    (document.game.team.chest.pieces = { stick: 60, bandage: 1 }),
+  "the game minutes by action without „Wytwórz”": (document) => {
+    delete document.game.run.minutesByAction.craft;
+    document.game.run.minutesByAction.gather += 10;
+  },
+  "the game minutes by action without „Opatrz”": (document) => {
+    delete document.game.run.minutesByAction.tend;
+    document.game.run.minutesByAction.gather += 5;
+  },
+  "the game minutes by action of version 9: neither verb": (document) => {
+    delete document.game.run.minutesByAction.craft;
+    delete document.game.run.minutesByAction.tend;
+    document.game.run.minutesByAction.gather += 15;
+  },
+  "the game minutes by action with „Wytwórz” below 0": (document) => {
+    document.game.run.minutesByAction.craft = -1;
+    document.game.run.minutesByAction.gather = 66;
+  },
+  "the game minutes by action with „Opatrz” fractional": (document) => {
+    document.game.run.minutesByAction.tend = 4.5;
+    document.game.run.minutesByAction.gather = 55.5;
+  },
+  "the game minutes by action with „Wytwórz” as text": (document) =>
+    (document.game.run.minutesByAction.craft = "10"),
+  "the game minutes by action with „Opatrz” of none": (document) =>
+    (document.game.run.minutesByAction.tend = null),
+  "the game minutes by action with „Wytwórz” beyond the safe integers": (
+    document,
+  ) => (document.game.run.minutesByAction.craft = 2 ** 53),
+  "the game minutes by action summing to less with „Opatrz” counted": (
+    document,
+  ) => (document.game.run.minutesByAction.tend = 4),
+});
+
+/**
+ * The places an action of „Wytwórz” or „Opatrz” stands in a document: a rule of a program, of a copy,
+ * of a base and of an earning loop's program, and the activity going on of the map run and of an
+ * earning loop. Each sets the action `action` of `kind` where the document has one of that kind.
+ */
+const VERB_PLACES = {
+  "a program": (document, kind, action) =>
+    (document.game.programs[1].program.groups[0].rules[
+      kind === "craft" ? 2 : 3
+    ].action = action),
+  "a copy": (document, kind, action) =>
+    (document.game.run.copy.program.groups[0].rules[
+      kind === "craft" ? 3 : 4
+    ].action = action),
+  "a base": (document, kind, action) =>
+    (document.game.run.copy.base.groups[0].rules[
+      kind === "craft" ? 3 : 4
+    ].action = action),
+  "an earning loop's program": (document, kind, action) =>
+    (olaLoop(document).program.groups[0].rules[
+      kind === "craft" ? 2 : 3
+    ].action = action),
+  "the activity going on": (document, _kind, action) =>
+    (document.game.run.current.activity.action = action),
+  "an earning loop's activity going on": (document, _kind, action) =>
+    (olaLoop(document).run.current.activity.action = action),
+};
+
+const VERB_NAMES = { craft: "„Wytwórz”", tend: "„Opatrz”" };
+
+/** The targets no verb takes: the items without its property, an identifier the data lack, a value no identifier. */
+const NOT_TARGETS = {
+  craft: ["moss", "stick", "fiber", "berry"],
+  tend: ["moss", "stick", "fiber", "berry"],
+};
+
+const NOT_ITEMS = {
+  "an identifier the data lack": "sword",
+  "the key every object inherits": "toString",
+  "the key constructor": "constructor",
+  "an empty identifier": "",
+  "the identifier in capitals": "BANDAGE",
+  "the identifier with a space after it": "bandage ",
+  "an item of none": null,
+  "an item as a number": 1,
+  "an item as a list": ["bandage"],
+  "an item as an object": { id: "bandage" },
+  "an item as a truth value": true,
+};
+
+for (const [place, set] of Object.entries(VERB_PLACES)) {
+  for (const kind of ["craft", "tend"]) {
+    const verb = VERB_NAMES[kind];
+    const refused = {
+      ...Object.fromEntries(
+        NOT_TARGETS[kind].map((item) => [
+          `${item}, which the data give no ${kind === "craft" ? "recipe" : "healing"}`,
+          { kind, item },
+        ]),
+      ),
+      ...Object.fromEntries(
+        Object.entries(NOT_ITEMS).map(([name, item]) => [name, { kind, item }]),
+      ),
+      "no item": { kind },
+      "a field beyond its kind and item": {
+        kind,
+        item: "bandage",
+        resource: "moss",
+      },
+    };
+    for (const [what, action] of Object.entries(refused))
+      CRAFTED[`${verb} in ${place} with ${what}`] = (document) =>
+        set(document, kind, action);
+  }
+}
+
+// invariant: save-version
+test("each place of an action holds „Wytwórz” and „Opatrz” with the bandage, and loads", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
+  for (const [place, set] of Object.entries(VERB_PLACES)) {
+    for (const kind of ["craft", "tend"]) {
+      const document = changed((copy) =>
+        set(copy, kind, { kind, item: "bandage" }),
+      );
+      assert.deepEqual(
+        loadSavedGame(document),
+        { ok: true, state: document.game },
+        `${VERB_NAMES[kind]} in ${place}`,
+      );
+    }
+  }
+});
+
 // invariant: save-version
 test("a crafted document of the current version is refused whole as shape", () => {
   // decision: D-403 "The load refuses a saved game state whose Understanding does not hold the condition „Zawsze” and the action „Eksploruj”, as a saved game state of a shape the game does not admit"
@@ -2600,6 +2962,7 @@ test("a record at the edges of what it admits loads", () => {
         { item: "berry", count: 1 },
         { item: "moss", count: 1 },
         { item: "fiber", count: 1 },
+        { item: "bandage", count: 1 },
       ]),
   };
   for (const [name, change] of Object.entries(edges)) {
