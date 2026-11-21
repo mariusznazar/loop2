@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, keeps in the browser's lasting storage the one lasting state it holds, the judgings the player has made of characters, programs and maps, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
+The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, keeps in the browser's lasting storage the one lasting state it holds, the last judging of each character, program and map of a game, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css

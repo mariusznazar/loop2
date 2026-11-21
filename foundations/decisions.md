@@ -88,7 +88,14 @@ game of an account from another (D-441).
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: simulation-isolation · simulation-inputs · minute-span-split. tests: the browser's
-  source, the simulation's included, held in TypeScript files alone. For whether the game runs in
+  source, the simulation's included, held in TypeScript files alone; a new game holding the moment
+  it is made with; each path of the page that makes a new game — an account with no saved game
+  state, a load refused as another version, as an archetype the data lack or as shape, a conflict
+  reload that finds no save and the reset of „Zacznij od zera” — giving it the clock's reading, and
+  a loaded game keeping its own moment through the save and the load; the screen Mapy drawing the
+  mark beside „Program:” from the judging the browser keeps in its lasting storage, under the
+  account's identifier and the moment the game state names its game by, again after a reload and
+  none under another account or another game's moment. For whether the game runs in
   the browser, for the shape of the simulation's functions that pass game time and for how the
   browser view uses the game state, an agent compares the change with the part no invariant and no
   test holds:
@@ -107,10 +114,7 @@ game of an account from another (D-441).
     the copy from the copy before the player's act and the copy after it, and the entry of a loss of
     the streak from an event the simulation returned; the scene starting the turn of a mage that is
     walking from the place the browser gives for it; the game view keeping whether the end-of-run
-    window is open as a memory of the page; the screen Mapy drawing the mark beside „Program:” from
-    a judging the browser keeps in its lasting storage, read under the account's identifier and the
-    moment the game state names its game by; the page passing the clock's reading to the function
-    that makes a new game
+    window is open as a memory of the page
   - violates: a screen of the game written as a Godot scene; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
@@ -3922,11 +3926,10 @@ the game discarded.
   version read one by one, a program the check refuses skipped, and the pull appending the others;
   a document whose character names an archetype missing from the data refused whole, and starting
   a new game; the saved document holding no judging, and a document of the current version holding
-  one refused whole. An agent compares a change with the part no invariant and no test holds:
-  - complies: a saved game state of version 8 discarded, the new game made at another moment and
-    showing no badge beside „Program:” though the browser holds judgings of the discarded game
-  - violates: the judgings of the discarded game shown beside the same character, program and map
-    numbers of the new game
+  one refused whole; the judgings the browser remembers for a game discarded as another version, as
+  an archetype the data lack or as shape, and for the game before „Zacznij od zera”, gone from the
+  storage once the game started anew opens them, that game made at the moment of the clock, and the
+  same triple judged in a game made at another moment showing no mark.
 - **Origin:** none
 
 *Rationale:* loading a saved game state whose shape the game no longer describes gives faults that
@@ -8381,15 +8384,22 @@ The copy of a map run and the program of an earning loop hold content alone and 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-441
-- **Verification:** an agent compares a change with the decision:
-  - complies: the threshold of a rule changed and saved, raising the program's content revision from
-    3 to 4; that program renamed and staying at 4; two of its rule groups swapped and saved, raising
-    it to 5; a copy saved as a new program, and a program pulled from a previous save whose item
-    held 7, starting at 0
-  - violates: a rename raising the content revision; a save that swaps two rules leaving it as it
-    was; a program pulled from a previous save keeping the content revision its item held; the
-    content revision raised at every save, whatever changed; the server raising it at an accepted
-    save
+- **Verification:** tests: the content revision 0 of the first program of a new game, of a program
+  created, of a program appended, of a copy saved as a new program and of a program pulled from a
+  previous save whose item held another, the programs of an account of the balance instrument's
+  campaign included; one higher after a save by the program editor, by the program set for a send
+  and by a save of the copy into its program, each of a rule's action changed, a rule added or
+  removed, two rules or two rule groups swapped, a group's condition changed or the take or bring
+  list changed, and after the rule the game writes at the first chill, in that program alone; raised
+  twice by a change to another content and back; left as it is by a rename, by a save of the
+  content the program holds or with the counters that number new rules and groups alone changed, by
+  a save of a copy whose content differs only in the order of its keys or in those counters, and by
+  a pick, a send and the deletion of another program; a content revision on the copy of a map run
+  or on the program of an earning loop refused by the load. For what the server does with the
+  content revision, an agent compares a change with the part no test holds:
+  - complies: a save the server accepts leaving the content revision of each program as the browser
+    wrote it
+  - violates: the server raising it at an accepted save
 - **Origin:** none
 
 *Rationale:* a judging the browser remembers (D-441) speaks of the content it judged, and a change of the rules, the rule groups or the trip plan erases it (D-440), a change made back to the content judged included; a count raised at every change of the content tells that on every device and after every reload, since it travels in the saved game state, while a rename, which changes nothing the character does, keeps the judging. The count rises where every write of a program's content passes, so no act that writes content can miss it, and it needs no hash and no clock. Accepted with it: one more number in each saved program and in the load; and where a change whose save never reached the server is lost, a judging the browser made after it carries a content revision the server's game never had, so if the program later reaches the same content revision with other content, with no judging of its triple between, that judging stands beside it until the next judging of the triple or the next change of the program, which D-441 narrows and accepts.
@@ -10309,16 +10319,16 @@ run, `#/postac/{n}/przejscie` with {n} the number of the map run's character (D-
   alone, another character's staying active; „Kup” on the screen Postać inactive while the map run
   waits and after its end; under the buttons of each character in „Kto idzie” the sentence naming
   the map from the data, gone after „Zakończ”; at „Umiejętności” the sentence that ranks are bought
-  after the end of the map run. For what Siedziba and the screen Postać keep active, and for the
-  link in the sentence under the buttons, an agent compares a change with the part no test holds:
+  after the end of the map run; while the map run waits and after its end, „Wróć do niego i je
+  zakończ, żeby wysłać postać.” of the sentence under the buttons of every character a link to the
+  screen of that map run, `#/postac/{n}/przejscie` of the map run's character and not of the row's,
+  the rest of the sentence standing before it as text, and the link gone after „Zakończ”. For what
+  Siedziba and the screen Postać keep active, an agent compares a change with the part no test
+  holds:
   - complies: while a map run of Las waits in a pause, „Załóż” on Siedziba creating a character and
-    „Zatrzymaj” on the screen Postać stopping another character's earning loop; while a map run of
-    character 2 on „Las — głębiej” waits, „Wróć do niego i je zakończ, żeby wysłać postać.” under
-    the buttons of every character on the card of Las leading to `#/postac/2/przejscie`
+    „Zatrzymaj” on the screen Postać stopping another character's earning loop
   - violates: Siedziba or the screen Postać blocking an act the simulation allows, such as „Załóż”
-    or „Zatrzymaj”, while a manual map run waits or has ended; that sentence standing as plain text
-    under the buttons of a character, or its link leading to the screen Postać of the character of
-    its row
+    or „Zatrzymaj”, while a manual map run waits or has ended
 - **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
@@ -11932,20 +11942,33 @@ Where the browser refuses its lasting storage, or refuses to write a value, the 
 The unsaved game state stays out of the browser's lasting storage as D-211 gives, and the remembered judgings stay there after „Wyloguj”, holding the account's identifier, numbers of characters and programs, identifiers of maps, kinds of results and items with their counts, and no email address, no name and nothing the game loads.
 
 - **Scope:** browser-view · simulation
-- **Based on:** https://html.spec.whatwg.org/multipage/webstorage.html § 12.1 Introduction — "The second storage mechanism is designed for storage that spans multiple windows, and lasts beyond the current session."; read 2026-11-21 · same page § 12.2.1 The Storage interface, `setItem` — "Throws a `QuotaExceededError` if the new value couldn't be set."; read 2026-11-21
+- **Based on:** local-storage-lasting · storage-set-item-refusal
 - **Relations:** derives from D-440 · derives from D-04
-- **Verification:** invariants: judging-cache-reading. An agent compares a change with the part no
-  invariant holds:
-  - complies: a judging made, the page reloaded and the badge of that character, program and map
-    standing again with no judging made; a program saved with other rules and then with the rules it
-    had, showing no mark until it is judged; a game made by „Zacznij od zera” showing no mark the
-    game before it had; a browser that refuses `localStorage` showing a judging until the page is
-    reloaded, with no sentence; a game built after a refused save showing no mark this browser had
-    for it; the judgings of the account kept after „Wyloguj” and shown at the next sign-in
-  - violates: a judging written into the game state or the saved game state; a key naming the
-    account by its email address; a judging of one account or of one game shown in another; an
-    exception of `localStorage` reaching the handling of D-323; the judgings cleared at „Wyloguj”;
-    a function of the simulation reading or writing the browser's storage
+- **Verification:** invariants: judging-cache-reading. tests: a judging stored as one value under
+  one key of the account's identifier, the game's moment, the character, the program and the map,
+  holding the kind of each of the twelve results, the equipment, and the content revision and the
+  generation number of the game state the judging read, read again by a cache opened anew on the
+  same storage and shown again beside „Program:” after a reload of the page with no judging made; a
+  value written by hand in that form read, the edges of each number admitted; an account whose
+  identifier holds the separator of a key sharing no judging with another; two caches on one
+  storage, as two tabs, reading each other's judgings, the last write standing on one triple; a
+  saved game state holding a judging refused whole; a judging standing beside „Program:” only while
+  its character is on the team at its generation number and its program on the list at its content
+  revision, no mark after an edit that changes the program's content, also after it is changed
+  back, nor after the character's generation number grows; a value of another form, of results
+  that do not number the seeds of a judging, of another account, of another game or under a key of
+  another version read as none, throwing nothing and staying where it is; a triple nothing is
+  remembered for read as none, as on another device; a browser that refuses its storage, any call
+  of it or a write showing the judging for the open page alone, with no sentence of a failure and
+  nothing thrown, the stored value of the triple removed, and a write that succeeds later answering
+  from the storage again; the opening removing the account's values under another game's moment,
+  those of this game above the loaded game's content revision or generation number or under a
+  program or character number it has not yet given, and, after a save refused for another
+  browser's, every value of this game, leaving the values of other accounts and of other versions,
+  and throwing nothing where the storage refuses to list its keys or remove a value. For what stays
+  at „Wyloguj”, an agent compares a change with the part no invariant and no test holds:
+  - complies: the judgings of the account kept after „Wyloguj” and shown at the next sign-in
+  - violates: the judgings cleared at „Wyloguj”
 - **Origin:** none
 
 *Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number, or under a program or character number the loaded game has not yet given, can come only from a save that never reached the server (the game state holds the next program number and the next character number, so a number it has not yet given is one only a lost save made), so all of them go when the game opens, and a program or a character made later cannot meet a value of the number it takes; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and a judging made after a change lost with a page closed while its save failed (D-208), or with a save refused at „Wyloguj” (D-97), can stand beside other content that reaches the same content revision (D-442), until the next judging of the triple or the next change of the program.
