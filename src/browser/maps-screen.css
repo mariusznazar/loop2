@@ -7,10 +7,11 @@
 
 /*
  * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
- * columns of Programy (in styles.css), one under the other in a window under 720 px. The list of maps is
- * drawn as the list of programs is: each row a link in `text`, the picked one in `text-strong` with a
- * bar in `selected` at its left, a row under the pointer on `highlight`; „rozwiązana” after the name
- * in `positive` (D-134). Focus is the one :focus-visible rule of styles.css.
+ * columns of Programy (in styles.css), one under the other in the phone layout, a window under 1280 px
+ * (D-396, D-282). The list of maps is drawn as the list of programs is: each row a link in `text`, the
+ * picked one in `text-strong` with a bar in `selected` at its left, a row under the pointer on
+ * `highlight`; „rozwiązana” after the name in `positive` (D-134). Focus is the one :focus-visible rule
+ * of styles.css.
  */
 .maps-list-items {
   list-style: none;
@@ -303,4 +304,29 @@
 .judging-note {
   margin: 0;
   color: var(--text-secondary);
+}
+
+/*
+ * The phone layout of Mapy (D-396; styleguide rule "Everything is done by touch, and every control holds
+ * the touch target"). Two links of this screen are controls by themselves and hold the minimum of the touch
+ * target, `--touch-target-min`, high and wide: a row of the list of maps, a whole-row link to the card of a
+ * map, and the name of a character in „Kto idzie”, which stands alone at the head of its lines as the
+ * way to the screen Postać (D-329). Their text stands at the middle of the target, the row's `rozwiązana`
+ * beside the name; a long name of a character still breaks in its column. The link in the sentence
+ * about a map run that waits (`maps-who-run-link`) is a link inside a running sentence and keeps its size.
+ * The buttons and the select list of „Kto idzie” are shared controls that hold the minimum in styles.css.
+ */
+@media (width < 1280px) {
+  .maps-list-item {
+    box-sizing: border-box;
+    align-items: center;
+    min-height: var(--touch-target-min);
+  }
+
+  .maps-who-name {
+    display: flex;
+    align-items: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
 }

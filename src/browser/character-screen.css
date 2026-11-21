@@ -24,10 +24,14 @@
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-/* The phone layout (D-396, D-282): in a window narrower than 1280 px the left area stands over the right one. */
+/*
+ * The phone layout (D-396, D-282): in a window narrower than 1280 px the left area stands over the right
+ * one. The one column may shrink below the least width of what stands in it (`minmax(0, 1fr)`), so
+ * nothing in an area widens the screen past the window.
+ */
 @media (width < 1280px) {
   .screen.character-areas {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -239,4 +243,52 @@
   align-items: baseline;
   gap: var(--space-xs) var(--space-s);
   margin-bottom: var(--space-xs);
+}
+
+/*
+ * The phone layout of the row of a tree (D-396, D-199; styleguide rules "Nothing scrolls to the side in the
+ * phone layout, and no text crosses its frame" and "Everything is done by touch, and every control holds the
+ * touch target"): the six columns of the computer layout are wider than the area, 318 px at a page area
+ * 360 px wide, so the row takes two lines. The first line holds the fold, the name with „+{n} pkt czeka w
+ * pętli” and „{k} pkt”; the second holds „poziom {p}”, the bar of practice and „{wprawa} / {próg}” under
+ * the name, the bar taking what the two texts leave. The fold, a shared button, keeps its touch target at
+ * the left of the two lines and each cell of the row stays what it is above: the same texts, the same
+ * roles, the same bar. The area names are of this rule alone.
+ */
+@media (width < 1280px) {
+  .character-tree-row {
+    grid-template-columns: auto auto minmax(4em, 1fr) auto;
+    grid-template-areas:
+      "fold name name points"
+      "fold level bar amount";
+    gap: var(--space-xs) var(--space-s);
+  }
+
+  .character-tree-row > .button {
+    grid-area: fold;
+  }
+
+  .character-tree-name {
+    grid-area: name;
+  }
+
+  .character-tree-level {
+    grid-area: level;
+  }
+
+  .character-tree-bar {
+    grid-area: bar;
+  }
+
+  .character-tree-amount {
+    grid-area: amount;
+  }
+
+  .character-tree-points {
+    grid-area: points;
+  }
+
+  .character-branches {
+    padding-left: var(--space-m);
+  }
 }
