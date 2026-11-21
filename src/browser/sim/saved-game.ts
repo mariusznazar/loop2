@@ -487,14 +487,20 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
   const ids = new Set<ProgramId>();
   const names = new Set<string>();
   const programs = list(value).map((item): SavedProgram => {
-    const read = fields(item, ["id", "name", "program"]);
+    const read = fields(item, ["id", "name", "program", "contentRevision"]);
     const id = identity(read.id);
     const named = givenName(read.name);
     const folded = named.toLowerCase();
     if (id >= nextProgramId || ids.has(id) || names.has(folded)) refuse();
     ids.add(id);
     names.add(folded);
-    return { id, name: named, program: program(read.program) };
+    return {
+      id,
+      name: named,
+      program: program(read.program),
+      // Compared with nothing at the load: the count only rises from 0 (D-442, D-386).
+      contentRevision: count(read.contentRevision),
+    };
   });
   if (programs.length === 0) refuse();
   return programs;
@@ -1319,6 +1325,7 @@ const GAME_KEYS = [
   "awayReport",
   "judgings",
   "saveTimeMs",
+  "madeAtMs",
 ] as const;
 
 /**
@@ -1419,6 +1426,9 @@ function game(value: unknown): GameState {
     awayReport: awayReport(read.awayReport, records),
     judgings: rememberedJudgings(read.judgings, records),
     saveTimeMs: integer(read.saveTimeMs),
+    // Any safe integer, like the save time: the browser's clock when the game was made, compared with
+    // no clock here (D-386).
+    madeAtMs: integer(read.madeAtMs),
   };
 }
 

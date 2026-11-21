@@ -51,8 +51,8 @@ function twoPrograms(records = {}, game = withEdgeSolved(newKnowingGame())) {
   return {
     ...team.state,
     programs: [
-      { id: 1, name: "Program", program: EXPLORING },
-      { id: 3, name: "Las", program: WANDER_FIRST },
+      { id: 1, name: "Program", program: EXPLORING, contentRevision: 0 },
+      { id: 3, name: "Las", program: WANDER_FIRST, contentRevision: 0 },
     ],
     nextProgramId: 4,
     ...records,
@@ -64,7 +64,7 @@ test("a new game holds program 1, „Program”, with the empty rule group „Pr
   // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last"
   const state = newGame();
   assert.deepEqual(state.programs, [
-    { id: 1, name: "Program", program: EMPTY },
+    { id: 1, name: "Program", program: EMPTY, contentRevision: 0 },
   ]);
   assert.equal(state.nextProgramId, 2);
   assert.deepEqual(state.pickedPrograms, {});
@@ -245,8 +245,8 @@ test("the first chill writes „Zawsze → Eksploruj” into the copy, its base 
   const state = {
     ...twoPrograms({}, withEdgeSolved(newGame())),
     programs: [
-      { id: 1, name: "Program", program: EMPTY },
-      { id: 3, name: "Las", program: EMPTY },
+      { id: 1, name: "Program", program: EMPTY, contentRevision: 0 },
+      { id: 3, name: "Las", program: EMPTY, contentRevision: 0 },
     ],
   };
   const running = send(
@@ -268,8 +268,9 @@ test("the first chill writes „Zawsze → Eksploruj” into the copy, its base 
     base: written,
   });
   assert.deepEqual(chilled.programs, [
-    { id: 1, name: "Program", program: EMPTY },
-    { id: 3, name: "Las", program: written },
+    { id: 1, name: "Program", program: EMPTY, contentRevision: 0 },
+    // The rule the first chill wrote changed its content: one rise, and none for the other program.
+    { id: 3, name: "Las", program: written, contentRevision: 1 },
   ]);
 });
 

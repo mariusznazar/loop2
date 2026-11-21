@@ -88,8 +88,17 @@ export type Program = {
 /** Tells the player's programs apart; given once, never again after a deletion (D-165). */
 export type ProgramId = number;
 
-/** A program of the player's list: its number, its name and its content. */
-export type SavedProgram = { id: ProgramId; name: string; program: Program };
+/**
+ * A program of the player's list: its number, its name, its content and its content revision (D-442),
+ * which is 0 when the program is made and one higher at each save after which its rules, rule groups
+ * with their order or trip plan differ; the content revision is no part of the content.
+ */
+export type SavedProgram = {
+  id: ProgramId;
+  name: string;
+  program: Program;
+  contentRevision: number;
+};
 
 /** Why a typed program name is refused: nothing left after trimming, or another program's name. */
 export type ProgramNameRefusal = "empty" | "taken";
@@ -543,4 +552,9 @@ export type GameState = {
    * only; null in a game that never came from a save. Only the catch-up reads it, on a loaded state.
    */
   saveTimeMs: number | null;
+  /**
+   * The real moment the game was made (D-04, D-441), given by the page to `newGame`, 0 where none is
+   * given. It tells one game of an account from another; no function of the simulation reads it.
+   */
+  madeAtMs: number;
 };

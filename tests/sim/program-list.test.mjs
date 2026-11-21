@@ -39,7 +39,12 @@ const EMPTY = {
 };
 
 const listed = (...names) =>
-  names.map((name, index) => ({ id: index + 1, name, program: EMPTY }));
+  names.map((name, index) => ({
+    id: index + 1,
+    name,
+    program: EMPTY,
+    contentRevision: 0,
+  }));
 
 /** A knowing game with Ala (1) and Bartek (2) and the programs 1, 3 and 4 — 2 stands for a deleted one. */
 function team(extra = {}) {
@@ -50,9 +55,9 @@ function team(extra = {}) {
   return {
     ...made,
     programs: [
-      { id: 1, name: "Program", program: EXPLORING },
-      { id: 3, name: "Las", program: WANDERING },
-      { id: 4, name: "Noc", program: EMPTY },
+      { id: 1, name: "Program", program: EXPLORING, contentRevision: 0 },
+      { id: 3, name: "Las", program: WANDERING, contentRevision: 0 },
+      { id: 4, name: "Noc", program: EMPTY, contentRevision: 0 },
     ],
     nextProgramId: 5,
     ...extra,
@@ -95,6 +100,7 @@ test("a created program holds the empty group „Program” under „Zawsze”, 
     id: 5,
     name: "Program 2",
     program: EMPTY,
+    contentRevision: 0,
   });
   assert.deepEqual(
     state.programs.slice(0, 3).map(({ id }) => id),
@@ -264,10 +270,12 @@ test("Zakończ after the deletion of the copy's program clears the counts", () =
 test("an edit replaces the content of the program numbered, the others stay", () => {
   // decision: D-164 "A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop"
   const { state } = editProgram(team(), 3, EXPLORING);
+  // Program 3 held wandering, so its content differs and its content revision rises from 0 to 1.
   assert.deepEqual(state.programs[1], {
     id: 3,
     name: "Las",
     program: EXPLORING,
+    contentRevision: 1,
   });
   assert.deepEqual(state.programs[0].program, EXPLORING);
   assert.deepEqual(state.programs[2].program, EMPTY);
@@ -301,7 +309,7 @@ test("an edit reconciles the counts only where they stand beside the program edi
     ...base,
     programs: [
       base.programs[0],
-      { id: 3, name: "Las", program: two },
+      { id: 3, name: "Las", program: two, contentRevision: 0 },
       base.programs[2],
     ],
   };
@@ -514,7 +522,7 @@ test("an append changes nothing of the game state but the programs and the count
     ...before,
     programs: [
       ...before.programs,
-      { id: 5, name: "Las (2)", program: EXPLORING },
+      { id: 5, name: "Las (2)", program: EXPLORING, contentRevision: 0 },
     ],
     nextProgramId: 6,
   });

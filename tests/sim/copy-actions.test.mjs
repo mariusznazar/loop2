@@ -64,8 +64,8 @@ function withOthers(state) {
     ...state,
     programs: [
       state.programs[0],
-      { id: 3, name: "Wędrówka", program: WANDERING },
-      { id: 4, name: "Las", program: EXPLORING },
+      { id: 3, name: "Wędrówka", program: WANDERING, contentRevision: 0 },
+      { id: 4, name: "Las", program: EXPLORING, contentRevision: 0 },
     ],
     nextProgramId: 5,
   };
@@ -220,6 +220,7 @@ test("„Zapisz jako nowy program” adds the copy's content at the end of the l
     id: 5,
     name: "Nocna",
     program: EXPLORING_THEN_WANDERING,
+    contentRevision: 0,
   });
   assert.deepEqual(
     state.programs.slice(0, 3).map(({ id }) => id),

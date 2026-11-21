@@ -379,11 +379,19 @@ function startRun(
 /**
  * The game as it stands before anything is done: program 1, „Program”, with the empty rule group
  * „Program” under „Zawsze” and the next program number 2, a team with no character, an empty chest
- * and its resurrection with every use left, no map run.
+ * and its resurrection with every use left, no map run. `madeAtMs` is the real moment the page made
+ * the game, kept as it is and read by nothing in the simulation (D-04, D-441); 0 where none is given.
  */
-export function newGame(): GameState {
+export function newGame(madeAtMs = 0): GameState {
   return {
-    programs: [{ id: 1, name: FIRST_PROGRAM_NAME, program: emptyProgram() }],
+    programs: [
+      {
+        id: 1,
+        name: FIRST_PROGRAM_NAME,
+        program: emptyProgram(),
+        contentRevision: 0,
+      },
+    ],
     nextProgramId: 2,
     pickedPrograms: {},
     lastUsedPrograms: {},
@@ -410,6 +418,7 @@ export function newGame(): GameState {
     awayReport: [],
     judgings: {},
     saveTimeMs: null,
+    madeAtMs,
   };
 }
 

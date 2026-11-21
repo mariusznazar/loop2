@@ -371,20 +371,45 @@ export function rowProgram(
   );
 }
 
-/** The list with the content of the program numbered `id` replaced; the others stay. */
+/**
+ * Whether two contents differ in what a character does by a program: the rules, the rule groups in
+ * their order or the trip plan, compared as plain data, so the order in which an object's keys were
+ * made counts for nothing. The identity counters of the program decide no behaviour and are left out
+ * (D-442).
+ */
+function contentDiffers(before: Program, after: Program): boolean {
+  return !sameData(
+    [before.groups, before.tripPlan],
+    [after.groups, after.tripPlan],
+  );
+}
+
+/**
+ * The list with the content of the program numbered `id` replaced, and its content revision one
+ * higher where the content differs from what it was (D-442); the others stay.
+ */
 export function withProgramContent(
   programs: readonly SavedProgram[],
   id: ProgramId,
   program: Program,
 ): SavedProgram[] {
   return programs.map((saved) =>
-    saved.id === id ? { ...saved, program } : saved,
+    saved.id === id
+      ? {
+          ...saved,
+          program,
+          contentRevision:
+            saved.contentRevision +
+            (contentDiffers(saved.program, program) ? 1 : 0),
+        }
+      : saved,
   );
 }
 
 /**
  * The two fields of the game state that saving content into the program numbered `id` changes: the
- * list with its content replaced by `program`, and the judgings remembered for that program erased
+ * list with its content replaced by `program` and its content revision raised where the content
+ * differs (D-442), and the judgings remembered for that program erased
  * where its rules, rule groups in their order or trip plan come out different (D-440). Every place
  * that saves content into a program of the list takes them from here.
  */
@@ -460,6 +485,7 @@ export function createProgram(state: GameState): GameResult {
           id: state.nextProgramId,
           name: suggestedProgramName(state.programs),
           program: emptyProgram(),
+          contentRevision: 0,
         },
       ],
       nextProgramId: state.nextProgramId + 1,
@@ -496,7 +522,7 @@ export function appendPrograms(
   for (const { name, program } of read) {
     const named = freeName(taken, name);
     taken.add(named.toLowerCase());
-    appended.push({ id, name: named, program });
+    appended.push({ id, name: named, program, contentRevision: 0 });
     id += 1;
   }
   return {
@@ -749,7 +775,12 @@ export function saveCopyAsNewProgram(
       ...state,
       programs: [
         ...state.programs,
-        { id, name: checked.name, program: run.copy.program },
+        {
+          id,
+          name: checked.name,
+          program: run.copy.program,
+          contentRevision: 0,
+        },
       ],
       nextProgramId: id + 1,
       lastUsedPrograms: { ...state.lastUsedPrograms, [run.character.id]: id },
