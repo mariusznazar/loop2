@@ -1,0 +1,41 @@
+each action names its group and each condition its section and place in the pick | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:205:1' | error: |-
+the items are the four resources of Las, with their uses | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:370:1' | error: |-
+every item and every item of the campfire names an item of the data | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:416:1' | error: 'item bandage is a resource of the data'
+the character skills grow the listed pairs of verb and target, and the walks stand in none | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:458:1' | error: |-
+every action and condition stands in exactly one row, and Zawsze and Eksploruj in none | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:593:1' | error: |-
+the campfire is revealed by the first gathered stick and has an identifier outside the items | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\data.test.mjs:627:1' | error: |-
+a document of the current version loads into the state it describes | del-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:831:1' | error: |-
+the server's save of the current version loads into the game it holds, its revision left out | del-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:849:1' | error: |-
+a map run that goes on comes back paused, at its game minute, pace and carried real time | del-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:930:1' | error: |-
+a map run that ended comes back as it ended | del-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:945:1' | error: |-
+a map run of a solved map comes back marked, and its completion with the empty deposit | del-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:997:1' | error: |-
+a map run moving the character to a neighbouring tile loads with the move | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:1030:1' | error: |-
+the load changes nothing passed to it, and the state it gives shares nothing with it | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:1042:1' | error: |-
+the team's moment of the next return below zero loads, as it is a safe integer of any sign | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:1065:1' | error: |-
+the team's uses spent load at their edges: none with no moment, and all of the data's three with one | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:1232:1' | error: |-
+a death that spent a use keeps the uses spent after it, from one up to the data's count, and each loads | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:1247:1' | error: |-
+the record loads back whole from a map run that goes on, one that died and one that completed | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2549:1' | error: |-
+a record at the edges of what it admits loads | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2577:1' | error: |-
+a chest holding exactly its capacity loads, and one piece beyond it is refused as shape | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2618:1' | error: |-
+a completion depositing exactly the planned counts loads | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2635:1' | error: |-
+a completion of a marked run depositing its planned counts loads, and a deposit beyond them is refused as shape | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2652:1' | error: |-
+two characters of one number are refused as shape, the rest of the document sound | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2691:1' | error: |-
+a character whose number is the next character number is refused as shape, the rest of the document sound | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2712:1' | error: |-
+a document at the edges of what the earning loops, the report and the save time admit loads | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:2924:1' | error: |-
+the load shares none of the earning loops, the stopped earning loops or the report with the document | el-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\saved-game.test.mjs:3001:1' | error: |-
+entry spends one budget in order, shortages leave room and partial rows fit | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\trip.test.mjs:128:1' | error: |-
+entry caps, including zero, affect equipment independently of exit caps | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\trip.test.mjs:211:1' | error: |-
+restart uses the unsaved copy and current stock; unfinished end and death return nothing | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\trip.test.mjs:292:1' | error: |-
+unlisted and clipped contents of a completed backpack cannot fund a subsequent run that takes from the chest | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\trip.test.mjs:393:1' | error: |-
+a manual run of a solved map takes its take list from the chest, cut by its stock and the capacity, as any run does | es\\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\sim\\trip.test.mjs:584:1' | error: |-
+the section credits the campfire's icon, by Lorc, after the four resources' icons | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:226:1' | error: |-
+the section credits the actions' icons after the two campfires', one line each, in the order of the data | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:251:1' | error: |-
+the section credits the wolf's icon, by Lorc, after the actions' icons and before the packs | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:261:1' | error: |-
+each action of the data names an icon and its title, and the icon file exists | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:301:1' | error: 'tend: bandage-roll'
+each line of the section holds the icon's title, author, game-icons.net, CC BY 3.0 and the change, for the icon of each credit | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:339:1' | error: |-
+the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files w | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:351:1' | error: |-
+the section links each icon's page and the licence, each opening in a new tab without opener or referrer | \\model-czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\icons.test.mjs:496:1' | error: |-
+every program the editor builds passes setProgram, before sending and during a run | zynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\program-editor.test.mjs:797:1' | error: |-
+the actions of the pick stand in four named groups, in the order of D-290, the combat ones picked outside combat | ynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\program-editor.test.mjs:1055:1' | error: |-
+a known resource the map of the map run lacks stands greyed: „nie ma go na tej mapie”; with no map run every known resource may be picked | ynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\program-editor.test.mjs:1203:1' | error: |-
+the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walka, each with its icon and the time of one execution beside it | -czynnosci-i-przedmiotow\\.runs\\planner\\probe\\tests\\view\\rule-editor.test.mjs:1527:1' | error: 'expected [ ["Ruch",["Eksploruj","Wędruj","Idź","Idź — ognisko"]],["Zbieranie",["Zbierz","Obchód"]],["Ogień",["Wytwórz — ognisko (6, got [ ["Ruch",["Eksploruj","Wędruj","Idź","Idź — ognisko"]],["
