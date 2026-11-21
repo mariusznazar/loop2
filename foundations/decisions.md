@@ -5490,12 +5490,9 @@ map run does.
   meet their first attack in the same game minute; the layout's draws in a fixed order, the
   entrance after the resources; a send after „Zakończ” taking a new seed; the first map run of an
   earning loop taking the seed a send at that moment takes, and each later one the first draw of
-  the fifth generator of the map run before it. For the seeds of a judging, an agent compares a
-  change with the part no invariant and no test holds:
-  - complies: two judgings of one program of one character on Las, with one chest, giving the same
-    twelve lines, their runs taking the same twelve seeds as a judging on Skraj lasu
-  - violates: a judging that draws a new seed for its runs, or takes the seeds from the seed of the
-    character's last map run
+  the fifth generator of the map run before it; a judging on the twelve seeds of the game's data,
+  one list for every map, each of its runs drawing from its own seed, and the same judging giving
+  the same twelve lines whatever the last seed and the map run of the game.
 - **Origin:** none
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
@@ -8681,14 +8678,14 @@ on: the function that reaches its end deals with that end at once.
   a saved game state admits them; an edit or a deletion of the program leaving the content an
   earning loop holds, in its later map runs too; the open game and the catch-up dealing with the end
   of an earning loop's map run at once, the state the browser view holds after a reading or a load holding
-  the next map run, and a load refusing an earning loop whose map run has ended. For the map runs
-  completed in a row and the loop record, an agent compares a change with the part no invariant and
-  no test holds:
-  - complies: an earning loop that completes three map runs, loses one to a death a use of the
-    resurrection covers and completes two more holding 2 in a row and a loop record of 3, in the
-    open game and in the catch-up alike
-  - violates: a death a use of the resurrection covers leaving the number in a row as it was; a
-    loop record that stays with the character after its earning loop stops
+  the next map run, and a load refusing an earning loop whose map run has ended; an earning loop
+  starting with no map run completed in a row and a loop record of 0, a completion raising the
+  number in a row and the loop record only where it passes it, a death that does not stop the
+  earning loop, covered by a use of the resurrection or of a character with no practice, setting
+  the number in a row back to zero and leaving the loop record, in the open game and in the
+  catch-up alike, the next earning loop after a stop by a death or by the player starting from 0 and
+  0, and both numbers going through a save and a load, a load refusing a number in a row above the
+  loop record or a loop record above the map runs completed.
 - **Origin:** none
 
 *Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
@@ -8944,20 +8941,20 @@ where it is zero.
   „Odbierz” and back when the earning loop gathers more; the report in the game state, surviving a
   reload, a further return adding to it, the section opening from one whole game minute of the
   catch-up and at a stop in its first game minute; one „Zamknij” emptying the whole report; the
-  report hidden on the screen of a manual map run and on Postać and read on reaching Siedziba. For
-  the roles of the lines that went on and of the sentence of a full chest, for a later earning
-  loop of a character whose earning loop „Zatrzymaj” stopped, and for the loop record at the end of
-  a line, an agent compares a change with the part no invariant and no test holds:
-  - complies: the lines of earning loops that went on in `text`, and „Skrzynka jest pełna.” in
-    `warning`; „Zatrzymaj” leaving the character's line open, so the next return of a later earning
-    loop of that character adds to it; „Ola: 240 min · skrzynka: jagoda +12 · najdłużej bez śmierci:
-    3 przejścia z rzędu” for an earning loop whose loop record is 3, the number following the
-    earning loop at each drawing of the section
+  report hidden on the screen of a manual map run and on Postać and read on reaching Siedziba; the
+  loop record at the end of the line of an earning loop that goes on, after its other parts, as
+  „ · najdłużej bez śmierci: {n} przejść z rzędu” with „przejście” declined by the number, read
+  from that character's earning loop at each drawing, and none at zero, at a character with no
+  earning loop or on a line of an earning loop a death stopped. For the roles of the lines that
+  went on and of the sentence of a full chest, for a later earning loop of a character whose
+  earning loop „Zatrzymaj” stopped, and for the role of the loop record and what stands beside it,
+  an agent compares a change with the part no invariant and no test holds:
+  - complies: the lines of earning loops that went on in `text`, the loop record at their end
+    included, and „Skrzynka jest pełna.” in `warning`; „Zatrzymaj” leaving the character's line
+    open, so the next return of a later earning loop of that character adds to it
   - violates: „Skrzynka jest pełna.” in `text` or `danger`; a line of an earning loop that went on in
     `text-secondary`; a later earning loop after „Zatrzymaj” opening a second line of that character;
-    the loop record in `positive` or beside the record of an earlier earning loop; „ · najdłużej bez
-    śmierci: 0 przejść z rzędu”; the loop record at the end of a line of an earning loop a death
-    stopped
+    the loop record in `positive` or beside the record of an earlier earning loop
 - **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
@@ -9892,13 +9889,12 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
   Skraj lasu in a new game and Las and Las — głębiej once their openers are solved; the card of the
   map the address names, with what it asks, its terrain, what lies there, what lurks there and what
   it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
-  and „Puść w pętlę”. For the list standing on the left and the card on the right, and for the
-  judging of a program in „Kto idzie”, an agent compares a change with the part no test holds:
+  and „Puść w pętlę”, and „Oceń na 12 ziarnach” at each character, on a map not yet solved and on a
+  solved one. For the list standing on the left and the card on the right, an agent compares a
+  change with the part no test holds:
   - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
-    the right the card of Las with the section „Kto idzie” under it; „Oceń na 12 ziarnach” at each
-    character of „Kto idzie”, on a solved map and on one not yet solved
-  - violates: the list of the maps standing on the right of the card or under it; the judging of a
-    program started only from the screen of a map run
+    the right the card of Las with the section „Kto idzie” under it
+  - violates: the list of the maps standing on the right of the card or under it
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
@@ -9985,17 +9981,17 @@ The button of a judging, „Oceń na 12 ziarnach”, judges the program of the c
   the line of the earning loop at a character in an earning loop alone, „Program:” with its list,
   „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and
   „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
-  the sentence of a team with no character in the section. For the role „Wejdzie: …” is drawn in,
-  and for the button of a judging, its result and the judging remembered beside „Program:”, an agent
-  compares a change with the part no test holds:
-  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`; „Oceń na 12
-    ziarnach” beside „Wejdź” at each character on a solved map and on one not yet solved, reading
-    „Oceniam…” while it counts; under the character „Ocena na 12 ziarnach: 10 z 12 rozwiązanych”,
-    twelve lines „Ziarno {i}: …” and the sentence that the judging costs nothing, gone when another
-    program is picked on the list
-  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped; the result
-    of a judging still standing after another program is picked on the list; the result of a judging
-    standing at another character than the one judged
+  the sentence of a team with no character in the section; the judging remembered for the program
+  the list shows beside „Program:”, the warning of seeds left unsolved above „Puść w pętlę”, and
+  „Oceń na 12 ziarnach” in the row of the buttons after „Wejdź” at each character, on a map not yet
+  solved and on a solved one, judging the program of the list on the map of the card and reading
+  „Oceniam…”, inactive, while the judging counts; under the buttons of that character alone the
+  result, its heading, twelve lines „Ziarno {i}: …” and the sentence that the judging costs
+  nothing, standing through the draws of the screen and gone where the list shows another program,
+  a new judging replaces it or the player leaves the card. For the role „Wejdzie: …” is drawn in,
+  an agent compares a change with the part no test holds:
+  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`
+  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped
 - **Origin:** none
 
 *Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba. The button of a judging stands at each character, on every map open to the player, so the player sees where a program loses before risking the character; its result stands under the character it was judged for while it speaks of the program on the list, and the judging remembered stands beside the list, so the player reads it as the program is picked. Accepted with it: the word „ziarno” meets the player here for the first time, and nothing in the game explains it yet.
@@ -11748,7 +11744,7 @@ The human judges, at the request that brings an effect of the scene, whether its
 - **Based on:** none
 - **Relations:** derives from D-271
 - **Verification:** an agent compares a change with the decision:
-  - complies: a change of an effect whose request shows the contrast of the effect's colours against samples of the ground and of the prop it stands at, and a picture of the scene with the effect laid over the elements that may cover it, and leaves the judging of both to the human
+  - complies: a change of an effect whose request shows the contrast of the effect's colours against samples of the ground and of the prop it stands at, and a picture of the scene with the effect laid over the elements that may cover it, and leaves both for the human to judge
   - violates: a test of the scene or a rule of style that sets a least contrast of an effect against a prop, or a rule that no element covers an effect; a check that fails a change for the ratio of an effect against a prop; a least contrast or such a rule written into a decision by the change that brings the effect, with nothing the human settled before it
 - **Origin:** none
 
@@ -11820,7 +11816,7 @@ A program can be judged on every map open to the player, a map not yet solved in
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-179 · derives from D-409
 - **Verification:** tests: the twelve seeds and the cap of 4000 game minutes in the game's data,
-  the same judging giving the same twelve lines; each seed's line the map run of that seed, in the
+  the same judging giving the same twelve lines; each seed's line the run of that seed, in the
   order of the seeds, solved, a death with its cause and game minute or undecided, a run that
   solves the map or dies in the game minute of the cap counting and one still going there
   undecided, and an undecided row naming the cap the data hold; the take list cut by

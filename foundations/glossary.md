@@ -307,7 +307,7 @@ A map that asks for something new — an item, a spell or another idea of a prog
 
 ## judging
 
-A judging is twelve runs of one character's program on the twelve fixed seeds of one game map, which are no map run of the character and each of which can end at a cap of game minutes, neither solved nor in a death.
+A judging is twelve runs of one character's program on one game map, each from one of twelve fixed seeds that are the same on every game map, the runs being no map run of the character and each able to end at a cap of game minutes, neither solved nor in a death.
 
 - **Not:** none
 
