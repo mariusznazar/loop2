@@ -213,7 +213,7 @@ const plainGame = () => game();
 
 test("the record of a judging holds the kind of each of the twelve results, the equipment, the content revision and the fingerprint of the content of its program, and the generation number of the game state the judging read", () => {
   // decision: D-441 "The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read."
-  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
   const judging = {
     results: [
       { kind: "solved" },
@@ -540,7 +540,7 @@ const SAVES = [
 
 test("the fingerprint of a content differs exactly where a save of it raises the content revision of its program", () => {
   // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were, the rule the game writes at the first chill (D-123) included."
-  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
   const state = editProgram(game(), 1, FINGERPRINTED).state;
   const before = state.programs[0];
   assert.equal(
@@ -625,7 +625,7 @@ test("the fingerprint of a content differs exactly where a save of it raises the
 });
 
 test("five thousand contents that differ in a number, in the order of their rules or in a trip plan have each a fingerprint of its own", () => {
-  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
   // Each content below differs from every other in a number, in the order of rules that differ, or in a count of a trip plan.
   const contents = [];
   for (let value = 0; value < 4000; value += 1)
@@ -684,7 +684,7 @@ test("five thousand contents that differ in a number, in the order of their rule
 });
 
 test("the fingerprint is sixteen lower-case hexadecimal digits, the same at each call, and leaves the content it was given as it was", () => {
-  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
   const given = frozen(structuredClone(FINGERPRINTED));
   const first = contentFingerprint(given);
   assert.match(first, /^[0-9a-f]{16}$/);
@@ -711,7 +711,7 @@ test("the fingerprint is sixteen lower-case hexadecimal digits, the same at each
 });
 
 test("a record made at a content revision stands beside the content it judged and not beside another content that reached the same revision after a change that was lost", () => {
-  // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents never share a judging, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
+  // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents share a judging only through such a collision, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
   const base = game();
   const judged = editProgram(base, 1, programFromRules(rule("explore"))).state;
   // The save that made another content was lost, and the same edit made again gave another content: the same count.

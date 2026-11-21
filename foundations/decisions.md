@@ -6772,13 +6772,10 @@ An attack uses the per-game-minute chance and cooldown in its map's data, with t
   an action ending in it, a minute of death or completion trying none; an action still running lost
   on an attack and a finished one keeping its effect; the attack generator seeded by the map run,
   advanced by the eligible trials alone and left as it stands by the cooldown, combat, death and
-  completion, so that two programs on one seed meet their first attack in the same minute. For
-  „Wytwórz” and „Opatrz”, until tests of them stand, an agent compares a change with the part no
-  test holds:
-  - complies: an attack in a minute before the end of „Wytwórz — Opatrunek” leaving the moss in the
-    backpack and no bandage made; an attack in the minute in which „Opatrz — Opatrunek” ends coming
-    after its effect, with the bandage gone and the health given back
-  - violates: the moss or the bandage taken at the start of the action and lost with the attack
+  completion, so that two programs on one seed meet their first attack in the same minute;
+  „Wytwórz” and „Opatrz” taking what they use out of the backpack when they end, together with
+  their effect: an attack before the end of either leaving the pieces in the backpack and giving
+  nothing, and an attack in the minute in which either ends coming after its effect.
 - **Origin:** none
 
 *Rationale:* Independent trials make a difference of programs a difference of behaviour rather than luck; the full cooldown makes its boundary explicit, at the cost of delaying the next chance until the following minute. An action that takes its pieces when it ends, as every action of the game does, costs only the time when an attack interrupts it. Accepted with it: making a thing on a map with a wolf risks time and not the pieces, though the player cannot choose the moment of an attack, which is random.
@@ -6837,16 +6834,15 @@ A stick stays in the backpack after a strike, with its condition unchanged.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-144 · derives from D-140 · derives from D-443
-- **Verification:** tests: one stick serving every strike of an encounter. For the stick after the
-  encounter, and for „Opatrz” until tests of it stand, an agent compares a change with the part no
-  test holds:
+- **Verification:** tests: one stick serving every strike of an encounter; „Opatrz” using up one
+  piece of its target and giving back the target's healing when it ends, together, whether the
+  health was lost to cold, to hunger or to a blow of combat, and never above full health; „Opatrz”
+  not carried out in combat or at full health, and the piece staying in the backpack where health
+  is full when it ends. For the stick after the encounter, an agent compares a change with the part
+  no test holds:
   - complies: the stick in the backpack after an encounter fought with it, as it was before, with
-    nothing of it changed; „Opatrz — Opatrunek” below full health, health rising and the backpack
-    losing one bandage when it ends, whether the health was lost to cold, to hunger or to a blow;
-    health reaching full in the minutes of the action leaving the bandage in the backpack
-  - violates: the end of an encounter taking or breaking the stick its strikes used; „Opatrz”
-    carried out in combat or at full health; health given back above full health; a bandage taken
-    where health is full when the action ends
+    nothing of it changed
+  - violates: the end of an encounter taking or breaking the stick its strikes used
 - **Origin:** none
 
 *Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; breakage would cost a different balance. A bandage gives health back whatever took it, so the game keeps no account of wounds apart from the rest of the health. The action takes its piece and gives its health when it ends, as a lighting takes its sticks when it ends (D-63), so an interruption costs time alone, and it cannot be carried out at full health, as „Zapal — ognisko” cannot be at a burning campfire, so a rule „Zawsze → Opatrz — Opatrunek” never stops a program at full health. Accepted with it: below full health such a rule uses up a whole bandage for a point of health, and the condition „Zdrowie poniżej”, which defends against it, is known to the player only from the first wolf attack (D-143); a bandage gives health back on the cold maps too, which is a stock for a program, though it does not save a streak, since a game minute with health lost to cold or hunger sets the streak to zero.
@@ -7485,13 +7481,11 @@ gathered moss brings the bandage and „Wytwórz”, and the first piece of the 
   stick, and the first gathered berry — bringing exactly what this decision gives it, in the game
   minute in which it happens and in the data, and nothing where it does not happen or where what it
   brings is already known; each tile revealed later adding the items lying on it, moss and fibre
-  included. For the first gathered moss and the first piece of the bandage crafted, until tests of
-  them stand, an agent compares a change with the part no test holds:
-  - complies: the first gathered moss bringing the bandage and „Wytwórz” in the game minute of the
-    gathering, and the first „Wytwórz” that ends with its effect on the bandage bringing „Opatrz”
-    in that game minute and nothing before it
-  - violates: „Opatrz” brought by the first gathered moss; the condition „Zdrowie poniżej” brought
-    by the first piece of the bandage
+  included; the first gathered moss bringing the bandage and „Wytwórz” in the game minute of the
+  gathering, and neither „Opatrz” nor the condition „Zdrowie poniżej”; the first „Wytwórz” that
+  ends with its effect on the bandage bringing „Opatrz” in that game minute, nothing before it and
+  no condition, and a „Wytwórz” that ends with no effect, or a bandage crafted again, bringing
+  nothing.
 - **Origin:** none
 
 *Rationale:* the first map run is a linear tutorial, so each discovery offers the program what the
@@ -8144,9 +8138,9 @@ A program rule whose condition holds and whose action the game's check refuses n
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-309 · derives from D-310
-- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule. For „Obchód” with a full backpack, „Zapal — ognisko” short of nature energy, and „Wytwórz — {rzecz}” and „Opatrz — {rzecz}”, an agent compares a change with the part no test holds:
-  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”; „Wytwórz — Opatrunek” with no moss in the backpack reading „brakuje 2 × mech”; „Opatrz — Opatrunek” at full health, with no bandage in the backpack, reading „zdrowie pełne”
-  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none; „Opatrz — Opatrunek” at full health, with no bandage in the backpack, reading „brakuje 1 × opatrunek”
+- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule; „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack reading „brakuje {ile} × {rzecz}”, with the first piece the backpack lacks in the recipe's order, and „Opatrz — {rzecz}” at full health reading „zdrowie pełne” before „brakuje …”, a rule refused at full health passed over for the next. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
+  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
+  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
 *Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — here, and those of combat, „tylko w walce” and „trwa walka”, in D-309, so a later change names a refusal in the words it already has and no writer of an action's code finds its own. A reason about the state of things stands before one about a lack in the backpack, so „zdrowie pełne” stands before „brakuje …” as „ognisko już płonie” stands before it. Accepted with it: every new action needs a reason of its own later, and a player with no bandage learns of it only after losing some health, since at full health there is nothing to dress anyway.
@@ -8164,16 +8158,8 @@ An action is a verb with a target, and the targets a verb takes follow from the 
   balance instrument, a second item laid in a test or in an overlay alone becoming a target of each
   and moss of neither, and the check of a program refusing either verb with a target the data do
   not give; a program of every kind of action of today, as a previous save of version 9 holds it,
-  read and appended with exactly its content. For these parts, until those tests stand, an agent
-  compares a change with the decision:
-  - complies: an item given a recipe by its row in the items' data becoming a target of „Wytwórz” in
-    the simulation, in the pick of the rule panel and in the balance instrument with no change of
-    code outside the data; „Idź — ognisko” and „Zjedz — jagoda” staying the kinds of action they
-    are, with the program that holds them read from a previous save as it was written
-  - violates: a list of the items „Opatrz” takes written in the code of the simulation, of the
-    program editor or of the balance instrument; a new kind of action added for one more pair of a
-    verb and an item that the properties of the items in the data already give; a program holding a
-    kind of action of today changed in its content by the read from a previous save
+  read and appended with exactly its content, each such kind of action, „Idź — ognisko” and „Zjedz —
+  jagoda” among them, keeping the kind it has.
 - **Origin:** none
 
 *Rationale:* With every pair of an action and an item a kind of action of its own, each new item costs a new kind of action in several files of code and of tests.
@@ -9358,14 +9344,11 @@ The cell „Wytwórz” of the pick of actions shows no time, since the recipe o
 - **Verification:** tests: the time of one execution — the minutes of the data, „tura” for an
   action of combat, the step of the map for a movement during a map run and nothing for a movement
   outside one — computed, shown in a rule's row, beside the cells of the actions in the rule panel
-  and beside the value of its field of the action. For „Wytwórz” and „Opatrz” with an item as the
-  target, until tests of them stand, an agent compares a change with the part no test holds:
-  - complies: the cell „Opatrz” of the pick of actions with its time and the cell „Wytwórz” with
-    none; the target of „Wytwórz” in the pick of its target with its price and its time beside it,
-    from the recipe of the target
-  - violates: a time in the cell „Wytwórz” of the pick of actions; the time of „Wytwórz” kept in
-    the data of the action itself instead of read from the recipe of its target; the pick of the
-    target of „Wytwórz” with the price and no time
+  and beside the value of its field of the action; for „Wytwórz” and „Opatrz” with an item as the
+  target, the cell „Wytwórz” of the pick of actions showing no time and the cell „Opatrz” its own,
+  the closed field of either showing the time of one carrying out beside it, and each target of
+  „Wytwórz” in the pick of its target showing the time its recipe gives beside its price, those of
+  „Opatrz” and of a resource showing none.
 - **Origin:** none
 
 *Rationale:* with the time the player compares actions without playing them, also in the panel,
@@ -9633,14 +9616,11 @@ greyed with „nie znasz jeszcze celu”, as „Idź” and the others above do.
   niż” and „Zapas poniżej” with no known target; „nie ma go na tej mapie” at a known resource the
   map of the map run lacks; with no map run every known target open; the actions of combat open
   outside combat; a value the rule holds outside the pick shown chosen and greyed, with the reason
-  that fits or with none, and another pick changing it. For a thing that lies on no map and for
-  „Wytwórz” and „Opatrz” with no known target, until tests of them stand, an agent compares a change
-  with the part no test holds:
-  - complies: the bandage standing among the items of „Zapas poniżej” and in no pick of „Idź”,
-    „Zbierz”, „Obchód” or „Tu leży mniej niż”, with a map run or without one; „Wytwórz” with no
-    known item of a recipe standing greyed with „nie znasz jeszcze celu”
-  - violates: „Zbierz — Opatrunek” greyed with „nie ma go na tej mapie”; „Opatrz” with no known
-    target standing out of the pick or standing there with no reason
+  that fits or with none, and another pick changing it; the bandage, a thing that lies on no map,
+  standing among the items of „Zapas poniżej” and in no pick of a target of „Idź”, „Zbierz”,
+  „Obchód” or „Tu leży mniej niż”, and the check of a program refusing it as their target, in a map
+  run or outside one; „Wytwórz” and „Opatrz” standing greyed with „nie znasz jeszcze celu” until
+  the Understanding holds an item each takes as its target, moss being a target of neither.
 - **Origin:** none
 
 *Rationale:* the pick holds as many choices as the player has found, so it never starts
@@ -9993,9 +9973,7 @@ An action whose price its target gives, „Wytwórz” and „Opatrz” with an 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310 · derives from D-443
-- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's. For „Wytwórz” and „Opatrz” with an item as the target, until tests of them stand, an agent compares a change with the part no test holds:
-  - complies: the cells „Wytwórz” and „Opatrz” of the pick of actions with no price; „Opatrunek (2 mchy)” at the target of „Wytwórz” and „Opatrunek (1 opatrunek)” at the target of „Opatrz”; „Wytwórz — Opatrunek (2 mchy)” at the action chosen in the panel; the row of the rule reading „Wytwórz — Opatrunek” with no price
-  - violates: a price in the cell „Wytwórz” of the pick of actions, a price kept in the data of the action „Wytwórz” itself instead of read from the recipe of its target; a price in the row of a rule with „Opatrz — Opatrunek”
+- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's; for „Wytwórz” and „Opatrz” with an item as the target, no price at their cells of the pick of actions, the price of the action with each target, the recipe's pieces for „Wytwórz” and one piece of the target for „Opatrz”, in brackets after the target's name in the pick of its target, the price of the chosen target in the action field, and no price in the row of the rule.
 - **Origin:** none
 
 *Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use. An action whose price its target gives shows the price at each target, so the player compares the targets before choosing one; while a verb has a single target, that gives the player nothing more than the chosen action does.
@@ -11620,12 +11598,9 @@ target, and a fight — the mage stays where it stands.
   place at the right edge, and while it waits to the middle of the clearing, walking there from
   where it stands; „Zbierz” and „Obchód” with fibre as the target, „Zapal — patyk”, „Zjedz” and a
   fight leaving it where it stands, a mage whose walk they cut standing where the walk has brought
-  it and not at the place it was walking to. For „Wytwórz” and „Opatrz” with an item as the target,
-  until tests of them stand, an agent compares a change with the part no test holds:
-  - complies: the mage standing where it stood during „Wytwórz — Opatrunek” and „Opatrz —
-    Opatrunek”, the scene showing no picture and no effect of either
-  - violates: the mage walking to the campfire, to the right edge or to the middle of the clearing
-    during „Opatrz — Opatrunek”; an effect of dressing added to the scene
+  it and not at the place it was walking to; „Wytwórz” and „Opatrz” with an item as the target
+  leaving the mage where it stands, bending it no more than „Zjedz” does, and the end of either
+  starting no effect of a gathering.
 - **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
@@ -12040,9 +12015,9 @@ A change of the rules, the rule groups or the trip plan of a program erases the 
 
 ### D-441 — Where does the game keep the last judging of each character, program and map?
 
-The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read. The saved game state holds no judging, and nothing of a remembered judging enters the game state, which is whole without it. The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts.
+The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read. The saved game state holds no judging, and nothing of a remembered judging enters the game state, which is whole without it. The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52.
 
-A remembered judging stands beside the list „Program:” only while its character is on the team at its generation number and its program is on the player's list at its content revision. A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed. A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents never share a judging, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form.
+A remembered judging stands beside the list „Program:” only while its character is on the team at its generation number and its program is on the player's list at its content revision. A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed. A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents share a judging only through such a collision, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form.
 
 Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323). When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts. Another device, or a browser whose data were cleared, shows no remembered judging until a judging is made there.
 
@@ -12072,18 +12047,17 @@ The unsaved game state stays out of the browser's lasting storage as D-211 gives
   those of this game above the loaded game's content revision or generation number or under a
   program or character number it has not yet given, and, after a save refused for another
   browser's, every value of this game, leaving the values of other accounts and of other versions,
-  and throwing nothing where the storage refuses to list its keys or remove a value. For what stays
-  at „Wyloguj”, and for the fingerprint of the content until tests of it stand, an agent compares a
-  change with the part no invariant and no test holds:
-  - complies: the judgings of the account kept after „Wyloguj” and shown at the next sign-in; a
-    judging made after a change that a refused save lost, standing beside no program that later
-    reaches the same content revision with other content
-  - violates: the judgings cleared at „Wyloguj”; a judging standing beside „Program:” where the
-    content revision of the program equals the judging's and the content of the program is another;
-    a judging read from a value whose fingerprint is no text of the form of a fingerprint
+  and throwing nothing where the storage refuses to list its keys or remove a value; a fingerprint
+  of the content stored with each judging, the same for contents the content revision counts as no
+  change and another for each change it counts, a judging standing only beside the content it
+  judged, also where another content reaches the same content revision, and a value whose
+  fingerprint is no text of the form of a fingerprint read as a value of another form. For what
+  stays at „Wyloguj”, an agent compares a change with the part no invariant and no test holds:
+  - complies: the judgings of the account kept after „Wyloguj” and shown at the next sign-in
+  - violates: the judgings cleared at „Wyloguj”
 - **Origin:** none
 
-*Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. The fingerprint of the content makes a judging stand only beside the content it judged: the content revision tells that a content changed and changed back (D-440), and the fingerprint tells another content that reached the same content revision after a change lost with a refused or an unsent save, which the count alone cannot tell. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number, or under a program or character number the loaded game has not yet given, can come only from a save that never reached the server (the game state holds the next program number and the next character number, so a number it has not yet given is one only a lost save made), so all of them go when the game opens, and a program or a character made later cannot meet a value of the number it takes; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and one more field in each stored value, a fingerprint of a program's content, which must stay the same for every content the content revision counts as no change and differ for every change it counts.
+*Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. The fingerprint of the content makes a judging stand only beside the content it judged: the content revision tells that a content changed and changed back (D-440), and the fingerprint tells another content that reached the same content revision after a change lost with a refused or an unsent save, which the count alone cannot tell. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number, or under a program or character number the loaded game has not yet given, can come only from a save that never reached the server (the game state holds the next program number and the next character number, so a number it has not yet given is one only a lost save made), so all of them go when the game opens, and a program or a character made later cannot meet a value of the number it takes; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and one more field in each stored value, a fingerprint of a program's content, which must stay the same for every content the content revision counts as no change and differ for every change it counts, but for a chance of a collision of at most one in 2^52, in which a judging of one content stands beside another content with the same fingerprint.
 *Rejected:* the judgings in the saved game state — a player who judges much pushes the save past its limit and loses progress, and with hundreds of maps the limit would be passed anyway; a shortened judging in the saved game state, the judgings used least recently removed before the save reaches its limit — the judgings stay in the one place whose limit costs the player's progress, and some go to keep under it; one value for each game — the whole record rewritten at each judging, a judging lost when two tabs judge, and one corrupt value losing every judging of the game; a value for each game beside one for each triple — two places to keep agreeing; a key naming the account alone, the page clearing the account's judgings whenever it makes a new game — a reset or a discarded save made on another device is loaded here, not made here, so nothing clears and the judgings of the old game show in the new one; a random token from the view in place of the moment the game was made — the same cost and a text to check at the load, with no gain; the judgings cleared at „Wyloguj” — the badges vanish at every logout on the player's own device, for data that tells another person nothing they can use.
 
 ## Withdrawn identifiers

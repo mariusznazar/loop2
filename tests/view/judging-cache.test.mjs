@@ -595,7 +595,7 @@ for (const [name, value] of BAD_VALUES) {
   test(`a stored value that is ${name} reads as none, throws nothing and stays where it is`, () => {
     // invariant: judging-cache-reading
     // decision: D-441 "A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed."
-    // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents never share a judging, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
+    // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents share a judging only through such a collision, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
     const storage = mapStorage({ [LAS_KEY]: value });
     const cache = open(storage);
     assert.equal(cache.read(LAS), null);
