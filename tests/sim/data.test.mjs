@@ -367,26 +367,38 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
 
 // The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
 // those of D-387.
-test("the items are the four resources of Las, with their uses", () => {
+test("the items are the four resources of Las, with their words and their uses", () => {
   // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(ITEMS.stick, {
     name: "patyk",
+    plural: { few: "patyki", many: "patyków" },
+    icon: "wood-stick",
+    iconTitle: "Wood stick icon",
     revealedBy: { kind: "tileHolds", item: "stick" },
     fuel: { burnMinutes: 20 },
     lightable: { burnMinutes: 3, warmth: 0.15 },
   });
   assert.deepEqual(ITEMS.berry, {
     name: "jagoda",
+    plural: { few: "jagody", many: "jagód" },
+    icon: "berry-bush",
+    iconTitle: "Berry bush icon",
     revealedBy: { kind: "tileHolds", item: "berry" },
     food: { satiety: 25 },
   });
   assert.deepEqual(ITEMS.moss, {
     name: "mech",
+    plural: { few: "mchy", many: "mchów" },
+    icon: "fern",
+    iconTitle: "Fern icon",
     revealedBy: { kind: "tileHolds", item: "moss" },
   });
   assert.deepEqual(ITEMS.fiber, {
     name: "włókno",
+    plural: { few: "włókna", many: "włókien" },
+    icon: "flax",
+    iconTitle: "Flax icon",
     revealedBy: { kind: "tileHolds", item: "fiber" },
   });
 });
@@ -416,7 +428,8 @@ test("the campfire holds its name, costs, burning minutes, warmth and icon", () 
 test("every item and every item of the campfire names an item of the data", () => {
   for (const [id, item] of Object.entries(ITEMS)) {
     assert.ok(id in RESOURCES, `item ${id} is a resource of the data`);
-    assert.equal(item.name, RESOURCES[id].name, id);
+    for (const word of ["name", "plural", "icon", "iconTitle"])
+      assert.deepEqual(item[word], RESOURCES[id][word], `${id} ${word}`);
   }
   for (const resource of MAPS.forest.resources) assert.ok(resource.id in ITEMS);
   assert.ok(CAMPFIRE.craft.item in ITEMS);

@@ -1,12 +1,12 @@
 """Invariant content-identifiers: No TypeScript file under `src/browser/` outside
-`src/browser/sim/data/` names a game map, a resource or an archetype, outside its comments, by the
-identifier or the name that the files of `src/browser/sim/data/` give it.
+`src/browser/sim/data/` names a game map, a resource, an item or an archetype, outside its
+comments, by the identifier or the name that the files of `src/browser/sim/data/` give it.
 
 The identifiers and names are written out below in ENTRIES, transcribed from the files of
-`src/browser/sim/data/`: the keys of `MAPS` (`maps.ts`), `RESOURCES` (`resources.ts`) and
-`ARCHETYPES` (`archetypes.ts`), and the `name` each entry gives. The check does not read the data
-at run time for its expected values (WAY-228), so a map, a resource or an archetype added to the
-data is scanned for only once it is written out here; a tripwire reads the data's entries, as
+`src/browser/sim/data/`: the keys of `MAPS` (`maps.ts`), `RESOURCES` (`resources.ts`), `ITEMS`
+(`items.ts`) and `ARCHETYPES` (`archetypes.ts`), and the `name` each entry gives. The check does
+not read the data at run time for its expected values (WAY-228), so a map, a resource, an item or
+an archetype added to the data is scanned for only once it is written out here; a tripwire reads the data's entries, as
 `npm run build` compiles them in a temporary copy of the working tree, only to fail when one of
 them is not written out here, telling the maintainer to add it. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,
 `.cts`) git tracks or would track under `src/browser/`, less those under `src/browser/sim/data/`.
@@ -21,14 +21,15 @@ Reading of the sentence:
 
 Covers:
 - the scan of every such file against every identifier and name written out;
-- the tripwire: every map, resource and archetype the data gives, with its name, stands among
-  ENTRIES; a control shows it fails on made-up data holding a resource that is not written out;
+- the tripwire: every map, resource, item and archetype the data gives, with its name, stands among
+  ENTRIES; a control shows it fails on made-up data holding a resource or an item that is not
+  written out;
 - control of the scan: made-up text naming each identifier and each name written out, in code, in a
   string and in a template, is flagged; the same names in comments only, in `wood-stick`-like
   compounds or inside longer identifiers are not; a file under `src/browser/sim/data/` and a file
   that is no TypeScript are not scanned.
 
-Does NOT cover: a map, a resource or an archetype named otherwise (by an index, or built from
+Does NOT cover: a map, a resource, an item or an archetype named otherwise (by an index, or built from
 pieces at run time, or written with escape sequences); files outside `src/browser/`.
 """
 
@@ -45,7 +46,8 @@ from source_lexer import without_comments
 BROWSER_DIRECTORY = "src/browser/"
 DATA_DIRECTORY = "src/browser/sim/data/"
 TYPESCRIPT_EXTENSIONS = (".ts", ".tsx", ".mts", ".cts")
-# The game maps, resources and archetypes, with the identifier and the name the data gives each.
+# The game maps, resources, items and archetypes, with the identifier and the name the data gives
+# each.
 ENTRIES = (
     {"kind": "map", "id": "forestEdge", "name": "Skraj lasu"},
     {"kind": "map", "id": "forest", "name": "Las"},
@@ -54,6 +56,10 @@ ENTRIES = (
     {"kind": "resource", "id": "berry", "name": "jagoda"},
     {"kind": "resource", "id": "moss", "name": "mech"},
     {"kind": "resource", "id": "fiber", "name": "włókno"},
+    {"kind": "item", "id": "stick", "name": "patyk"},
+    {"kind": "item", "id": "berry", "name": "jagoda"},
+    {"kind": "item", "id": "moss", "name": "mech"},
+    {"kind": "item", "id": "fiber", "name": "włókno"},
     {"kind": "archetype", "id": "elementalMage", "name": "Mag żywiołów"},
 )
 
@@ -62,6 +68,7 @@ BUILT_DATA = "dist/browser/sim/data"
 COLLECTIONS = (
     ("maps.js", "MAPS", "map"),
     ("resources.js", "RESOURCES", "resource"),
+    ("items.js", "ITEMS", "item"),
     ("archetypes.js", "ARCHETYPES", "archetype"),
 )
 READER = r"""
@@ -175,8 +182,33 @@ class ContentIdentifiers(unittest.TestCase):
             not_written_out(list(ENTRIES) + [stone], ENTRIES),
             "a resource added to the data goes unseen",
         )
+        bandage = {"kind": "item", "id": "bandage", "name": "bandaż"}
+        self.assertTrue(
+            not_written_out(list(ENTRIES) + [bandage], ENTRIES),
+            "an item added to the data goes unseen",
+        )
         renamed = [dict(e, name="Puszcza") if e["kind"] == "map" else e for e in ENTRIES]
         self.assertTrue(not_written_out(renamed, ENTRIES), "a renamed map goes unseen")
+        renamed_item = [dict(e, name="witka") if e["kind"] == "item" else e for e in ENTRIES]
+        self.assertTrue(not_written_out(renamed_item, ENTRIES), "a renamed item goes unseen")
+
+    def test_control_the_scan_flags_a_view_file_naming_an_item(self):
+        # invariant: content-identifiers
+        probe = "src/browser/view/probe.ts"
+        for word in ("stick", "patyk", "berry", "jagoda", "moss", "mech", "fiber", "włókno"):
+            with self.subTest(word=word):
+                text = f"const x = {json.dumps(word, ensure_ascii=False)};\n"
+                self.assertTrue(
+                    any(" names the item " in line for line in findings(probe, text, ENTRIES)),
+                    f"the scan does not flag the item {word!r} in a view file",
+                )
+        item_only = [{"kind": "item", "id": "bandage", "name": "bandaż"}]
+        for text in ("const x = 'bandage';\n", "const x = `${n} bandaż`;\n"):
+            with self.subTest(text=text):
+                self.assertTrue(
+                    findings(probe, text, item_only),
+                    f"the scan does not flag an item no resource is, in {text!r}",
+                )
 
     def test_control_the_scan_flags_named_content(self):
         # invariant: content-identifiers

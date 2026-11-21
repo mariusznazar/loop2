@@ -2,8 +2,14 @@ import type { Revelation } from "./revelations.js";
 import { RESOURCES, type ResourceId } from "./resources.js";
 
 export type ItemDef = {
-  /** Name shown to the player. */
+  /** Name shown to the player: the nominative singular, as it follows "1" in a price. */
   name: string;
+  /** The plural forms of the name, for a count; as `plural` of a resource row gives them. */
+  plural: { few: string; many: string };
+  /** File name in assets/icons, without the extension. */
+  icon: string;
+  /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
+  iconTitle: string;
   /** The event that reveals the item to the player. */
   revealedBy: Revelation;
   /** Present for an item that can be fed to a burning campfire. */
@@ -25,27 +31,48 @@ export type ItemDef = {
   };
 };
 
-/** The items of the backpack: the resources of Las, gathered as items. Moss and fiber have no use yet. */
-export type ItemId = ResourceId;
+/** The words of an item that is a resource, taken from its resource row, so no word stands twice. */
+function wordsOf(resource: ResourceId) {
+  const { name, plural, icon, iconTitle } = RESOURCES[resource];
+  return { name, plural, icon, iconTitle };
+}
 
-export const ITEMS: Record<ItemId, ItemDef> = {
+/**
+ * What a row of `ITEM_ROWS` is checked against, which cannot be `ItemDef` itself: `ItemId` is read
+ * from the keys of the rows, and the revelation of `ItemDef` names an `ItemId`.
+ */
+type ItemRow = Omit<ItemDef, "revealedBy"> & {
+  revealedBy: { kind: string; item: string };
+};
+
+/**
+ * The rows of the items; the type checker holds that every resource has one. Moss and fiber have no
+ * use yet.
+ */
+const ITEM_ROWS = {
   stick: {
-    name: RESOURCES.stick.name,
+    ...wordsOf("stick"),
     revealedBy: { kind: "tileHolds", item: "stick" },
     fuel: { burnMinutes: 20 },
     lightable: { burnMinutes: 3, warmth: 0.15 },
   },
   berry: {
-    name: RESOURCES.berry.name,
+    ...wordsOf("berry"),
     revealedBy: { kind: "tileHolds", item: "berry" },
     food: { satiety: 25 },
   },
   moss: {
-    name: RESOURCES.moss.name,
+    ...wordsOf("moss"),
     revealedBy: { kind: "tileHolds", item: "moss" },
   },
   fiber: {
-    name: RESOURCES.fiber.name,
+    ...wordsOf("fiber"),
     revealedBy: { kind: "tileHolds", item: "fiber" },
   },
-};
+} as const satisfies Record<ResourceId, ItemRow> & Record<string, ItemRow>;
+
+/** The identifier of an item: a key of `ITEMS`. */
+export type ItemId = keyof typeof ITEM_ROWS;
+
+/** The items of the game: everything the backpack can hold, whether or not some map lays it on a tile. */
+export const ITEMS: Record<ItemId, ItemDef> = ITEM_ROWS;

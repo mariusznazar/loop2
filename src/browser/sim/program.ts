@@ -264,14 +264,19 @@ function walkingTiles(run: RunView): Tile[] {
   }));
 }
 
-/** The name of a resource or an item as the game writes it, in lower case. */
-function thingName(item: ItemId): string {
-  return RESOURCES[item].name;
+/** The name of an item as the game writes it, in lower case: read from the item's row. */
+function itemName(item: ItemId): string {
+  return ITEMS[item].name;
+}
+
+/** The name of a resource on a map as the game writes it, in lower case: read from its row. */
+function resourceName(resource: ResourceId): string {
+  return RESOURCES[resource].name;
 }
 
 /** „brakuje {how many} × {item}”: what the backpack lacks of the pieces `need` names. */
 function lacking(backpack: Backpack, need: { item: ItemId; count: number }) {
-  return `brakuje ${need.count - backpack[need.item]} × ${thingName(need.item)}`;
+  return `brakuje ${need.count - backpack[need.item]} × ${itemName(need.item)}`;
 }
 
 /** The first item of the data's order that the data marks for a use. */
@@ -314,10 +319,10 @@ function worldRefusal(run: RunView, action: Action): string | null {
     case "walkTo": {
       const target = walkTarget(run, action.resource);
       if (target === null)
-        return `nie znasz miejsca, gdzie leży ${thingName(action.resource)}`;
+        return `nie znasz miejsca, gdzie leży ${resourceName(action.resource)}`;
       return target.minutes > 0
         ? null
-        : `${thingName(action.resource)} leży już tutaj`;
+        : `${resourceName(action.resource)} leży już tutaj`;
     }
     case "walkToCampfire": {
       const target = campfireTarget(run);
@@ -327,7 +332,7 @@ function worldRefusal(run: RunView, action: Action): string | null {
     case "gather":
     case "patrol":
       if (stockHere(run, action.resource) <= 0)
-        return `tu nie leży ${thingName(action.resource)}`;
+        return `tu nie leży ${resourceName(action.resource)}`;
       return backpackCount(backpack) < backpackCap(run.character)
         ? null
         : "plecak pełny";
@@ -358,7 +363,7 @@ function worldRefusal(run: RunView, action: Action): string | null {
         return "tu nie płonie ognisko";
       return itemFor(backpack, "fuel") !== null
         ? null
-        : `brak opału: ${thingName(firstItemFor("fuel"))}`;
+        : `brak opału: ${itemName(firstItemFor("fuel"))}`;
     case "eat":
       return itemFor(backpack, "food") !== null
         ? null
