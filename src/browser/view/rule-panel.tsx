@@ -467,6 +467,90 @@ function NumberRow({
   );
 }
 
+/** What the row of one field reads from the panel; the panel hands each row its own field and these. */
+type FieldRowProps = {
+  state: GameState;
+  field: RuleField;
+  condition: Condition;
+  action: Action | null;
+  fields: RuleField[];
+  active: RuleField;
+  cursor: number | null;
+  tabbable: number;
+  grid: RefObject<HTMLDivElement | null>;
+  numberInput: RefObject<HTMLInputElement | null>;
+  moveTo: (field: RuleField) => void;
+  onCursor: (at: number | null) => void;
+  onChoose: (field: RuleField, value: string) => void;
+  onCommitNumber: (value: number) => void;
+};
+
+/** The row of one field: its number field, its grid while it is open, or its value and a button that opens it. */
+function FieldRow({
+  state,
+  field,
+  condition,
+  action,
+  fields,
+  active,
+  cursor,
+  tabbable,
+  grid,
+  numberInput,
+  moveTo,
+  onCursor,
+  onChoose,
+  onCommitNumber,
+}: FieldRowProps) {
+  const label = FIELD_LABELS[field];
+  if (field === "number")
+    return (
+      <NumberRow
+        label={label}
+        condition={condition}
+        active={active}
+        after={fieldAfter(fields, "number")}
+        moveTo={moveTo}
+        onCommit={onCommitNumber}
+        inputRef={numberInput}
+      />
+    );
+  const fieldPick = pickOf(state, field, condition, action);
+  if (fieldPick === null) return null;
+  const time =
+    field === "action" && action !== null
+      ? actionTime(state, action.kind)
+      : null;
+  return (
+    <div className="rule-panel-field">
+      <span className="rule-panel-label">{label}</span>
+      {field === active ? (
+        <PickGrid
+          state={state}
+          field={field}
+          sections={fieldPick}
+          cursor={cursor}
+          tabbable={tabbable}
+          gridRef={grid}
+          onCursor={onCursor}
+          onChoose={(value) => onChoose(field, value)}
+        />
+      ) : (
+        <span className="rule-panel-value">
+          <ReactButton
+            text={chosenLabel(fieldPick)}
+            label={`${label}: ${chosenLabel(fieldPick)}`}
+            onClick={() => moveTo(field)}
+          />
+          {time === null ? null : (
+            <span className="rule-panel-time">{time}</span>
+          )}
+        </span>
+      )}
+    </div>
+  );
+}
+
 type RulePanelViewProps = RulePanelHandlers & RulePanelProps;
 
 /** The rule panel of the rule or group `open` names; nothing where none is open or it is gone. */
@@ -605,65 +689,6 @@ export function RulePanelView({
     if (next !== null) onCommit(next);
   }
 
-  /** The row of one field: its number field, its grid while it is open, or its value and a button that opens it. */
-  function renderField(field: RuleField) {
-    const label = FIELD_LABELS[field];
-    if (field === "number") {
-      if (condition === undefined) return null;
-      return (
-        <NumberRow
-          key={field}
-          label={label}
-          condition={condition}
-          active={active}
-          after={fieldAfter(fields, "number")}
-          moveTo={moveTo}
-          onCommit={commitNumber}
-          inputRef={numberInput}
-        />
-      );
-    }
-    const fieldPick = pickOf(
-      state,
-      field,
-      condition ?? { kind: "always" },
-      action,
-    );
-    if (fieldPick === null) return null;
-    const time =
-      field === "action" && action !== null
-        ? actionTime(state, action.kind)
-        : null;
-    return (
-      <div className="rule-panel-field" key={field}>
-        <span className="rule-panel-label">{label}</span>
-        {field === active ? (
-          <PickGrid
-            state={state}
-            field={field}
-            sections={fieldPick}
-            cursor={cursor}
-            tabbable={tabbable}
-            gridRef={grid}
-            onCursor={setCursor}
-            onChoose={(value) => choose(field, value)}
-          />
-        ) : (
-          <span className="rule-panel-value">
-            <ReactButton
-              text={chosenLabel(fieldPick)}
-              label={`${label}: ${chosenLabel(fieldPick)}`}
-              onClick={() => moveTo(field)}
-            />
-            {time === null ? null : (
-              <span className="rule-panel-time">{time}</span>
-            )}
-          </span>
-        )}
-      </div>
-    );
-  }
-
   const heading =
     index === null
       ? `Grupa ${groupNumber(groupIndex)}`
@@ -693,7 +718,25 @@ export function RulePanelView({
           moveTo={moveTo}
         />
       ) : null}
-      {fields.map(renderField)}
+      {fields.map((field) => (
+        <FieldRow
+          key={field}
+          state={state}
+          field={field}
+          condition={condition}
+          action={action}
+          fields={fields}
+          active={active}
+          cursor={cursor}
+          tabbable={tabbable}
+          grid={grid}
+          numberInput={numberInput}
+          moveTo={moveTo}
+          onCursor={setCursor}
+          onChoose={choose}
+          onCommitNumber={commitNumber}
+        />
+      ))}
     </section>
   );
 }
