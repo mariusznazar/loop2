@@ -5,7 +5,10 @@
 // is the rule's row, „{condition} → {action}”, in the words of the data's labels.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { copyChangeTexts } from "../../dist/browser/view/chronicle-entries.js";
+import {
+  copyChangeTexts,
+  eventEntry,
+} from "../../dist/browser/view/chronicle-entries.js";
 
 const ALWAYS = { kind: "always" };
 const rule = (id, action, condition = ALWAYS) => ({ id, condition, action });
@@ -218,4 +221,58 @@ test("an edit after which the copy is the same gives nothing", () => {
     ),
     [],
   );
+});
+
+const CRAFT_BANDAGE = { kind: "craft", item: "bandage" };
+const TEND_BANDAGE = { kind: "tend", item: "bandage" };
+
+// Catches a rule with „Wytwórz” or „Opatrz” written without its target, with its price, or with the
+// data's key of the target, in the sentence of an added rule or of a changed one.
+test("a rule added or changed to „Wytwórz” or „Opatrz” gives its sentence with the target, and a change of the target alone is a change", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
+  const added = program([
+    fire(),
+    hunger([R_EAT, R_WANDER, rule(30, TEND_BANDAGE)]),
+  ]);
+  assert.deepEqual(copyChangeTexts(BEFORE, added, null), [
+    "Dodano regułę 2.3: Zawsze → Opatrz — Opatrunek",
+  ]);
+  const crafting = program([
+    fire([R_EXPLORE, R_STICK, rule(3, CRAFT_BANDAGE)]),
+    hunger(),
+  ]);
+  assert.deepEqual(copyChangeTexts(BEFORE, crafting, null), [
+    "Zmieniono regułę 1.3: „Zawsze → Wytwórz — ognisko” na „Zawsze → Wytwórz — Opatrunek”",
+  ]);
+  const tending = program([
+    fire([R_EXPLORE, R_STICK, rule(3, TEND_BANDAGE)]),
+    hunger(),
+  ]);
+  assert.deepEqual(copyChangeTexts(crafting, tending, null), [
+    "Zmieniono regułę 1.3: „Zawsze → Wytwórz — Opatrunek” na „Zawsze → Opatrz — Opatrunek”",
+  ]);
+});
+
+// Catches the start of an action of the chronicle written without the target of „Wytwórz” and „Opatrz”,
+// or with the number of the rule.
+test("the start of „Wytwórz” and of „Opatrz” gives its entry in the words of the rule's row, with the target and no number of a rule", () => {
+  // decision: D-340 "The start of each action of the character gives an entry of the chronicle"
+  const entryOf = (action) =>
+    eventEntry(
+      {
+        kind: "activityStarted",
+        minute: 12,
+        activity: { kind: "rule", ruleId: 4, action },
+        stepTo: null,
+      },
+      null,
+    );
+  assert.deepEqual(entryOf(CRAFT_BANDAGE), {
+    kind: "action",
+    minute: 12,
+    text: "Wytwórz — Opatrunek",
+    role: "text",
+  });
+  assert.equal(entryOf(TEND_BANDAGE).text, "Opatrz — Opatrunek");
 });

@@ -31,7 +31,9 @@ import { ReactButton } from "./controls/react-button.js";
 import { ReactNumberField } from "./controls/react-number-field.js";
 import { ReactPickCell } from "./controls/react-pick-cell.js";
 import { ReactTextField } from "./controls/react-text-field.js";
+import { itemTargetTime, namesItem } from "./item-target-pick.js";
 import {
+  actionFieldValue,
   actionPick,
   actionTargetPick,
   actionTime,
@@ -46,6 +48,7 @@ import {
   renameGroup,
   ruleFields,
   ruleNumber,
+  withActionItem,
   withActionKind,
   withActionResource,
   withConditionItem,
@@ -184,6 +187,30 @@ function chosenLabel(pick: FieldPick | null): string {
   return "";
 }
 
+/** The item an action names as its target, undefined for an action that names none. */
+function itemOf(action: Action | null): ItemId | undefined {
+  return action !== null && namesItem(action) ? action.item : undefined;
+}
+
+/**
+ * The time one carrying out takes, as the grid of `field` shows it beside each cell: the time of the
+ * kind at a cell of an action, the time the target gives at a cell of the target of an item verb
+ * („Wytwórz”: the minutes of its recipe), and none at any other cell.
+ */
+function cellTimes(
+  state: GameState,
+  field: RuleField,
+  action: Action | null,
+): (value: string) => string | null {
+  if (field === "action")
+    return (value) => actionTime(state, value as Action["kind"]);
+  if (field === "actionTarget" && action !== null && namesItem(action)) {
+    const kind = action.kind;
+    return (value) => itemTargetTime(state, kind, value as ItemId);
+  }
+  return () => null;
+}
+
 /** The cells of a grid, in the order of its sections, as the panel draws them. */
 function cellsOf(grid: HTMLElement | null): HTMLElement[] {
   return grid === null
@@ -191,11 +218,15 @@ function cellsOf(grid: HTMLElement | null): HTMLElement[] {
     : [...grid.querySelectorAll<HTMLElement>(".pick-cell")];
 }
 
-/** The rule or group a change addresses: its group, its place in the group (null for the group's own condition) and its condition. */
+/**
+ * The rule or group a change addresses: its group, its place in the group (null for the group's own
+ * condition), its condition and its action, null for a group.
+ */
 type RuleTarget = {
   groupId: GroupId;
   index: number | null;
   condition: Condition | undefined;
+  action: Action | null;
 };
 
 /** The program after `value` is picked in `field` of `target`; null where it changes nothing. */
@@ -206,7 +237,7 @@ function changedProgram(
   field: RuleField,
   value: string,
 ): Program | null {
-  const { groupId, index, condition } = target;
+  const { groupId, index, condition, action } = target;
   switch (field) {
     case "condition":
       return withConditionKind(
@@ -233,8 +264,10 @@ function changedProgram(
             offeredItems(state),
           );
     case "actionTarget":
-      return index === null
-        ? null
+      if (index === null) return null;
+      // An item verb takes an item of its own targets, any other verb a resource.
+      return action !== null && namesItem(action)
+        ? withActionItem(program, groupId, index, value as ItemId)
         : withActionResource(program, groupId, index, value as ResourceId);
     case "number":
       return null;
@@ -299,21 +332,21 @@ function GroupNameField({
  * a cell that is not greyed; the cell `tabbable` is the only one in the order of Tab.
  */
 function PickGrid({
-  state,
   field,
   sections,
   cursor,
   tabbable,
   gridRef,
+  timeOf,
   onCursor,
   onChoose,
 }: {
-  state: GameState;
   field: RuleField;
   sections: FieldPick;
   cursor: number | null;
   tabbable: number;
   gridRef: RefObject<HTMLDivElement | null>;
+  timeOf: (value: string) => string | null;
   onCursor: (at: number | null) => void;
   onChoose: (value: string) => void;
 }) {
@@ -375,10 +408,7 @@ function PickGrid({
               // The cells of the grid are counted through all its sections, as `flat` counts them.
               const index = cellsBefore;
               cellsBefore += 1;
-              const time =
-                field === "action"
-                  ? actionTime(state, cell.value as Action["kind"])
-                  : null;
+              const time = timeOf(cell.value);
               return (
                 <div className="rule-panel-cell" key={cell.value}>
                   <ReactPickCell
@@ -518,29 +548,31 @@ function FieldRow({
     );
   const fieldPick = pickOf(state, field, condition, action);
   if (fieldPick === null) return null;
-  const time =
-    field === "action" && action !== null
-      ? actionTime(state, action.kind)
-      : null;
+  // The action field shows the verb with its target and its price, and the time of one carrying out.
+  const shown = field === "action" && action !== null;
+  const value = shown
+    ? actionFieldValue(state, action)
+    : chosenLabel(fieldPick);
+  const time = shown ? actionTime(state, action.kind, itemOf(action)) : null;
   return (
     <div className="rule-panel-field">
       <span className="rule-panel-label">{label}</span>
       {field === active ? (
         <PickGrid
-          state={state}
           field={field}
           sections={fieldPick}
           cursor={cursor}
           tabbable={tabbable}
           gridRef={grid}
+          timeOf={cellTimes(state, field, action)}
           onCursor={onCursor}
           onChoose={(value) => onChoose(field, value)}
         />
       ) : (
         <span className="rule-panel-value">
           <ReactButton
-            text={chosenLabel(fieldPick)}
-            label={`${label}: ${chosenLabel(fieldPick)}`}
+            text={value}
+            label={`${label}: ${value}`}
             onClick={() => moveTo(field)}
           />
           {time === null ? null : (
@@ -664,7 +696,7 @@ export function RulePanelView({
     const next = changedProgram(
       state,
       program,
-      { groupId, index, condition },
+      { groupId, index, condition, action },
       field,
       value,
     );
