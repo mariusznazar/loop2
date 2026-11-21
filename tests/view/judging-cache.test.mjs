@@ -442,7 +442,7 @@ const BAD_VALUES = [
     ["a fingerprint that is empty", ""],
     ["a fingerprint of fifteen digits", FINGERPRINT.slice(1)],
     ["a fingerprint of seventeen digits", `${FINGERPRINT}0`],
-    ["a fingerprint of a thousand digits", "0".repeat(1000)],
+    ["a fingerprint of nine hundred digits", "0".repeat(900)],
     ["a fingerprint in capital letters", FINGERPRINT.toUpperCase()],
     ["a fingerprint with a letter past f", `${FINGERPRINT.slice(1)}g`],
     ["a fingerprint with a sign", `-${FINGERPRINT.slice(1)}`],
@@ -461,7 +461,7 @@ const BAD_VALUES = [
     JSON.stringify({ ...VALID, fingerprint }),
   ]),
   [
-    "a fingerprint of the form beside a value of version 1, which has none",
+    "a value of exactly the four fields version 1 held",
     JSON.stringify({
       results: VALID.results,
       equipment: VALID.equipment,
@@ -879,7 +879,7 @@ test("a value kept by the opening is given as it was stored, whatever it says of
   assert.equal(cache.read(LAS).generation, 1);
 });
 
-test("a value of a triple whose character or program the loaded game once gave and no longer holds, or one that is no value of the cache's, is not removed by the above check", () => {
+test("a value whose character or program the loaded game once gave and no longer holds is kept where the side the game still holds is at or above it, and so is a value or a key of no form of the cache's", () => {
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({
     "loop2-judging-2|acct-1|1000|9|1|forest": valueAt(0, 9),

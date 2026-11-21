@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { createCharacter, send } from "../../dist/browser/sim/game.js";
 import {
@@ -20,6 +21,22 @@ import { RulePanelView } from "../../dist/browser/view/rule-panel.js";
 const ALWAYS = { kind: "always" };
 const CRAFT_BANDAGE = { kind: "craft", item: "bandage" };
 const TEND_BANDAGE = { kind: "tend", item: "bandage" };
+
+// The recipe's pieces and minutes and the minutes of „Opatrz” stand only in the game's data (D-82), so
+// the texts below are built from it, the price by shape: each piece's count and a form of its name.
+const RECIPE = ITEMS.bandage.recipe;
+const MAKING_PRICE = RECIPE.uses
+  .map(({ item, count }) => {
+    const { name, plural } = ITEMS[item];
+    return `${count} (?:${name}|${plural.few}|${plural.many})`;
+  })
+  .join(", ");
+/** The closed action field of „Wytwórz — Opatrunek” with its price. */
+const CRAFT_FIELD = new RegExp(`^Wytwórz — Opatrunek \\(${MAKING_PRICE}\\)$`);
+/** The cell of the bandage in the pick of the target of „Wytwórz”, with its price. */
+const CRAFT_CELL = new RegExp(`^Opatrunek \\(${MAKING_PRICE}\\)$`);
+const MAKING_TIME = `${RECIPE.minutes} min`;
+const TEND_TIME = `${ACTIONS.tend.minutes} min`;
 
 /** One group of three rules holding `actions`, the first rule with the id 1. */
 function programOf(...actions) {
@@ -161,8 +178,11 @@ const nameOf = (cell) =>
     .filter((node) => node.nodeType === 3)
     .map((node) => node.textContent)
     .join("");
+/** The cell whose name is `name`: a text or, for a name with numbers of the data in it, a shape. */
 const cellNamed = (element, name) =>
-  cellsIn(element).find((cell) => nameOf(cell) === name);
+  cellsIn(element).find((cell) =>
+    name instanceof RegExp ? name.test(nameOf(cell)) : nameOf(cell) === name,
+  );
 const timeAt = (cell) =>
   cell.parentElement.querySelector(".rule-panel-time")?.textContent ?? null;
 const textIn = (element, selector) =>
@@ -182,9 +202,9 @@ test("the closed action field of „Wytwórz” and „Opatrz” shows the verb,
   // decision: D-363 "An action whose price its target gives, „Wytwórz” and „Opatrz” with an item as the target, shows no price at its cell of the pick of actions"
   // decision: D-293 "Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out of the action takes"
   for (const state of [newKnowingGame(), runningGame()]) {
-    for (const [action, value] of [
-      [CRAFT_BANDAGE, "Wytwórz — Opatrunek (2 mchy)"],
-      [TEND_BANDAGE, "Opatrz — Opatrunek (1 opatrunek)"],
+    for (const [action, value, time] of [
+      [CRAFT_BANDAGE, CRAFT_FIELD, MAKING_TIME],
+      [TEND_BANDAGE, /^Opatrz — Opatrunek \(1 opatrunek\)$/, TEND_TIME],
     ]) {
       await withPage(async (page) => {
         await mountPanel(
@@ -194,8 +214,8 @@ test("the closed action field of „Wytwórz” and „Opatrz” shows the verb,
           state,
         );
         const field = fieldOf(panelOf(page.root), "Czynność");
-        assert.equal(textIn(field, ".rule-panel-value button"), value);
-        assert.equal(textIn(field, ".rule-panel-time"), "10 min");
+        assert.match(textIn(field, ".rule-panel-value button"), value);
+        assert.equal(textIn(field, ".rule-panel-time"), time);
       });
     }
   }
@@ -218,7 +238,7 @@ test("in the pick of actions the cell „Wytwórz” shows no price and no time,
     assert.ok(craft, "the cell of „Wytwórz” has no price in its name");
     assert.ok(tend, "the cell of „Opatrz” has no price in its name");
     assert.equal(timeAt(craft), null);
-    assert.equal(timeAt(tend), "10 min");
+    assert.equal(timeAt(tend), TEND_TIME);
   });
 });
 
@@ -235,9 +255,10 @@ test("the cells of the pick of a target of „Wytwórz” show the time of each 
         field: "actionTarget",
       });
       const panel = panelOf(page.root);
-      const bandage = cellNamed(panel, "Opatrunek (2 mchy)");
+      const bandage = cellNamed(panel, CRAFT_CELL);
       const splint = cellNamed(panel, "Szyna (3 patyki)");
-      assert.equal(timeAt(bandage), "10 min");
+      assert.ok(bandage, "the cell of the bandage");
+      assert.equal(timeAt(bandage), MAKING_TIME);
       assert.equal(timeAt(splint), "15 min");
     });
     await withPage(async (page) => {
@@ -269,7 +290,7 @@ test("a pick in the field of the target of „Wytwórz” or „Opatrz” change
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
   await withSplint(async () => {
     for (const [kind, held, other, otherCell] of [
-      ["craft", "Opatrunek (2 mchy)", "splint", "Szyna (3 patyki)"],
+      ["craft", CRAFT_CELL, "splint", "Szyna (3 patyki)"],
       ["tend", "Opatrunek (1 opatrunek)", "splint", "Szyna (1 szyna)"],
     ]) {
       await withPage(async (page) => {
@@ -307,19 +328,20 @@ test("a pick of „Wytwórz” moves on to the field of its target, the bandage 
       CRAFT_BANDAGE,
     );
     const panel = panelOf(page.root);
-    const chosen = cellNamed(panel, "Opatrunek (2 mchy)");
+    const chosen = cellNamed(panel, CRAFT_CELL);
+    assert.ok(chosen, "the cell of the bandage");
     assert.equal(chosen.getAttribute("aria-pressed"), "true");
     assert.equal(page.document.activeElement, chosen, "the pick moved on");
-    assert.equal(timeAt(chosen), "10 min");
+    assert.equal(timeAt(chosen), MAKING_TIME);
     await press(chosen);
     assert.equal(editor.commits.length, 1, "the target held commits nothing");
     assert.ok(panelOf(page.root), "the panel stays open after the last field");
-    assert.equal(
+    assert.match(
       textIn(
         fieldOf(panelOf(page.root), "Czynność"),
         ".rule-panel-value button",
       ),
-      "Wytwórz — Opatrunek (2 mchy)",
+      CRAFT_FIELD,
     );
     assert.equal(
       textIn(rowOf(page.root, 1), ".rule-action"),
@@ -343,8 +365,8 @@ test("the row of a rule with „Wytwórz” or „Opatrz” reads the verb and i
         }),
       );
       for (const [id, words, time] of [
-        [1, "Wytwórz — Opatrunek", "10 min"],
-        [2, "Opatrz — Opatrunek", "10 min"],
+        [1, "Wytwórz — Opatrunek", MAKING_TIME],
+        [2, "Opatrz — Opatrunek", TEND_TIME],
         [3, "Wytwórz — Szyna", "15 min"],
       ]) {
         const row = rowOf(page.root, id);

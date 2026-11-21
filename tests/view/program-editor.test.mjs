@@ -1424,8 +1424,11 @@ test("the time of one making comes from the recipe of its target, the minutes of
       actionTime(state, "craft", "bandage"),
       `${BANDAGE_RECIPE.minutes} min`,
     );
-    assert.equal(actionTime(state, "tend"), "10 min");
-    assert.equal(actionTime(state, "tend", "bandage"), "10 min");
+    assert.equal(actionTime(state, "tend"), `${ACTIONS.tend.minutes} min`);
+    assert.equal(
+      actionTime(state, "tend", "bandage"),
+      `${ACTIONS.tend.minutes} min`,
+    );
     assert.equal(actionPriceText(state, "craft"), null);
     assert.equal(actionPriceText(state, "tend"), null);
     assert.match(actionPriceText(state, "craft", "bandage"), BANDAGE_PRICE);

@@ -710,6 +710,56 @@ test("the fingerprint is sixteen lower-case hexadecimal digits, the same at each
     assert.equal(isContentFingerprint(refused), false, String(refused));
 });
 
+test("two contents whose group names, put together without their quotes, read as the same text have each a fingerprint of its own", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  // One group whose name holds the end of a group and the start of the next, and the two groups it reads as
+  // when the quotes of the names are left out: the same text of the groups, a different content.
+  const asOne = content(
+    [
+      grouped(
+        1,
+        'x,"rules":[]},{"condition":{"kind":always},"id":2,"name":y',
+        ALWAYS,
+        [],
+      ),
+    ],
+    { take: [], bring: [] },
+  );
+  const asTwo = content(
+    [grouped(1, "x", ALWAYS, []), grouped(2, "y", ALWAYS, [])],
+    { take: [], bring: [] },
+  );
+  assert.notEqual(contentFingerprint(asOne), contentFingerprint(asTwo));
+});
+
+test("the fingerprint of every content is its whole sixteen digits, one whose two words start with a zero included", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  const fingerprints = [];
+  for (let value = 0; value < 4000; value += 1)
+    fingerprints.push(
+      contentFingerprint(
+        content(
+          [
+            grouped(1, "Program", ALWAYS, [
+              ruled(1, { kind: "healthBelow", value }, "eat"),
+            ]),
+          ],
+          { take: [], bring: [] },
+        ),
+      ),
+    );
+  // About one fingerprint in sixteen starts with a zero in each of its two words of eight digits.
+  assert.ok(
+    fingerprints.some((one) => one.startsWith("0")),
+    "precondition: a fingerprint whose first word starts with a zero",
+  );
+  assert.ok(
+    fingerprints.some((one) => one[8] === "0"),
+    "precondition: a fingerprint whose second word starts with a zero",
+  );
+  for (const one of fingerprints) assert.match(one, /^[0-9a-f]{16}$/);
+});
+
 test("a record made at a content revision stands beside the content it judged and not beside another content that reached the same revision after a change that was lost", () => {
   // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents share a judging only through such a collision, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
   const base = game();

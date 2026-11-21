@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   createCharacter,
@@ -1571,10 +1572,10 @@ test("the actions stand in the five groups Ruch, Zbieranie, Ogień, Żywność i
     const timeOf = (name) =>
       cellNamed(panel, name).parentElement.querySelector(".rule-panel-time")
         ?.textContent ?? null;
-    // The minutes of the data (src/browser/sim/data/actions.ts): „Zbierz” 10, „Obchód” 40, „Opatrz” 10.
+    // The minutes of the data (src/browser/sim/data/actions.ts): „Zbierz” 10, „Obchód” 40.
     assert.equal(timeOf("Zbierz"), "10 min");
     assert.equal(timeOf("Obchód"), "40 min");
-    assert.equal(timeOf("Opatrz"), "10 min");
+    assert.equal(timeOf("Opatrz"), `${ACTIONS.tend.minutes} min`);
     assert.equal(timeOf("Kopnij"), "tura");
     assert.equal(timeOf("Wędruj"), null, "no map gives a move its step");
     // „Wytwórz” takes its time from the recipe of its target, so its cell shows none (D-293).

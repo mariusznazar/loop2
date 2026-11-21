@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { runOnce } from "../../balance/engine.mjs";
 import { trace } from "../../balance/trace.mjs";
@@ -75,7 +76,11 @@ test("every started action of a trace is named by a label of the data, and a gat
 });
 
 test("a trace names the item of an action that starts with an item as its target by the name the data give it, as it names a resource, and ends as the engine does", () => {
-  // Gathers two pieces of moss, crafts a bandage of them and dresses with it once the health is hurt.
+  // Gathers the pieces of moss one making of the bandage uses (as the data hold them, D-82), crafts a
+  // bandage of them and dresses with it once the health is hurt.
+  const moss = ITEMS.bandage.recipe.uses.find(
+    (use) => use.item === "moss",
+  ).count;
   const dressing = program({
     groups: [
       {
@@ -83,8 +88,8 @@ test("a trace names the item of an action that starts with an item as its target
         rules: [
           [healthBelow(100), { kind: "tend", item: "bandage" }],
           [itemBelow("bandage", 1), { kind: "craft", item: "bandage" }],
-          [itemBelow("moss", 2), gather("moss")],
-          [itemBelow("moss", 2), walkTo("moss")],
+          [itemBelow("moss", moss), gather("moss")],
+          [itemBelow("moss", moss), walkTo("moss")],
           [always, explore],
         ],
       },

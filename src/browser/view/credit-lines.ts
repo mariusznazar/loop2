@@ -49,8 +49,8 @@ function actionIcons(): WithIcon[] {
 }
 
 /**
- * Everything the data gives an icon, in the section's order: the resources, then the campfire and
- * the extinguished campfire, then the actions, then the creatures.
+ * Everything the data gives an icon, in the section's order: the items (the resources among them),
+ * then the campfire and the extinguished campfire, then the actions, then the creatures.
  */
 const WITH_ICONS: readonly WithIcon[] = [
   ...Object.values(ITEMS),

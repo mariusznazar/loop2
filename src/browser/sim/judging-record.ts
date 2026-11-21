@@ -69,7 +69,7 @@ const hexWord = (word: number): string =>
  * plan. It is the same for two contents that the content revision counts as no change — the order an
  * object's keys were made in and the identity counters that number new groups and rules count for
  * nothing — and differs for every change it counts; two different contents meet in it with a chance of
- * about one in 2^64, the hash being no cryptographic one. It reads no clock and no random number.
+ * about one in 2^62, the hash being no cryptographic one. It reads no clock and no random number.
  */
 export function contentFingerprint(program: Program): string {
   const text = canonicalText([program.groups, program.tripPlan]);

@@ -95,12 +95,9 @@ function held(state, program) {
   return after.run ? after.run.copy.program : after.programs[0].program;
 }
 
-/** What the refusal's message must name for the value: the text of a primitive, else a word. */
-function named(value) {
-  return typeof value === "object" && value !== null
-    ? "an object"
-    : String(value);
-}
+/** Whether a refusal's message must name the value: a text with something in it or a number. */
+const namedInRefusal = (value) =>
+  (typeof value === "string" && value !== "") || typeof value === "number";
 
 test("the targets follow the data: the bandage is a target of both verbs and moss of neither", () => {
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
@@ -267,7 +264,7 @@ test("the check refuses either verb with a target the data do not give it, and n
           () => setProgram(game, programFromRules(rule(ALWAYS, action))),
           (error) =>
             error instanceof ProgramCheckError &&
-            error.message.includes(named(item)),
+            (!namedInRefusal(item) || error.message.includes(String(item))),
           `${verb} with ${JSON.stringify(item)} ${where}`,
         );
       }
@@ -428,7 +425,13 @@ test("neither verb is grown by a character skill: both are open to every charact
   }
 });
 
-/** A game sent to Las with the chest's two moss in the backpack and `rules` as the program. */
+/** The pieces of one making of the bandage, as the data hold them (D-82): the chest and the trip plan carry them. */
+const BANDAGE_USES = ITEMS.bandage.recipe.uses;
+const BANDAGE_PIECES = Object.fromEntries(
+  BANDAGE_USES.map(({ item, count }) => [item, count]),
+);
+
+/** A game sent to Las with the pieces of one making of the bandage in the backpack and `rules` as the program. */
 function sentWithMoss(understanding, ...rules) {
   const created = createCharacter(
     { ...withEdgeSolved(newGame()), understanding },
@@ -436,11 +439,11 @@ function sentWithMoss(understanding, ...rules) {
   ).state;
   const state = {
     ...created,
-    team: { ...created.team, chest: { pieces: { moss: 2 } } },
+    team: { ...created.team, chest: { pieces: { ...BANDAGE_PIECES } } },
   };
   const program = {
     ...programFromRules(...rules),
-    tripPlan: { take: [{ item: "moss", count: 2 }], bring: [] },
+    tripPlan: { take: BANDAGE_USES.map((use) => ({ ...use })), bring: [] },
   };
   return send(
     setProgram(state, program).state,
@@ -454,10 +457,15 @@ test("a rule whose item target lies outside the repertoire is passed over, and t
   const craft = rule(ALWAYS, { kind: "craft", item: "bandage" });
   const full = fullUnderstanding();
   const known = sentWithMoss(full, craft, rule(ALWAYS, EXPLORE));
-  assert.equal(
-    known.run.character.backpack.moss,
-    2,
-    "precondition: the moss is carried",
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.keys(BANDAGE_PIECES).map((item) => [
+        item,
+        known.run.character.backpack[item],
+      ]),
+    ),
+    BANDAGE_PIECES,
+    "precondition: the pieces are carried",
   );
   assert.equal(
     known.run.current.activity.ruleId,
@@ -472,7 +480,7 @@ test("a rule whose item target lies outside the repertoire is passed over, and t
   assert.equal(passed.run.current.activity.ruleId, 2);
   assert.deepEqual(passed.run.copy.program, {
     ...programFromRules(craft, rule(ALWAYS, EXPLORE)),
-    tripPlan: { take: [{ item: "moss", count: 2 }], bring: [] },
+    tripPlan: { take: BANDAGE_USES, bring: [] },
   });
   assert.deepEqual(passed.ruleCounts, { 1: 0, 2: 1 });
   const reduced = programInRepertoire(

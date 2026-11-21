@@ -253,6 +253,48 @@ test("„Wytwórz” where the backpack no longer holds the recipe's pieces at i
   assert.deepEqual(done.practice, {});
 });
 
+test("„Wytwórz” of a recipe of two pieces where either piece is gone by its end changes nothing and takes nothing, the piece still held included", () => {
+  // decision: D-142 "„Wytwórz” and „Opatrz” take what they use out of the backpack when they end, together with their effect, so an attack that interrupts either takes nothing."
+  withRows(ITEMS, { splint: SPLINT }, () => {
+    const made = { kind: "craft", item: "splint" };
+    const [first, second] = SPLINT.recipe.uses;
+    // The pieces held in full make it, so the cases below lack one piece each and nothing else.
+    const whole = runWith(
+      { [first.item]: first.count, [second.item]: second.count },
+      body(100),
+    );
+    assert.equal(after(carrying(whole, made), 1).character.backpack.splint, 1);
+    for (const [lacking, held] of [
+      [second.item, { [first.item]: first.count }],
+      [first.item, { [second.item]: second.count }],
+      [
+        first.item,
+        { [first.item]: first.count - 1, [second.item]: second.count },
+      ],
+    ]) {
+      const short = runWith(held, body(100));
+      const done = after(carrying(short, made), 1);
+      assert.deepEqual(
+        done.character.backpack,
+        short.character.backpack,
+        `${lacking} lacking`,
+      );
+      assert.deepEqual(done.practice, {}, `${lacking} lacking`);
+    }
+  });
+});
+
+test("„Opatrz” where the backpack holds no piece of its target at its end changes nothing and gives nothing back", () => {
+  // decision: D-145 "„Opatrz — {rzecz}” uses up one piece of the thing, an item the data give a healing, and gives back that healing to health whatever took it — cold, hunger or a blow of combat — never above full health."
+  // A state only a crafted saved game holds: the action went on while the backpack held no bandage.
+  const run = runWith({}, body(50));
+  const done = after(carrying(run, TEND), 1);
+  assert.deepEqual(done.character.backpack, run.character.backpack);
+  assert.equal(done.character.backpack.bandage, 0);
+  assert.equal(done.body.health, 50.05, "only the minute's own regaining");
+  assert.deepEqual(done.practice, {});
+});
+
 test("„Opatrz” takes one piece and gives the target's healing at its end, together, and nothing before it", () => {
   // decision: D-145 "„Opatrz — {rzecz}” uses up one piece of the thing, an item the data give a healing, and gives back that healing to health whatever took it — cold, hunger or a blow of combat — never above full health."
   const run = runWith({ bandage: 2, moss: 1 }, body(50));
@@ -518,6 +560,7 @@ test("the price of an action with a target is read from the target: the recipe's
 
 test("what a finished „Wytwórz” or „Opatrz” takes from the backpack is exactly the price of the action with its target", () => {
   // decision: D-142 "„Wytwórz” and „Opatrz” take what they use out of the backpack when they end, together with their effect, so an attack that interrupts either takes nothing."
+  // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
   const crafted = after(
     carrying(runWith({ ...RECIPE_PIECES }, body(100)), CRAFT),
     1,
