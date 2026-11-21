@@ -1030,6 +1030,12 @@ Android's developer guidance on making an app accessible recommends, for touch i
 
 - **Source:** https://developer.android.com/guide/topics/ui/accessibility/apps (archived: https://web.archive.org/web/20261116093600/https://developer.android.com/guide/topics/ui/accessibility/apps, 2026-11-16) § Use large, simple controls — "For touch interfaces, we recommend that each interactive UI element have a focusable area, or touch target size, of at least 48dpx48dp. Larger is even better." · § Use large, simple controls, Note — "For precise input (mouses and trackpads), the touch target can be smaller."; read 2026-11-21
 
+## media-query-width-and-scrollbar
+
+The width media feature of CSS Media Queries Level 4 measures, for continuous media, the width of the viewport including the size of a rendered scroll bar, where there is one.
+
+- **Source:** https://www.w3.org/TR/2026/CRD-mediaqueries-4-20260219/ § 4.1 width — "For continuous media, this is the width of the viewport (as described by CSS2, section 9.1.1 [CSS2]) including the size of a rendered scroll bar (if any)."; read 2026-11-22
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

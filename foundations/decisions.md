@@ -5010,7 +5010,7 @@ In the browser view the role `positive` means that something works, is in order 
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. tests: the fill, the name and the numbers of a met requirement of the solving condition in the header in `positive`, on a track in `highlight`, through the real stylesheet, and a met requirement marked `positive` after a completion; „Odbierz” drawn as the button of the kind `positive`. An agent compares a change with the part no invariant and no test holds:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` at rest and under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
   - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
 - **Origin:** none
 
@@ -5088,9 +5088,9 @@ A control awaiting a server response is disabled with text in `text-disabled`, �
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
-  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” with their text in `danger` at rest and on the background `highlight` besides under the pointer, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
-  - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button neutral at rest; a destructive button with a look of its own in the phone layout; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” on the background `highlight` under the pointer with their text staying in `danger`, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
+  - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button with a look of its own in the phone layout; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
 
 *Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. A destructive button shows what it is at rest, since a player of a phone has no pointer that reaches a button before it is tapped, so a colour that came only under the pointer would show that player nothing; its look is one in every layout, the narrow window of a computer included, and the colour is the text's alone, the background `highlight` under the pointer being what every button takes. A button that ends a map run, deletes a program rule, resets progress on a map, starts the game from zero or discards the unsaved changes of the copy is destructive, in every place it stands. „Zacznij od zera” puts the present game in the place of the previous save, where the next move into that place replaces it. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: red stands at rest on every button that may drop something, which the earlier wording kept off so that red would not drown out the state of the character and would mean a threat to a character alone, and in the editor a red sign stands in every row, a risk to be seen in the game; one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning.
@@ -8314,7 +8314,7 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there, the editor standing under the list in the phone layout (D-282, D-396). That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8326,10 +8326,11 @@ The screen Programy holds on the left the list of the player's programs and on t
   alone; the program panel of the screen of a map run showing the copy, its select list holding
   „Kopia w przejściu” at its top and the saved programs below it. For where the list and the editor
   stand on Programy, an agent compares a change with the part no test holds:
-  - complies: the list of programs in the left column of Programy and the program editor in the
-    right one
+  - complies: in the computer layout the list of programs in the left column of Programy and the
+    program editor in the right one; in the phone layout the list of programs with the program
+    editor under it
   - violates: the program editor standing on the left of Programy and the list of programs on its
-    right
+    right in the computer layout
 - **Origin:** none
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
@@ -9363,15 +9364,17 @@ mouse of a computer.
   columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
   greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
   handle, with the line „tu wyląduje” where they land and no line over their own place, over the
-  panel or after the drag ends; rule groups moved by a handle with such a line. For the cells of
-  actions and targets reached by the keyboard, and for the arrows of a rule group, an agent compares
-  a change with the part no invariant and no test holds:
+  panel or after the drag ends; rule groups moved by a handle with such a line; in the header of
+  every rule group „↑” and „↓”, „↓” moving the group one place down and „↑” one place up, the group
+  keeping its rules and its name, „↑” off on the first group and „↓” on the last, on a folded group
+  too, and a group moving by these arrows alone, not by arrow keys on its header. For the cells of
+  actions and targets reached by the keyboard, and for the arrows of a rule group in the phone
+  layout, an agent compares a change with the part no invariant and no test holds:
   - complies: the arrow keys moving among the cells of the action and of its target as they do
-    among the conditions; in the header of every rule group „↑” and „↓”, in the computer layout and
-    in the phone layout, „↓” moving the group one place down and „↑” one place up, „↑” disabled on
-    the first group and „↓” on the last
-  - violates: the cells of the actions reached by the mouse alone; a rule group that only a drag
-    with a handle moves; the arrows of a rule group present in the computer layout alone
+    among the conditions; in the phone layout at a page area 360 px wide the arrows „↑” and „↓” in
+    the header of every rule group, as in the computer layout
+  - violates: the cells of the actions reached by the mouse alone; the arrows of a rule group
+    present in the computer layout alone
 - **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
@@ -10413,22 +10416,24 @@ click of a mouse on a tile changes nothing.
 - **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
   changing nothing, and nothing in the drawing a control; hovering a revealed tile marking its row
   in the list of revealed tiles, and hovering a row marking its tile; hovering a tile not revealed
-  marking no row; the numbers of stock standing in the
-  rows of the list and in the line under the drawing, which gives the hovered tile, or the
-  character's tile where none is hovered or the key names no tile. For hovering as a real browser
-  delivers it, for the tap, and for what the player does on the drawing other than a click, an
-  agent compares a change with the part no invariant and no test holds:
+  marking no row; a tap with a finger on a revealed tile marking its row and the tile, the mark
+  staying after the finger is lifted and the pointer has left, a tap on another tile moving it, and a
+  tap on the header, on the table, on the page and on the drawing beside its tiles taking it off; a
+  finger that only rests on a tile or is taken by a scroll marking nothing, a tap on a tile not
+  revealed marking no row, a click of a mouse marking nothing and a hover of a mouse marking as
+  before; the numbers of stock standing in the rows of the list and in the line under the drawing,
+  which gives the hovered or the tapped tile, or the character's tile where none is marked or the key
+  names no tile. For hovering and for the tap as a real browser delivers them, and for what the
+  player does on the drawing other than a click, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: in a browser, hovering a tile marks its row in the list of revealed tiles, and
     hovering that row marks the tile, while the tab „Teren” of the area under the world on the
-    screen of a map run is picked (D-311); a tap with a finger on a revealed tile marking its row
-    in that list while the tab is picked, a tap on another tile moving the mark to the row of that
-    tile, and a tap elsewhere on the page taking the mark off, a click of a mouse on the tile
-    marking nothing; the line under the drawing giving the tapped tile while its row is marked, and
-    the character's tile again after a tap elsewhere
+    screen of a map run is picked (D-311); in a browser with touch at a page area 360 px wide, a tap
+    with a finger on a revealed tile marking its row in that list and the line under the drawing
+    giving its numbers, and a tap elsewhere taking the mark off
   - violates: a double click or a drag on a tile that sends the character there or changes the
-    program; a tap on a tile that leaves its row unmarked, or a mark that stays after a tap
-    elsewhere; a tap on a tile not revealed that marks a row; the line under the drawing still
-    giving the character's tile while a tapped tile's row is marked
+    program; a tap on a tile in a browser with touch that leaves its row unmarked, or a mark that
+    stays after a tap elsewhere
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
@@ -10879,7 +10884,7 @@ run stays picked through the whole map run, through leaving its screen and comin
 *Rationale:* the area under the world keeps what the player chose to read through the map run and
 its restarts, so the player does not pick it again at each return to the screen or each „Restart”.
 Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
-tile of the drawing under the pointer marks its row of the table only while „Teren” is picked; a reload of the page loses the pick, and the player picks again.
+tile of the drawing under the pointer or tapped marks its row of the table only while „Teren” is picked; a reload of the page loses the pick, and the player picks again.
 *Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
 is opened; the chronicle and the table one under the other — both shorter, and the area would hold
 two contents at once, against D-311.
@@ -10898,10 +10903,11 @@ the plaque of a discovery and the badge over the mage's head, stay readable at e
 size of their own, independent of the scale of the scene, where shrunk with it they are not.
 
 - **Scope:** browser-view
-- **Based on:** none
+- **Based on:** media-query-width-and-scrollbar
 - **Relations:** derives from D-311 · derives from D-316
 - **Verification:** tests: the scene's picture given 672 × 304 px, twice its picture of 336 × 152,
-  in another state of the game, the frame sized by its picture alone. For the size the style sheet
+  in another state of the game, the frame sized by its picture alone and standing alone in a place
+  that gives it no size. For the size the style sheet
   draws the scene at, the crop and what the scene draws, an agent compares a change with the part no
   invariant and no test holds:
   - complies: the scene of a map run drawn 672 × 304 px in a window 1280 px wide and in one 1920 px
