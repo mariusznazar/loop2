@@ -1,10 +1,12 @@
 // The screen Mapy (D-325 to D-331, D-134, D-149, D-170, D-188, D-217, D-243, D-244, D-274,
-// D-282, D-287, D-326) on jsdom through tests/view/page-document.mjs (D-264): the list of open
-// maps, the area on the right with no map named and with one, the card of a map from the data, the
-// section „Kto idzie” with each character's lines and buttons, and what the buttons hand the page.
+// D-282, D-287, D-326, D-439, D-440) on jsdom through tests/view/page-document.mjs (D-264): the list
+// of open maps, the area on the right with no map named and with one, the card of a map from the
+// data, the section „Kto idzie” with each character's lines and buttons, what the buttons hand the
+// page, and the judging of a program: its button, its result and the mark beside the list „Program:”.
 // Real focus order and rendering are the browser check's (D-88), so a focus case here holds only
 // what jsdom shows.
 import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
@@ -15,6 +17,7 @@ import {
   setPaused,
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
+import { createMapsEntry } from "../../dist/browser/view/maps-entry.js";
 import { createMapsScreen } from "../../dist/browser/view/maps-screen.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
@@ -89,11 +92,11 @@ async function mount({ root }, props, reaction = {}) {
   const calls = [];
   let screen = null;
   const controls = Object.fromEntries(
-    ["pick", "enter", "startLoop", "stop"].map((name) => [
+    ["pick", "enter", "startLoop", "stop", "judge"].map((name) => [
       name,
       (...values) => {
         calls.push([name, ...values]);
-        reaction[name]?.(screen, ...values);
+        return reaction[name]?.(screen, ...values);
       },
     ]),
   );
@@ -491,7 +494,7 @@ test("the characters stand in the order of their creation, each with its lines f
   // decision: D-180 "The card of a map shows what of the plan enters"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -529,8 +532,11 @@ test("the characters stand in the order of their creation, each with its lines f
     );
     assert.equal(text(ala, ".maps-who-program-label"), "Program:");
     assert.equal(text(ala, ".maps-who-enters"), "Wejdzie: patyk 6, jagoda 4");
+    // The button of a judging stands in the row of the buttons, between „Wejdź” and „Puść w pętlę”
+    // (D-329); the case held the two sending buttons alone before it.
     assert.deepEqual(kinds(ala.querySelector(".maps-who-actions")), [
       "maps-who-enter",
+      "maps-who-judge",
       "maps-who-loop-start",
     ]);
   });
@@ -697,7 +703,7 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
   // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
   // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
     const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));
@@ -848,6 +854,586 @@ test("a manual map run going on, waiting and ended keeps „Wejdź” inactive a
       buttonLabelled(page.root, "Wejdź: Ala, mapa Las").disabled,
       false,
     );
+  });
+});
+
+// --- the judging of a program --------------------------------------------------------------
+
+const SOLVED = { kind: "solved" };
+const UNDECIDED = { kind: "undecided" };
+const death = (cause, minute) => ({ kind: "death", cause, minute });
+
+/** A judging whose first results are `results`, the rest of the twelve solved. */
+function judgedOf(...results) {
+  return {
+    results: [...results, ...Array(12 - results.length).fill(SOLVED)],
+    equipment: [],
+  };
+}
+
+/** The judging of three kinds: a death by cold, one by hunger, one by combat, an undecided seed and seven solved. */
+const MIXED = judgedOf(
+  death("cold", 37),
+  death("hunger", 412),
+  death("combat", 5),
+  UNDECIDED,
+);
+
+/** The kinds of twelve results, `solvedCount` of them solved and the rest undecided. */
+const kindsOf = (solvedCount) =>
+  Array.from({ length: 12 }, (_, at) =>
+    at < solvedCount ? "solved" : "undecided",
+  );
+
+/** `state` holding the remembered judging of the triple, as the game state keeps it. */
+function withRemembered(state, [characterId, programId, mapId], held) {
+  return {
+    ...state,
+    judgings: { [characterId]: { [programId]: { [mapId]: held } } },
+  };
+}
+
+const judgeButton = (member) => member.querySelector(".maps-who-judge button");
+const resultOf = (member) => member.querySelector(".judging-result");
+const ROLES = ["positive", "danger", "warning"];
+const roleOf = (element) =>
+  ROLES.filter((role) => element.classList.contains(role)).join(" ");
+
+/**
+ * Lets the page's timers run, inside one act, until `done()` holds: the screen draws the waiting
+ * button and gives the browser a frame to paint it before it judges, so the judging comes later.
+ */
+async function until(done) {
+  await inAct(async () => {
+    for (let round = 0; round < 400 && !done(); round += 1)
+      await new Promise((resolve) => setTimeout(resolve, 5));
+  });
+  assert.ok(done(), "the awaited moment came");
+}
+
+// D-329, D-439, D-325: the button of a judging stands beside „Wejdź” at each character, on a map
+// not yet solved and on a solved one, as the plain shared button.
+test("„Oceń na 12 ziarnach” stands beside „Wejdź” at each character on a map not yet solved and on a solved one, as the plain shared button", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-329 "The button of a judging, „Oceń na 12 ziarnach”, judges the program of the character's list „Program:” on the map of the card (D-439)"
+  // decision: D-439 "A program can be judged on every map open to the player, a map not yet solved included, and for a character in an earning loop or in a manual map run"
+  // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
+  await withPage(async (page) => {
+    const open = teamOf("Ala", "Bob");
+    const { screen } = await mount(page, propsOf(open, "forest"));
+    for (const [state, kindsInRow] of [
+      [open, ["maps-who-enter", "maps-who-judge"]],
+      [
+        solved(open),
+        ["maps-who-enter", "maps-who-judge", "maps-who-loop-start"],
+      ],
+    ]) {
+      await inAct(() => screen.update(propsOf(state, "forest")));
+      for (const member of members(page.root)) {
+        const button = judgeButton(member);
+        assert.equal(button.textContent, "Oceń na 12 ziarnach");
+        assert.equal(button.className, "button", "the plain shared button");
+        assert.equal(button.getAttribute("type"), "button");
+        assert.equal(button.disabled, false);
+        assert.equal(
+          button.getAttribute("aria-label"),
+          `Oceń na 12 ziarnach: ${text(member, ".maps-who-name")}, mapa Las`,
+        );
+        assert.deepEqual(
+          kinds(member.querySelector(".maps-who-actions")),
+          kindsInRow,
+          "it stands in the row of the buttons, after „Wejdź”",
+        );
+      }
+    }
+  });
+});
+
+// D-439, D-287: a judging changes nothing in an earning loop or a manual map run, so the button
+// stays active at a character in either, in every state of the map run.
+test("the button of a judging stays active at a character in an earning loop and while a manual map run goes on, waits or has ended", async () => {
+  // decision: D-439 "A program can be judged on every map open to the player, a map not yet solved included, and for a character in an earning loop or in a manual map run"
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  await withPage(async (page) => {
+    const base = solved(teamOf("Ala", "Bob"));
+    const looping = { ...base, loops: { 1: LOOP } };
+    const running = send(base, { mapId: "forest", characterId: 1 }, 1).state;
+    const { screen } = await mount(page, propsOf(looping, "forest"));
+    for (const state of [looping, running, waitingRun(base), endedRun(base)]) {
+      await inAct(() => screen.update(propsOf(state, "forest")));
+      assert.deepEqual(
+        members(page.root).map((member) => judgeButton(member).disabled),
+        [false, false],
+      );
+    }
+    assert.equal(
+      buttonLabelled(page.root, "Wejdź: Ala, mapa Las").disabled,
+      true,
+      "precondition: the map run still keeps „Wejdź” inactive",
+    );
+  });
+});
+
+// D-329: the click draws the button disabled as „Oceniam…” first, and only then the page's call
+// runs; the result then stands under that character alone.
+test("a click draws the button disabled as „Oceniam…” before the page judges, and the result then stands under that character alone", async () => {
+  // decision: D-329 "The button of a judging, „Oceń na 12 ziarnach”, judges the program of the character's list „Program:” on the map of the card (D-439) and reads „Oceniam…” while the judging counts"
+  // decision: D-329 "Its result unfolds under the character as „Ocena na 12 ziarnach: {n} z 12 rozwiązanych”, twelve lines „Ziarno {i}: …” and „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.”, and stands until the player picks another program on that list, judges again or leaves the card."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => MIXED,
+    });
+    const [ala, bob] = members(page.root);
+    await press(judgeButton(ala));
+    const waiting = judgeButton(ala);
+    assert.equal(waiting.textContent, "Oceniam…");
+    assert.equal(waiting.disabled, true);
+    assert.equal(waiting.getAttribute("aria-busy"), "true");
+    assert.deepEqual(calls, [], "the screen is drawn before the page is asked");
+    assert.equal(resultOf(ala), null);
+    assert.equal(
+      judgeButton(bob).textContent,
+      "Oceń na 12 ziarnach",
+      "another character's button waits for nothing",
+    );
+    assert.equal(judgeButton(bob).disabled, false);
+
+    await until(() => calls.length > 0);
+    assert.deepEqual(calls, [["judge", 1, "forest", state.programs[0].id]]);
+    assert.equal(judgeButton(ala).textContent, "Oceń na 12 ziarnach");
+    assert.equal(judgeButton(ala).disabled, false);
+    assert.equal(resultOf(bob), null, "the result is not at another character");
+    const result = resultOf(ala);
+    assert.equal(
+      kinds(ala).at(-1),
+      "judging-result",
+      "the result stands under the buttons",
+    );
+    assert.equal(
+      text(result, ".judging-heading"),
+      "Ocena na 12 ziarnach: 8 z 12 rozwiązanych",
+    );
+    const rows = all(result, ".judging-row");
+    assert.deepEqual(
+      rows.map((row) => row.textContent),
+      [
+        "Ziarno 1: mag zamarzł w 37. minucie",
+        "Ziarno 2: mag umarł z głodu w 412. minucie",
+        "Ziarno 3: mag zginął w walce w 5. minucie",
+        `Ziarno 4: bez rozstrzygnięcia po 4000 minutach`,
+        ...[5, 6, 7, 8, 9, 10, 11, 12].map((i) => `Ziarno ${i}: rozwiązane`),
+      ],
+    );
+    assert.deepEqual(
+      rows.map(roleOf),
+      ["danger", "danger", "danger", "warning", ...Array(8).fill("positive")],
+      "a death in danger, an undecided seed in warning, a solved one in positive",
+    );
+    assert.equal(
+      text(result, ".judging-note"),
+      "Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.",
+    );
+    assert.deepEqual(kinds(result), [
+      "judging-heading",
+      "judging-rows",
+      "judging-note",
+    ]);
+  });
+});
+
+// D-329: the result stands through the draws of the screen, and goes at a pick on the character's
+// list, at a new judging's replacing it and where the player leaves the card.
+test("a result stands through draws, goes where another program is picked at its character, is replaced by a new judging and goes where the player leaves the card", async () => {
+  // decision: D-329 "Its result unfolds under the character as „Ocena na 12 ziarnach: {n} z 12 rozwiązanych”, twelve lines „Ziarno {i}: …” and „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.”, and stands until the player picks another program on that list, judges again or leaves the card."
+  await withPage(async (page) => {
+    const state = solved(createProgram(teamOf("Ala", "Bob")).state);
+    const [first, second] = state.programs;
+    const answers = [MIXED, judgedOf(), MIXED, MIXED];
+    const { screen, calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => answers.shift(),
+      pick: (shown, characterId, programId) =>
+        shown.update(
+          propsOf(
+            { ...state, pickedPrograms: { [characterId]: programId } },
+            "forest",
+          ),
+        ),
+    });
+    const heading = (index) =>
+      text(members(page.root)[index], ".judging-heading");
+    const judged = () => calls.filter(([name]) => name === "judge").length;
+    const judgeAt = async (index, count) => {
+      await press(judgeButton(members(page.root)[index]));
+      await until(() => judged() === count);
+    };
+    await judgeAt(0, 1);
+    await judgeAt(1, 2);
+    assert.equal(heading(0), "Ocena na 12 ziarnach: 8 z 12 rozwiązanych");
+    assert.equal(heading(1), "Ocena na 12 ziarnach: 12 z 12 rozwiązanych");
+
+    await inAct(() => screen.update(propsOf(state, "forest", NOW + HOUR)));
+    assert.equal(
+      heading(0),
+      "Ocena na 12 ziarnach: 8 z 12 rozwiązanych",
+      "a draw of the screen leaves the result",
+    );
+
+    // Bob's list shows another program: his result goes, Ala's stays.
+    const bobsList = page.root.querySelector(
+      'select[aria-label="Program: Bob"]',
+    );
+    await inAct(() => {
+      bobsList.value = String(second.id);
+      fire(bobsList, "change");
+    });
+    assert.equal(resultOf(members(page.root)[1]), null);
+    assert.equal(heading(0), "Ocena na 12 ziarnach: 8 z 12 rozwiązanych");
+    // Picked back, the old result does not come back: it was judged for a program the list left.
+    await inAct(() => {
+      bobsList.value = String(first.id);
+      fire(bobsList, "change");
+    });
+    assert.equal(resultOf(members(page.root)[1]), null);
+
+    // A new judging replaces the result that stands.
+    await judgeAt(0, 3);
+    assert.equal(
+      all(page.root, ".judging-result").length,
+      1,
+      "one result stands at Ala, none at Bob",
+    );
+    assert.equal(heading(0), "Ocena na 12 ziarnach: 8 z 12 rozwiązanych");
+
+    // Another map of the list is leaving the card; coming back finds no result.
+    await inAct(() => screen.update(propsOf(state, "forestDeep")));
+    assert.equal(page.root.querySelector(".judging-result"), null);
+    await inAct(() => screen.update(propsOf(state, "forest")));
+    assert.equal(page.root.querySelector(".judging-result"), null);
+  });
+});
+
+// D-329: a result speaks of the program the list showed when it was judged; where the list shows
+// another program, whatever the reason, the result does not stand.
+test("a result stands only while the list shows the program it was judged for, whoever changed what the list shows", async () => {
+  // decision: D-329 "Its result unfolds under the character as „Ocena na 12 ziarnach: {n} z 12 rozwiązanych”, twelve lines „Ziarno {i}: …” and „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.”, and stands until the player picks another program on that list, judges again or leaves the card."
+  await withPage(async (page) => {
+    const state = solved(createProgram(teamOf("Ala")).state);
+    const [, second] = state.programs;
+    const { screen, calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => MIXED,
+    });
+    await press(judgeButton(members(page.root)[0]));
+    await until(() => calls.length === 1);
+    assert.ok(resultOf(members(page.root)[0]));
+    await inAct(() =>
+      screen.update(
+        propsOf({ ...state, pickedPrograms: { 1: second.id } }, "forest"),
+      ),
+    );
+    assert.equal(resultOf(members(page.root)[0]), null);
+  });
+});
+
+// D-440: the mark beside the list „Program:” is the judging remembered for the program the list
+// shows at that character on the map of the card.
+test("beside the list „Program:” stands the badge for twelve of twelve and „{n} z 12” for less, for the program the list shows at that character on that map", async () => {
+  // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
+  await withPage(async (page) => {
+    const base = solved(createProgram(teamOf("Ala", "Bob")).state);
+    const [first, second] = base.programs;
+    const marks = () =>
+      members(page.root).map((member) => {
+        const mark = member.querySelector(".maps-who-program .maps-who-mark");
+        return mark === null ? null : [mark.textContent, roleOf(mark)];
+      });
+    const state = withRemembered(base, [1, first.id, "forest"], {
+      results: kindsOf(12),
+      equipment: [],
+    });
+    const { screen } = await mount(page, propsOf(state, "forest"));
+    assert.deepEqual(
+      marks(),
+      [["szczelny: 12 z 12", "positive"], null],
+      "Ala's list shows the judged program, Bob's has no judging",
+    );
+    assert.equal(
+      members(page.root)[0].querySelector(".maps-who-mark-note"),
+      null,
+    );
+
+    const lower = withRemembered(base, [1, first.id, "forest"], {
+      results: kindsOf(9),
+      equipment: [],
+    });
+    await inAct(() => screen.update(propsOf(lower, "forest")));
+    assert.deepEqual(marks(), [["9 z 12", ""], null], "„{n} z 12” in text");
+
+    // The list shows another program: the mark of the program judged does not stand, and the other
+    // program has none.
+    await inAct(() =>
+      screen.update(
+        propsOf({ ...lower, pickedPrograms: { 1: second.id } }, "forest"),
+      ),
+    );
+    assert.deepEqual(marks(), [null, null]);
+    const both = {
+      ...lower,
+      pickedPrograms: { 1: second.id },
+      judgings: {
+        1: {
+          [first.id]: { forest: { results: kindsOf(9), equipment: [] } },
+          [second.id]: { forest: { results: kindsOf(12), equipment: [] } },
+        },
+      },
+    };
+    await inAct(() => screen.update(propsOf(both, "forest")));
+    assert.deepEqual(marks(), [["szczelny: 12 z 12", "positive"], null]);
+
+    // The judging was made on Las: no mark on another map, none on Siedziba's lists, which this
+    // screen alone draws.
+    await inAct(() => screen.update(propsOf(both, "forestDeep")));
+    assert.deepEqual(marks(), [null, null]);
+  });
+});
+
+// D-440: where the chest holds less than the judging took, the result stays with the note and the
+// badge goes out; with more, the mark stands as it was.
+test("where the chest holds less than the judging took the mark keeps its count with the note and loses its badge, and with more it stands as it was", async () => {
+  // decision: D-440 "Where the chest holds less of an item than the judging took, the result stays with „oceniono z zapasem, którego dziś nie ma w skrzynce” beside it and the badge goes out, „12 z 12” standing in its place."
+  await withPage(async (page) => {
+    const base = solved(teamOf("Ala"));
+    const held = {
+      results: kindsOf(12),
+      equipment: [{ item: "berry", count: 4 }],
+    };
+    const remembered = withRemembered(
+      base,
+      [1, base.programs[0].id, "forest"],
+      held,
+    );
+    const mark = () => text(page.root, ".maps-who-program .maps-who-mark");
+    const note = () =>
+      page.root.querySelector(".maps-who-program .maps-who-mark-note");
+    const { screen } = await mount(
+      page,
+      propsOf(withChest(remembered, { berry: 10 }), "forest"),
+    );
+    assert.equal(mark(), "szczelny: 12 z 12");
+    assert.equal(note(), null);
+    await inAct(() =>
+      screen.update(propsOf(withChest(remembered, { berry: 4 }), "forest")),
+    );
+    assert.equal(
+      mark(),
+      "szczelny: 12 z 12",
+      "the chest holds just what it took",
+    );
+    assert.equal(note(), null);
+    await inAct(() =>
+      screen.update(propsOf(withChest(remembered, { berry: 3 }), "forest")),
+    );
+    assert.equal(mark(), "12 z 12", "the badge goes out, the count stays");
+    assert.equal(
+      text(page.root, ".maps-who-mark-note"),
+      "oceniono z zapasem, którego dziś nie ma w skrzynce",
+    );
+    assert.equal(
+      roleOf(page.root.querySelector(".maps-who-mark-note")),
+      "warning",
+    );
+    assert.equal(
+      roleOf(page.root.querySelector(".maps-who-mark")),
+      "",
+      "the count is in text, the badge's role gone",
+    );
+    await inAct(() =>
+      screen.update(propsOf(withChest(remembered, { berry: 9 }), "forest")),
+    );
+    assert.equal(mark(), "szczelny: 12 z 12");
+    assert.equal(note(), null);
+  });
+});
+
+// The styleguide's rule „The screen Mapy”: each part of the judging stands in the role it gives. jsdom
+// does not resolve a custom property, so the case reads which token each rule lands on, through the
+// real stylesheet.
+test("the parts of the judging take the role of the styleguide from the stylesheet: heading text-strong, rows positive, danger and warning, sentence text-secondary, badge positive, count text, note warning", async () => {
+  // decision: D-329 "Its result unfolds under the character as „Ocena na 12 ziarnach: {n} z 12 rozwiązanych”, twelve lines „Ziarno {i}: …” and „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.”, and stands until the player picks another program on that list, judges again or leaves the card."
+  // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
+  const base = solved(teamOf("Ala"));
+  const programId = base.programs[0].id;
+  const remembered = (kinds, equipment = []) =>
+    withRemembered(base, [1, programId, "forest"], {
+      results: kinds,
+      equipment,
+    });
+  /** Mounts the screen on a page that has the game's stylesheets and gives `colour(selector)`. */
+  async function styled(page, state, reaction) {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText();
+    page.document.head.append(style);
+    const mounted = await mount(page, propsOf(state, "forest"), reaction);
+    const colour = (selector, from = page.root) =>
+      page.window.getComputedStyle(from.querySelector(selector)).color;
+    return { ...mounted, colour, ala: () => members(page.root)[0] };
+  }
+  await withPage(async (page) => {
+    const { colour, ala, calls } = await styled(page, remembered(kindsOf(12)), {
+      judge: () => MIXED,
+    });
+    assert.equal(colour(".maps-who-mark"), "var(--positive)", "the badge");
+    await press(judgeButton(ala()));
+    await until(() => calls.length === 1);
+    const rows = all(ala(), ".judging-row");
+    assert.equal(colour(".judging-heading", ala()), "var(--text-strong)");
+    assert.deepEqual(
+      [rows[0], rows[3], rows[4]].map(
+        (row) => page.window.getComputedStyle(row).color,
+      ),
+      ["var(--danger)", "var(--warning)", "var(--positive)"],
+      "a death, an undecided seed, a solved seed",
+    );
+    assert.equal(colour(".judging-note", ala()), "var(--text-secondary)");
+  });
+  await withPage(async (page) => {
+    const { colour } = await styled(page, remembered(kindsOf(9)));
+    assert.equal(colour(".maps-who-mark"), "var(--text)", "the count");
+  });
+  await withPage(async (page) => {
+    const { colour } = await styled(
+      page,
+      withChest(remembered(kindsOf(12), [{ item: "berry", count: 4 }]), {}),
+    );
+    assert.equal(colour(".maps-who-mark"), "var(--text)", "no badge");
+    assert.equal(
+      colour(".maps-who-mark-note"),
+      "var(--warning)",
+      "the note on the stock is a warning of the card",
+    );
+  });
+});
+
+// D-329 (the styleguide's rule "Focus does not fall to the page"): the button that turns disabled
+// at the click gets the focus back with the result, and a focus the player moved meanwhile stays.
+test("the focus stays on the button of a judging through its waiting, and a focus that stood elsewhere at the click is not taken", async () => {
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala", "Bob"));
+    const { document } = page;
+    const { calls } = await mount(page, propsOf(state, "forest"), {
+      judge: () => MIXED,
+    });
+    const [ala, bob] = members(page.root);
+    judgeButton(ala).focus();
+    assert.equal(document.activeElement, judgeButton(ala));
+    await press(judgeButton(ala));
+    await until(() => calls.length === 1);
+    assert.equal(
+      document.activeElement,
+      judgeButton(members(page.root)[0]),
+      "the focus is on the button again, not on the page",
+    );
+
+    const bobsList = bob.querySelector("select");
+    bobsList.focus();
+    await press(judgeButton(members(page.root)[0]));
+    await until(() => calls.length === 2);
+    assert.equal(
+      document.activeElement,
+      bobsList,
+      "a focus the click did not leave on the button stays where it was",
+    );
+  });
+});
+
+// D-407: the result lives in the screen: a screen taken down while the judging waits asks the page
+// for nothing, and fails nothing.
+test("a screen taken down while its button waits never asks the page to judge", async () => {
+  await withPage(async (page) => {
+    const { screen, calls } = await mount(
+      page,
+      propsOf(solved(teamOf("Ala")), "forest"),
+      { judge: () => MIXED },
+    );
+    await press(judgeButton(members(page.root)[0]));
+    await inAct(() => screen.dispose());
+    await inAct(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+    assert.deepEqual(calls, []);
+  });
+});
+
+// D-409, D-170, D-439: the entry makes the judging an act of the store, which counts the time
+// first, and the act replaces the judging remembered for the triple and changes nothing else.
+test("the entry judges through the store's act, remembers the judging for the character, program and map, and changes nothing else of the game state", async () => {
+  // decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation."
+  // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
+  // decision: D-170 "The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map."
+  await withPage(async (page) => {
+    const before = createProgram(teamOf("Ala")).state;
+    let state = { ...before, pickedPrograms: { 1: before.programs[1].id } };
+    const log = [];
+    const store = {
+      get: () => state,
+      moment: () => NOW,
+      act(body) {
+        log.push("act");
+        body((result) => {
+          state = result.state;
+        });
+      },
+      send: () => log.push("send"),
+      startLoop: () => log.push("startLoop"),
+    };
+    const picked = state;
+    let instance = null;
+    await inAct(() => {
+      instance = createMapsEntry({ store }).build(
+        {
+          current: () => ({ kind: "map", mapId: "forest" }),
+          show() {},
+          focusShown() {},
+          focusIfLost() {},
+        },
+        { kind: "map", mapId: "forest" },
+      );
+      page.root.append(instance.element);
+    });
+    const ala = members(page.root)[0];
+    await press(judgeButton(ala));
+    await until(() => log.length > 0);
+
+    assert.deepEqual(log, ["act"], "one act of the store, no send, no loop");
+    const remembered = state.judgings[1][picked.programs[1].id].forest;
+    assert.equal(remembered.results.length, 12);
+    assert.deepEqual(
+      { ...state, judgings: picked.judgings },
+      picked,
+      "nothing of the game state but the judgings changed: the pick, the program used last and the rest stay",
+    );
+    const shown = all(resultOf(members(page.root)[0]), ".judging-row").map(
+      (row) =>
+        ({ positive: "solved", danger: "death", warning: "undecided" })[
+          roleOf(row)
+        ],
+    );
+    assert.deepEqual(
+      shown,
+      remembered.results,
+      "the result under the character is the judging the state remembers",
+    );
+    const solvedCount = shown.filter((kind) => kind === "solved").length;
+    assert.equal(
+      text(members(page.root)[0], ".judging-heading"),
+      `Ocena na 12 ziarnach: ${solvedCount} z 12 rozwiązanych`,
+    );
+    assert.equal(
+      text(members(page.root)[0], ".maps-who-program .maps-who-mark"),
+      solvedCount === 12 ? "szczelny: 12 z 12" : `${solvedCount} z 12`,
+      "the act drew the screen from the state it made, so the mark stands beside the list",
+    );
+    await inAct(() => instance.dispose());
   });
 });
 

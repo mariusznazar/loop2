@@ -3,31 +3,37 @@
  * left the list of the maps open to the player and on the right the card of the map the address
  * names with, under it, the section „Kto idzie”. Before a map is named the right area says to pick
  * one. The card is drawn from the map's data (D-327, D-328); under it each character of the team
- * stands with its lines and the two buttons that send it (D-329, D-243, D-244, D-287, D-326).
+ * stands with its lines, the two buttons that send it and the button of a judging of its program, whose
+ * result unfolds under it (D-329, D-243, D-244, D-287, D-326, D-439, D-440).
  *
  * The page holds the screen behind one boundary, `createMapsScreen` (D-36), as it holds the screen
  * Postać: an element of its own for the page to place, a first render that is synchronous,
  * `update(props)`, `focus()` and `dispose()`. The page calls them from an event handler or the
  * continuation of an answer, never from render or an effect. The screen performs nothing itself:
- * the four acts of a character go to the page through `controls`, which turns them into the
- * simulation's calls. Nothing runs when the module is imported.
+ * the five acts of a character go to the page through `controls`, which turns them into the
+ * simulation's calls. What stands of a judging after its call (the result, the waiting button) lives in
+ * the screen alone (D-407). Nothing runs when the module is imported.
  */
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import { judgingMark } from "../sim/judging-record.js";
 import { rowProgram } from "../sim/programs.js";
 import type {
   Character,
   CharacterId,
   GameState,
+  Judging,
   MapId,
   ProgramId,
 } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
+import { JudgingMarkLine, JudgingResult } from "./judging-result.js";
+import { JUDGE_BUTTON_TEXT, JUDGING_WAITING_TEXT } from "./judging-lines.js";
 import {
   attackerLines,
   capLines,
@@ -66,6 +72,11 @@ export type MapsScreenControls = {
   startLoop(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
   /** Stops a character's earning loop at once. */
   stop(characterId: CharacterId): void;
+  /**
+   * Judges the program of a character's list „Program:” on the map of the card and gives the judging
+   * back (D-439); the page counts the time first and remembers the judging in the game state (D-409, D-440).
+   */
+  judge(characterId: CharacterId, mapId: MapId, programId: ProgramId): Judging;
 };
 
 export type MapsScreenOptions = {
@@ -85,13 +96,43 @@ export type MapsScreen = {
 };
 
 /** A control of a character that the keyboard's focus can be sent to once the screen is drawn. */
-type FocusTarget = "stop" | "enter" | "program";
+type FocusTarget = "stop" | "enter" | "program" | "judge";
 
 /** The elements the focus can be sent to. */
 type FocusControl = HTMLButtonElement | HTMLSelectElement;
 
 /** The control the focus is owed to, asked by the click that makes the pressed button leave or stand inactive. */
-type OwedFocus = { characterId: CharacterId; target: "stop" | "enter" };
+type OwedFocus = {
+  characterId: CharacterId;
+  target: "stop" | "enter" | "judge";
+};
+
+/** The controls a move of focus tries, in order, by the control that was pressed. */
+const OWED_TARGETS: Record<OwedFocus["target"], FocusTarget[]> = {
+  stop: ["stop"],
+  enter: ["enter", "program"],
+  judge: ["judge"],
+};
+
+/** The result of a judging that stands at a character, with what it was made for. */
+type ShownJudging = { mapId: MapId; programId: ProgramId; judging: Judging };
+
+/** What a character's row gets from the screen for the judging: what waits, what stands, and the two acts on them. */
+type JudgingPlumbing = {
+  /** The characters whose button of a judging waits for the result. */
+  waiting: readonly CharacterId[];
+  /** The result standing at each character that has one. */
+  shown: Readonly<Partial<Record<CharacterId, ShownJudging>>>;
+  /** Starts a judging: the waiting button is drawn first, and the page is asked after the browser has painted it. */
+  start(
+    characterId: CharacterId,
+    mapId: MapId,
+    programId: ProgramId,
+    hadFocus: boolean,
+  ): void;
+  /** Takes away the result standing at a character, where its list shows another program. */
+  clear(characterId: CharacterId): void;
+};
 
 /** What a character's row gets from the screen to move focus: element refs and the asking of a move. */
 type FocusPlumbing = {
@@ -244,6 +285,7 @@ type CharacterRowProps = {
   props: MapsScreenProps;
   controls: MapsScreenControls;
   focus: FocusPlumbing;
+  judging: JudgingPlumbing;
 };
 
 /** One character of „Kto idzie”: its lines from the top, its program and the two sending buttons (D-329). */
@@ -253,6 +295,7 @@ function CharacterRow({
   props,
   controls,
   focus,
+  judging,
 }: CharacterRowProps) {
   const { state, nowMs } = props;
   const id = character.id;
@@ -268,6 +311,18 @@ function CharacterRow({
   const warning = tripWarning(plan, capacity, map);
   const emptyLoop = solved ? emptyLoopMark(plan) : null;
   const run = state.run;
+  const waiting = judging.waiting.includes(id);
+  const held = judging.shown[id];
+  const shown =
+    held !== undefined && held.mapId === mapId && held.programId === program.id
+      ? held
+      : undefined;
+  const mark = judgingMark(
+    state.judgings,
+    { characterId: id, programId: program.id, mapId },
+    state.team.chest,
+  );
+  const judgeText = waiting ? JUDGING_WAITING_TEXT : JUDGE_BUTTON_TEXT;
   return (
     <li className="maps-who-member">
       <a
@@ -307,8 +362,12 @@ function CharacterRow({
           options={positions.options}
           value={positions.value}
           selectRef={focus.keep(id, "program")}
-          onChange={(event) => controls.pick(id, Number(event.target.value))}
+          onChange={(event) => {
+            judging.clear(id);
+            controls.pick(id, Number(event.target.value));
+          }}
         />
+        {mark === null ? null : <JudgingMarkLine mark={mark} />}
       </div>
       <p className="maps-who-enters">
         {entersLine(plan, state.team.chest, capacity, map)}
@@ -323,6 +382,23 @@ function CharacterRow({
             disabled={run !== null || inLoop}
             buttonRef={focus.keep(id, "enter")}
             onClick={() => controls.enter(id, mapId, program.id)}
+          />
+        </div>
+        <div className="maps-who-judge">
+          <ReactButton
+            text={JUDGE_BUTTON_TEXT}
+            waitingText={waiting ? JUDGING_WAITING_TEXT : null}
+            label={`${judgeText}: ${character.name}, mapa ${map.name}`}
+            buttonRef={focus.keep(id, "judge")}
+            onClick={(event) => {
+              const button = event.currentTarget;
+              judging.start(
+                id,
+                mapId,
+                program.id,
+                button.ownerDocument.activeElement === button,
+              );
+            }}
           />
         </div>
         {solved ? (
@@ -345,6 +421,7 @@ function CharacterRow({
       {run === null ? null : (
         <p className="maps-who-run-note">{runWaitingSentence(run.mapId)}</p>
       )}
+      {shown === undefined ? null : <JudgingResult judging={shown.judging} />}
     </li>
   );
 }
@@ -360,6 +437,24 @@ function MapsView({
   const { state, mapId } = props;
   const elements = useRef(new Map<string, FocusControl>());
   const owed = useRef<OwedFocus | null>(null);
+  const [waiting, setWaiting] = useState<readonly CharacterId[]>([]);
+  const [shown, setShown] = useState<JudgingPlumbing["shown"]>({});
+  const [shownOn, setShownOn] = useState(mapId);
+  const alive = useRef(false);
+
+  // Another map of the list is leaving the card: no result of a judging stands past it (D-329).
+  if (shownOn !== mapId) {
+    setShownOn(mapId);
+    setShown({});
+  }
+
+  // A judging asked for but not yet made is dropped with the screen.
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   // After every commit, so the move follows the commit that answers the click which asked for it:
   // the pressed button has by then turned inactive or left, and a disabled control cannot take focus.
@@ -367,9 +462,7 @@ function MapsView({
     const asked = owed.current;
     owed.current = null;
     if (asked === null) return;
-    const targets: FocusTarget[] =
-      asked.target === "stop" ? ["stop"] : ["enter", "program"];
-    for (const target of targets) {
+    for (const target of OWED_TARGETS[asked.target]) {
       const element = elements.current.get(`${asked.characterId}:${target}`);
       if (element !== undefined && !element.disabled) {
         element.focus();
@@ -387,6 +480,45 @@ function MapsView({
     owe: (asked) => {
       owed.current = asked;
     },
+  };
+
+  const judging: JudgingPlumbing = {
+    waiting,
+    shown,
+    start: (characterId, judgedMap, programId, hadFocus) => {
+      setWaiting((now) => [...now, characterId]);
+      // The button is drawn waiting before the simulation runs, which blocks the page until it has
+      // counted the twelve runs: the browser gets a frame to paint the button, and the page is asked
+      // in the task after it.
+      const judge = () => {
+        if (!alive.current) return;
+        let judged: Judging | null = null;
+        try {
+          judged = controls.judge(characterId, judgedMap, programId);
+        } finally {
+          if (hadFocus) focus.owe({ characterId, target: "judge" });
+          setWaiting((now) => now.filter((id) => id !== characterId));
+          if (judged !== null) {
+            const done = judged;
+            setShown((now) => ({
+              ...now,
+              [characterId]: {
+                mapId: judgedMap,
+                programId,
+                judging: done,
+              },
+            }));
+          }
+        }
+      };
+      window.requestAnimationFrame(() => window.setTimeout(judge, 0));
+    },
+    clear: (characterId) =>
+      setShown((now) =>
+        Object.fromEntries(
+          Object.entries(now).filter(([id]) => id !== String(characterId)),
+        ),
+      ),
   };
 
   // A map the list does not hold draws no card: sending to it is refused (D-149).
@@ -419,6 +551,7 @@ function MapsView({
                       props={props}
                       controls={controls}
                       focus={focus}
+                      judging={judging}
                     />
                   ))}
                 </ul>

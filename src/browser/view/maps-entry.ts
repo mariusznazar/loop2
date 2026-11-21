@@ -4,9 +4,10 @@
  * its list changes the map and builds nothing again. A new screen copies this entry. Nothing here
  * runs when the module is imported.
  */
+import { judgeAndRemember } from "../sim/judging.js";
 import { pickProgram } from "../sim/programs.js";
 import { stopLoop } from "../sim/loop.js";
-import type { MapId } from "../sim/types.js";
+import type { Judging, MapId } from "../sim/types.js";
 import { createMapsScreen } from "./maps-screen.js";
 import type { Screen, ScreenEntry } from "./screen-registry.js";
 import type { StateStore } from "./state-store.js";
@@ -101,6 +102,29 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
             mapsAct(() =>
               store.act((take) => take(stopLoop(store.get(), characterId))),
             );
+          },
+          // The judging is an act of the store, so the time is counted first and the state the
+          // judging reads is the one the click met (D-409). It replaces the judging remembered
+          // for its character, program and map and changes nothing else (D-440, D-170); the
+          // judging is given back for the screen to show, with the cause and the minute of each
+          // death the state does not keep.
+          judge(characterId, judged, programId) {
+            const made: Judging[] = [];
+            mapsAct(() =>
+              store.act((take) => {
+                const done = judgeAndRemember(store.get(), {
+                  mapId: judged,
+                  characterId,
+                  programId,
+                });
+                take(done);
+                made.push(done.judging);
+              }),
+            );
+            const [judging] = made;
+            if (judging === undefined)
+              throw new Error("the act of a judging ran no judging");
+            return judging;
           },
         },
         props: props(),
