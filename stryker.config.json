@@ -31,6 +31,7 @@
       "tests/sim/flow.test.mjs",
       "tests/sim/gather.test.mjs",
       "tests/sim/hex.test.mjs",
+      "tests/sim/judging-record.test.mjs",
       "tests/sim/judging.test.mjs",
       "tests/sim/layout.test.mjs",
       "tests/sim/loop.test.mjs",

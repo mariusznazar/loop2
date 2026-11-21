@@ -6,6 +6,7 @@ import {
   type GameEvent,
   type GameResult,
 } from "./game.js";
+import { judgingsAfterDeath } from "./judging-record.js";
 import { programById, rowProgram } from "./programs.js";
 import { mixSeed, nextSeed } from "./random.js";
 import { mapRunEnded, newMapRun, stepMinute } from "./run.js";
@@ -326,7 +327,19 @@ function takeEnd(
     team = settled.team;
     if (settled.settlement.kind === "progressLost") {
       return {
-        state: withLoop({ ...state, team }, characterId, null),
+        state: withLoop(
+          {
+            ...state,
+            team,
+            judgings: judgingsAfterDeath(
+              state.judgings,
+              characterId,
+              settled.settlement,
+            ),
+          },
+          characterId,
+          null,
+        ),
         events,
         kind: "stopped",
       };
@@ -389,8 +402,8 @@ function takeEnd(
  * practice gathered at the earning loop counts as the character's practice. A character with no practice
  * leaves the uses as they were, whether one is left or not, and the earning loop goes on; otherwise, with a
  * use left one is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; with
- * none left the character loses its practice and ranks and the earning loop is dropped with what it
- * gathered; where the earning loop goes on, the run of map runs with no death starts anew at 0 and the
+ * none left the character loses its practice and ranks, every judging remembered for it is erased (D-440)
+ * and the earning loop is dropped with what it gathered; where the earning loop goes on, the run of map runs with no death starts anew at 0 and the
  * loop record stays. The carried items go with the run and the chest stays as it stood. One `loopRunEnded` event
  * follows for the end.
  * With no earning loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a

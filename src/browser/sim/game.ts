@@ -14,6 +14,7 @@ import {
 } from "./understanding.js";
 import { CREATURES } from "./data/creatures.js";
 import { judgeProgram, type ProgramJudgement } from "./program.js";
+import { judgingsAfterDeath } from "./judging-record.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import {
@@ -25,7 +26,7 @@ import {
   rowProgram,
   teamProgram,
   withCopyProgram,
-  withProgramContent,
+  withProgramSaved,
   zeroCounts,
 } from "./programs.js";
 import { mixSeed } from "./random.js";
@@ -423,7 +424,8 @@ export function newGame(): GameState {
  *
  * Without a map run, replaces the content of the program a character with no pick and no program
  * used last goes with, `teamProgram`, checked against the resources of every map; the counts are
- * reconciled where they stand beside that program.
+ * reconciled where they stand beside that program, and the judgings remembered for it are erased where
+ * its rules, rule groups or trip plan come out different (D-440).
  */
 export function setProgram(state: GameState, program: Program): GameResult {
   const run = state.run;
@@ -435,7 +437,7 @@ export function setProgram(state: GameState, program: Program): GameResult {
   return {
     state: {
       ...state,
-      programs: withProgramContent(state.programs, edited.id, checked),
+      ...withProgramSaved(state, edited.id, checked),
       ...(state.countsProgram === edited.id && {
         ruleCounts: reconcileCounts(state.ruleCounts, edited.program, checked),
       }),
@@ -684,7 +686,8 @@ export function teamAfterDeath(
  * skills, the chest, the programs, the Understanding and the solved maps are out of reach, and the
  * mark of a solved map plays no part. With no map run, no death or a death settled, returns the very
  * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer, or whose
- * moment of the clock is beyond the safe integers, is a RangeError.
+ * moment of the clock is beyond the safe integers, is a RangeError. A death that takes the practice and
+ * the ranks erases every judging remembered for the character (D-440).
  */
 export function settleDeath(state: GameState, nowMs: number): GameResult {
   const run = state.run;
@@ -702,6 +705,7 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
     state: {
       ...state,
       team: settled.team,
+      judgings: judgingsAfterDeath(state.judgings, died.id, settled.settlement),
       run: { ...run, deathSettlement: settled.settlement },
     },
     events: [],
@@ -881,13 +885,12 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
             copy.program,
             written,
           ),
-          ...(owner && {
-            programs: withProgramContent(
-              current.programs,
+          ...(owner &&
+            withProgramSaved(
+              current,
               owner.id,
               withFirstChillRule(owner.program),
-            ),
-          }),
+            )),
         };
         copy = {
           ...copy,
