@@ -1,7 +1,7 @@
 // The judging cache of the browser view (D-441), at its trust boundary: the one module that reads and
 // writes the judgings the browser remembers, in values that anyone with the browser can write. The
 // storage is a stand-in the case gives: one backed by a map, one that refuses its writes, one whose every
-// call throws, and none. The keys and values written by hand below are the stored form of version 1 of
+// call throws, and none. The keys and values written by hand below are the stored form of version 2 of
 // the cache; a later change of that form raises its version, so these literals are the contract with
 // what a browser already holds.
 import assert from "node:assert/strict";
@@ -15,7 +15,7 @@ import {
 const ACCOUNT = "acct-1";
 const MADE = 1000;
 const LAS = { characterId: 1, programId: 1, mapId: "forest" };
-const LAS_KEY = "loop2-judging-1|acct-1|1000|1|1|forest";
+const LAS_KEY = "loop2-judging-2|acct-1|1000|1|1|forest";
 
 /** `value` frozen all the way down: a write into any of it throws. */
 function frozen(value) {
@@ -57,7 +57,7 @@ function loaded({
   });
 }
 
-/** A record of a judging that solved `solved` seeds and died on the rest, for revision 0 and generation 1. */
+/** A record of a judging that solved `solved` seeds and died on the rest, for revision 0, `FINGERPRINT` and generation 1. */
 function record(solved = 12, extra = {}) {
   return {
     results: [
@@ -66,6 +66,7 @@ function record(solved = 12, extra = {}) {
     ],
     equipment: [],
     contentRevision: 0,
+    contentFingerprint: FINGERPRINT,
     generation: 1,
     ...extra,
   };
@@ -132,17 +133,24 @@ function open(storage, { madeAtMs = MADE, state, ...over } = {}) {
   });
 }
 
-/** The stored value of a record that solved 11 of 12 seeds, took 4 berries, at revision 0 and generation 1. */
+/** A fingerprint of the form the simulation gives, written by hand: sixteen lower-case hexadecimal digits. */
+const FINGERPRINT = "0123456789abcdef";
+/**
+ * The stored value of a record that solved 11 of 12 seeds, took 4 berries, at revision 0, with the
+ * fingerprint `FINGERPRINT` and at generation 1.
+ */
 const VALID = {
   results: "sssssssssssd",
   equipment: [["berry", 4]],
   revision: 0,
+  fingerprint: FINGERPRINT,
   generation: 1,
 };
 const VALID_RECORD = {
   results: [...Array(11).fill("solved"), "death"],
   equipment: [{ item: "berry", count: 4 }],
   contentRevision: 0,
+  contentFingerprint: FINGERPRINT,
   generation: 1,
 };
 
@@ -174,6 +182,7 @@ test("a remembered judging is stored as one value under one key of the account, 
       { item: "stick", count: 2 },
     ],
     contentRevision: 3,
+    contentFingerprint: "fedcba9876543210",
     generation: 2,
   });
   assert.deepEqual([...storage.held.keys()], [LAS_KEY]);
@@ -184,6 +193,7 @@ test("a remembered judging is stored as one value under one key of the account, 
       ["berry", 4],
     ],
     revision: 3,
+    fingerprint: "fedcba9876543210",
     generation: 2,
   });
   const reload = open(storage, {
@@ -196,6 +206,7 @@ test("a remembered judging is stored as one value under one key of the account, 
       { item: "berry", count: 4 },
     ],
     contentRevision: 3,
+    contentFingerprint: "fedcba9876543210",
     generation: 2,
   });
 });
@@ -210,6 +221,7 @@ test("a value written by hand in the stored form is read, and the edges of each 
       ["fiber", top],
     ],
     revision: 0,
+    fingerprint: "ffffffffffffffff",
     generation: 1,
   });
   const biggest = JSON.stringify({
@@ -221,8 +233,8 @@ test("a value written by hand in the stored form is read, and the edges of each 
   const cache = open(
     mapStorage({
       [LAS_KEY]: JSON.stringify(VALID),
-      "loop2-judging-1|acct-1|1000|1|1|forestEdge": edges,
-      "loop2-judging-1|acct-1|1000|1|1|forestDeep": biggest,
+      "loop2-judging-2|acct-1|1000|1|1|forestEdge": edges,
+      "loop2-judging-2|acct-1|1000|1|1|forestDeep": biggest,
     }),
     { state: loaded({ revision: top, generation: top }) },
   );
@@ -234,12 +246,14 @@ test("a value written by hand in the stored form is read, and the edges of each 
       { item: "fiber", count: top },
     ],
     contentRevision: 0,
+    contentFingerprint: "ffffffffffffffff",
     generation: 1,
   });
   assert.deepEqual(cache.read({ ...LAS, mapId: "forestDeep" }), {
     results: [...Array(11).fill("solved"), "death"],
     equipment: [],
     contentRevision: top,
+    contentFingerprint: FINGERPRINT,
     generation: top,
   });
 });
@@ -292,9 +306,9 @@ test("a judging of another account, of another game of the account or under a ke
   // decision: D-441 "A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed."
   const value = JSON.stringify(VALID);
   const storage = mapStorage({
-    "loop2-judging-1|acct-2|1000|1|1|forest": value,
-    "loop2-judging-1|acct-1|2000|1|1|forest": value,
-    "loop2-judging-2|acct-1|1000|1|1|forest": value,
+    "loop2-judging-2|acct-2|1000|1|1|forest": value,
+    "loop2-judging-2|acct-1|2000|1|1|forest": value,
+    "loop2-judging-1|acct-1|1000|1|1|forest": value,
     "loop2-judging-0|acct-1|1000|1|1|forest": value,
     "loop2-judging-10|acct-1|1000|1|1|forest": value,
     "judging|acct-1|1000|1|1|forest": value,
@@ -305,7 +319,7 @@ test("a judging of another account, of another game of the account or under a ke
   assert.deepEqual(cache.read(LAS), record(4));
   // Nothing of another version was written to, and nothing else was read in its place.
   assert.equal(
-    storage.held.get("loop2-judging-2|acct-1|1000|1|1|forest"),
+    storage.held.get("loop2-judging-1|acct-1|1000|1|1|forest"),
     value,
   );
   assert.equal(
@@ -317,6 +331,35 @@ test("a judging of another account, of another game of the account or under a ke
     value,
   );
   assert.equal(storage.held.get("judging|acct-1|1000|1|1|forest"), value);
+});
+
+test("a value of version 1 under its key, which holds no fingerprint, is neither read, written nor removed, at an opening of any kind", () => {
+  // invariant: judging-cache-reading
+  // decision: D-441 "A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed."
+  const version1 = JSON.stringify({
+    results: VALID.results,
+    equipment: VALID.equipment,
+    revision: 0,
+    generation: 1,
+  });
+  const old = {
+    "loop2-judging-1|acct-1|1000|1|1|forest": version1,
+    "loop2-judging-1|acct-1|999|1|1|forest": version1,
+    "loop2-judging-1|acct-1|1000|9|9|forest": version1,
+  };
+  for (const over of [{}, { afterRefusedSave: true }, { madeAtMs: 5 }]) {
+    const storage = mapStorage(old);
+    const cache = open(storage, over);
+    assert.equal(cache.read(LAS), null, JSON.stringify(over));
+    cache.remember(LAS, record(3));
+    assert.deepEqual(cache.read(LAS), record(3));
+    for (const [key, value] of Object.entries(old))
+      assert.equal(
+        storage.held.get(key),
+        value,
+        `${key} ${JSON.stringify(over)}`,
+      );
+  }
 });
 
 test("an account whose identifier holds the separator of a key shares no judging with another account", () => {
@@ -358,35 +401,73 @@ const BAD_VALUES = [
   ["a number", "12"],
   ["a text", '"sssssssssssd"'],
   ["a list", "[]"],
-  ["a list of the four values", '["sssssssssssd",[],0,1]'],
+  ["a list of the five values", `["sssssssssssd",[],0,"${FINGERPRINT}",1]`],
   ["an empty object", "{}"],
-  ...["results", "equipment", "revision", "generation"].map((field) => [
-    `a value without ${field}`,
-    JSON.stringify(
-      Object.fromEntries(
-        Object.entries(VALID).filter(([name]) => name !== field),
+  ...["results", "equipment", "revision", "fingerprint", "generation"].map(
+    (field) => [
+      `a value without ${field}`,
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(VALID).filter(([name]) => name !== field),
+        ),
       ),
-    ),
-  ]),
+    ],
+  ),
   ["a value with one more field", JSON.stringify({ ...VALID, name: "Ala" })],
   [
-    "a value with a field called __proto__ besides the four",
+    "a value with a field called __proto__ besides the five",
     JSON.stringify(VALID).replace(
       "{",
       '{"__proto__":{"results":"ssssssssssss"},',
     ),
   ],
   [
-    "a value with a field called constructor besides the four",
+    "a value with a field called constructor besides the five",
     JSON.stringify(VALID).replace("{", '{"constructor":{"name":"x"},'),
   ],
   [
     "a value whose revision is a field called __proto__",
-    '{"results":"sssssssssssd","equipment":[],"__proto__":0,"generation":1}',
+    `{"results":"sssssssssssd","equipment":[],"__proto__":0,"fingerprint":"${FINGERPRINT}","generation":1}`,
   ],
   [
-    "a value whose four fields are named by a prototype",
-    '{"__proto__":{"results":"sssssssssssd","equipment":[],"revision":0,"generation":1}}',
+    "a value whose five fields are named by a prototype",
+    `{"__proto__":{"results":"sssssssssssd","equipment":[],"revision":0,"fingerprint":"${FINGERPRINT}","generation":1}}`,
+  ],
+  ...[
+    ["a fingerprint that is null", null],
+    ["a fingerprint that is a number", 123456789012345],
+    ["a fingerprint that is a list", [FINGERPRINT]],
+    ["a fingerprint that is an object", { fingerprint: FINGERPRINT }],
+    ["a fingerprint that is a boolean", true],
+    ["a fingerprint that is empty", ""],
+    ["a fingerprint of fifteen digits", FINGERPRINT.slice(1)],
+    ["a fingerprint of seventeen digits", `${FINGERPRINT}0`],
+    ["a fingerprint of a thousand digits", "0".repeat(1000)],
+    ["a fingerprint in capital letters", FINGERPRINT.toUpperCase()],
+    ["a fingerprint with a letter past f", `${FINGERPRINT.slice(1)}g`],
+    ["a fingerprint with a sign", `-${FINGERPRINT.slice(1)}`],
+    ["a fingerprint with white space around it", ` ${FINGERPRINT.slice(2)} `],
+    [
+      "a fingerprint with a line end",
+      `${FINGERPRINT.slice(1)}
+`,
+    ],
+    [
+      "a fingerprint of sixteen digits with a prefix",
+      `0x${FINGERPRINT.slice(2)}`,
+    ],
+  ].map(([name, fingerprint]) => [
+    `${name}`,
+    JSON.stringify({ ...VALID, fingerprint }),
+  ]),
+  [
+    "a fingerprint of the form beside a value of version 1, which has none",
+    JSON.stringify({
+      results: VALID.results,
+      equipment: VALID.equipment,
+      revision: 0,
+      generation: 1,
+    }),
   ],
   ["eleven results", JSON.stringify({ ...VALID, results: "sssssssssss" })],
   ["thirteen results", JSON.stringify({ ...VALID, results: "sssssssssssds" })],
@@ -514,6 +595,7 @@ for (const [name, value] of BAD_VALUES) {
   test(`a stored value that is ${name} reads as none, throws nothing and stays where it is`, () => {
     // invariant: judging-cache-reading
     // decision: D-441 "A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed."
+    // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents never share a judging, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
     const storage = mapStorage({ [LAS_KEY]: value });
     const cache = open(storage);
     assert.equal(cache.read(LAS), null);
@@ -537,6 +619,7 @@ test("a value that holds every field of the form builds a record of its own: not
     LAS,
   );
   assert.deepEqual(Object.keys(given).sort(), [
+    "contentFingerprint",
     "contentRevision",
     "equipment",
     "generation",
@@ -554,11 +637,12 @@ test("a write the storage refuses leaves the judging for the open page, removes 
   // invariant: judging-cache-reading
   // decision: D-441 "Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323)."
   const older = JSON.stringify({ ...VALID, results: "dddddddddddd" });
-  const other = "loop2-judging-1|acct-1|1000|1|1|forestEdge";
+  const other = "loop2-judging-2|acct-1|1000|1|1|forestEdge";
   const storage = refusingStorage({ [LAS_KEY]: older, [other]: older });
   const cache = open(storage);
-  cache.remember(LAS, record(12));
-  assert.deepEqual(cache.read(LAS), record(12));
+  const otherContent = { contentFingerprint: "fedcba9876543210" };
+  cache.remember(LAS, record(12, otherContent));
+  assert.deepEqual(cache.read(LAS), record(12, otherContent));
   assert.equal(
     storage.held.has(LAS_KEY),
     false,
@@ -620,11 +704,12 @@ test("no storage at all keeps a judging for the open page alone", () => {
   // decision: D-441 "Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323)."
   const cache = open(null);
   assert.equal(cache.read(LAS), null);
-  const given = record(10);
+  const own = { contentFingerprint: "fedcba9876543210" };
+  const given = record(10, own);
   cache.remember(LAS, given);
   given.results[0] = "death";
   cache.read(LAS).results[1] = "death";
-  assert.deepEqual(cache.read(LAS), record(10));
+  assert.deepEqual(cache.read(LAS), record(10, own));
   assert.equal(open(null).read(LAS), null);
 });
 
@@ -674,13 +759,13 @@ test("opening a game removes the values of the same account under the moment of 
   const value = JSON.stringify(VALID);
   const storage = mapStorage({
     [LAS_KEY]: value,
-    "loop2-judging-1|acct-1|1000|2|3|forestEdge": value,
-    "loop2-judging-1|acct-1|999|1|1|forest": value,
-    "loop2-judging-1|acct-1|2000|1|1|forest": value,
-    "loop2-judging-1|acct-1|-5|1|1|forest": value,
-    "loop2-judging-1|acct-2|999|1|1|forest": value,
-    "loop2-judging-1|acct-2|1000|1|1|forest": value,
+    "loop2-judging-2|acct-1|1000|2|3|forestEdge": value,
     "loop2-judging-2|acct-1|999|1|1|forest": value,
+    "loop2-judging-2|acct-1|2000|1|1|forest": value,
+    "loop2-judging-2|acct-1|-5|1|1|forest": value,
+    "loop2-judging-2|acct-2|999|1|1|forest": value,
+    "loop2-judging-2|acct-2|1000|1|1|forest": value,
+    "loop2-judging-1|acct-1|999|1|1|forest": value,
     "unrelated key": "x",
   });
   open(storage, { state: loaded({ nextCharacterId: 3, nextProgramId: 4 }) });
@@ -688,10 +773,10 @@ test("opening a game removes the values of the same account under the moment of 
     keysOfStorage(storage),
     [
       LAS_KEY,
-      "loop2-judging-1|acct-1|1000|2|3|forestEdge",
-      "loop2-judging-1|acct-2|1000|1|1|forest",
-      "loop2-judging-1|acct-2|999|1|1|forest",
-      "loop2-judging-2|acct-1|999|1|1|forest",
+      "loop2-judging-2|acct-1|1000|2|3|forestEdge",
+      "loop2-judging-2|acct-2|1000|1|1|forest",
+      "loop2-judging-2|acct-2|999|1|1|forest",
+      "loop2-judging-1|acct-1|999|1|1|forest",
       "unrelated key",
     ].sort(),
   );
@@ -703,16 +788,16 @@ test("a game built after a refused save has every value of this game removed too
   const value = JSON.stringify(VALID);
   const storage = mapStorage({
     [LAS_KEY]: value,
-    "loop2-judging-1|acct-1|1000|2|3|forestEdge": "not a value of the cache",
-    "loop2-judging-1|acct-1|999|1|1|forest": value,
-    "loop2-judging-1|acct-2|1000|1|1|forest": value,
-    "loop2-judging-2|acct-1|1000|1|1|forest": value,
+    "loop2-judging-2|acct-1|1000|2|3|forestEdge": "not a value of the cache",
+    "loop2-judging-2|acct-1|999|1|1|forest": value,
+    "loop2-judging-2|acct-2|1000|1|1|forest": value,
+    "loop2-judging-1|acct-1|1000|1|1|forest": value,
   });
   const cache = open(storage, { afterRefusedSave: true });
   assert.equal(cache.read(LAS), null);
   assert.deepEqual(keysOfStorage(storage), [
-    "loop2-judging-1|acct-2|1000|1|1|forest",
-    "loop2-judging-2|acct-1|1000|1|1|forest",
+    "loop2-judging-1|acct-1|1000|1|1|forest",
+    "loop2-judging-2|acct-2|1000|1|1|forest",
   ]);
   // A judging made after the opening is remembered as in any game.
   cache.remember(LAS, record(5));
@@ -735,7 +820,7 @@ test("opening with a storage that refuses to list its keys or to remove a value 
   const noRemoval = {
     ...mapStorage({
       [LAS_KEY]: JSON.stringify(VALID),
-      "loop2-judging-1|acct-1|999|1|1|forest": JSON.stringify(VALID),
+      "loop2-judging-2|acct-1|999|1|1|forest": JSON.stringify(VALID),
     }),
     removeItem: () => {
       throw new DOMException("no", "SecurityError");
@@ -762,7 +847,7 @@ const valueAt = (revision, generation) =>
 
 test("a value above the loaded game's content revision, or above its generation number, is removed at the opening, and one equal or below is kept", () => {
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
-  const at = (map) => `loop2-judging-1|acct-1|1000|1|1|${map}`;
+  const at = (map) => `loop2-judging-2|acct-1|1000|1|1|${map}`;
   const storage = mapStorage({
     [at("forest")]: valueAt(4, 2),
     [at("aboveRevision")]: valueAt(5, 2),
@@ -797,11 +882,11 @@ test("a value kept by the opening is given as it was stored, whatever it says of
 test("a value of a triple whose character or program the loaded game once gave and no longer holds, or one that is no value of the cache's, is not removed by the above check", () => {
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({
-    "loop2-judging-1|acct-1|1000|9|1|forest": valueAt(0, 9),
-    "loop2-judging-1|acct-1|1000|1|9|forest": valueAt(9, 1),
-    "loop2-judging-1|acct-1|1000|1|1|broken": "not a value",
-    "loop2-judging-1|acct-1|1000|1|forest": valueAt(9, 9),
-    "loop2-judging-1|acct-1|1000|1|1|forest|more": valueAt(9, 9),
+    "loop2-judging-2|acct-1|1000|9|1|forest": valueAt(0, 9),
+    "loop2-judging-2|acct-1|1000|1|9|forest": valueAt(9, 1),
+    "loop2-judging-2|acct-1|1000|1|1|broken": "not a value",
+    "loop2-judging-2|acct-1|1000|1|forest": valueAt(9, 9),
+    "loop2-judging-2|acct-1|1000|1|1|forest|more": valueAt(9, 9),
   });
   const before = keysOfStorage(storage);
   // The character 1 and program 1 stand at 0 and 1 in the loaded game, which has given the numbers up to
@@ -817,6 +902,28 @@ test("a value of a triple whose character or program the loaded game once gave a
   assert.deepEqual(keysOfStorage(storage), before);
 });
 
+test("a value whose program the loaded game no longer holds is removed where its generation stands above its character's, and one whose character it no longer holds where its content revision stands above its program's", () => {
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  const at = (ids) => `loop2-judging-2|acct-1|1000|${ids}|forest`;
+  const storage = mapStorage({
+    [at("1|9")]: valueAt(0, 2),
+    [at("1|8")]: valueAt(0, 1),
+    [at("9|1")]: valueAt(5, 1),
+    [at("8|1")]: valueAt(0, 1),
+  });
+  // The loaded game holds character 1 at generation 1 and program 1 at content revision 0, and has given
+  // the numbers up to 10, so programs 8 and 9 and characters 8 and 9 are ones it once gave and no longer holds.
+  open(storage, {
+    state: loaded({
+      revision: 0,
+      generation: 1,
+      nextCharacterId: 11,
+      nextProgramId: 11,
+    }),
+  });
+  assert.deepEqual(keysOfStorage(storage), [at("1|8"), at("8|1")].sort());
+});
+
 const NEVER_GIVEN = [
   ["a character number the game gives next", "2|1"],
   ["a program number the game gives next", "1|2"],
@@ -830,17 +937,17 @@ const NEVER_GIVEN = [
 for (const [name, numbers] of NEVER_GIVEN) {
   test(`a value under ${name} is removed at the opening, and the value of the game's own triple stays`, () => {
     // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
-    const stale = `loop2-judging-1|acct-1|1000|${numbers}|forest`;
+    const stale = `loop2-judging-2|acct-1|1000|${numbers}|forest`;
     const storage = mapStorage({
       [LAS_KEY]: valueAt(0, 1),
       [stale]: valueAt(0, 1),
-      "loop2-judging-1|acct-2|1000|2|2|forest": valueAt(0, 1),
+      "loop2-judging-2|acct-2|1000|2|2|forest": valueAt(0, 1),
     });
     // The loaded game holds character 1 and program 1 and gives 2 and 2 next.
     const cache = open(storage);
     assert.deepEqual(keysOfStorage(storage), [
       LAS_KEY,
-      "loop2-judging-1|acct-2|1000|2|2|forest",
+      "loop2-judging-2|acct-2|1000|2|2|forest",
     ]);
     assert.deepEqual(cache.read(LAS), VALID_RECORD);
   });
@@ -849,15 +956,15 @@ for (const [name, numbers] of NEVER_GIVEN) {
 test("a value whose program or character number is not written as the cache writes a number is left by the opening, and reads as none", () => {
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({
-    "loop2-judging-1|acct-1|1000|02|1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|1|2.0|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|-3|1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|+3|1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|1e3|1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|1|0x10|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000||1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|1| 5|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|9|1|broken": "not a value",
+    "loop2-judging-2|acct-1|1000|02|1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|1|2.0|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|-3|1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|+3|1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|1e3|1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|1|0x10|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000||1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|1| 5|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|9|1|broken": "not a value",
   });
   const before = keysOfStorage(storage);
   const cache = open(storage);
@@ -869,9 +976,9 @@ test("the values of a game that lost a save are dropped for the numbers its next
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   // A page closed while its save failed: program 2 and character 2 were made and judged, then lost.
   const storage = mapStorage({
-    "loop2-judging-1|acct-1|1000|1|2|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|2|1|forest": valueAt(0, 1),
-    "loop2-judging-1|acct-1|1000|2|2|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|1|2|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|2|1|forest": valueAt(0, 1),
+    "loop2-judging-2|acct-1|1000|2|2|forest": valueAt(0, 1),
   });
   const reloaded = open(storage);
   // The page then makes program 2 (revision 0) and character 2 (generation 1) again.
