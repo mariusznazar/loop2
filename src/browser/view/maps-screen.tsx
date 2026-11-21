@@ -130,12 +130,15 @@ const OWED_TARGETS: Record<OwedFocus["target"], FocusTarget[]> = {
 /**
  * The result of a judging that stands at a character, with what it was made for. `asking` is set where the
  * result is that of the first click of „Puść w pętlę” and the earning loop waits for the second (D-243).
+ * `from` is the click that made the result: only a result of the button of a judging counts as the result
+ * that stands, to which a click of „Puść w pętlę” gives the same twelve rows (D-243).
  */
 type ShownJudging = {
   mapId: MapId;
   programId: ProgramId;
   judging: Judging;
   asking: boolean;
+  from: JudgingAct;
 };
 
 /** The click a judging answers: the button of a judging, or the first click of „Puść w pętlę” (D-243). */
@@ -149,8 +152,9 @@ type JudgingPlumbing = {
   shown: Readonly<Partial<Record<CharacterId, ShownJudging>>>;
   /**
    * Starts a judging for a click: the waiting button is drawn first, and the page is asked after the browser
-   * has painted it. `standing` is the result that stands at the character for that program and map, where
-   * the click is the first of „Puść w pętlę”, which starts the earning loop at once on the same result (D-243).
+   * has painted it. `standing` is the result of the button of a judging that stands at the character for that
+   * program and map, where the click is the first of „Puść w pętlę”, which starts the earning loop at once on
+   * the same result (D-243); a result an earlier „Puść w pętlę” left there is none.
    */
   start(
     act: JudgingAct,
@@ -473,7 +477,7 @@ function CharacterRow({
                     mapId,
                     program.id,
                     button.ownerDocument.activeElement === button,
-                    shown?.judging,
+                    shown?.from === "judge" ? shown.judging : undefined,
                   );
                 }}
               />
@@ -616,6 +620,7 @@ function MapsView({
                       programId,
                       judging: done,
                       asking: act === "loop",
+                      from: act,
                     },
                   },
             );

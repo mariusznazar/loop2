@@ -1587,6 +1587,49 @@ test("a seed unsolved shows the result under the character and the sentence over
   });
 });
 
+// D-243, task Q14: only a result from the button of a judging counts as seen. A result a first click of
+// „Puść w pętlę” left under the character, its second click pressed and the loop stopped, is no such result:
+// the next click of „Puść w pętlę” whose judging gives the same twelve rows waits for „Puść mimo to”.
+test("a result left under the character by an earlier „Puść w pętlę” is no result of the button of a judging: the same rows wait for the second click again", async () => {
+  // decision: D-243 "The judging of „Puść w pętlę” takes what the earning loop would take from the chest at that moment, and the earning loop starts at once where it solves all twelve seeds, or where it gives each seed the same line as the result of the button of a judging (D-329) that stands under the character."
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
+  await withPage(async (page) => {
+    const idle = solved(teamOf("Ala"));
+    const looping = { ...idle, loops: { 1: LOOP } };
+    const { calls } = await mount(page, propsOf(idle, "forest"), {
+      judge: () => MIXED,
+      startLoop: (shown) => shown.update(propsOf(looping, "forest")),
+      stop: (shown) => shown.update(propsOf(idle, "forest")),
+    });
+    const ala = () => members(page.root)[0];
+    const names = () => calls.map(([name]) => name);
+
+    await press(loopButton(ala()));
+    await until(() => countOf(calls, "judge") === 1);
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+    await press(loopButton(ala()));
+    await press(buttonLabelled(page.root, "Zatrzymaj: Ala"));
+    assert.ok(resultOf(ala()), "the result of the first click still stands");
+    assert.deepEqual(loopStand(ala()), ORDINARY);
+
+    await press(loopButton(ala()));
+    await until(() => countOf(calls, "judge") === 2);
+    assert.deepEqual(
+      names(),
+      ["judge", "startLoop", "stop", "judge"],
+      "the same rows start no earning loop: the result that stood came from „Puść w pętlę”",
+    );
+    assert.deepEqual(loopStand(ala()), SECOND_CLICK);
+
+    await press(loopButton(ala()));
+    assert.deepEqual(
+      names().slice(4),
+      ["startLoop"],
+      "the second click starts it",
+    );
+  });
+});
+
 // D-243: the waiting second click goes with what makes the result go; the chest changing alone is no
 // such thing, for the second click starts the loop on what the chest holds then.
 test("the waiting second click goes where another program is picked, a new judging is made or the player leaves the card, and stays where the chest or the time changes alone", async () => {
