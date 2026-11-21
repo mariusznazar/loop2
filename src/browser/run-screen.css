@@ -9,13 +9,15 @@
  */
 
 /*
- * The screen of a map run (D-311, D-282, D-280, D-349): under its header three areas of their own,
- * in the document in the order world, program, tabs. In a window wide enough they stand in two
- * columns by named grid areas: on the left the world and, under it, the area with the tabs „Kronika”
- * and „Teren”, and on the right the program, as tall as the two together; narrower, one under the
- * other in the order of the document. The areas are not moved in the document and not nested. The
- * sizes are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content
- * of at most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
+ * The screen of a map run (D-311, D-282, D-280, D-349, D-396): under its header three areas of their
+ * own, in the document in the order world, program, tabs. In the computer layout, a window 1280 px
+ * wide or wider, they stand in two columns by named grid areas: on the left the world and, under it,
+ * the area with the tabs „Kronika” and „Teren”, and on the right the program, as tall as the two
+ * together. In the phone layout, a narrower window, they stand in one column, one under the other in
+ * the order of the document, by the block `@media (width < 1280px)` after these rules. The areas are
+ * not moved in the document and not nested. The sizes are layout dimensions, which D-43 leaves out,
+ * chosen from the scene's width and the content of at most 1344 px (D-280); the scene is drawn at 672
+ * px wide in the computer layout (D-349).
  *
  * - The left column is the scene's width with the area's padding and frame, 2 × 16 px and 2 × 1 px:
  *   672 + 34 = 706 px.
@@ -24,20 +26,18 @@
  *   1248 px, 526 px. The rule panel opens in the program under its row and takes no column of its own.
  *   The 320 px and the 526 px hold in a browser that draws no classic scrollbar. A media query counts
  *   a classic scrollbar of 15 to 17 px in the window's width, so with one the program is that much
- *   narrower: about 511 px in a window 1280 px wide, and under 320 px from 1074 px up to about 1090 px.
- * - The two columns stand from the window width that holds the left column, the gap, the program's
- *   320 px and the page's padding of 2 × 16 px: 706 + 16 + 320 + 32 = 1074 px.
+ *   narrower: about 511 px in a window 1280 px wide.
  * - The rows are `auto` for the world and `1fr` for the tabs' area: the program, which spans both,
  *   adds the height it needs beyond the two to the second row alone, so the tabs' area stays
  *   directly under the world with the gap of the grid between them.
  */
 .run-screen-areas {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: 706px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "world"
-    "program"
-    "tabs";
+    "world program"
+    "tabs program";
   gap: var(--space-l);
   align-items: start;
 }
@@ -56,17 +56,27 @@
   overflow-x: auto;
 }
 
-@media (min-width: 1074px) {
+.screen-area.run-program {
+  align-self: stretch;
+}
+
+/*
+ * The phone layout of the screen of a map run (D-396, D-311, D-282): in a window narrower than 1280 px
+ * one column of the three areas in the order of the document, the world, the program and the area with
+ * the tabs. It undoes the two columns, the rows and the stretch of the program above.
+ */
+@media (width < 1280px) {
   .run-screen-areas {
-    grid-template-columns: 706px minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-template-areas:
-      "world program"
-      "tabs program";
+      "world"
+      "program"
+      "tabs";
   }
 
   .screen-area.run-program {
-    align-self: stretch;
+    align-self: start;
   }
 }
 
@@ -336,7 +346,7 @@
  * The end-of-run window over the screen of a map run (D-368, D-132, D-122, D-188, D-44, D-39, D-46):
  * a column on `panel` with its text in `text` and a frame in `divider`, as wide as the content column
  * of the screen it covers and no taller than 80vh, so that it leaves the menu bar and the row under
- * it visible in a window 720 px high and in the one column under 1074 px. The height is a layout
+ * it visible in a window 720 px high and in the one column of the phone layout. The height is a layout
  * dimension (D-43); 80vh was chosen and checked in a real browser. At the top the label in
  * `text-label`, the title in `text-strong`, or in `positive` after a completion, and „✕”; in the
  * middle the part that scrolls, with its sections parted by a line in `divider` and their names in

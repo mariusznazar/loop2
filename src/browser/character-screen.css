@@ -9,9 +9,9 @@
  * The screen Postać (D-445, D-446, D-447, D-199, D-217, D-218, D-244, D-245; styleguide rule "The
  * screen Postać"): as wide as the content under the menu bar, at most 1344 px (D-280), and two areas,
  * each a block of `.screen-area` of styles.css. The areas take the proportion of the columns of Mapy
- * and Wiedza, a quarter and three quarters, and stand one over the other in a window under 720 px
- * (D-282); the rule is the screen's own, with the same column sizes and threshold as the shared rule of
- * those screens in styles.css.
+ * and Wiedza, a quarter and three quarters, and stand one over the other in the phone layout, a window
+ * under 1280 px (D-282, D-396); the rule is the screen's own, with the same column sizes and threshold as
+ * the shared rule of those screens in styles.css.
  */
 .character-screen {
   box-sizing: border-box;
@@ -24,7 +24,8 @@
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-@media (max-width: 720px) {
+/* The phone layout (D-396, D-282): in a window narrower than 1280 px the left area stands over the right one. */
+@media (width < 1280px) {
   .screen.character-areas {
     grid-template-columns: 1fr;
   }

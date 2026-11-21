@@ -250,8 +250,12 @@ header .failure-line {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-/* A window under 720 px sets the areas of Programy, Mapy and Wiedza on one line each (D-282). */
-@media (max-width: 720px) {
+/*
+ * The phone layout of Programy, Mapy and Wiedza (D-396, D-282): in a window narrower than 1280 px the
+ * areas of the three screens stand in one column, one under the other in the order of the document, the
+ * order of the computer layout from the left to the right.
+ */
+@media (width < 1280px) {
   .screen.programs-screen,
   .screen.maps-screen,
   .screen.knowledge-areas {
@@ -265,6 +269,30 @@ header .failure-line {
   border: var(--frame-width) solid var(--divider);
   padding: var(--space-m) var(--space-l);
   min-height: 120px;
+}
+
+/*
+ * The shell of the page in the phone layout (D-396, D-280): it leaves the screens their width. The side
+ * padding of the page and that of an area are the steps of the spacing scale chosen so that the scene of a
+ * map run, whose picture is 336 px wide (D-349), loses at most 32 px of it to its crop in a window with a page
+ * area 360 px wide: the mage at the right edge ends on column 319 of 336 (`SCENE.rightEdgeX` in
+ * src/browser/sim/data/scene.ts), so 304 px must stay. The world area then holds 360 - 2 × 8 (the page) -
+ * 2 × (12 + 1) (the area and its frame) = 318 px, a crop of 9 px a side. The menu bar wraps its name, its
+ * items and „Konto” onto as many lines as the width needs.
+ */
+@media (width < 1280px) {
+  body {
+    padding: 0 var(--space-s);
+  }
+
+  .screen-area {
+    padding-inline: var(--space-m);
+  }
+
+  .menu-bar {
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-l);
+  }
 }
 
 /*
