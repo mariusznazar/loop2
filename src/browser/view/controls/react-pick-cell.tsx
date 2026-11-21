@@ -56,7 +56,7 @@ export function ReactPickCell({
           style={{ "--icon": `url("/icons/${icon}.svg")` } as CSSProperties}
         />
       ) : null}
-      {text}
+      <span className="pick-cell-name">{text}</span>
       {greyed && reason ? (
         <span className="pick-cell-reason">{reason}</span>
       ) : null}
