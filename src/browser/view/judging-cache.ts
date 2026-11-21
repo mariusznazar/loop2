@@ -19,13 +19,12 @@ export interface JudgingStorage {
 
 /**
  * What the page gives to open the cache of one game (D-441): the account by the identifier the
- * server names, never the email address, the game by the moment it was made, the game state the page
- * loaded or made, whether the page built the game after the server refused its save for another
- * browser's (D-209), and the lasting storage or none.
+ * server names, never the email address, the game state the page loaded or made, whose moment the
+ * game was made at names the game, whether the page built the game after the server refused its save
+ * for another browser's (D-209), and the lasting storage or none.
  */
 export type JudgingCacheOpening = {
   accountId: string;
-  madeAtMs: number;
   state: GameState;
   afterRefusedSave: boolean;
   storage: JudgingStorage | null;
@@ -231,10 +230,25 @@ function readFrom(storage: JudgingStorage, key: string): string | null {
 }
 
 /**
- * Whether a stored value of this game's triple can only come from a save that never reached the server:
- * its content revision or its generation stands above that of its program or character in the loaded
- * game (D-441). A triple whose program or character the loaded game lacks, or a key or value of no
- * form of the cache's, is left alone.
+ * Whether the text is a whole number written as the cache writes one that the loaded game has not yet
+ * given: from `next` up. A canonical decimal is compared as text, by its length and then its digits, so
+ * a number past the safe integers needs no parse; any other text is no number of the cache's.
+ */
+function isNotBelow(text: string | undefined, next: number): boolean {
+  if (text === undefined || !/^(?:0|[1-9][0-9]*)$/.test(text)) return false;
+  const limit = String(next);
+  return (
+    text.length > limit.length ||
+    (text.length === limit.length && text >= limit)
+  );
+}
+
+/**
+ * Whether a stored value of this game's triple can only come from a save that never reached the server
+ * (D-441): its program number or its character number is one the loaded game has not yet given, or its
+ * content revision or its generation stands above that of its program or character where the loaded
+ * game holds it. A triple whose program or character the loaded game once gave and no longer holds is
+ * left alone, as is a key or value of no form of the cache's.
  */
 function isAboveLoaded(
   state: GameState,
@@ -244,6 +258,11 @@ function isAboveLoaded(
   const ids = triple.split(SEPARATOR);
   const record = readValue(value);
   if (ids.length !== 3 || record === null) return false;
+  if (
+    isNotBelow(ids[0], state.nextCharacterId) ||
+    isNotBelow(ids[1], state.nextProgramId)
+  )
+    return true;
   const character = state.team.characters.find(({ id }) => part(id) === ids[0]);
   const saved = state.programs.find(({ id }) => part(id) === ids[1]);
   return (
@@ -254,16 +273,16 @@ function isAboveLoaded(
 
 /**
  * Removes, best effort, what the opening of the cache removes (D-441): the values of the account under
- * the moment of another game, and of this game those a refused save may have made untrue, or all of them
- * where the page built the game after the server refused its save. Values of other accounts and keys of
- * another version of the stored form are left.
+ * the moment of another game, and of this game those that can only come from a save that never reached
+ * the server, or all of them where the page built the game after the server refused its save. Values of
+ * other accounts and keys of another version of the stored form are left.
  */
 function tidyStorage(
   storage: JudgingStorage,
   opening: JudgingCacheOpening,
 ): void {
   const accountPrefix = `${KEY_PREFIX}${part(opening.accountId)}${SEPARATOR}`;
-  const gameOwn = gamePrefix(opening.accountId, opening.madeAtMs);
+  const gameOwn = gamePrefix(opening.accountId, opening.state.madeAtMs);
   for (const key of keysOf(storage)) {
     if (!key.startsWith(accountPrefix)) continue;
     if (
@@ -286,7 +305,8 @@ function tidyStorage(
  * against the newer one. No exception of the storage leaves the cache, and nothing here reaches a window.
  */
 export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
-  const { accountId, madeAtMs, storage } = opening;
+  const { accountId, storage } = opening;
+  const { madeAtMs } = opening.state;
   // Only the records whose write the storage refused; a write that succeeds takes its triple out.
   const memory = new Map<string, JudgingRecord>();
   if (storage !== null) tidyStorage(storage, opening);
@@ -310,14 +330,15 @@ export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
 }
 
 /**
- * The lasting storage of a page given its window, or none where the browser refuses it: reaching
- * `localStorage` throws in a browser that blocks storage, which the cache must not let out.
+ * The lasting storage of a page given its window, or none where the window has none or the browser
+ * refuses it: reaching `localStorage` throws in a browser that blocks storage, which the cache must
+ * not let out.
  */
 export function lastingStorageOf(page: {
-  readonly localStorage: JudgingStorage;
+  readonly localStorage?: JudgingStorage | null;
 }): JudgingStorage | null {
   try {
-    return page.localStorage;
+    return page.localStorage ?? null;
   } catch {
     return null;
   }

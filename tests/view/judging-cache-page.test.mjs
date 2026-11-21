@@ -172,7 +172,6 @@ function reload() {
 function cacheOf(accountId, madeAtMs, { afterRefusedSave = false } = {}) {
   return openJudgingCache({
     accountId,
-    madeAtMs,
     state: gameMadeAt(madeAtMs),
     afterRefusedSave,
     storage: storageOf(),

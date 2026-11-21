@@ -126,8 +126,7 @@ function cacheOn(
 ) {
   return openJudgingCache({
     accountId,
-    madeAtMs,
-    state,
+    state: { ...state, madeAtMs },
     afterRefusedSave,
     storage,
   });

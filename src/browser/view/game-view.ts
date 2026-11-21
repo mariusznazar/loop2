@@ -227,7 +227,6 @@ export function createGameView(options: GameViewOptions): GameView {
   // account and this game, which the game's moment names (D-441). Opening it removes what D-441 says.
   const judgingCache = openJudgingCache({
     accountId: options.accountId,
-    madeAtMs: options.state.madeAtMs,
     state: options.state,
     afterRefusedSave: options.afterConflict ?? false,
     storage: lastingStorageOf(window),

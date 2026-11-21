@@ -27,13 +27,22 @@ function frozen(value) {
 }
 
 /**
- * The loaded game the cache is opened with: Ala (character 1) at `generation`, and the first program
- * (program 1) at content revision `revision`.
+ * The loaded game the cache is opened with, made at `madeAtMs`: Ala (character 1) at `generation`, and
+ * the first program (program 1) at content revision `revision`. The numbers the game gives next are
+ * 2 and 2, or `nextCharacterId` and `nextProgramId`.
  */
-function loaded({ revision = 0, generation = 1 } = {}) {
-  const made = createCharacter(newGame(MADE), "Ala").state;
+function loaded({
+  revision = 0,
+  generation = 1,
+  madeAtMs = MADE,
+  nextCharacterId = 2,
+  nextProgramId = 2,
+} = {}) {
+  const made = createCharacter(newGame(madeAtMs), "Ala").state;
   return frozen({
     ...made,
+    nextCharacterId,
+    nextProgramId,
     team: {
       ...made.team,
       characters: made.team.characters.map((character) => ({
@@ -112,11 +121,11 @@ function brokenStorage() {
   };
 }
 
-function open(storage, over = {}) {
+/** Opens the cache on `storage`; `madeAtMs` is the moment of the game state it is opened with. */
+function open(storage, { madeAtMs = MADE, state, ...over } = {}) {
   return openJudgingCache({
     accountId: ACCOUNT,
-    madeAtMs: MADE,
-    state: loaded(),
+    state: state ?? loaded({ madeAtMs }),
     afterRefusedSave: false,
     storage,
     ...over,
@@ -314,20 +323,26 @@ test("an account whose identifier holds the separator of a key shares no judging
   // invariant: judging-cache-reading
   // decision: D-441 "The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read."
   const storage = mapStorage();
-  const plain = open(storage, { accountId: "a" });
-  const odd = open(storage, { accountId: "a|1000" });
-  const percent = open(storage, { accountId: "a%7C1000" });
+  const odd = open(storage, { accountId: "a|999" });
+  const percent = open(storage, { accountId: "a%7C999" });
   odd.remember(LAS, record(1));
   percent.remember(LAS, record(2));
-  assert.equal(plain.read(LAS), null);
   assert.deepEqual(odd.read(LAS), record(1));
   assert.deepEqual(percent.read(LAS), record(2));
-  // Opened anew for another game, "a|1000" tidies its own values and no other account's.
-  open(storage, { accountId: "a" });
-  open(storage, { accountId: "a|1000", madeAtMs: 5 });
-  assert.equal(open(storage, { accountId: "a|1000" }).read(LAS), null);
+  // Where the separator stood bare in a key, the key of "a|999" would read as the account "a" under the
+  // moment 999, another game than its own, and the opening for "a" would remove it.
+  const plain = open(storage, { accountId: "a" });
+  assert.equal(plain.read(LAS), null);
+  assert.deepEqual(open(storage, { accountId: "a|999" }).read(LAS), record(1));
   assert.deepEqual(
-    open(storage, { accountId: "a%7C1000" }).read(LAS),
+    open(storage, { accountId: "a%7C999" }).read(LAS),
+    record(2),
+  );
+  // Opened anew for another game, "a|999" tidies its own values and no other account's.
+  open(storage, { accountId: "a|999", madeAtMs: 5 });
+  assert.equal(open(storage, { accountId: "a|999" }).read(LAS), null);
+  assert.deepEqual(
+    open(storage, { accountId: "a%7C999" }).read(LAS),
     record(2),
   );
 });
@@ -624,6 +639,10 @@ test("a page whose window refuses its storage gives none, and one that gives it 
     },
   };
   assert.equal(lastingStorageOf(refusing), null);
+  // A window with no `localStorage` at all gives none, as the type says, and not `undefined`.
+  assert.equal(lastingStorageOf({}), null);
+  assert.equal(lastingStorageOf({ localStorage: undefined }), null);
+  assert.equal(lastingStorageOf({ localStorage: null }), null);
 });
 
 // ---------------------------------------------------------------------------------------------------
@@ -664,7 +683,7 @@ test("opening a game removes the values of the same account under the moment of 
     "loop2-judging-2|acct-1|999|1|1|forest": value,
     "unrelated key": "x",
   });
-  open(storage);
+  open(storage, { state: loaded({ nextCharacterId: 3, nextProgramId: 4 }) });
   assert.deepEqual(
     keysOfStorage(storage),
     [
@@ -775,7 +794,7 @@ test("a value kept by the opening is given as it was stored, whatever it says of
   assert.equal(cache.read(LAS).generation, 1);
 });
 
-test("a value of a triple whose character or program the loaded game lacks, or one that is no value of the cache's, is not removed by the above check", () => {
+test("a value of a triple whose character or program the loaded game once gave and no longer holds, or one that is no value of the cache's, is not removed by the above check", () => {
   // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
   const storage = mapStorage({
     "loop2-judging-1|acct-1|1000|9|1|forest": valueAt(0, 9),
@@ -785,7 +804,87 @@ test("a value of a triple whose character or program the loaded game lacks, or o
     "loop2-judging-1|acct-1|1000|1|1|forest|more": valueAt(9, 9),
   });
   const before = keysOfStorage(storage);
-  // The character 1 and program 1 stand at 0 and 1 in the loaded game; the keys above name others or are malformed.
-  open(storage, { state: loaded({ revision: 0, generation: 1 }) });
+  // The character 1 and program 1 stand at 0 and 1 in the loaded game, which has given the numbers up to
+  // 10 to characters and programs; the keys above name others it once gave or are malformed.
+  open(storage, {
+    state: loaded({
+      revision: 0,
+      generation: 1,
+      nextCharacterId: 11,
+      nextProgramId: 11,
+    }),
+  });
   assert.deepEqual(keysOfStorage(storage), before);
+});
+
+const NEVER_GIVEN = [
+  ["a character number the game gives next", "2|1"],
+  ["a program number the game gives next", "1|2"],
+  ["a character number far above", "40|1"],
+  ["a program number far above", "1|40"],
+  ["both numbers above", "7|9"],
+  ["a program number past the safe integers", "1|99999999999999999999"],
+  ["a character number past the safe integers", "99999999999999999999|1"],
+];
+
+for (const [name, numbers] of NEVER_GIVEN) {
+  test(`a value under ${name} is removed at the opening, and the value of the game's own triple stays`, () => {
+    // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+    const stale = `loop2-judging-1|acct-1|1000|${numbers}|forest`;
+    const storage = mapStorage({
+      [LAS_KEY]: valueAt(0, 1),
+      [stale]: valueAt(0, 1),
+      "loop2-judging-1|acct-2|1000|2|2|forest": valueAt(0, 1),
+    });
+    // The loaded game holds character 1 and program 1 and gives 2 and 2 next.
+    const cache = open(storage);
+    assert.deepEqual(keysOfStorage(storage), [
+      LAS_KEY,
+      "loop2-judging-1|acct-2|1000|2|2|forest",
+    ]);
+    assert.deepEqual(cache.read(LAS), VALID_RECORD);
+  });
+}
+
+test("a value whose program or character number is not written as the cache writes a number is left by the opening, and reads as none", () => {
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  const storage = mapStorage({
+    "loop2-judging-1|acct-1|1000|02|1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|1|2.0|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|-3|1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|+3|1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|1e3|1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|1|0x10|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000||1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|1| 5|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|9|1|broken": "not a value",
+  });
+  const before = keysOfStorage(storage);
+  const cache = open(storage);
+  assert.deepEqual(keysOfStorage(storage), before);
+  assert.equal(cache.read({ ...LAS, characterId: 3, mapId: "forest" }), null);
+});
+
+test("the values of a game that lost a save are dropped for the numbers its next program and next character take, so no later one of those numbers meets them", () => {
+  // decision: D-441 "When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts."
+  // A page closed while its save failed: program 2 and character 2 were made and judged, then lost.
+  const storage = mapStorage({
+    "loop2-judging-1|acct-1|1000|1|2|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|2|1|forest": valueAt(0, 1),
+    "loop2-judging-1|acct-1|1000|2|2|forest": valueAt(0, 1),
+  });
+  const reloaded = open(storage);
+  // The page then makes program 2 (revision 0) and character 2 (generation 1) again.
+  assert.equal(
+    reloaded.read({ characterId: 1, programId: 2, mapId: "forest" }),
+    null,
+  );
+  assert.equal(
+    reloaded.read({ characterId: 2, programId: 1, mapId: "forest" }),
+    null,
+  );
+  assert.equal(
+    reloaded.read({ characterId: 2, programId: 2, mapId: "forest" }),
+    null,
+  );
 });
