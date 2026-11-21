@@ -40,6 +40,25 @@ stay apart in two browsers or sessions: in one, they share the session cookie, s
 signs you out of the other.
 Every account is made through the login card, with a made-up address at `example.test`.
 
+**An account with the owner role.** The owner panel, the list of accounts, is for an account whose role is
+`owner` (D-410), and only a person gives that role, with the command `account-role`. In a local
+start, make the account first, then give the role with that command against the database of the
+start, never by editing the database. The database is
+`.runs/local-start/<process>-<port>-<mark>/accounts.sqlite`, the directory being the one whose port
+is the port of the line `Local game:`. Run from the repository's root while the start runs
+(`npm run local` has built `dist/server/`):
+
+```sh
+LOOP2_DATABASE_PATH=.runs/local-start/<process>-<port>-<mark>/accounts.sqlite node dist/server/account-role.js owner owner@example.test
+```
+
+The command exits 0 when the account has the role. Sign in with that account after it, and the menu
+„Konto” holds the link „Panel właściciela”. To fill the list with several accounts at once, the
+request of the card does it: `POST /api/accounts` with the body `{"email", "password",
+"passwordConfirmation"}` and the header `Origin` set to the address of the start; make the password
+of ASCII letters, since a non-ASCII one sent from a shell of this computer is mangled and the account
+then does not sign in.
+
 ## Operate the game with Playwright CLI
 
 Playwright CLI is the first way of operating the game (D-417).
@@ -111,6 +130,16 @@ playwright-cli --raw run-code "async (page) => { await page.getByRole('link', { 
 `page.touchscreen.tap(x, y)` taps a point of the page, for a tile of a picture that has no
 name. The two commands above answer with the address, which shows whether a tap on a link led
 anywhere; after a tap on a button read the page with `eval` or `snapshot`.
+
+**Tap a tile of the drawing of a map.** The tile is a `<g data-tile="x,y">` of the drawing, and a
+plain `tap` on its polygon waits until it times out, since the icon at the middle of the tile
+intercepts the touch. Force the tap: the touch then reaches the icon, and the drawing finds the
+tile by its `data-tile` ancestor, as it does for a finger. Only a revealed tile marks its row, and
+the row is in the table under the tab „Teren”, so pick that tab first (D-19, D-311):
+
+```sh
+playwright-cli --raw run-code "async (page) => { await page.locator('.terrain-drawing [data-tile=\"1,0\"] polygon').tap({ force: true }); }"
+```
 
 **Measure.** Read that nothing scrolls to the side, no text crosses the border of its frame and no
 control is smaller than the touch target, on every screen and state you changed. This writes the
@@ -307,6 +336,16 @@ playwright-cli --raw run-code --filename .playwright-cli/send-state.js
 The page saves too, so send the document before the page does anything else to the save, and reload
 at once. A document the game refuses to load shows „Zapis był uszkodzony i nie dał się wczytać.” and
 a game that starts anew.
+
+**A character in an earning loop, and the report of a return.** The button „Puść w pętlę” stands
+only on a solved map, and a new account has none, so compose it: add the map to `solvedMaps` of the
+state, then start the loop with `startLoop(state, { mapId, characterId }, realMs)` of
+`src/browser/sim/loop.ts`, which refuses a map not among the solved ones. `loadSavedGame` refuses a
+document whose loop breaks the rules of `earningLoop` in `src/browser/sim/saved-game.ts`: the map must be solved,
+the run going on and the character's own, `completed` below `runNumber`, and `inARow` not above
+`loopRecord`, which is not above `completed`. To get the report „Gdy cię nie było” of a return,
+stamp the document with a time hours back, `savedGame(withSaveTime(state, Date.now() - 6 * 3600 *
+1000))`, send it as above and reload at once.
 
 ## Read motion from a stream of frames
 
