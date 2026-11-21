@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
 import { send } from "../../dist/browser/sim/game.js";
 import {
+  DEFAULT_CAP_MINUTES,
   buildSkills,
   makeState,
   prerequisitesOf,
@@ -60,6 +62,10 @@ test("a map run that stands at the cap is a run at the cap, at the minute of the
   assert.equal(result.outcome, "cap");
   assert.equal(result.minute, 10);
   assert.equal(result.cause, null);
+});
+
+test("the default cap of a map run is the judging cap the built game holds, not a number of the instrument", () => {
+  assert.equal(DEFAULT_CAP_MINUTES, BALANCE.judgingCapMinutes);
 });
 
 test("the summary of hand-made results counts, shares, distributes and averages as written out", () => {
