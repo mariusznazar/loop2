@@ -57,6 +57,7 @@ import {
 import { pieceCount } from "../dist/browser/sim/trip.js";
 import {
   DEFAULT_CAP_MINUTES,
+  GAME_MADE_AT_MS,
   fullUnderstanding,
   meanNumber,
   outcomeOf,
@@ -166,7 +167,7 @@ function buyRanks(state, characterId, order, bought) {
 
 /** The state of a new account: one mage, the programs of the player on the list, the seed given. */
 function newAccount(player, programs, seed) {
-  let state = newGame();
+  let state = newGame(GAME_MADE_AT_MS);
   if (player.knowing) state = { ...state, understanding: fullUnderstanding() };
   state = createCharacter(state, "Mag").state;
   const roles = Object.keys(programs);
@@ -177,6 +178,7 @@ function newAccount(player, programs, seed) {
       id: index + 1,
       name: role,
       program: checkProgram(programs[role], null),
+      contentRevision: 0,
     };
   });
   return {
