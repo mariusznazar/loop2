@@ -1,0 +1,30 @@
+opening threw: null
+KEPT    "loop2-judging-1|acct-1|1000|1|1|forest"
+KEPT    "loop2-judging-1|acct-1|1000|3|4|forest"
+KEPT    "loop2-judging-1|acct-1|1000|2|4|forest"
+KEPT    "loop2-judging-1|acct-1|1000|3|2|forest"
+KEPT    "loop2-judging-1|acct-1|1000|4|1|forest"
+REMOVED "loop2-judging-1|acct-1|1000|5|1|forest"
+REMOVED "loop2-judging-1|acct-1|1000|1|5|forest"
+REMOVED "loop2-judging-1|acct-1|1000|1|999999999999999999999999999999...(200037)"
+KEPT    "loop2-judging-1|acct-1|1000|0|1|forest"
+KEPT    "loop2-judging-1|acct-1|1000|1|1|forest|x"
+KEPT    "loop2-judging-1|acct-1|1000|1|1"
+KEPT    "loop2-judging-1|acct-1|1000|١|1|forest"
+KEPT    "loop2-judging-1|acct-1|1000|5|1|bad"
+KEPT    "loop2-judging-1|acct-1|1000|5|1|proto"
+KEPT    "loop2-judging-1|acct-1|1000|5|1|long"
+KEPT    "loop2-judging-1|acct-1|1000|__proto__|1|forest"
+KEPT    "loop2-judging-1|acct-1|1000|1|constructor|forest"
+KEPT    "loop2-judging-1|acct-1|1000|%35|1|forest"
+KEPT    "loop2-judging-1|acct-2|1000|9|9|forest"
+REMOVED "loop2-judging-1|acct-1|1001|1|1|forest"
+KEPT    "loop2-judging-2|acct-1|1000|9|9|forest"
+read own 1|1: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved"],"equipment":[],"contentRevision":0,"generation":1}
+read own 3|4: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved"],"equipment":[],"contentRevision":2,"generation":1}
+edge kept: ["9007199254740990|1|forest"]
+getItem throws: no throw out
+getItem object: no throw, kept 1
+lastingStorageOf({}): null
+lastingStorageOf(getter throws): null
+lastingStorageOf(given) same: true

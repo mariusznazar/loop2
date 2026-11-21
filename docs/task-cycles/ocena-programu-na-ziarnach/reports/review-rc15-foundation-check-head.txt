@@ -1,0 +1,6 @@
+tests/sim/saved-game-judgings.test.mjs:111: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:124: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:170: the quotation stands in no binding sentence of `D-165`
+tests/sim/saved-game-judgings.test.mjs:257: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:304: the quotation stands in no binding sentence of `D-440`
+5 errors

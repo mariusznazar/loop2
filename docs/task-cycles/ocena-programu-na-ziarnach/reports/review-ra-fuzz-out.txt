@@ -1,0 +1,129 @@
+tracked files: 326, losses on tracked files: 0
+
+== balance-strings: 28850 texts
+['']  "'{"
+['']  "')"
+['']  '"]'
+['']  '".'
+['']  "'}"
+['']  '"`'
+['']  '"='
+['']  '"['
+['']  "'1"
+['']  '\'"'
+['']  "' "
+['']  '"{'
+['']  "'g"
+['']  "'["
+['']  "']"
+['']  '"\''
+['']  "',"
+['']  '"1'
+['']  "'("
+['']  '"x'
+['']  "'`"
+['']  "'/"
+['']  '"/'
+['']  '"('
+['']  "'x"
+['']  '"g'
+['']  "'."
+['']  "'="
+['']  '"}'
+['']  '")'
+['']  '" '
+['']  '",'
+['/']  '"//'
+['*']  '"*/'
+['']  '\\"}'
+[')']  '")}'
+['f']  '"fs'
+['']  '\n"x'
+['/']  '"/*'
+['']  '\\"{'
+[')']  '")('
+
+== randomness-strings: 26 texts
+['\\${']  '`\\${'
+['\\`']  'now`\\`'
+['gMath\\`']  '(`gMath\\`'
+['xa/b\\`']  '(now`xa/b\\`'
+['forest\\${']  '{}`forest\\${'
+[']g(']  "`{'${/]x[}]g("
+['\\`']  'Datecrypto,`\\`'
+['x}nowx\\${']  'reforest`x}nowx\\${'
+['\ng\\*/\\}fs\\${']  'gcrypto`\ng\\*/\\}fs\\${'
+['/*/{=\\`']  'nowDate1 import`/*/{=\\`'
+["'1random(a/b\\${"]  "a/bDate\\`'1random(a/b\\${"
+['fs/* \\writeFile}nowfs\\`']  ']`fs/* \\writeFile}nowfs\\`'
+[')Math']  '`fs.${/g)import=now})Math'
+['Date\\ ']  'forest]\n`.${/reDate}Date\\ '
+['crypto=*/{']  'crypto`]now${/["crypto=*/{'
+['']  ')cryptofs=`//x,import${/re`'
+['//Date\\`']  'forest=rea/b]crypto`//Date\\`'
+['\\`']  'writeFile{${recrypto(nowMath`\\`'
+['import`1{']  ")importfsrandom`[${/.'import`1{"
+['MathimportwriteFile//\\`']  'renow]{`MathimportwriteFile//\\`'
+['MathMath\\${']  'return return */a/ bfs`MathMath\\${'
+['fsreturn writeFilerandomDateMath\\${']  '`fsreturn writeFilerandomDateMath\\${'
+['crypto\nfsimportcrypto\nnowreturn }\\${']  '`crypto\nfsimportcrypto\nnowreturn }\\${'
+['Mathcrypto)random']  '{=random,crypto`${/Math}Mathcrypto)random'
+['1writeFileimportwriteFile=/a/ b\\${']  '{cryptoimport}`1writeFileimportwriteFile=/a/ b\\${'
+['crypto}*/writeFile\'"cryptoimport\\${']  ']forestimport`crypto}*/writeFile\'"cryptoimport\\${'
+
+== randomness-code: 17 texts
+['Date', 'crypto']  '`${/crypto\nDate,"1)'
+['import', 'now']  '`fs.${/g)import=now})Math'
+['random']  'Date`return g*/({${/random'
+['crypto']  'Mathcrypto`//import${/crypto'
+['Date']  'Math\n[crypto`Mathnow{{${/Date'
+['fs']  '${a/bforestfscrypto]}`${/fs ='
+['now']  'cryptoMath`{forest\n1//*${/now['
+['random']  '{forest)importfs`a/b.${/random\\x'
+['writeFile']  'g]random`*/cryptoMath${/writeFile{'
+['now']  'Datenowg(`\\writeFileforest ${/now*/'
+['random']  '/\nwriteFile`,${/random/*return ]re,'
+['Date']  'xrandom[(return ${Mathrandom`${/Date'
+['crypto']  'fsfsnow`Mathreturn /*import${/crypto'
+['Date']  'forestcrypto{,.`cryptowriteFile${/Date'
+['Math']  '{=random,crypto`${/Math}Mathcrypto)random'
+['forest']  'a/b`reDatenow1random${/return forest.1crypto'
+['writeFile']  ' g((crypto`cryptonowreturn ${/${return writeFile'
+
+== balance-code: 17 texts
+['Date', 'crypto']  '`${/crypto\nDate,"1)'
+['import', 'now']  '`fs.${/g)import=now})Math'
+['random']  'Date`return g*/({${/random'
+['crypto']  'Mathcrypto`//import${/crypto'
+['Date']  'Math\n[crypto`Mathnow{{${/Date'
+['fs']  '${a/bforestfscrypto]}`${/fs ='
+['now']  'cryptoMath`{forest\n1//*${/now['
+['random']  '{forest)importfs`a/b.${/random\\x'
+['writeFile']  'g]random`*/cryptoMath${/writeFile{'
+['now']  'Datenowg(`\\writeFileforest ${/now*/'
+['random']  '/\nwriteFile`,${/random/*return ]re,'
+['Date']  'xrandom[(return ${Mathrandom`${/Date'
+['crypto']  'fsfsnow`Mathreturn /*import${/crypto'
+['Date']  'forestcrypto{,.`cryptowriteFile${/Date'
+['Math']  '{=random,crypto`${/Math}Mathcrypto)random'
+['forest']  'a/b`reDatenow1random${/return forest.1crypto'
+['writeFile']  ' g((crypto`cryptonowreturn ${/${return writeFile'
+
+== isolation-code_only: 17 texts
+['Date', 'crypto']  '`${/crypto\nDate,"1)'
+['import', 'now']  '`fs.${/g)import=now})Math'
+['random']  'Date`return g*/({${/random'
+['crypto']  'Mathcrypto`//import${/crypto'
+['Date']  'Math\n[crypto`Mathnow{{${/Date'
+['fs']  '${a/bforestfscrypto]}`${/fs ='
+['now']  'cryptoMath`{forest\n1//*${/now['
+['random']  '{forest)importfs`a/b.${/random\\x'
+['writeFile']  'g]random`*/cryptoMath${/writeFile{'
+['now']  'Datenowg(`\\writeFileforest ${/now*/'
+['random']  '/\nwriteFile`,${/random/*return ]re,'
+['Date']  'xrandom[(return ${Mathrandom`${/Date'
+['crypto']  'fsfsnow`Mathreturn /*import${/crypto'
+['Date']  'forestcrypto{,.`cryptowriteFile${/Date'
+['Math']  '{=random,crypto`${/Math}Mathcrypto)random'
+['forest']  'a/b`reDatenow1random${/return forest.1crypto'
+['writeFile']  ' g((crypto`cryptonowreturn ${/${return writeFile'

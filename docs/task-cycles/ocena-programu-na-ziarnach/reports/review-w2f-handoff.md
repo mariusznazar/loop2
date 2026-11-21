@@ -1,0 +1,37 @@
+# Handoff — review `w2f`, task `ocena-programu-na-ziarnach`
+
+## Delegation
+
+The person who requested this cycle has delegated intermediate choices to the orchestrator; the orchestrator's answers are never that person's approval. Questions go to the orchestrator, never to the human.
+
+## What is reviewed
+
+- Worktree: `.` (branch `task/ocena-programu-na-ziarnach`); you are read-only there and make no commit. Pinned the-way `19e5774aed6d1d628042e23deccc110ed9f112c0` in the worktree's `.the-way`.
+- Method: `.the-way/task-cycle/review/SKILL.md` (`review-change`). Read it whole, and a file it names only when the step or variant that names the file comes.
+- Review: a group of the cycle's slices, in the plan's order — slice(s) none. **Range to review: `c43c8ad7..51015538`** (base exclusive, head inclusive; head `51015538`). Check the head with `git rev-parse` first; on a mismatch ask the orchestrator which range to review.
+- The change is a member of a plan; the plan's sections for what you review are copied below word for word, and the passages of the frozen task that those sections' *Read* name (the frozen task is `.runs/task-cycles/ocena-programu-na-ziarnach/task-frozen.md`; open it if a passage points you to more). You judge the work against those passages and the foundation entries the sections name, not against the plan's wording.
+- Two answers of step 4: trust boundary **yes** — `src/browser/sim/saved-game.ts` takes in a saved game from the server; check crafted input at that boundary wherever the range touches it (say so in the report if the range does not). Irreversible operation **no**: confirm that the change only prepares what it prepares.
+- Executors' and writer's reports (each in `.runs/task-cycles/ocena-programu-na-ziarnach/reports/`): `whole-2-fix-report.md`, `whole-2-findings.md`. Read each; they hold the own-work checks, reaches, concerns and unread material. A check an author reports is evidence of what the author ran, never of the result.
+- Mechanical checks the orchestrator ran: clean worktree, non-empty range, changed files equal the slices' *Change*. Any mismatch is given below under notes.
+- No agent of the cycle runs the product's full gate; **you do not run `npm test` without a file argument or the whole `tests/`**. Run the focused checks of the slices you review, and probes of your own, from a worktree of the head commit in your own directory.
+- Your directory for working copies: `.runs/review-w2f/` (directly under the ignored `.runs/` of the worktree) — make a detached worktree of `51015538` there (`git worktree add --detach .runs/review-w2f/wt 51015538`), run `npm ci` in it if you run Node tests, and run checks there, not in the cycle's worktree (another agent may be writing there). Remove it before you return, as the paragraph below gives.
+- Your report path (its name begins with the role): `.runs/task-cycles/ocena-programu-na-ziarnach/reports/review-w2f-report.md`; its first line is `PASS 51015538` or `FAIL 51015538` (or `questions`).
+- `cycle.md` and the other files of the record directory not named above are not yours to read.
+- Settle each blocking finding's contradiction mark, and for the range's slices the slice it comes from, as `review-change` gives.
+
+## Working copies (first paragraph of "Working copies" of the cycle's skill, word for word)
+
+An agent of the cycle that makes a working copy to check something — a worktree of a commit, a clone, a script, a screenshot, a prepared input of a test — makes it in a directory of its own directly under the ignored `.runs/` of the task's worktree, the directory its handoff names; never in the system's temporary directory, in the scratch directory of a session or in the main checkout of the repository. The screenshot that a screenshot tool, such as the Playwright server, saves by itself under its session's directory is moved into the agent's directory and the original removed, except a screenshot that is shown to the human: that one goes where `task-cycle/change/ui_check.md` says, to the place the product's foundation settles for screenshots, and into the agent's directory only where no such place is settled. The files that a product's own tools and tests make by themselves are no working copy of the agent and stay outside this rule. Before the agent returns, each time it returns, it removes its copy — a worktree with `git worktree remove --force`, then `git worktree prune` — keeps in `reports/` beside its report what the report needs, and states in the report where each copy stood and that it was removed. Where a removal fails, the agent finishes all the same and names in the report the remainder, with its full path and the reason it stayed. It removes a copy, as any directory, by its path written out in full in the command, never through a shell variable: an empty variable turns the removal on the directory the shell stands in.
+
+## Passages of the frozen task
+
+
+## The plan's sections for what you review (word for word)
+
+
+
+## Notes of the orchestrator
+
+- The review of the one fix of the Minor findings of the review of the whole of correction 1: the findings file is `reports/whole-2-findings.md` (the reviewer's words, M1–M11; read it whole; the review report is `reports/review-whole-2-report.md`; the fixer's report `reports/whole-2-fix-report.md`). The fix is five commits, range `c43c8ad7..HEAD` (`9e6ae5a4`, `efcceb44`, `2e5536b1`, `b8b6c24c`, `51015538`); Minor 15's counterpart in the request text is the orchestrator's and not part of this fix. The fix is by a fresh agent of the orchestrator's class.
+- Check: (1) each of M1–M11 is fixed as the finding says, or its „held wrong” is justified (the fixer held none wrong); (2) the behaviour changes each have a case that fails when the fix is reverted by a mutation (run them): the opening of the cache also drops values under a program or character number the loaded game has not yet given (the cache module, a **trust boundary**: attack it with crafted values — your own probes; every strict reading rule stays; no value read from the storage throws; the drop does not remove a valid entry of the loaded game; consider an account's entries of other games and the order of drops), `lastingStorageOf({{}})` gives `null`, the sentence of an open manual map run is returned in two parts so the screen no longer cuts it by length (the link text), the `judgingCache` option of the maps entry is required, the load/pull path of a previous save pulled at revision 0 tested as one path, the key-part escaping case; (3) the foundation edits — D-386 (the list of functions that refuse a moment now names `newGame`), D-441, the part map's sentence of `browser-view` — were made by hand by the fixer with the test quotations following: judge them against the decisions template and the part-map element's rules, source fidelity (no meaning added), and that no test quotation stands stale (`python -B .the-way/elements/common/foundation_check.py`, with and without `--skip-test-citations`, from the cycle worktree's `.the-way`); (4) the edit by hand of the cache row of `guidelines/testing.md` (the count of cases changed): judge it against that guideline's own rules; (5) a new Critical or Important finding in the fix counts as one that remains and fails this review; a Minor finding does not; the focused tests of every changed file, ESLint, Prettier, typecheck, size rules; not the full gate.
+- No other agent writes in the cycle's worktree while you review (you work in your own detached worktree).

@@ -1,0 +1,8 @@
+startFrom refused load makes a game with no moment [src/browser/view/app.ts -> tests/view/judging-cache-page.test.mjs]: exit 1; ℹ tests 6 ℹ pass 5 ℹ fail 1 | first failing: -
+reset of D-402 makes a game with no moment [src/browser/view/page-game-acts.ts -> tests/view/judging-cache-page.test.mjs]: exit 1; ℹ tests 6 ℹ pass 5 ℹ fail 1 | first failing: -
+cache opened under another account id [src/browser/view/game-view.ts -> tests/view/judging-cache-page.test.mjs]: exit 1; ℹ tests 6 ℹ pass 1 ℹ fail 5 | first failing: -
+link of the run sentence leads to the row's character [src/browser/view/maps-screen.tsx -> tests/view/maps-screen.test.mjs]: exit 1; ℹ tests 50 ℹ pass 49 ℹ fail 1 | first failing: -
+mark stands for a record of a lower generation [src/browser/sim/judging-record.ts -> tests/sim/judging-record.test.mjs]: exit 1; ℹ tests 10 ℹ pass 9 ℹ fail 1 | first failing: -
+mark stands for a record of a lower content revision [src/browser/sim/judging-record.ts -> tests/sim/judging-record.test.mjs]: exit 1; ℹ tests 10 ℹ pass 8 ℹ fail 2 | first failing: -
+maps screen reads the record once at build, not at each draw [src/browser/view/maps-entry.ts -> tests/view/maps-screen.test.mjs]: exit 1; ℹ tests 50 ℹ pass 46 ℹ fail 4 | first failing: -
+control, all restored [judging-record]: exit 0; ℹ tests 10 ℹ pass 10 ℹ fail 0 | first failing: -

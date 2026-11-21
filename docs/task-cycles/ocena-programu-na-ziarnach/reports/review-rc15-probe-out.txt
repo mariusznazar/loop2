@@ -1,0 +1,40 @@
+ok   crafted: toString as extra field reads as null and stays
+ok   crafted: valueOf as extra field reads as null and stays
+ok   crafted: hasOwnProperty as extra field reads as null and stays
+ok   crafted: revision as string number reads as null and stays
+ok   crafted: revision unsafe 2^53+2 reads as null and stays
+ok   crafted: generation as float 1.5 reads as null and stays
+ok   crafted: generation -0 reads as null and stays
+ok   crafted: generation true reads as null and stays
+ok   crafted: revision array [0] reads as null and stays
+ok   crafted: results 12 units with surrogate pair reads as null and stays
+ok   crafted: results with lone surrogate reads as null and stays
+ok   crafted: results with NUL reads as null and stays
+ok   crafted: equipment item hasOwnProperty reads as null and stays
+ok   crafted: equipment item __defineGetter__ reads as null and stays
+ok   crafted: equipment nested deep reads as null and stays
+ok   crafted: deeply nested array within bound reads as null and stays
+ok   crafted: JSON true reads as null and stays
+ok   crafted: JSON object with 4 fields, one duplicated name reads as null and stays
+ok   crafted: megabytes of valid-looking repeated pairs reads as null and stays
+ok   crafted: 5 MB string reads as null and stays
+ok   crafted: count 1e400 infinity reads as null and stays
+ok   crafted: count -0 reads as null and stays
+info admitted? revision 1.0 (JSON 1.0 = 1): {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","death"],"equipment":[{"item":"berry","count":4}],"contentRevision":0,"generation":1}
+info admitted? revision -0: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","death"],"equipment":[{"item":"berry","count":4}],"contentRevision":0,"generation":1}
+info admitted? fields in another order: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","death"],"equipment":[{"item":"berry","count":4}],"contentRevision":0,"generation":1}
+info admitted? equipment not in data order: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","death"],"equipment":[{"item":"berry","count":1},{"item":"stick","count":1}],"contentRevision":0,"generation":1}
+info admitted? whitespace around JSON within bound: {"results":["solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","solved","death"],"equipment":[{"item":"berry","count":4}],"contentRevision":0,"generation":1}
+ok   account 'a|1000' vs account 'a' at game 1000|... never share
+ok   account with '%7C' and account with '|' do not collide
+ok   account id with lone surrogate opens, writes and reads without throwing
+ok   opening of account 'acct' leaves account 'acct-1' of another game
+ok   opening of account 'a' leaves account 'a|999' (escaped)
+ok   localStorage absent (undefined) from lastingStorageOf: cache still works for the page
+info lastingStorageOf({}) gives undefined
+ok   getItem throws only: read null, remember kept in memory
+ok   storage whose length getter throws midway and key returns non-null
+info nextProgramId=2 nextCharacterId=2; values of never-given ids after opening: 2 kept
+info program absent, character's generation above: removed
+
+0 failures

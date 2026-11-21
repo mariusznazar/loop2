@@ -1,0 +1,66 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/campaign.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a player whose first program does not solve the first map stays on it: no loop, no purchase, nothing solved (78.1333ms)
+✔ the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace (57.0702ms)
+✔ the player returns once a day: the days of the record run from 1 to the days of the campaign, each map is tried only on a return (23.5367ms)
+✔ each solved map had its opening map solved before it (49.0156ms)
+✔ no purchase is made that the points of its tree do not cover, and the record of purchases agrees with the ranks held (94.821ms)
+✔ a player who buys nothing holds no rank, and a purchase only comes from a list that names it (81.6226ms)
+✔ an attempt whose need of the chest can never be met is never made (12.5518ms)
+✔ the same seed gives the same campaign (46.6666ms)
+✔ the sum of campaigns counts them and takes its means from the campaigns it sums (52.8373ms)
+✔ the three players of Skraj lasu name programs of the reference file, maps and ranks the game has, and ask for the chest their programs take (0.4694ms)
+✖ each program of a new campaign account starts at content revision 0, and the first change of one raises it to 1 (1.1614ms)
+✔ a player naming a program the registry lacks is refused (0.4518ms)
+✔ a player who waits for the resurrection tries its next map while one use is left, and waits when every use is spent (0.1669ms)
+✔ one return that covers several deaths counts every use spent, and the loop it leaves alive counts no death as a completion (3.5315ms)
+✔ one return that holds completions and covered deaths counts each use spent and each completion, as the game's catch-up over the same span ends them (4.4418ms)
+✔ a loop that stops after covered deaths counts each of the uses spent and no completion, the stopping death being no use and no completion (2.3565ms)
+✔ a loop minute that an overlay shortens after the instrument is loaded changes no step of a return: the campaign takes the loop minute from the instrument's loop file, as the game's catch-up does, and the return ends with the same count (79.3809ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 678.8606
+
+✖ failing tests:
+
+test at tests\balance\campaign.test.mjs:231:1
+✖ each program of a new campaign account starts at content revision 0, and the first change of one raises it to 1 (1.1614ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   5,
+  +   5,
+  +   5,
+  +   5
+  -   0,
+  -   0,
+  -   0,
+  -   0
+    ]
+  
+      at TestContext.<anonymous> (file:///tests/balance/campaign.test.mjs:240:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 5, 5, 5, 5 ],
+    expected: [ 0, 0, 0, 0 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

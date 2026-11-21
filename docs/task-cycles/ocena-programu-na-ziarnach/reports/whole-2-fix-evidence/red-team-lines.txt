@@ -1,0 +1,65 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/team-lines.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ importing the team lines touches no DOM: Node has no document and the import succeeded (0.6914ms)
+✔ an empty chest shows no line, so the headquarters marks it empty (0.4892ms)
+✔ a chest holding pieces shows a line per resource held, in the order of the resources' data (0.2187ms)
+✔ the row of a character that has not gone shows the first program of the list (0.3208ms)
+✔ the positions of a row's list are the programs' names in list order, valued by their numbers (0.1143ms)
+✔ the list shows the program given, whichever place it has on the list (0.0998ms)
+✔ a full stock reads its count from the data, with no time and out of danger (0.2019ms)
+✔ a new game's team holds its full stock with no moment, and its line is the full stock (0.0988ms)
+✔ a part of the stock reads the uses left and the time to the next return, in text-secondary and out of danger (0.0969ms)
+✔ no use left reads 0 of the count, the time to the next return and the warning, in danger (0.1345ms)
+✔ 7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min (0.1333ms)
+✔ hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61 min is 1 godz. 1 min, 2 h 1 s is 2 godz. 1 min (0.0868ms)
+✔ below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min (0.0683ms)
+✔ a use returns at its moment itself and not a millisecond before, and the next one is a renewal later (0.102ms)
+✔ a clock set back lengthens the time left: a moment an hour before the reading reads 9 godz. 0 min for a next use due 8 hours after it (0.1209ms)
+✔ the label of a generation is „pokolenie {n}” from 2 up and nothing at 1 (0.0807ms)
+✔ the line of a character in an earning loop names the map, the run, its minute and the runs completed (0.0633ms)
+✔ the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was (0.1129ms)
+✔ the sentence beside an inactive send names the run's map from the data and tells the player to finish the run (0.0626ms)
+✖ the sentence beside an inactive send comes in two parts, the one that names the run's map and the one that leads back to it, and the parts make the sentence (0.9655ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 19
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.3035
+
+✖ failing tests:
+
+test at tests\view\team-lines.test.mjs:257:1
+✖ the sentence beside an inactive send comes in two parts, the one that names the run's map and the one that leads back to it, and the parts make the sentence (0.9655ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   lead: '',
+  +   link: ''
+  -   lead: 'Przejście na mapie Las jest niezakończone. ',
+  -   link: 'Wróć do niego i je zakończ, żeby wysłać postać.'
+    }
+  
+      at TestContext.<anonymous> (file:///tests/view/team-lines.test.mjs:259:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { lead: '', link: '' },
+    expected: { lead: 'Przejście na mapie Las jest niezakończone. ', link: 'Wróć do niego i je zakończ, żeby wysłać postać.' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

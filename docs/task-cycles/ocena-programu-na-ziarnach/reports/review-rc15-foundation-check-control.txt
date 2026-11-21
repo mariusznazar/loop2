@@ -1,0 +1,7 @@
+tests/sim/saved-game-judgings.test.mjs:111: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:124: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:170: the quotation stands in no binding sentence of `D-165`
+tests/sim/saved-game-judgings.test.mjs:257: the quotation stands in no binding sentence of `D-440`
+tests/sim/saved-game-judgings.test.mjs:304: the quotation stands in no binding sentence of `D-440`
+foundations/invariants.md:1472: `judging-cache-reading` reads `test` and no test cites it: no file git tracks whose name does not end in `.md` holds a line `invariant: judging-cache-reading`
+6 errors

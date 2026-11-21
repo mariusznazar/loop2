@@ -1,0 +1,73 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/content-revision.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a new game holds its first program at content revision 0, and a created program, an appended one and a copy saved as a new program are made at 0 (3.9776ms)
+✔ a rule's action changed and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.4055ms)
+✔ a rule's action changed and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.2061ms)
+✔ a rule's action changed and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.3904ms)
+✔ a rule added and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.1628ms)
+✔ a rule added and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.2145ms)
+✔ a rule added and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.4194ms)
+✔ a rule removed and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.1621ms)
+✔ a rule removed and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.1457ms)
+✔ a rule removed and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.3245ms)
+✔ two rules swapped and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.1507ms)
+✔ two rules swapped and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.1109ms)
+✔ two rules swapped and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.2178ms)
+✔ two groups swapped and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.0843ms)
+✔ two groups swapped and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.067ms)
+✔ two groups swapped and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.2017ms)
+✔ a group's condition changed and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.0708ms)
+✔ a group's condition changed and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.0577ms)
+✔ a group's condition changed and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.2152ms)
+✔ the take list changed and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.0665ms)
+✔ the take list changed and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.0776ms)
+✔ the take list changed and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.8859ms)
+✔ the bring list changed and saved by editProgram raises the content revision by one and changes nothing else of the saved program (0.0791ms)
+✔ the bring list changed and saved by setProgram raises the content revision by one and changes nothing else of the saved program (0.0773ms)
+✔ the bring list changed and saved by saveCopyIntoProgram raises the content revision by one and changes nothing else of the saved program (0.2154ms)
+✔ the first chill writes the rule of D-123 into the program of the copy and raises its content revision by one, and no other program's (3.0298ms)
+✔ a program changed to another content and back is raised twice, and its content is the first again (0.1597ms)
+✔ a rename leaves the content revision as it is (0.1336ms)
+✔ editProgram with the content it holds, or with the identity counters alone changed, leaves the content revision as it is (0.1149ms)
+✔ setProgram with the content it holds, or with the identity counters alone changed, leaves the content revision as it is (0.121ms)
+✔ saving a copy whose content is the program's, or differs in the identity counters alone, leaves the content revision as it is, though the objects' keys were made in another order (0.4756ms)
+✔ a pick, a send and the deletion of another program leave the content revision as it is (0.3036ms)
+✔ raising the content revision changes no value passed to it (0.2045ms)
+✔ a new game holds the moment it is made with, 0 where none is given, and any whole number is held as it is (0.0826ms)
+✖ a new game refuses with a RangeError a moment that is no safe integer, which its own load would refuse (0.6129ms)
+✔ a saved game writes the moment of the game and each program's content revision, and loads back whole (1.8516ms)
+✔ the load takes the moment of the game as any safe integer and refuses it missing or as no safe integer (1.9471ms)
+✔ the load takes a program's content revision as a safe integer from 0 and refuses it missing, below 0, fractional, beyond the safe integers or no number (1.1508ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 37
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.5169
+
+✖ failing tests:
+
+test at tests\sim\content-revision.test.mjs:353:1
+✖ a new game refuses with a RangeError a moment that is no safe integer, which its own load would refuse (0.6129ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception (RangeError): 1.5
+      at TestContext.<anonymous> (file:///tests/sim/content-revision.test.mjs:365:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }

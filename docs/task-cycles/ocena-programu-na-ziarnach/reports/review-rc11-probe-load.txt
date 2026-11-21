@@ -1,0 +1,47 @@
+round trip: ok 1760000000123 [0]
+round trip deepEqual: false
+revision missing: refused shape
+revision null: refused shape
+revision string: refused shape
+revision negative: refused shape
+revision float: refused shape
+revision NaN: refused shape
+revision Infinity: refused shape
+revision minusInfinity: refused shape
+revision beyondSafe: refused shape
+revision huge: refused shape
+revision negZero: ok 1760000000123 [0]
+revision boolean: refused shape
+revision list: refused shape
+revision object: refused shape
+revision bigint: refused shape
+revision maxSafe: ok 1760000000123 [9007199254740991]
+item extra key revision: refused shape
+item __proto__ own key: refused shape
+item revision only as __proto__ key: refused shape
+item revision inherited: refused shape
+item revision accessor that throws: refused shape
+moment missing: refused shape
+moment null: refused shape
+moment string: refused shape
+moment NaN: refused shape
+moment Infinity: refused shape
+moment minusInfinity: refused shape
+moment float: refused shape
+moment beyondSafe: refused shape
+moment minusBeyondSafe: refused shape
+moment maxSafe: ok 9007199254740991 [0]
+moment minSafe: ok -9007199254740991 [0]
+moment negative: ok -5 [0]
+moment zero: ok 0 [0]
+moment negZero: ok 0 [0]
+moment farAhead: ok 8640000000000000 [0]
+moment object: refused shape
+moment bigint: refused shape
+game extra key madeAt: refused shape
+game moment under another name: refused shape
+newGame(1.5) then save and load: refused shape
+newGame(NaN) then save and load: refused shape
+newGame(Infinity) then save and load: refused shape
+newGame(9007199254740992) then save and load: refused shape
+newGame(5) then save and load: refused shape

@@ -1,0 +1,32 @@
+data: 3 maps (forestEdge, forest, forestDeep), 12 seeds per judging
+limit: 65536 bytes
+one judging (mixed kinds; a take list of 2 items) inside its character, program and map keys: 218 bytes
+one judging (mixed kinds; a take list of all 4 items with 2-digit counts) inside its character, program and map keys: 275 bytes
+one judging (all undecided, the longest word; a take list of 2 items) inside its character, program and map keys: 246 bytes
+one judging (all undecided, the longest word; a take list of all 4 items with 2-digit counts) inside its character, program and map keys: 303 bytes
+20 empty programs, 5 characters, no judging remembered: 6913 bytes
+20 empty programs, 3 maps, 300 judgings (mixed kinds; a take list of 2 items): 70497 bytes = 107.6% of the limit, judgings 63584 bytes (loads back)
+20 empty programs, 10 maps (synthetic keys), 1000 judgings (mixed kinds; a take list of 2 items): 218597 bytes = 333.6% of the limit, judgings 211684 bytes (not loaded: the load takes only the data's maps)
+20 empty programs, 3 maps, 300 judgings (mixed kinds; a take list of all 4 items with 2-digit counts): 87597 bytes = 133.7% of the limit, judgings 80684 bytes (loads back)
+20 empty programs, 10 maps (synthetic keys), 1000 judgings (mixed kinds; a take list of all 4 items with 2-digit counts): 275597 bytes = 420.5% of the limit, judgings 268684 bytes (not loaded: the load takes only the data's maps)
+20 empty programs, 3 maps, 300 judgings (all undecided, the longest word; a take list of 2 items): 78897 bytes = 120.4% of the limit, judgings 71984 bytes (loads back)
+20 empty programs, 10 maps (synthetic keys), 1000 judgings (all undecided, the longest word; a take list of 2 items): 246597 bytes = 376.3% of the limit, judgings 239684 bytes (not loaded: the load takes only the data's maps)
+20 empty programs, 3 maps, 300 judgings (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 95997 bytes = 146.5% of the limit, judgings 89084 bytes (loads back)
+20 empty programs, 10 maps (synthetic keys), 1000 judgings (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 303597 bytes = 463.3% of the limit, judgings 296684 bytes (not loaded: the load takes only the data's maps)
+20 programs of 10 rules, 5 characters, no judging remembered: 20333 bytes
+20 programs of 10 rules, 3 maps, 300 judgings (mixed kinds; a take list of 2 items): 83917 bytes = 128.0% of the limit, judgings 63584 bytes (loads back)
+20 programs of 10 rules, 10 maps (synthetic keys), 1000 judgings (mixed kinds; a take list of 2 items): 232017 bytes = 354.0% of the limit, judgings 211684 bytes (not loaded: the load takes only the data's maps)
+20 programs of 10 rules, 3 maps, 300 judgings (mixed kinds; a take list of all 4 items with 2-digit counts): 101017 bytes = 154.1% of the limit, judgings 80684 bytes (loads back)
+20 programs of 10 rules, 10 maps (synthetic keys), 1000 judgings (mixed kinds; a take list of all 4 items with 2-digit counts): 289017 bytes = 441.0% of the limit, judgings 268684 bytes (not loaded: the load takes only the data's maps)
+20 programs of 10 rules, 3 maps, 300 judgings (all undecided, the longest word; a take list of 2 items): 92317 bytes = 140.9% of the limit, judgings 71984 bytes (loads back)
+20 programs of 10 rules, 10 maps (synthetic keys), 1000 judgings (all undecided, the longest word; a take list of 2 items): 260017 bytes = 396.8% of the limit, judgings 239684 bytes (not loaded: the load takes only the data's maps)
+20 programs of 10 rules, 3 maps, 300 judgings (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 109417 bytes = 167.0% of the limit, judgings 89084 bytes (loads back)
+20 programs of 10 rules, 10 maps (synthetic keys), 1000 judgings (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 317017 bytes = 483.7% of the limit, judgings 296684 bytes (not loaded: the load takes only the data's maps)
+room: 20 empty programs, 5 characters (mixed kinds; a take list of 2 items): 211.9 bytes a judging, 276 judgings fit of 300
+room: 20 empty programs, 5 characters (mixed kinds; a take list of all 4 items with 2-digit counts): 268.9 bytes a judging, 217 judgings fit of 300
+room: 20 empty programs, 5 characters (all undecided, the longest word; a take list of 2 items): 239.9 bytes a judging, 244 judgings fit of 300
+room: 20 empty programs, 5 characters (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 296.9 bytes a judging, 197 judgings fit of 300
+room: 20 programs of 10 rules, 5 characters (mixed kinds; a take list of 2 items): 211.9 bytes a judging, 213 judgings fit of 300
+room: 20 programs of 10 rules, 5 characters (mixed kinds; a take list of all 4 items with 2-digit counts): 268.9 bytes a judging, 168 judgings fit of 300
+room: 20 programs of 10 rules, 5 characters (all undecided, the longest word; a take list of 2 items): 239.9 bytes a judging, 188 judgings fit of 300
+room: 20 programs of 10 rules, 5 characters (all undecided, the longest word; a take list of all 4 items with 2-digit counts): 296.9 bytes a judging, 152 judgings fit of 300

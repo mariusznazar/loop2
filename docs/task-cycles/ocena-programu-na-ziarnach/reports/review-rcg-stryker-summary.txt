@@ -1,0 +1,27 @@
+[Survived] StringLiteral
+src/browser/sim/judging-record.ts:62:7
+-         `recordOfJudging: no character ${String(ids.characterId)} in the team`,
++         ``,
+Tests ran:
+    tests/sim/judging-record.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/judging-record.ts:67:7
+-         `recordOfJudging: no program ${String(ids.programId)} on the list`,
++         ``,
+Tests ran:
+    tests/sim/judging-record.test.mjs
+
+
+Ran 1.00 tests per mutant on average.
+-------------------|------------------|----------|-----------|------------|----------|----------|
+                   | % Mutation score |          |           |            |          |          |
+File               |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+-------------------|--------|---------|----------|-----------|------------|----------|----------|
+All files          |  97.33 |   97.33 |       73 |         0 |          2 |        0 |        0 |
+ judging-record.ts |  97.22 |   97.22 |       70 |         0 |          2 |        0 |        0 |
+ judging.ts        | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
+-------------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m06:49:52 (25352) INFO JsonReporter[39m Your report can be found at: file:///.runs/review-rcg/wt/.runs/stryker/mutation.json
+[32m06:49:52 (25352) INFO MutationTestExecutor[39m Done in 28 seconds.

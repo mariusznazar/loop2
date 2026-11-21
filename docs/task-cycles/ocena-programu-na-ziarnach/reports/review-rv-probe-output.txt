@@ -1,0 +1,19 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/zz-review-probe.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+PROBE calls ["judge","startLoop","stop","judge","startLoop"]
+PROBE button Puść w pętlę
+✔ probe: a result left by „Puść mimo to” and a stop, then „Puść w pętlę” on the same rows (203.4138ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 914.2694
