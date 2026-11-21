@@ -201,6 +201,18 @@ The page of Lorc's icon `wolf-head` on game-icons.net names the icon "Wolf head 
 
 - **Source:** https://game-icons.net/1x1/lorc/wolf-head.html (archived: https://web.archive.org/web/20261011095410/https://game-icons.net/1x1/lorc/wolf-head.html, 2026-10-11) § heading — "Wolf head icon"; read 2026-11-16
 
+## game-icons-bandage-roll-title
+
+The page of Lorc's icon `bandage-roll` on game-icons.net names the icon "Bandage roll icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/bandage-roll.html (archived: https://web.archive.org/web/20261009034055/https://game-icons.net/1x1/lorc/bandage-roll.html, 2026-10-09) § heading — "Bandage roll icon"; read 2026-11-21
+
+## game-icons-first-aid-kit-title
+
+The page of Delapouite's icon `first-aid-kit` on game-icons.net names the icon "First aid kit icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/first-aid-kit.html (archived: https://web.archive.org/web/20250912194634/https://game-icons.net/1x1/delapouite/first-aid-kit.html, 2025-09-12) § heading — "First aid kit icon"; read 2026-11-21
+
 ## eslint-recommended-rules
 
 The `recommended` set in @eslint/js 10.0.1 contains the following rules, each at `error` with no configured options: `constructor-super`, `for-direction`, `getter-return`, `no-async-promise-executor`, `no-case-declarations`, `no-class-assign`, `no-compare-neg-zero`, `no-cond-assign`, `no-const-assign`, `no-constant-binary-expression`, `no-constant-condition`, `no-control-regex`, `no-debugger`, `no-delete-var`, `no-dupe-args`, `no-dupe-class-members`, `no-dupe-else-if`, `no-dupe-keys`, `no-duplicate-case`, `no-empty`, `no-empty-character-class`, `no-empty-pattern`, `no-empty-static-block`, `no-ex-assign`, `no-extra-boolean-cast`, `no-fallthrough`, `no-func-assign`, `no-global-assign`, `no-import-assign`, `no-invalid-regexp`, `no-irregular-whitespace`, `no-loss-of-precision`, `no-misleading-character-class`, `no-new-native-nonconstructor`, `no-nonoctal-decimal-escape`, `no-obj-calls`, `no-octal`, `no-prototype-builtins`, `no-redeclare`, `no-regex-spaces`, `no-self-assign`, `no-setter-return`, `no-shadow-restricted-names`, `no-sparse-arrays`, `no-this-before-super`, `no-unassigned-vars`, `no-undef`, `no-unexpected-multiline`, `no-unreachable`, `no-unsafe-finally`, `no-unsafe-negation`, `no-unsafe-optional-chaining`, `no-unused-labels`, `no-unused-private-class-members`, `no-unused-vars`, `no-useless-assignment`, `no-useless-backreference`, `no-useless-catch`, `no-useless-escape`, `no-with`, `preserve-caught-error`, `require-yield`, `use-isnan`, `valid-typeof`.
