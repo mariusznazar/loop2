@@ -166,6 +166,11 @@
   color: var(--text);
 }
 
+/* The practice of a manual run of a solved map, which the run does not pay: an explanation, so `text-secondary` (D-201, D-40). */
+.run-practice.unpaid {
+  color: var(--text-secondary);
+}
+
 /*
  * The header of the screen of a map run (D-311): the character's name and the map's name, in
  * `text-strong` as names are (D-40), then the clock, the bar of the solving condition and the

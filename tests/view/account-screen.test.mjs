@@ -2463,11 +2463,17 @@ const ACTS = [
     },
   },
   {
-    // The rank is bought on the screen Postać, where „Kup” stands (D-199, D-200).
+    // The rank is bought on the screen Postać, where „Kup” stands under its tree, which the player
+    // opens first (D-199, D-200); each step runs in an act of its own, as the branches draw only after
+    // the act that opened the tree has ended.
     name: "buying a branch rank",
     start: eatingPoint,
     hash: "#/postac/1",
-    act: (root) => fire(buttonLabelled(root, "Kup: Szybki posiłek"), "click"),
+    ownActs: true,
+    act: async (root) => {
+      await press(buttonLabelled(root, "Jedzenie"));
+      await press(buttonLabelled(root, "Kup: Szybki posiłek"));
+    },
     expected: (start) => buyBranch(start, 1, "quickMeal").state,
   },
   {
@@ -2920,6 +2926,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj” in Siedz
       alaLoopingOlaFree(),
       fakeAddress("#/postac/1"),
     );
+    await press(buttonLabelled(root, "Jedzenie"));
     assert.equal(buttonLabelled(root, "Kup: Szybki posiłek").disabled, false);
     await inAct(() => character.view.dispose());
   });

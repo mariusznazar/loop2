@@ -68,7 +68,7 @@ export function WorldArea({
   if (run === null) return null;
   const trip = tripTexts(state);
   const solved = solvedRunText(state);
-  const practice = practiceText(run.practice);
+  const practice = practiceText(run.practice, !run.solvedMapRun);
   const line = tileLine(state, hovered);
   return (
     <div className="world-area">
@@ -104,7 +104,13 @@ export function WorldArea({
         <p className="backpack-text">{backpackText(run.character)}</p>
       </div>
       {solved === null ? null : <p className="trip-result">{solved}</p>}
-      {practice === "" ? null : <p className="run-practice">{practice}</p>}
+      {practice === "" ? null : (
+        <p
+          className={run.solvedMapRun ? "run-practice unpaid" : "run-practice"}
+        >
+          {practice}
+        </p>
+      )}
       {trip.preview === null ? null : (
         <p className="trip-result">{trip.preview}</p>
       )}
