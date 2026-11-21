@@ -793,7 +793,8 @@ Wiedza, jedna czwarta i trzy czwarte szerokości — a w oknie węższym niż 72
 - Wiersz drzewa (D-199) w kolumnach, oddzielony od sąsiednich cienką linią w `divider`: zwijak —
   zwykły wspólny przycisk „▸”, po rozwinięciu „▾”, z nazwą drzewa jako nazwą dostępną, który mówi
   `aria-expanded` (D-44); nazwa w `text-strong`, zaraz po niej „+{n} pkt czeka w pętli” w `text`, nie
-  w `positive` (D-39); „poziom {p}” w `text-secondary`; pasek wprawy o grubości `--bar-width`, tor
+  w `positive` (D-39); „poziom {p}” w `text-secondary`; pasek wprawy o grubości podwojonej
+  `--bar-width`, jak pasek nad głową maga, żeby jego tor było widać na `panel`, tor
   w `highlight`, wypełnienie w `text`, bez zieleni, jak pasek niespełnionego wymagania w nagłówku
   przejścia (D-40); „{wprawa} / {próg}” albo „najwyższy” w `text-secondary`; „{k} pkt” w
   `text-strong`, tylko gdy są punkty. Kliknięcie w dowolne miejsce wiersza rozwija albo zwija drzewo,

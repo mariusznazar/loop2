@@ -643,7 +643,7 @@ test("a tree's row stands in its columns, with „+{n} pkt czeka w pętli” aft
 // Catches a bar in green or in another role than the bar of an unmet requirement of the header, points
 // that are not the light text of names, and a mark of the waiting practice in green.
 test("the bar of a tree has its track in highlight and its fill in text, its points stand in text-strong and the mark of the waiting practice in text", async () => {
-  // decision: D-40 "The bar of the practice of a tree on the screen Postać looks as the bar of a requirement that is not met does, its track in `highlight` and its fill in `text`, with no green, and the points of that tree to spend stand beside it in `text-strong`"
+  // decision: D-40 "The bar of the practice of a tree on the screen Postać takes the colours of the bar of a requirement that is not met, its track in `highlight` and its fill in `text`, with no green, and the points of that tree to spend stand beside it in `text-strong`"
   // decision: D-199 "Each known tree stands as a row in columns: its name, „poziom {p}”, a bar of its practice up to its next threshold with „{wprawa} / {próg}”, or after its last threshold a full bar with „najwyższy”, and „{k} pkt” only where it has points to spend; right after the name, in the role `text`, stands „+{n} pkt czeka w pętli”"
   await withPage(async (page) => {
     const loop = {

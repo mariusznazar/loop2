@@ -167,7 +167,8 @@
  * pętli” right after it in `text`, „poziom {p}” in `text-secondary`, the bar of practice, „{wprawa} /
  * {próg}” or „najwyższy” in `text-secondary`, and „{k} pkt” in `text-strong`. The bar has its track in `highlight` and
  * its fill in `text`, as the bar of an unmet requirement in the header of a map run, its thickness
- * `--bar-width` and its length a layout dimension (D-43); the fill is as long as the share TypeScript
+ * `--bar-width` doubled, as the bar over the mage's head, so that its track can be seen on `panel`, and
+ * its length a layout dimension (D-43); the fill is as long as the share TypeScript
  * gives in `--share`. Rows stand apart by a thin line in `divider`, and a click anywhere on a row opens
  * or folds its tree.
  */
@@ -208,7 +209,7 @@
 
 .character-tree-bar {
   display: block;
-  height: var(--bar-width);
+  height: calc(var(--bar-width) * 2);
   background-color: var(--highlight);
 }
 
