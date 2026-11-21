@@ -2011,7 +2011,9 @@ test("a sign-in to another account after a 401 on a save drops the kept state an
 
     await press(await logoutOf(root));
     await settle();
-    assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 0)]);
+    assert.deepEqual(argsOf(held, "saveGame"), [
+      submission(newGame(CLOCK_MS), 0),
+    ]);
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", { ok: true, value: null });
     await signIn(held, ACCOUNT);
@@ -3442,7 +3444,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
       assert.ok(shown(byClass(root, "headquarters")[0]), name);
       assert.deepEqual(
         argsOf(held, "saveGame"),
-        [submission(newGame(), 7)],
+        [submission(newGame(CLOCK_MS), 7)],
         name,
       );
       await held.answer("saveGame", { kind: "saved", revision: 8 });
@@ -3566,7 +3568,9 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     );
     assert.deepEqual(pageNotices(root), [OTHER_VERSION]);
     assert.equal(saveLine(root), null);
-    assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 6)]);
+    assert.deepEqual(argsOf(held, "saveGame"), [
+      submission(newGame(CLOCK_MS), 6),
+    ]);
   });
 });
 
