@@ -1088,7 +1088,10 @@ const panelOf = (root) => root.querySelector(".rule-panel");
 const cellsIn = (element) => [...element.querySelectorAll(".pick-cell")];
 /** The name a cell shows, without the reason drawn inside it. */
 const nameOf = (cell) =>
-  cell.querySelector(".pick-cell-name")?.textContent ?? "";
+  [...cell.childNodes]
+    .filter((node) => node.nodeType === 3)
+    .map((node) => node.textContent)
+    .join("");
 const cellNamed = (element, name) =>
   cellsIn(element).find((cell) => nameOf(cell) === name);
 const labelsIn = (element) =>

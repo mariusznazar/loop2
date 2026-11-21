@@ -436,27 +436,15 @@ header .failure-line {
  * the one :focus-visible rule above.
  */
 /*
- * A row of flex items that wraps: the icon, then the name, which takes the rest of the line, so a
- * name that breaks into two lines keeps its icon beside its first line; the reason takes a line of
- * its own. The name's basis is its longest word (`min-content`), so where that word does not fit
- * beside the icon — a cell of a narrow grid, about 70 px in a window 390 px wide — the whole name
- * drops under the icon and has the width of the cell; where the word does not fit even there, the
- * name may shrink (`min-width: 0`) and `overflow-wrap: break-word` breaks it, so no name crosses
- * the frame of its cell. `break-word`, not `anywhere`, because it leaves the longest word the
- * name's basis, so the name drops under the icon before it breaks.
+ * A grid of two columns: the icon takes the first, the name the second, so a name that breaks into
+ * two lines keeps its icon beside its first line; the reason takes a line of its own.
  */
 .button.pick-cell {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   gap: var(--space-xs);
-  overflow-wrap: break-word;
   text-align: left;
-}
-
-.pick-cell-name {
-  flex: 1 1 min-content;
-  min-width: 0;
 }
 
 .button.pick-cell.greyed {
@@ -472,8 +460,7 @@ header .failure-line {
 }
 
 .pick-cell-reason {
-  flex: 0 0 100%;
-  min-width: 0;
+  grid-column: 1 / -1;
   font-size: var(--font-size-detail);
   color: var(--text-secondary);
 }
