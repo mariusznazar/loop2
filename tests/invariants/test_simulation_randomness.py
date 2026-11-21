@@ -49,6 +49,7 @@ import unittest
 
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
+from source_lexer import code_only, string_values
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 GENERATOR_FILE = "src/browser/sim/random.ts"
@@ -70,134 +71,12 @@ GENERATOR_CONSTANT = (
     (re.compile(r"\b1831565813n?\b"), "1831565813"),
 )
 
-REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
-REGEX_AFTER_WORDS = (
-    "return",
-    "typeof",
-    "case",
-    "do",
-    "else",
-    "in",
-    "of",
-    "new",
-    "delete",
-    "void",
-    "throw",
-    "yield",
-    "await",
-    "instanceof",
-)
-
-
-def split_source(text):
-    """(code, strings): the text with comments removed and the content of every string literal,
-    template text and regular expression removed, and the list of the string and template texts
-    removed. A lexer for the forms TypeScript and JavaScript share, enough for a scan of names."""
-    code, strings = [], []
-    templates = []  # for each open template substitution, its depth of nested braces
-    i, n = 0, len(text)
-
-    def previous_significant():
-        joined = "".join(code[-40:]).rstrip()
-        return joined
-
-    def read_template(start):
-        """Read template text from `start` (after ` or }) to its end or to `${`; return the index
-        after it and whether a substitution opened."""
-        j, part = start, []
-        while j < n:
-            c = text[j]
-            if c == "\\":
-                part.append(text[j : j + 2])
-                j += 2
-                continue
-            if c == "`":
-                strings.append("".join(part))
-                return j + 1, False
-            if c == "$" and text.startswith("${", j):
-                strings.append("".join(part))
-                return j + 2, True
-            part.append(c)
-            j += 1
-        strings.append("".join(part))
-        return n, False
-
-    while i < n:
-        c = text[i]
-        if text.startswith("//", i):
-            j = text.find("\n", i)
-            i = n if j < 0 else j
-            continue
-        if text.startswith("/*", i):
-            j = text.find("*/", i + 2)
-            i = n if j < 0 else j + 2
-            code.append(" ")
-            continue
-        if c in "'\"":
-            j, part = i + 1, []
-            while j < n and text[j] != c and text[j] != "\n":
-                if text[j] == "\\":
-                    part.append(text[j + 1 : j + 2])
-                    j += 2
-                    continue
-                part.append(text[j])
-                j += 1
-            strings.append("".join(part))
-            code.append(c + c)
-            i = j + 1
-            continue
-        if c == "`":
-            i, opened = read_template(i + 1)
-            code.append("``")
-            if opened:
-                templates.append(0)
-            continue
-        if c == "}" and templates:
-            if templates[-1] == 0:
-                templates.pop()
-                i, opened = read_template(i + 1)
-                if opened:
-                    templates.append(0)
-                continue
-            templates[-1] -= 1
-        if c == "{" and templates:
-            templates[-1] += 1
-        if c == "/":
-            before = previous_significant()
-            word = re.search(r"([A-Za-z_$][\w$]*)$", before)
-            if (
-                not before
-                or before[-1] in REGEX_AFTER
-                or (word and word.group(1) in REGEX_AFTER_WORDS)
-            ):
-                j, in_class = i + 1, False
-                while j < n and text[j] != "\n":
-                    if text[j] == "\\":
-                        j += 2
-                        continue
-                    if text[j] == "[":
-                        in_class = True
-                    elif text[j] == "]":
-                        in_class = False
-                    elif text[j] == "/" and not in_class:
-                        break
-                    j += 1
-                j += 1
-                while j < n and (text[j].isalnum() or text[j] == "_"):
-                    j += 1
-                code.append(" /re/ ")
-                i = j
-                continue
-        code.append(c)
-        i += 1
-    return "".join(code), strings
-
 
 def findings(relative, text):
     """What the static rule finds in one file's text: a list of descriptions."""
     found = []
     if relative.endswith(CODE_EXTENSIONS):
-        code, strings = split_source(text)
+        code, strings = code_only(text), string_values(text)
     else:
         code, strings = text, []
     for pattern, name in FORBIDDEN_NAMES:

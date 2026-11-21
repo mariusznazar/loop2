@@ -40,6 +40,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from source_lexer import without_comments
 
 BROWSER_DIRECTORY = "src/browser/"
 DATA_DIRECTORY = "src/browser/sim/data/"
@@ -116,114 +117,6 @@ def not_written_out(read, written):
         for e in read
         if (e["kind"], e["id"], e["name"]) not in known
     ]
-
-
-REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
-REGEX_AFTER_WORDS = (
-    "return",
-    "typeof",
-    "case",
-    "do",
-    "else",
-    "in",
-    "of",
-    "new",
-    "delete",
-    "void",
-    "throw",
-    "yield",
-    "await",
-    "instanceof",
-)
-
-
-def without_comments(text):
-    """The text with its comments replaced by spaces, strings, templates and regular expressions
-    kept, by the forms TypeScript and JavaScript share."""
-    out = []
-    braces = []
-    i, n = 0, len(text)
-
-    def last_significant():
-        joined = "".join(out[-60:]).rstrip()
-        return joined
-
-    def template(start):
-        j = start + 1
-        while j < n:
-            if text[j] == "\\":
-                j += 2
-                continue
-            if text[j] == "`":
-                out.append(text[start : j + 1])
-                return j + 1
-            if text.startswith("${", j):
-                out.append(text[start : j + 2])
-                braces.append(0)
-                return j + 2
-            j += 1
-        out.append(text[start:])
-        return n
-
-    while i < n:
-        c = text[i]
-        if text.startswith("//", i):
-            j = text.find("\n", i)
-            i = n if j < 0 else j
-            out.append(" ")
-            continue
-        if text.startswith("/*", i):
-            j = text.find("*/", i + 2)
-            i = n if j < 0 else j + 2
-            out.append(" ")
-            continue
-        if c in "'\"":
-            j = i + 1
-            while j < n and text[j] != c and text[j] != "\n":
-                j += 2 if text[j] == "\\" else 1
-            out.append(text[i : j + 1])
-            i = j + 1
-            continue
-        if c == "`":
-            i = template(i)
-            continue
-        if c == "}" and braces:
-            if braces[-1] == 0:
-                braces.pop()
-                i = template(i)
-                continue
-            braces[-1] -= 1
-        if c == "{" and braces:
-            braces[-1] += 1
-        if c == "/":
-            before = last_significant()
-            word = re.search(r"([A-Za-z_$][\w$]*)$", before)
-            if (
-                not before
-                or before[-1] in REGEX_AFTER
-                or (word and word.group(1) in REGEX_AFTER_WORDS)
-            ):
-                j, in_class = i + 1, False
-                while j < n and text[j] != "\n":
-                    if text[j] == "\\":
-                        j += 2
-                        continue
-                    if text[j] == "[":
-                        in_class = True
-                    elif text[j] == "]":
-                        in_class = False
-                    elif text[j] == "/" and not in_class:
-                        break
-                    j += 1
-                j += 1
-                while j < n and (text[j].isalnum() or text[j] == "_"):
-                    j += 1
-                out.append(text[i:j])
-                i = j
-                continue
-        out.append(c)
-        i += 1
-    return "".join(out)
 
 
 def token_pattern(word):

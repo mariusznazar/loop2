@@ -204,10 +204,13 @@ when the log of the nightly backup shows no recent successful send of a backup.
 ## test-helpers
 
 The part holds the helpers that serve the tests of several parts — running the product's commands in
-a copy of the working tree, reading the repository's files and giving each file its part of the part
-map — which the tests of every part may import and code that is no test may not.
+a copy of the working tree, reading the repository's files, giving each file its part of the part
+map and cutting the source text of TypeScript and JavaScript into code, comments, strings, template
+text and regular expressions — which the tests of every part may import and code that is no test
+may not.
 
 - **Files:** tests/invariants/loop2_invariant_support.py
+  tests/invariants/source_lexer.py
 - **Depends on:** none
 - **Trust boundary:** none
 
