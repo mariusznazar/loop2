@@ -11,6 +11,7 @@ import {
   ICON_SOURCE_COMMIT,
 } from "../../dist/browser/view/credits.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
 import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
@@ -175,6 +176,7 @@ const TITLES = {
   "wolf-head": "Wolf head icon",
   "bandage-roll": "Bandage roll icon",
   "first-aid-kit": "First aid kit icon",
+  cultist: "Cultist icon",
 };
 
 /**
@@ -217,9 +219,12 @@ const ACTION_ICONS = [
 /** The icon of the creatures, one line after the actions' (creatures.ts). */
 const CREATURE_ICONS = [{ name: "wilk", icon: "wolf-head" }];
 
+/** The icon of the archetypes, one line after the creatures' (archetypes.ts). */
+const ARCHETYPE_ICONS = [{ name: "Mag żywiołów", icon: "cultist" }];
+
 /**
  * Everything the data gives an icon, in the section's order: the items, the campfire, the
- * extinguished campfire, the actions, the creatures.
+ * extinguished campfire, the actions, the creatures, the archetypes.
  */
 const NAMED = [
   ...ITEM_ICONS,
@@ -227,6 +232,7 @@ const NAMED = [
   CAMPFIRE.extinguished,
   ...ACTION_ICONS,
   ...CREATURE_ICONS,
+  ...ARCHETYPE_ICONS,
 ];
 
 // The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
@@ -318,7 +324,7 @@ test("the section credits the actions' icons after the two campfires', one line 
   );
 });
 
-test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the packs", () => {
+test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the archetype's", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   const items = itemsOf(sectionMarkup());
   const at = ACTIONS_AT + ACTION_ICONS.length;
@@ -330,7 +336,31 @@ test("the section credits the wolf's icon, by Lorc, after the actions' icons and
     linksOf(items[at])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/wolf-head\.html"/,
   );
+  assert.match(textOfMarkup(items[at + 1]), /^Mag żywiołów: /);
+});
+
+test("the section credits the elemental mage's icon, the cultist by Lorc, after the wolf's and before the packs", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names"
+  const items = itemsOf(sectionMarkup());
+  const at = ACTIONS_AT + ACTION_ICONS.length + CREATURE_ICONS.length;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "Mag żywiołów: „Cultist icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/cultist\.html"/,
+  );
   assert.match(textOfMarkup(items[at + 1]), /^Kurz i obłok walki: /);
+});
+
+test("the elemental mage's data names the icon file cultist.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names, and it stands before the archetype's name, drawn as a mask in the colour of that name"
+  assert.equal(ARCHETYPES.elementalMage.icon, "cultist");
+  assert.equal(ARCHETYPES.elementalMage.iconTitle, "Cultist icon");
+  assert.ok(existsSync(`${ICONS}cultist.svg`));
 });
 
 test("the wolf's data names the icon file wolf-head.svg and its title on game-icons.net, and the file exists", () => {

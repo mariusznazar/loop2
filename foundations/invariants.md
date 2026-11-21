@@ -335,7 +335,7 @@ that names the icon's title as its page on game-icons.net gives it, the icon's a
 and the licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** test
-- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title · game-icons-wolf-head-title · game-icons-bandage-roll-title · game-icons-first-aid-kit-title
+- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title · game-icons-wolf-head-title · game-icons-bandage-roll-title · game-icons-first-aid-kit-title · game-icons-cultist-title
 - **Derives from:** D-27
 - **Part:** browser-view · simulation
 - **Violated:** no
@@ -497,7 +497,7 @@ In the stylesheets of the part browser-view, `outline` and the `outline-*` prope
 
 ## design-token-contrast
 
-In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of those five, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1 against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
+In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of those five, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`, `tile-revealed` has at least 3:1 against `tile-hidden`, and `text-disabled`, the track of the bar of practice of a tree on the screen Postać, has at least 2:1 against `panel`, the background of the area it stands in, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
 
 - **Method:** test
 - **Rests on:** wcag-text-contrast · wcag-non-text-contrast · wcag-contrast-ratio

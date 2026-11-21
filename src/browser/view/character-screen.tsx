@@ -1,27 +1,25 @@
 /**
- * The screen Postać (D-199, D-217, D-244, D-245, D-287): one character with its name, its generation,
- * its archetype, its resurrection line, the line of its earning loop with „Zatrzymaj” or the line of
- * a stopped earning loop, and the section „Umiejętności” once a tree is known. The page holds the screen
- * behind one boundary, `createCharacterScreen` (D-36): an element of its own for the page to place,
- * a first render that is synchronous, `update(props)` and `dispose()`. The page calls them from an
- * event handler or the continuation of an answer, never from render or an effect. The two acts of
- * the screen, a purchase and a stop, go to the page through `onBuy` and `onStop`. Nothing runs when
- * the module is imported.
+ * The screen Postać (D-445, D-446, D-447, D-199, D-217, D-218, D-244, D-245, D-287): one character in
+ * two areas side by side, as the columns of Mapy and Wiedza. The narrow left area holds the figure of
+ * the character with, beside it, its name, the line of its generation and archetype with the
+ * archetype's icon, and its resurrection line, and under them the frame of what the character does: its
+ * state, the line of its earning loop with „Zatrzymaj”, or the line of a stopped earning loop. The wide
+ * right area holds the section „Umiejętności” once a tree is known. The page holds the screen behind one
+ * boundary, `createCharacterScreen` (D-36): an element of its own for the page to place, a first render
+ * that is synchronous, `update(props)` and `dispose()`. The page calls them from an event handler or the
+ * continuation of an answer, never from render or an effect. The two acts of the screen, a purchase and a
+ * stop, go to the page through `onBuy` and `onStop`. Nothing runs when the module is imported.
  */
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ARCHETYPES } from "../sim/data/archetypes.js";
-import { MAPS } from "../sim/data/maps.js";
-import {
-  BRANCHES,
-  SKILLS,
-  type BranchId,
-  type SkillId,
-} from "../sim/data/skills.js";
-import { branchRank, skillProgress } from "../sim/skills.js";
+import { SKILLS, type BranchId, type SkillId } from "../sim/data/skills.js";
+import { waitingPractice } from "../sim/loop.js";
 import type { CharacterId, GameState } from "../sim/types.js";
-import { branchText, skillText } from "./character-skills.js";
+import { CharacterFigure } from "./character-figure.js";
+import { statusLine } from "./character-status.js";
+import { CharacterTrees } from "./character-trees.js";
 import {
   generationLabel,
   loopLine,
@@ -63,7 +61,7 @@ type CharacterViewProps = Omit<CharacterScreenOptions, "props"> & {
   props: CharacterScreenProps;
 };
 
-/** The screen: one character, its earning loop or its stop, and its skills once a tree is known. */
+/** The screen: the character's figure, facts and frame on the left, its skills on the right. */
 function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   const { state, nowMs, characterId } = props;
   const name = useRef<HTMLHeadingElement>(null);
@@ -73,104 +71,100 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   );
   if (character === undefined) return null;
 
+  const archetype = ARCHETYPES[character.archetypeId];
   const generation = generationLabel(character.generation);
   const resurrection = resurrectionLine(state.team, nowMs);
+  const status = statusLine(state, characterId);
   const loop = state.loops[characterId];
   const stoppedPractice =
     loop === undefined ? state.stoppedLoops[characterId] : undefined;
 
   // The trees the character's archetype may grow that the player knows (D-199).
-  const predispositions = ARCHETYPES[character.archetypeId]
-    .predispositions as readonly SkillId[];
+  const predispositions = archetype.predispositions as readonly SkillId[];
   const trees = (Object.keys(SKILLS) as SkillId[]).filter(
     (id) =>
       state.understanding.trees.includes(id) && predispositions.includes(id),
   );
 
-  // While a manual map run waits or has ended, no purchase acts (D-287, D-200).
-  const run = state.run;
   return (
-    <section className="character-screen">
-      <h2 ref={name} tabIndex={-1} className="character-screen-name">
-        {character.name}
-      </h2>
-      <p className="character-screen-facts">
-        {generation === null ? null : (
-          <span className="character-screen-generation">{generation}</span>
-        )}
-        <span className="character-screen-archetype">
-          {ARCHETYPES[character.archetypeId].name}
-        </span>
-      </p>
-      <p
-        className={
-          resurrection.danger
-            ? "character-screen-resurrection danger"
-            : "character-screen-resurrection"
-        }
-      >
-        {resurrection.text}
-      </p>
-      {loop === undefined ? null : (
-        <div className="character-screen-loop">
-          <p className="character-screen-loop-line">{loopLine(loop)}</p>
-          <ReactButton
-            text="Zatrzymaj"
-            kind="destructive"
-            label={`Zatrzymaj: ${character.name}`}
-            buttonRef={stop}
-            onClick={() => {
-              onStop();
-              // The stop removes the button, which then has no element to keep: the focus moves on to
-              // the character's name, while a refused stop leaves the button, and its focus, where they stand.
-              if (stop.current === null) name.current?.focus();
-            }}
-          />
-        </div>
-      )}
-      {stoppedPractice === undefined ? null : (
-        <p className="character-screen-stopped">
-          {stoppedLoopLine(stoppedPractice)}
-        </p>
-      )}
-      {trees.length === 0 ? null : (
-        <section className="character-screen-skills">
-          <h3>Umiejętności</h3>
-          {run === null ? null : (
-            <p className="character-screen-skills-note">
-              {`Przejście na mapie ${MAPS[run.mapId].name} jest niezakończone. Stopnie kupisz po jego zakończeniu.`}
-            </p>
-          )}
-          {trees.map((id) => (
-            <div key={id} className="character-screen-tree">
-              <p className="character-screen-tree-summary">
-                {skillText(character, id)}
+    <div className="character-screen">
+      <div className="screen character-areas">
+        <section className="screen-area character-identity">
+          <div className="character-head">
+            <CharacterFigure archetypeId={character.archetypeId} />
+            <div className="character-facts">
+              <h2 ref={name} tabIndex={-1} className="character-screen-name">
+                {character.name}
+              </h2>
+              <p className="character-screen-facts">
+                {generation === null ? null : (
+                  <span className="character-screen-generation">
+                    {generation}
+                  </span>
+                )}
+                <span className="character-screen-archetype">
+                  <span
+                    className="icon-mask"
+                    aria-hidden="true"
+                    style={
+                      {
+                        "--icon": `url("/icons/${archetype.icon}.svg")`,
+                      } as CSSProperties
+                    }
+                  />
+                  {archetype.name}
+                </span>
               </p>
-              {(Object.keys(BRANCHES) as BranchId[])
-                .filter((branch) => BRANCHES[branch].skill === id)
-                .map((branch) => {
-                  const costs: readonly number[] = BRANCHES[branch].costs;
-                  const cost = costs[branchRank(character.skills, branch)];
-                  const unaffordable =
-                    cost === undefined ||
-                    skillProgress(character.skills, id).points < cost;
-                  return (
-                    <div key={branch} className="character-screen-branch">
-                      <span>{branchText(character, branch)}</span>
-                      <ReactButton
-                        text="Kup"
-                        label={`Kup: ${BRANCHES[branch].name}`}
-                        disabled={run !== null || unaffordable}
-                        onClick={() => onBuy(branch)}
-                      />
-                    </div>
-                  );
-                })}
+              <p
+                className={
+                  resurrection.danger
+                    ? "character-screen-resurrection danger"
+                    : "character-screen-resurrection"
+                }
+              >
+                {resurrection.text}
+              </p>
             </div>
-          ))}
+          </div>
+          <div className="character-screen-status">
+            {status === null ? null : (
+              <p className="character-screen-state">{status}</p>
+            )}
+            {loop === undefined ? null : (
+              <div className="character-screen-loop">
+                <p className="character-screen-loop-line">{loopLine(loop)}</p>
+                <ReactButton
+                  text="Zatrzymaj"
+                  kind="destructive"
+                  label={`Zatrzymaj: ${character.name}`}
+                  buttonRef={stop}
+                  onClick={() => {
+                    onStop();
+                    // The stop removes the button, which then has no element to keep: the focus moves on to
+                    // the character's name, while a refused stop leaves the button, and its focus, where they stand.
+                    if (stop.current === null) name.current?.focus();
+                  }}
+                />
+              </div>
+            )}
+            {stoppedPractice === undefined ? null : (
+              <p className="character-screen-stopped">
+                {stoppedLoopLine(stoppedPractice)}
+              </p>
+            )}
+          </div>
         </section>
-      )}
-    </section>
+        {trees.length === 0 ? null : (
+          <CharacterTrees
+            character={character}
+            trees={trees}
+            waiting={loop === undefined ? {} : waitingPractice(loop)}
+            run={state.run}
+            onBuy={onBuy}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 

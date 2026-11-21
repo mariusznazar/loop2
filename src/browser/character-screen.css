@@ -1,22 +1,71 @@
 /*
- * The stylesheet of the screen Postać (D-421): the name and the facts of a character, its
- * resurrection line, its earning loop and the section „Umiejętności” with its trees and branches. The
- * page links it after styles.css, and it reads each value of appearance from the design tokens of
- * tokens.css by var(--…).
+ * The stylesheet of the screen Postać (D-421): its two areas, the figure, the name and the facts of a
+ * character with its resurrection line, the frame of what the character does, and the section
+ * „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
+ * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
 /*
- * The screen Postać (D-199, D-217, D-244, D-245): the name in `text-strong`, the generation and the
- * archetype in `text-secondary` (D-40, D-218), the resurrection line in `text-secondary` and at zero
- * uses in `danger` (D-217), the earning loop's line in `text` (D-244), the stopped line in `text-secondary`
- * (D-245) and the section „Umiejętności” with its name in `text-label`. As wide as the content under
- * the menu bar, at most 1344 px (D-280).
+ * The screen Postać (D-445, D-446, D-447, D-199, D-217, D-218, D-244, D-245; styleguide rule "The
+ * screen Postać"): as wide as the content under the menu bar, at most 1344 px (D-280), and two areas,
+ * each a block of `.screen-area` of styles.css. The areas take the proportion of the columns of Mapy
+ * and Wiedza, a quarter and three quarters, and stand one over the other in a window under 720 px
+ * (D-282); the rule is the screen's own, with the same column sizes and threshold as the shared rule of
+ * those screens in styles.css.
  */
 .character-screen {
   box-sizing: border-box;
   max-width: 1344px;
   margin: 0 auto;
   color: var(--text);
+}
+
+.screen.character-areas {
+  grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
+}
+
+@media (max-width: 720px) {
+  .screen.character-areas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/*
+ * The figure of the character (D-445) at the top of the left area, beside the name: a box whose size
+ * TypeScript gives from the data, with the idle sheet inside it at its place, on the flat background of
+ * the area. The sheet's frames are those of `.scene-sheet` of run-screen.css, which the picture band of
+ * Siedziba draws its characters with too. They change at the beat of the frames of the scene and of the
+ * picture band, 160 ms (D-319, D-389), by the keyframes `scene-frames` of styles.css, and only where the
+ * system's setting asks for no less motion; under that setting the figure stands on its first frame.
+ */
+.character-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-m);
+  margin-bottom: var(--space-m);
+}
+
+.character-figure {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+}
+
+.character-figure-sprite {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .character-figure img {
+    animation-name: scene-frames;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: steps(var(--frames));
+    animation-iteration-count: infinite;
+  }
+}
+
+.character-facts {
+  min-width: 0;
 }
 
 /* The heading is the name of the character, typed by the player: a name with no space breaks inside the
@@ -29,9 +78,11 @@
   color: var(--text-strong);
 }
 
+/* The generation and the archetype in `text-secondary` (D-218, D-40), the archetype's icon a mask in the colour of its name (D-43). */
 .character-screen-facts {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-xs) var(--space-s);
   margin: 0 0 var(--space-xs);
 }
@@ -41,8 +92,15 @@
   color: var(--text-secondary);
 }
 
+.character-screen-archetype {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* The resurrection line in `text-secondary`, at zero uses in `danger` (D-217). */
 .character-screen-resurrection {
-  margin: 0 0 var(--space-s);
+  margin: 0;
   color: var(--text-secondary);
 }
 
@@ -50,12 +108,29 @@
   color: var(--danger);
 }
 
+/*
+ * The frame of what the character does (D-447): always there, with no heading, a rectangle outlined by
+ * a thin line in `divider` inside the left area. Its first line, the state, in `text`; the earning loop's
+ * line in `text` with „Zatrzymaj” (D-244); the stopped line in `text-secondary` (D-245).
+ */
+.character-screen-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-s) var(--space-m);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.character-screen-state {
+  margin: 0;
+  color: var(--text);
+}
+
 .character-screen-loop {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-s);
 }
 
 .character-screen-loop-line {
@@ -64,33 +139,97 @@
 }
 
 .character-screen-stopped {
-  margin: 0 0 var(--space-s);
+  margin: 0;
   color: var(--text-secondary);
 }
 
-.character-screen-skills {
-  margin-top: var(--space-m);
-}
-
+/* The section „Umiejętności”, its name in `text-label` (D-40), the sentence of an unfinished map run in `text-secondary` (D-287). */
 .character-screen-skills h3 {
-  margin: 0 0 var(--space-xs);
+  margin: 0 0 var(--space-s);
   font-size: var(--font-size-label);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-label);
 }
 
 .character-screen-skills-note {
-  margin: 0 0 var(--space-xs);
+  margin: 0 0 var(--space-s);
   color: var(--text-secondary);
 }
 
-.character-screen-tree {
-  margin-bottom: var(--space-m);
+.character-trees {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.character-screen-tree-summary {
-  margin: 0 0 var(--space-xs);
+/*
+ * The row of a tree (D-199, D-40) in columns: the fold, the name in `text-strong` with „+{n} pkt czeka w
+ * pętli” right after it in `text`, „poziom {p}” in `text-secondary`, the bar of practice, „{wprawa} /
+ * {próg}” or „najwyższy” in `text-secondary`, and „{k} pkt” in `text-strong`. The bar has a darker track
+ * and a light fill, as the bar of an unmet requirement in the header of a map run: the track in
+ * `text-disabled`, which stands out from the `panel` of the area where `highlight` can hardly be seen,
+ * and the fill in `text` (D-40). Its thickness is `--bar-width` doubled, as the bar over the mage's head,
+ * and its length a layout dimension (D-43); the fill is as long as the share TypeScript gives in
+ * `--share`. Rows stand apart by a thin line in `divider`, and a click anywhere on a row opens
+ * or folds its tree.
+ */
+.character-screen-tree {
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.character-tree-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 6em minmax(4em, 10em) 6em 4em;
+  align-items: center;
+  gap: var(--space-s) var(--space-m);
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+}
+
+.character-tree-name {
+  min-width: 0;
   color: var(--text-strong);
+}
+
+.character-tree-waiting {
+  margin-left: var(--space-s);
+  font-size: var(--font-size-detail);
+  color: var(--text);
+}
+
+.character-tree-level,
+.character-tree-amount {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+.character-tree-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.character-tree-bar {
+  display: block;
+  height: calc(var(--bar-width) * 2);
+  background-color: var(--text-disabled);
+}
+
+.character-tree-fill {
+  display: block;
+  width: calc(var(--share) * 100%);
+  height: 100%;
+  background-color: var(--text);
+}
+
+.character-tree-points {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+}
+
+/* The branches of an open tree, under its row: each its words in `text` and „Kup”. */
+.character-branches {
+  padding: 0 0 var(--space-s) var(--space-xl);
 }
 
 .character-screen-branch {

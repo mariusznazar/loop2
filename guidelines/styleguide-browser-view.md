@@ -23,10 +23,10 @@ bez odstępstw zgodnie z D-38.
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
 | `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                      | —          | D-40 · D-43 |
-| `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
+| `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, i jako wypełnienie paska wprawy drzewa na ekranie Postać, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
-| `text-disabled`   | text       | Tego teraz nie da się użyć.                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
+| `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem, z progiem 2:1 wobec `panel` (D-42).                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
 | `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                                                                               | —          | D-39     |
 | `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                                                                                       | —          | D-39     |
@@ -77,7 +77,10 @@ każde tło z jego tekstem. Tor paska postępu nad głową postaci (`highlight`)
 nie ma tekstu i kod nie ustawia na nim żadnej roli tekstu. Tor paska wymagania
 warunku mapy w nagłówku (`highlight`) też nie ma tekstu: jego wypełnienie
 w `text` nie jest tekstem, a nazwa i liczby wymagania stoją obok paska (D-40,
-D-133). Ta reguła nie mówi, czy któryś z tych torów potrzebuje roli tekstu.
+D-133). Tor paska wprawy drzewa na ekranie Postać nie jest tłem: stoi
+w `text-disabled`, a jego wypełnienie w `text`, i żadne z nich nie jest tekstem;
+poziom, liczby i punkty drzewa stoją obok paska (D-40, D-199). Ta reguła nie mówi, czy któryś z tych torów potrzebuje
+roli tekstu.
 
 ### No value in place of a design token
 
@@ -129,6 +132,9 @@ przy jednym rozmiarze sceny (D-349). Geometria obozu w Siedzibie — rozmiary je
 stoi w TypeScripcie (`src/browser/view/camp.tsx`, `src/browser/view/camp-picture.ts`) jako liczby pikseli
 obrazka razy rozmiar piksela obrazka, wpisane w style elementów, a jej liczby w danych gry, w
 `src/browser/sim/data/scene.ts`; arkusz stylów obozu nie wpisuje żadnej długości obrazka (D-349, D-389).
+Tak samo ludzik na ekranie Postać: rozmiar jego pola i położenie arkusza stoją w TypeScripcie
+(`src/browser/view/character-figure.tsx`) jako liczby pikseli obrazka razy rozmiar piksela obrazka, a pole
+w danych gry, w `src/browser/sim/data/scene.ts`; arkusz stylów ekranu nie wpisuje długości obrazka (D-445).
 Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
 ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu, powrotu odcienia i efektów odkrycia, śmierci i rozwiązania) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
@@ -178,7 +184,10 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
 - ramka plakietki odkrycia w scenie, `discovery` na `panel`, nie dokłada pary
   ani progu: reguła sceny wymaga dla niej co najmniej 3:1 wobec `panel` (D-39,
   D-42), a `discovery` ma już 4,5:1 na `panel` z pierwszego punktu;
-- `text-disabled` nie ma progu;
+- `text-disabled` nie ma progu jako tekst; jako tor paska wprawy drzewa na
+  ekranie Postać ma co najmniej 2:1 wobec `panel` — para osobna, próg własny
+  produktu, nie kryterium WCAG, żeby tor nie zlał się z tłem bloku; tekstu
+  w `text-disabled` ten próg nie dotyczy (D-42, D-40);
 - `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
   tłach;
 - `condition-unmet`, pasek reguły, której warunek nie jest spełniony, nie ma
@@ -755,6 +764,49 @@ Mapy, a w oknie węższym niż 720 px jeden pod drugim.
   `text-secondary` i ceny wszystkich stopni po kolei, „1 · 1 · 2 pkt”, w `text`.
 - Ekran nie pokazuje poziomu, wprawy, punktów, kupionych stopni, podglądu „teraz → po kupnie”
   ani „Kup” i niczego w grze nie zmienia (D-416); kupuje się na ekranie Postać (D-200).
+- Ekran nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
+
+### The screen Postać
+
+- **Decision:** D-445 · D-446 · D-447 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-389 · D-39 · D-40 · D-43 · D-44
+- **Invariant:** none
+- **Good:** Lewy blok z ludzikiem na płaskim tle bloku, obok niego imię w `text-strong`, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
+- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik na kawałku polany albo z tekstem na nim; ekran w jednej kolumnie; drzewa rozwinięte przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
+
+Ekran Postać (`#/postac/{n}`, D-281) ma dwa obszary, każdy osobny (D-282), i każdy stoi w bloku
+`screen-area`, jak kolumny ekranów Siedziba, Mapy, Wiedza i Przejście: na tle `panel` z cienką ramką
+w `divider`. Lewy obszar jest wąski, prawy szeroki — ta sama proporcja co kolumny ekranów Mapy i
+Wiedza, jedna czwarta i trzy czwarte szerokości — a w oknie węższym niż 720 px lewy stoi nad prawym.
+
+- Lewy obszar, u góry: ludzik postaci (D-445), ten sam obrazek, w tej samej wielkości i w tym samym
+  takcie co ta postać na pasie obozu Siedziby, nieruchomy pod ustawieniem ograniczenia ruchu, bez
+  polany, wprost na płaskim tle bloku (D-272). Jest obrazkiem: bez tekstu, bez reakcji na kliknięcie
+  i klawiaturę, ukryty przed czytnikami ekranu, jak pas obozu (D-389).
+- Obok ludzika (D-446): imię jako nagłówek w `text-strong`, łamane w swoim wierszu (reguła A name
+  typed by the player breaks in its row); pod nim jeden wiersz z „pokolenie {n}” od drugiego
+  pokolenia (D-218), znaczkiem archetypu i nazwą archetypu, wszystko w `text-secondary`, a znaczek
+  rysowany maską w kolorze nazwy obok (D-43); pod nim wiersz wskrzeszenia w `text-secondary`,
+  a przy zerze użyć w `danger` (D-217).
+- Pod nimi ramka tego, co postać robi (D-447): zawsze obecna, bez nagłówka, prostokąt obrysowany
+  cienką linią w `divider` wewnątrz bloku. Pierwszy wiersz w `text` — „W obozie”, „Przejście: …” albo
+  wiersz pętli z przyciskiem niszczącym „Zatrzymaj” (D-244, D-44); po zatrzymaniu pętli pod „W obozie”
+  wiersz „Pętla zatrzymana …” w `text-secondary` (D-245). Innych przycisków w ramce nie ma.
+- Prawy obszar: nagłówek „Umiejętności” w `text-label`; obszaru nie ma, póki gracz nie zna żadnego
+  drzewa (D-199). Zdanie o niezakończonym przejściu stoi pod nagłówkiem w `text-secondary` (D-287).
+- Wiersz drzewa (D-199) w kolumnach, oddzielony od sąsiednich cienką linią w `divider`: zwijak —
+  zwykły wspólny przycisk „▸”, po rozwinięciu „▾”, z nazwą drzewa jako nazwą dostępną, który mówi
+  `aria-expanded` (D-44); nazwa w `text-strong`, zaraz po niej „+{n} pkt czeka w pętli” w `text`, nie
+  w `positive` (D-39); „poziom {p}” w `text-secondary`; pasek wprawy o grubości podwojonej
+  `--bar-width`, jak pasek nad głową maga; ciemniejszy tor i jasne wypełnienie, bez zieleni, jak
+  pasek niespełnionego wymagania w nagłówku przejścia, ale tor w `text-disabled`, bo tor w
+  `highlight` ledwo widać na `panel` bloku — z co najmniej 2:1 wobec `panel`, które pilnuje test
+  kontrastu (D-42) — a wypełnienie w `text` (D-40); „{wprawa} / {próg}” albo „najwyższy” w `text-secondary`; „{k} pkt” w
+  `text-strong`, tylko gdy są punkty. Kliknięcie w dowolne miejsce wiersza rozwija albo zwija drzewo,
+  a klawiatura dochodzi do zwijaka, który robi to samo Enterem albo Spacją, jak każdy przycisk. Stany
+  zwijaka podaje reguła States of shared controls: error, empty i loading go nie dotyczą, bo nie ma
+  wpisu, listy i nie czeka na serwer. Każde wejście na ekran zaczyna ze zwiniętymi drzewami.
+- Gałąź rozwiniętego drzewa: jej słowa w `text` i „Kup” jako zwykły wspólny przycisk, wyłączony, gdy
+  brak punktów, gałąź jest pełna albo przejście ręczne czeka lub się skończyło (D-199, D-200, D-287).
 - Ekran nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
 
 ### Program editor

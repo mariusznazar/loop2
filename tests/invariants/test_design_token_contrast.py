@@ -3,9 +3,10 @@
 has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`,
 `rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of
 those five, `character` has at
-least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1
-against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the
-contrast ratio.
+least 3:1 against `tile-revealed` and against `tile-hidden`, `tile-revealed` has at least 3:1
+against `tile-hidden`, and `text-disabled`, the track of the bar of practice of a tree on the
+screen Postać, has at least 2:1 against `panel`, the background of the area it stands in, each
+ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
 
 The file is read from the working tree as text; nothing is built, rendered or computed by the
 cascade.
@@ -16,7 +17,8 @@ Reading of the sentence:
   six-digit hexadecimal colour `#rrggbb` — a role missing, declared twice or holding anything
   else cannot be shown to keep its pairs, and is flagged;
 - the pairs and thresholds are written out below as the sentence lists them; `text-disabled` is
-  in none of them;
+  in one of them alone, against `panel` at 2:1, a pair of its own: no threshold of the text roles
+  and no 3:1 holds it, and it is held against no other background;
 - the contrast ratio is computed by the definitions the environment fact `wcag-contrast-ratio`
   quotes from WCAG 2.2 — (L1 + 0.05) / (L2 + 0.05) with L1 the lighter and L2 the darker relative
   luminance, L = 0.2126 R + 0.7152 G + 0.0722 B, each component q = c / 255 taken as q / 12.92
@@ -26,7 +28,8 @@ Reading of the sentence:
 Covers: every pair of the sentence on the file's values; and controls: the ratio of hand-checked
 colour pairs (black on white 21, mid grey #808080 on white 3.949 and on black 5.317, #a0a0a0 on
 white 2.615, a dark grey on black through the linear branch 1.061), made-up token text whose pairs
-all pass, with `text-disabled` at a ratio of 1, and made-up token text failing each kind of pair,
+all pass, with `text-disabled` at 2.817:1 on every background, above its floor and below 3:1, and
+made-up token text failing each kind of pair, the track's at 1.846:1 on `panel` among them,
 missing a role, declaring one only inside a comment, declaring one twice and giving one a value
 that is no `#rrggbb`.
 
@@ -57,6 +60,7 @@ TEXT_ROLES = (
 )
 TEXT_THRESHOLD = 4.5
 NON_TEXT_THRESHOLD = 3.0
+TRACK_THRESHOLD = 2.0
 
 # (foreground, background, least ratio), as the invariant's sentence lists them.
 PAIRS = tuple(
@@ -70,6 +74,7 @@ PAIRS = tuple(
         ("character", "tile-revealed", NON_TEXT_THRESHOLD),
         ("character", "tile-hidden", NON_TEXT_THRESHOLD),
         ("tile-revealed", "tile-hidden", NON_TEXT_THRESHOLD),
+        ("text-disabled", "panel", TRACK_THRESHOLD),
     ]
 )
 ROLES = tuple(dict.fromkeys(role for pair in PAIRS for role in pair[:2]))
@@ -148,7 +153,8 @@ PASSING = {
     "rule-winning": "#000000",
     "rule-running": "#000000",
     **dict.fromkeys(TEXT_ROLES, "#808080"),
-    "text-disabled": "#000000",
+    # 2.817:1 on black: above the track's floor, below the thresholds of the text roles and of 3:1.
+    "text-disabled": "#555555",
     "control-border": "#808080",
     "focus": "#808080",
     "tile-hidden": "#000000",
@@ -226,6 +232,10 @@ FLAGGED = {
     "tile-revealed at 1:1 against tile-hidden": (
         changed({"tile-revealed": "#000000", "character": "#ffffff"}),
         "--tile-revealed #000000 on --tile-hidden",
+    ),
+    "the track of the practice bar at 1.846:1 on panel": (
+        changed({"text-disabled": "#3a3a3a"}),
+        "--text-disabled #3a3a3a on --panel",
     ),
     "a role missing": (without("text-label"), "--text-label is declared 0 times"),
     "a role only inside a comment": (

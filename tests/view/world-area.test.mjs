@@ -207,12 +207,13 @@ const rowOf = (container, key) =>
 // part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
 // the world area, which the window of the end holds (D-185, D-216, D-311).
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
-  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.” stands in `text-secondary`"
+  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line of the practice of the run (D-201), the line „Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.” stands in `text-secondary`"
   // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
   // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   // decision: D-201 "Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run"
   // decision: D-201 "Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”"
+  // decision: D-201 "On a manual run of a solved map, which pays no practice (D-189), the line reads „Wprawa zebrana w tym przejściu, która nie wejdzie do umiejętności: {umiejętność} +{n} · …” in the role `text-secondary` instead"
   // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row"
@@ -230,7 +231,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "next-row",
       "body-row",
       "trip-result",
-      "run-practice",
+      "run-practice unpaid",
       "trip-result",
       "world-drawing",
       "tile-line",
@@ -244,7 +245,12 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       parts[4][1],
       "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.",
     );
-    assert.equal(parts[5][1], "Wprawa w tym przejściu: Eksploracja +12");
+    // The run pays no practice (D-189), so its line says what the practice is and that it does not
+    // enter the skills (D-201).
+    assert.equal(
+      parts[5][1],
+      "Wprawa zebrana w tym przejściu, która nie wejdzie do umiejętności: Eksploracja +12",
+    );
     // A run going on on a solved map shows the preview of what it brings out, as any map run does (D-186,
     // D-189): the three sticks the bring list asks for.
     assert.equal(parts[6][1], "Wyniesie: patyk 3");
@@ -809,6 +815,24 @@ function computed(element, property) {
   }
   return getComputedStyle(element).getPropertyValue(property);
 }
+
+// Catches the line of practice of a run that pays none drawn in `text`, as a gain, and the line of a run
+// that pays drawn in a role other than `text`.
+test("the practice of a manual run of a solved map stands in text-secondary, and the practice of a run that pays in text", async () => {
+  // decision: D-201 "Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run"
+  // decision: D-201 "On a manual run of a solved map, which pays no practice (D-189), the line reads „Wprawa zebrana w tym przejściu, która nie wejdzie do umiejętności: {umiejętność} +{n} · …” in the role `text-secondary` instead"
+  await withPage(async ({ document }) => {
+    const { container, show } = await draw(
+      document,
+      withRun(solvedSent(), { practice: { exploration: 12 } }),
+    );
+    const line = () => container.querySelector(".run-practice");
+    assert.equal(computed(line(), "color"), "var(--text-secondary)");
+    await show(withRun(sent(), { practice: { exploration: 12 } }));
+    assert.equal(line().textContent, "Wprawa w tym przejściu: Eksploracja +12");
+    assert.equal(computed(line(), "color"), "var(--text)");
+  });
+});
 
 // Catches an icon of the drawing that does not stand in `text-strong` (D-40, D-43) — it would take
 // the `text` of the panel around the drawing — and a stock of 0 that does not dim it by `depleted`

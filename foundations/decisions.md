@@ -1667,18 +1667,18 @@ or not maintained; browser-use, Nightwatch and TestCafe were not examined.
 
 ### D-418 — Where do the screenshots that a task cycle of loop2 shows the human lie, and how does the description of its request embed them?
 
-The screenshots that a task cycle shows the human lie in the public GitHub repository `mariusznazar/screenshots`, in its directory `loop2/` and in that a directory for each cycle, named as the directory of the cycle's own record, on a branch of that repository named `loop2/` and the name of that directory, never on `main`, and the description of the request embeds each as an image by a link to its file in a particular commit of that repository, with `?raw=true` appended. That repository holds only the screenshots of public products and may be cleared after a long time, and the images of old requests then stop showing.
+The screenshots that a task cycle shows the human lie in the public GitHub repository `mariusznazar/screenshots`, in its directory `loop2/` and in that a directory for each cycle, named as the directory of the cycle's own record, on a branch of that repository named `loop2/` and the name of that directory, never on `main`, and the description of the request embeds each as an image by a link to its file in a particular commit of that repository, with `?raw=true` appended. That repository holds only the screenshots of public products and may be cleared after a long time, and the images of old requests then stop showing. The screenshots of the predecessor game, loop, deployed at `https://kantarion.bieda.it/`, may lie there too, since that game counts as a public product.
 
 - **Scope:** agent-workflow
 - **Based on:** screenshots-repository-readers · loop2-repository-visibility · https://github.com/mariusznazar/loop2/pull/67 § description — "![The screen of a map run in two columns](https://github.com/mariusznazar/loop2/blob/a70acfacb9909615ba5ff7c98d557cd066d351cc/docs/task-cycles/proporcje-sceny-i-programu/reports/screens/run-two-columns-1280.png?raw=true)"; read 2026-11-11
 - **Relations:** derives from D-417
 - **Verification:** an agent compares a change with the decision:
-  - complies: a task cycle that changes a screen, whose author puts the screenshot in the directory `loop2/` of `mariusznazar/screenshots`, in a directory of that cycle, on the branch `loop2/<cycle>`, and whose request embeds it as `![…](https://github.com/mariusznazar/screenshots/blob/<commit>/loop2/<cycle>/<file>.png?raw=true)`; the repository cleared a year later, the images of old requests stop showing and nothing in loop2 changes
+  - complies: a task cycle that changes a screen, whose author puts the screenshot in the directory `loop2/` of `mariusznazar/screenshots`, in a directory of that cycle, on the branch `loop2/<cycle>`, and whose request embeds it as `![…](https://github.com/mariusznazar/screenshots/blob/<commit>/loop2/<cycle>/<file>.png?raw=true)`; the repository cleared a year later, the images of old requests stop showing and nothing in loop2 changes; a screenshot of a screen of loop put in the directory of a cycle beside the screenshot of the same screen of loop2
   - violates: a request that embeds a screenshot by a link to a branch of `mariusznazar/screenshots` or by an address on `raw.githubusercontent.com`; a directory of a cycle placed outside `loop2/`; a push of a screenshot to `main` of that repository; a screenshot of loop2 stored in a private repository; a screenshot of a private product stored in `mariusznazar/screenshots`; a screenshot file committed to the repository of loop2
 - **Origin:** none
 
-*Rationale:* the human who owns the repository accepts a request by seeing the screen in its description, without running the game, and a screenshot is evidence for the time of acceptance: the human who owns the repository does not go back to views of half a year ago, so the place may be cleared after a long time, and the images of old requests then stop showing. A repository of its own keeps the screenshots out of the history of loop2, which every clone downloads. The files of a cycle lie on a branch of that cycle, so that cycles pushing at the same time do not meet and no agent pushes to the default branch of a repository that serves several products. The repository is public because loop2 and its requests are public: a private repository would show an image in a request to the human who owns the repository alone and a broken icon to every other reader, and would need a trial of the mechanism, while a link to a file in a commit with `?raw=true` already showed images in a request of loop2. One repository serves the public products, with a directory for each product, so a private product does not use it: its screenshots would be public, and deleting the repository and creating it anew clears the screenshots of all products at once. Price taken: the images of old requests break once the repository is cleared.
-*Rejected:* a separate private repository — a picture in a public request of loop2 would be seen only by the human who owns the repository, and to other readers it would show as a broken icon, and the mechanism needed a trial; privacy protects nothing, since loop2 and its requests are public; a place that is never cleared, the matter returning when it grows — no one reaches for views of half a year ago when something in the look breaks then; a repository for loop2 alone, named `loop2-screenshots` — clearing would concern loop2 only, but every next product would create a repository of its own.
+*Rationale:* the human who owns the repository accepts a request by seeing the screen in its description, without running the game, and a screenshot is evidence for the time of acceptance: the human who owns the repository does not go back to views of half a year ago, so the place may be cleared after a long time, and the images of old requests then stop showing. A repository of its own keeps the screenshots out of the history of loop2, which every clone downloads. The files of a cycle lie on a branch of that cycle, so that cycles pushing at the same time do not meet and no agent pushes to the default branch of a repository that serves several products. The repository is public because loop2 and its requests are public: a private repository would show an image in a request to the human who owns the repository alone and a broken icon to every other reader, and would need a trial of the mechanism, while a link to a file in a commit with `?raw=true` already showed images in a request of loop2. One repository serves the public products, with a directory for each product, so a private product does not use it: its screenshots would be public, and deleting the repository and creating it anew clears the screenshots of all products at once. The look of a screen of loop2 is judged against the same screen of loop, so a request that changes a screen shows the two side by side, and loop's screenshot lies beside loop2's in the same place. Price taken: the images of old requests break once the repository is cleared.
+*Rejected:* loop counted as a private product, the request showing the screenshot of loop2 alone and loop's staying in the notes of the human — the comparison is read in two places at once; a separate private repository — a picture in a public request of loop2 would be seen only by the human who owns the repository, and to other readers it would show as a broken icon, and the mechanism needed a trial; privacy protects nothing, since loop2 and its requests are public; a place that is never cleared, the matter returning when it grows — no one reaches for views of half a year ago when something in the look breaks then; a repository for loop2 alone, named `loop2-screenshots` — clearing would concern loop2 only, but every next product would create a repository of its own.
 
 ### D-419 — Who puts a screenshot into the repository for screenshots?
 
@@ -4863,6 +4863,66 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
 *Rationale:* a single stylesheet for every screen is read whole by whoever changes one screen, and changes to the look of different screens meet in it at the merge. A file for each screen and for each part several screens use lets the author read the file of that screen and the shared one, and what stays shared is what every screen or the kitchen-sink page needs and the rules that several screens need, that no part with a stylesheet of its own holds and that cannot be divided without changing their text, so no screen reads the file of another. The files stand directly in the directory of the stylesheets because the build copies every file of that kind as it stands, so the split asks for no change of the build, and a `<link>` of its own gives each file to the player. D-47, D-265 and the invariant `browser-view-focus-outline` read the game's stylesheet as the one that keeps the `:focus-visible` rule and the look of the shared controls; the shared stylesheet stays that one, so they hold as they are. The kitchen-sink page draws the map, the table of tiles, the form and the block of the account menu beside the controls, so their rules stay in the shared stylesheet and the page links no stylesheet of a screen. The rule of the files stands in the styleguide, where D-28 puts the rules of the stylesheets of the browser view, and no guidelines of their own for stylesheets exist. Accepted with it: the shared stylesheet stays the place of whatever the kitchen-sink page draws, so it holds more than the controls alone, and a rule whose selector list names classes of several screens and which belongs to no part with a stylesheet of its own stays there whole, since dividing the list changes the text of the rule and the order of the cascade.
 *Rejected:* the shared stylesheet gone, in its place a file of the base rules, a file of the controls and the files of the screens — clearer names, but a change of D-265, of the invariant and of the kitchen-sink page; the rules of the program panel left in the shared stylesheet — the shared file stays large, and whoever changes the screen Przejście or Programy reads that long stretch; the rules of the program panel in the stylesheet of the screen Programy — the screen Przejście depends on the file of another screen and its look changes with a change of Programy; the rules that several screens need and that cannot be divided, each in a stylesheet of its own, with the selector lists divided between the files — a file of a few lines for each and a change of the text of each rule, for no gain to a reader; the rules of what the kitchen-sink page draws besides the controls moved to the stylesheets of the screens, with more `<link>` elements on the page — a smaller shared file, but a change of what the shared stylesheet holds and a page that depends on the files of the screens; the split made within the task of the move of the view to React — the whole task waits for a window with no task about the look and collides with every change of the view meanwhile
 
+### D-445 — How does the figure of a character stand on the screen Postać?
+
+At the top of the left area of the screen Postać, beside the character's name, stands the figure of the character: the same picture as that character in the picture band of Siedziba (D-389), at the same size, moving in the frames of its idle sheet at the scene's fixed beat with no loop of drawing and standing still under the system's setting for reduced motion. It stands whatever the character does — in the camp, in a manual map run going, paused or ended, and in an earning loop — always in the same pose, with no clearing under it, on the flat background of its area. It is a picture, not a control, taking no click and no key, hidden from readers of the screen, with no text on it or over it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-271 · derives from D-272
+- **Verification:** tests: the figure at the top of the left area, before the character's name, drawn
+  from the same idle sheet as that character in the picture band of Siedziba and at twice the pixels
+  of its picture, as the band draws it; the figure standing in the camp, in a manual map run going and
+  ended, and in an earning loop; the figure a picture with no control, no stop for the keyboard and no
+  text, hidden from readers of the screen. For its motion, an agent compares a change with the part no
+  test holds:
+  - complies: the frames of the figure changing at the beat of the frames of the picture band by CSS,
+    and standing on the first frame under the system's setting for reduced motion
+  - violates: a loop of drawing that moves the figure; a figure that moves under the setting for
+    reduced motion
+- **Origin:** none
+
+*Rationale:* the screen of a character showed only text, and the predecessor game, loop, which was the measure of this screen, shows the character beside its name. The figure is the one the player already sees at the campfire of Siedziba, so the player knows it at once, and it moves as it moves there, by the same frames and beat. It stands in the same pose whatever the character does, as in loop, since the frame of what the character does says it in words (D-447). Accepted with it: a pixel picture with an outline on a flat background may look like a sticker (D-389, D-272), and the figure tells nothing of what the character does.
+*Rejected:* the figure standing in the camp and walking in a manual map run and in an earning loop — what it shows in each state, in an earning loop, in a pause and after a death in a map run, would have to be settled and drawn anew at each change of the state, and a mage walking in place with no background moving behind it may look strange, which nobody checked.
+
+### D-446 — What does the screen Postać show beside the figure of a character?
+
+Beside the figure of a character (D-445) stand the character's name as the heading of the screen, under it one line with „pokolenie {n}” from generation number 2 up (D-218), the icon of the character's archetype and the archetype's name, and under that line the line of the resurrection (D-217). The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names, and it stands before the archetype's name, drawn as a mask in the colour of that name.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-27 · derives from D-217 · derives from D-218
+- **Verification:** tests: beside the figure, the name as the heading, under it the line of the
+  generation from 2 up, the archetype's icon and the archetype's name, and under that line the line of
+  the resurrection; the icon the mask of the file the archetype's data names, before the name; the
+  icon the elemental mage's data names a file of `assets/icons/` credited with its page on
+  game-icons.net. For where the view takes the name of that file from, an agent compares a change with
+  the part no test holds:
+  - complies: the view reading the name of the icon file of an archetype from the archetype's data
+  - violates: the name of the icon file of an archetype written in the code of the view
+- **Origin:** none
+
+*Rationale:* the screen shows of the character what it showed before — its name, its generation, its archetype and its resurrection — in the order of the predecessor game, loop, with the sign of the archetype before its name, as loop has it, so that the line is no text alone beside loop's picture. The sign of the elemental mage is the icon `cultist`, the hooded figure loop gives that archetype, so the sign is the same on both sides of a comparison of the two screens. The icon stands in the archetype's data, as the icons of items and creatures do, so the card of a character on Siedziba can take it too. Accepted with it: loop shows besides a renaming of the character and a note of the player about it, which this screen does not.
+*Rejected:* renaming the character on the screen Postać — it changes D-52, which has the player type the name when creating the character, and brings a field to type with its rules, an empty name among them, and its tests; renaming and a note of the player about the character, as in loop — the cost of renaming, and the note is a new field of the game state, so the saved game states of before are lost, while the note changes nothing in the game; no icon, the name „Mag żywiołów” alone — beside loop's screen, which has a picture in that line, the line of loop2 is text alone; a line „Udźwig: 15” — the number is the same at every character and no branch raises it (D-64), so it tells no character apart.
+
+### D-447 — What does the screen Postać say of what the character does now?
+
+Under the facts of a character (D-446) stands, always and with no heading, a frame whose first line says in the role `text` what the character does: „W obozie” where the character is neither the character of a manual map run nor in an earning loop; „Przejście: {mapa} · minuta {m}” while its manual map run goes on or waits in a pause, that line followed by „ · postać zginęła” or „ · mapa rozwiązana” once the map run has ended and waits for „Restart” or „Zakończ”, {m} being the minute the clock in the header of that map run writes; and the line of its earning loop with „Zatrzymaj” (D-244) while it is in one. After a stop of its earning loop the frame reads „W obozie” with the line of the stop under it (D-245). The frame shows no current action of the character and holds no button but „Zatrzymaj”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-244 · derives from D-245
+- **Verification:** tests: the frame standing at every character, under the facts, with no heading;
+  „W obozie” at a character in neither a manual map run nor an earning loop, also where another
+  character's map run stands; „Przejście: {mapa} · minuta {m}” while the map run goes on and while it
+  waits in a pause, with „ · postać zginęła” after a death and „ · mapa rozwiązana” after a completion,
+  at the minute of its end; the line of the earning loop with „Zatrzymaj” in place of the first line;
+  „W obozie” with the line of the stop under it after a stop; no button in the frame but „Zatrzymaj”.
+- **Origin:** none
+
+*Rationale:* the screen did not say what a character in the camp or in a manual map run does, only what one in an earning loop does, and the predecessor game, loop, shows that in a frame under the facts of the character. The frame always stands, so the player finds it in one place whatever the character does, and it says the state in one line, in the words the game already uses for a map run and an earning loop. The way back to a map run is „Wróć do przejścia” on the menu bar (D-280), and a character is sent from the screen Mapy (D-53), so the frame takes no button of its own; the words of the earning loop stay those of D-244. Accepted with it: the frame does not say which action the character carries out now.
+*Rejected:* under the line of the state, in a map run and in an earning loop, the current action, the sentence of the row „Teraz” of the screen of a map run — it changes D-244, under which the player does not see what a character in an earning loop does, and the sentence would have to be built for the map run of an earning loop too, which the game shows nowhere; buttons as in loop, the way back to the map run, the pick of a map and the start of an earning loop — it changes D-280 and D-243, brings into this screen a part of the moving between screens that a later work gives whole, and makes a second way to what the menu bar and the screen Mapy already do.
+
 ## Look of the browser view: styleguide, controls, pictures and fonts
 
 The styleguide, design tokens, shared controls, accessibility, browsers and window sizes, and where pictures, icons and fonts come from.
@@ -4960,17 +5020,17 @@ In the browser view the role `positive` means that something works, is in order 
 
 In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with.
 
-The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage, on its plaque in `panel`, and so do the icons of the drawing of the map, on `tile-revealed`, and so does the icon on each plaque of a discovery in the scene, where no text stands beside it either. The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text.
+The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage, on its plaque in `panel`, and so do the icons of the drawing of the map, on `tile-revealed`, and so does the icon on each plaque of a discovery in the scene, where no text stands beside it either. The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text. The bar of the practice of a tree on the screen Postać has a darker track and a light fill with no green, as the bar of a requirement that is not met has, its track in `text-disabled`, at a contrast ratio of at least 2:1 against `panel` (D-42), and its fill in `text`, though neither is text, and the points of that tree to spend stand beside it in `text-strong`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. tests: the icons of the drawing of the map and the icon flying to the mage in `text-strong`, through the real stylesheet; the bar of a requirement of the solving condition in the header with its track in `highlight` and, while the requirement is not met, its fill in `text`. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** invariants: design-token-contrast. tests: the icons of the drawing of the map and the icon flying to the mage in `text-strong`, through the real stylesheet; the bar of a requirement of the solving condition in the header with its track in `highlight` and, while the requirement is not met, its fill in `text`; the bar of the practice of a tree on the screen Postać with its track in `text-disabled` and its fill in `text`, and the points of the tree in `text-strong`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
   - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the plaque of the icon flying to the mage in `panel`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
   - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`.
 - **Origin:** none
 
-*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The roles come from the greys of loop: the white of names and the near-white of numbers merge into `text-strong`, and `text-label` takes the grey of labels and inactive tabs and the uses of loop's darkest grey for dates and sections, while that grey's uses at things that cannot be used now go to `text-disabled`. A control has no background of its own, so the one under it shows, and its text is `text`; under the pointer it takes `highlight` and its frame stays. A chosen button or tab is shown by `selected`, not by the green of `positive`, which says that something works or is active, not that something is chosen. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. A frame or a bar at a text takes the colour of that text and is part of it, so the frame of the main button of a form and the bar at a sentence, like the frame of a wrong field in the colour of its message, give no role of the kind text a use outside text, and the text of a secondary action in `text-secondary` is a note like any other. Accepted with it: the backgrounds of the two rules take the green and the blue of loop on the panel with their opacity lowered only as far as the text threshold needs, so they are paler than loop's and the margin over the threshold is small, a later change of the panel or of a label may call for a new value, and the dark bar has the same value as `highlight`, `divider` and `tile-edge` and is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar, and on a marked row the bar looks like none. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. The icon in the badge is lighter than the same icon in a cell of the rule picker that is not chosen, where it stands by ordinary text. Accepted with it: a role of the kind text stands at something that is no text, and the icons of the drawing of the map stand in `text-strong` on `tile-revealed`, a background outside the five that the contrast of the roles is held for, so a later change of `tile-revealed` can lessen their legibility with no check showing it.
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The roles come from the greys of loop: the white of names and the near-white of numbers merge into `text-strong`, and `text-label` takes the grey of labels and inactive tabs and the uses of loop's darkest grey for dates and sections, while that grey's uses at things that cannot be used now go to `text-disabled`. A control has no background of its own, so the one under it shows, and its text is `text`; under the pointer it takes `highlight` and its frame stays. A chosen button or tab is shown by `selected`, not by the green of `positive`, which says that something works or is active, not that something is chosen. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. A frame or a bar at a text takes the colour of that text and is part of it, so the frame of the main button of a form and the bar at a sentence, like the frame of a wrong field in the colour of its message, give no role of the kind text a use outside text, and the text of a secondary action in `text-secondary` is a note like any other. Accepted with it: the backgrounds of the two rules take the green and the blue of loop on the panel with their opacity lowered only as far as the text threshold needs, so they are paler than loop's and the margin over the threshold is small, a later change of the panel or of a label may call for a new value, and the dark bar has the same value as `highlight`, `divider` and `tile-edge` and is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar, and on a marked row the bar looks like none. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. The bar of the practice of a tree takes a darker track and a light fill, as the light bar on a dark track of the skills of loop does, and the points to spend take the light text of names, so that they are looked at first. Its track takes `text-disabled`, the darkest grey of the roles that stands out from the `panel` of the area the bar stands in, since a track in `highlight` there, at about 1.2:1, can hardly be seen while a tree has no practice yet, and the bar stands twice as thick as the bar of the header, as the bar over the mage's head does. Accepted with it: `text-disabled` stands at a track, which is no text and nothing that cannot be used now, and the bar of a tree differs from the bar of a requirement in the header in the grey of its track. The icon in the badge is lighter than the same icon in a cell of the rule picker that is not chosen, where it stands by ordinary text. Accepted with it: a role of the kind text stands at something that is no text, and the icons of the drawing of the map stand in `text-strong` on `tile-revealed`, a background outside the five that the contrast of the roles is held for, so a later change of `tile-revealed` can lessen their legibility with no check showing it.
 *Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well; the icon and the bar laid straight on the picture of the forest — on a light tree the icon could vanish, and no test would catch it; the line of a chosen tab in `positive`, as the current item of the menu in loop — `positive` is a colour of text that says that something works or is active, not that something is chosen; changing this decision to give frames and bars a place of their own — a line at a text is part of that text; writing nothing about frames and bars — the question would come up in the review of a change and could stop it; the icons of the drawing of the map in `text` — darker than the icon in the row of a rule and in the badge, with a contrast against `tile-revealed` of 3.27:1 in place of 4.39:1, though still over the 3:1 asked of an element that is no text.
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
@@ -4990,7 +5050,7 @@ In the browser view `character` means that here is the character and here it is 
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
-Every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
+Every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold as text, while as the track of the bar of practice of a tree on the screen Postać it has a contrast ratio of at least 2:1 against `panel`, a pair of its own and a floor of the product that no criterion of WCAG sets. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
 
 - **Scope:** browser-view
 - **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-three-flashes · wcag-focus-visible
@@ -5000,7 +5060,7 @@ Every screen of the browser view keeps four success criteria of WCAG 2.2, the W3
   - violates: a review that holds a change back for a success criterion of WCAG other than the four, without a change of this decision; an effect that lights and darkens the whole area of the scene, or a large part of it, more than three times in a second.
 - **Origin:** none
 
-*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. Four criteria are taken for now, and it is not known when the rest will be taken up. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with. A scene scaled up passes the area below which flashing is allowed, and the setting for reduced motion does not answer that, so the criterion on flashing is kept as its own. The frame of a discovery's plaque is a part of a graphic that identifies what the plaque shows, so it takes the threshold of 3:1, which `discovery` has with room on `panel`.
+*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. Four criteria are taken for now, and it is not known when the rest will be taken up. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with. A scene scaled up passes the area below which flashing is allowed, and the setting for reduced motion does not answer that, so the criterion on flashing is kept as its own. The frame of a discovery's plaque is a part of a graphic that identifies what the plaque shows, so it takes the threshold of 3:1, which `discovery` has with room on `panel`. The track of the bar of practice of a tree needs no threshold of WCAG, since the numbers of the tree stand beside the bar, but its empty run is what shows a new character's trees as bars, and a grey moved toward `panel` would fade them with every check passing; so the pair keeps a floor of 2:1, below the 2.3:1 it had when the floor was set, which does not reach the text that `text-disabled` writes elsewhere.
 *Rejected:* the whole of WCAG 2.2 at level AA — about fifty requirements, more than the product takes on for now.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
@@ -5087,7 +5147,7 @@ In the file of design tokens of the browser view, each role of its styleguide's 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: each role whose contrast the design tokens keep — the roles of the kind text but `text-disabled`, the five backgrounds, `control-border`, `focus`, `character`, `tile-revealed` and `tile-hidden` — read from the custom property of its own name. For the other roles and every other value of appearance, an agent compares a change with the part no test holds:
+- **Verification:** tests: each role whose contrast the design tokens keep — the roles of the kind text, `text-disabled` for the one pair of the track of the bar of practice of a tree, the five backgrounds, `control-border`, `focus`, `character`, `tile-revealed` and `tile-hidden` — read from the custom property of its own name. For the other roles and every other value of appearance, an agent compares a change with the part no test holds:
   - complies: `--divider` for the role `divider`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
   - violates: `--space-8` for the spacing of 8 px; `--grey-700` for the role `divider`.
 - **Origin:** Decision 1 of the spec in `docs/task-cycles/styleguide-loop2/spec.md` at commit b0c4d44
@@ -5102,8 +5162,9 @@ Pixel Crawler and LPC Wolf, and the dust of a miss and the cloud of a scuffle ar
 pack Smoke & Fire Animated Particle [16x16] recoloured to the scene's colours, all kept in
 `assets/sprites/` outside the directory the account and save server serves and copied into it when
 the application is built. The pictures in the picture band at the top of Siedziba, its clearing, fire, chest
-and characters, are sprites of the pack Pixel Crawler kept there in the same way, and the chest is
-one still picture whatever it holds. A sprite file holds pixels alone, the game credits each pack
+and characters, and the figure of a character on the screen Postać, are sprites of the pack Pixel
+Crawler kept there in the same way, the figure being the mage in the frames of its idle sheet, the
+picture a character of the band stands in, and the chest is one still picture whatever it holds. A sprite file holds pixels alone, the game credits each pack
 whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and
 the character of the scene is the mage of Pixel Crawler.
 
@@ -5119,7 +5180,9 @@ frost by at least 3:1 against the snow it lies on.
 - **Relations:** none
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
   the files of the smaller flame, of the mage's death, of the wolf and of the clearing and
-  chest of the picture band holding pixels alone; the chest of the picture band one still picture, the same empty and full; the
+  chest of the picture band holding pixels alone; the chest of the picture band one still picture, the same empty and full;
+  the figure of a character on the screen Postać drawn from the same idle sheet as that character in
+  the picture band; the
   credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
   having an assignment to a pack in the table of its test, which does not judge whether the
   assignment is right, and every pack that table assigns a file to, where its licence asks for a
@@ -5203,14 +5266,17 @@ the scene would wait.
 
 ### D-272 — Where may a picture of the game stand?
 
-A picture of the game stands behind the login card, in a band at the top of Siedziba and as the
-scene, and text stands on a solid background, never on a picture.
+A picture of the game stands behind the login card, in a band at the top of Siedziba, as the
+scene and as the figure of a character at the top of the screen Postać, which stands with no
+clearing under it, on the flat background of its area, and text stands on a solid background, never
+on a picture.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
 - **Verification:** tests: the scene of a map run and the picture band at the top of Siedziba, the band over
-  the screen's panel and its heading, each a picture with no text in it. For the login card, text
+  the screen's panel and its heading, and the figure of a character on the screen Postać, each a
+  picture with no text in it. For the login card, text
   laid over a picture from outside it and the screens with no picture, an agent compares a change
   with the part no invariant and no test holds:
   - complies: the screen of the login card with the picture over the whole window and every sentence
@@ -5224,8 +5290,13 @@ scene, and text stands on a solid background, never on a picture.
 *Rationale:* the game stops looking like a form through pictures where there is nothing to read,
 and contrast stays what its check measures, since that check knows colours and not what lies under
 text. A picture stands beside the text and never under it, so the thresholds of contrast of D-42
-stay as they are, and the text stays on opaque panels.
-*Rejected:* a half-transparent card over a picture — the check of contrast reads colour values, not
+stay as they are, and the text stays on opaque panels. The figure of a character gives the screen
+Postać a picture of the character it speaks of, beside its name. Accepted with it: a pixel picture
+with an outline standing on a flat background may look like a sticker, which the picture band of
+Siedziba avoided with its clearing (D-389).
+*Rejected:* the figure of the screen Postać standing on a small piece of clearing composed of the
+snow and trees of the picture band — a picture to compose, whose look can be judged only once it is
+made; a half-transparent card over a picture — the check of contrast reads colour values, not
 the picture beneath; a pattern on the page's background — a form with wallpaper, the least a picture
 is worth, since the panels stand still and the form is still seen under it.
 
@@ -5929,7 +6000,7 @@ other manual map run.
 ### D-215 — Where does the player read that a manual run of a solved map pays no practice?
 
 On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”,
-below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest
+below the body row and the backpack and above the line of the practice of the run (D-201), the line „Mapa jest
 już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde
 inne.” stands in `text-secondary`.
 
@@ -5939,7 +6010,7 @@ inne.” stands in `text-secondary`.
 - **Verification:** tests: on a manual run of a solved map, from its start, after a completion and
   after a death, the line „Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze
   skrzynki i wynosi do niej jak każde inne.” in the world area, right under the body row and above
-  „Wprawa w tym przejściu”, and no such line on a map run that pays. For the role of the line, an
+  the line of the practice of the run, and no such line on a map run that pays. For the role of the line, an
   agent compares a change with the part no test holds:
   - complies: the line in `text-secondary`
   - violates: the line in `text` or in `warning`
@@ -7237,25 +7308,33 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 
 ### D-199 — What does the screen Postać show of character skills?
 
-The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and omits the next value and price.
+The screen Postać shows the section „Umiejętności” after a tree is known, and before the first known tree the section is absent. Each known tree stands as a row in columns: its name, „poziom {p}”, a bar of its practice up to its next threshold with „{wprawa} / {próg}”, or after its last threshold a full bar with „najwyższy”, and „{k} pkt” only where it has points to spend; right after the name, in the role `text`, stands „+{n} pkt czeka w pętli” where the practice waiting in the character's earning loop, the practice „Odbierz” would pay at that moment, gives the tree {n} new points to spend. The trees stand folded, a click on the row of a tree or the keyboard opens it, and each entering of the screen starts with the trees folded.
+
+Below an open tree each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-191
+- **Relations:** derives from D-191 · derives from D-189
 - **Verification:** tests: the section absent before a tree is known, then holding a row for each
-  known tree, in the words of a row before and after its last threshold; each branch's name, rank
-  and maximum rank and description, „teraz → po kupnie · cena” for a numerical branch, the price
-  alone for „Zwiad”, and „Kup” disabled for too few points and for a full branch; a full branch
-  keeping its present value alone. For the heading of the section, and the price alone of „Obchód”
-  and „Czysty płomień”, an agent compares a change with the part no test holds:
-  - complies: the section headed „Umiejętności”; „Obchód” at rank 0 reading its description and
-    „cena 3” with no before-and-after values
-  - violates: the section standing with no heading „Umiejętności”; „false → true” beside „Czysty
-    płomień”
+  known tree in its columns, its name, „poziom {p}”, the bar's share, „{wprawa} / {próg}”, the full
+  bar and „najwyższy” after the last threshold and „{k} pkt” only where points wait; „+{n} pkt czeka
+  w pętli” after the name where the practice waiting in the earning loop gives new points, the
+  practice of the map run going on included, and nowhere where it gives none or the character is in
+  no earning loop; the trees folded at each building of the screen and opened and folded again by a
+  click on the row of a tree; each branch's name, rank and maximum rank and description, „teraz → po
+  kupnie · cena” for a numerical branch, the price alone for „Zwiad”, and „Kup” disabled for too few
+  points and for a full branch; a full branch keeping its present value alone. For the heading of the
+  section, the keyboard on the fold of a row in a real browser and the price alone of „Obchód” and
+  „Czysty płomień”, an agent compares a change with the part no test holds:
+  - complies: the section headed „Umiejętności”; Enter and Space on the fold of the row of a tree
+    opening the tree in the browser, as the browser's own click of a native button; „Obchód” at
+    rank 0 reading its description and „cena 3” with no before-and-after values
+  - violates: the section standing with no heading „Umiejętności”; a key handler on the fold that
+    stops Enter or Space; „false → true” beside „Czysty płomień”
 - **Origin:** none
 
-*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
-*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note, a heading „Umiejętności” with the sentence „Postać nie zna jeszcze żadnego drzewa umiejętności.”.
+*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. A tree read as one row in columns with a bar shows at once how far each tree is from its next point, and its words stand where the eye finds them in every row, as in the predecessor game, loop, whose screen of a character was the measure of this one. Folded trees keep all the rows and their bars in sight at once, with eight trees and fourteen branches. The mark of the practice waiting in an earning loop tells the player, at the tree, that a point is already earned and waits to be taken; its words say „czeka w pętli” and not „po zatrzymaniu”, as in loop, because „Odbierz” pays that practice too (D-189), and it stands in `text`, as the practice to take stands in the report of D-246, since green says that something works or is active (D-39). Accepted with it: to buy a rank the player opens the tree first, one click more than with the branches always shown; the mark in `text` is easier to miss than a green one; no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
+*Rejected:* the same row with the bar, the trees always open — about 22 rows at eight trees and fourteen branches, on which the bars cannot be seen at once; the sentence „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}” kept with a bar beside it and the trees open — the least change, but the row stays a long sentence; no mark of the practice waiting in an earning loop — looking at a tree the player does not see that practice in the earning loop already gives points; the mark in green, as in loop — green would take a new meaning; no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note, a heading „Umiejętności” with the sentence „Postać nie zna jeszcze żadnego drzewa umiejętności.”.
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
@@ -7281,22 +7360,22 @@ The player buys a branch rank with „Kup” on the screen Postać outside a man
 
 ### D-201 — What does the map-run view show of its practice?
 
-Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
+Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. On a manual run of a solved map, which pays no practice (D-189), the line reads „Wprawa zebrana w tym przejściu, która nie wejdzie do umiejętności: {umiejętność} +{n} · …” in the role `text-secondary` instead. Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-194
 - **Verification:** tests: the words of the line, listing the skills with positive practice of the
-  run, below the body row of the map-run view, also after a death; no line for a run with no
-  positive practice, and no zero-valued skill in it. For the role `text` of the line and the line
-  staying after a completion until „Restart” or „Zakończ”, an agent compares a change with the part
-  no test holds:
-  - complies: the same positive practice line, in the role `text`, standing after a completion
-    until „Zakończ”
-  - violates: hiding the line immediately on completion; the line drawn in `text-secondary`
+  run, below the body row of the map-run view, also after a death; the words of the line of a manual
+  run of a solved map in its place, and its role `text-secondary` through the real stylesheet; the
+  line of a run that pays in the role `text` through the real stylesheet; no line for a run with no
+  positive practice, and no zero-valued skill in it. For the line staying after a completion until
+  „Restart” or „Zakończ”, an agent compares a change with the part no test holds:
+  - complies: the same positive practice line standing after a completion until „Zakończ”
+  - violates: hiding the line immediately on completion
 - **Origin:** none
 
-*Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it.
+*Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it. A manual run of a solved map pays no practice and says so in the line above (D-215), so its line of practice says what that practice is and that it does not enter the character, in the words of the section „Umiejętności” of the screen Postać, rather than read as a gain beside a sentence that denies it; it stands in `text-secondary`, as that sentence does, since it explains and pays nothing.
 *Rejected:* no run-practice line; hiding it on death; separate labels for payment and loss
 
 ### D-374 — How short can an action shortened by bought branches be?
