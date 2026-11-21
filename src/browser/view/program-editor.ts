@@ -301,6 +301,38 @@ export function ruleArrows(
 }
 
 /**
+ * „↑” or „↓” on the rule group at `index` of the program: the group swaps with its neighbour, one
+ * place at a time, as the arrows of a rule do (D-288). Null where the group is unknown or stands at
+ * the program's edge on that side. The input is kept.
+ */
+export function moveGroup(
+  program: Program,
+  index: number,
+  offset: -1 | 1,
+): Program | null {
+  const group = program.groups[index];
+  const other = index + offset;
+  if (!group || other < 0 || other >= program.groups.length) return null;
+  const groups = [...program.groups];
+  [groups[index], groups[other]] = [groups[other], groups[index]];
+  return { ...program, groups };
+}
+
+/**
+ * Whether „↑” and „↓” of the rule group at `index` act: off only where no group stands on that side
+ * of it (D-288).
+ */
+export function groupArrows(
+  program: Program,
+  index: number,
+): { up: boolean; down: boolean } {
+  return {
+    up: moveGroup(program, index, -1) !== null,
+    down: moveGroup(program, index, 1) !== null,
+  };
+}
+
+/**
  * A rule group dropped before another group, or at the end where `beforeId` is left out. Null where
  * a group is unknown, dropped before itself, or where the order does not change.
  */
