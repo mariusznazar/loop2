@@ -176,4 +176,9 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/delapouite/first-aid-kit.html",
     changes: CHANGES,
   },
+  cultist: {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/cultist.html",
+    changes: CHANGES,
+  },
 };
