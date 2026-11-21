@@ -46,7 +46,7 @@ import {
   stopLoop,
   waitingPractice,
 } from "../dist/browser/sim/loop.js";
-import { checkProgram } from "../dist/browser/sim/programs.js";
+import { appendPrograms, checkProgram } from "../dist/browser/sim/programs.js";
 import { mapRunEnded } from "../dist/browser/sim/run.js";
 import {
   branchRank,
@@ -165,31 +165,27 @@ function buyRanks(state, characterId, order, bought) {
   }
 }
 
-/** The state of a new account: one mage, the programs of the player on the list, the seed given. */
-function newAccount(player, programs, seed) {
+/**
+ * The state of a new account: one mage, the programs of the player on the list in place of the game's
+ * first program, the seed given. The programs are appended by the game's own function, so each takes
+ * the number and the content revision the game gives a program it makes.
+ */
+export function newAccount(player, programs, seed) {
   let state = newGame(GAME_MADE_AT_MS);
   if (player.knowing) state = { ...state, understanding: fullUnderstanding() };
   state = createCharacter(state, "Mag").state;
   const roles = Object.keys(programs);
-  const ids = {};
-  const list = roles.map((role, index) => {
-    ids[role] = index + 1;
-    return {
-      id: index + 1,
+  const made = appendPrograms(
+    { ...state, programs: [] },
+    roles.map((role) => ({
       name: role,
       program: checkProgram(programs[role], null),
-      contentRevision: 0,
-    };
-  });
-  return {
-    state: {
-      ...state,
-      programs: list,
-      nextProgramId: roles.length + 1,
-      lastSeed: seed,
-    },
-    ids,
-  };
+    })),
+  );
+  const ids = Object.fromEntries(
+    roles.map((role, index) => [role, made.programs[index].id]),
+  );
+  return { state: { ...made, lastSeed: seed }, ids };
 }
 
 /** The empty record of one campaign. */
