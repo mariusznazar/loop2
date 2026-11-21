@@ -4,19 +4,26 @@
  * its list changes the map and builds nothing again. A new screen copies this entry. Nothing here
  * runs when the module is imported.
  */
-import { judgeAndRemember } from "../sim/judging.js";
+import { judgeAndRecord } from "../sim/judging.js";
+import type { JudgingIds } from "../sim/judging-record.js";
 import { pickProgram } from "../sim/programs.js";
 import { stopLoop } from "../sim/loop.js";
 import type { Judging, MapId } from "../sim/types.js";
 import { createMapsScreen } from "./maps-screen.js";
+import type { JudgingCache } from "./judging-cache.js";
 import type { Screen, ScreenEntry } from "./screen-registry.js";
 import type { StateStore } from "./state-store.js";
 
 export type MapsEntryOptions = {
   readonly store: Pick<
     StateStore,
-    "get" | "moment" | "act" | "send" | "startLoop"
+    "get" | "moment" | "halted" | "act" | "send" | "startLoop"
   >;
+  /**
+   * The cache of the judgings the browser remembers (D-441). With none, no judging is remembered and
+   * no mark stands beside the list „Program:”.
+   */
+  readonly judgingCache?: JudgingCache;
 };
 
 /** The map the address names, or null under `#/mapy`. */
@@ -26,7 +33,7 @@ function mapOf(screen: Screen): MapId | null {
 
 /** Makes the entry of Mapy. */
 export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
-  const { store } = options;
+  const { store, judgingCache } = options;
   return {
     kinds: ["maps", "map"],
     lives: "while-shown",
@@ -39,6 +46,7 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
         state: store.get(),
         nowMs: store.moment(),
         mapId,
+        readRecord: (ids: JudgingIds) => judgingCache?.read(ids) ?? null,
       });
 
       /**
@@ -106,20 +114,18 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
             );
           },
           // The judging is an act of the store, so the time is counted first and the state the
-          // judging reads is the one the click met (D-409). It replaces the judging remembered
-          // for its character, program and map and changes nothing else (D-440, D-170); the
-          // judging is given back for the screen to show, with the cause and the minute of each
-          // death the state does not keep.
+          // judging reads is the one the click met (D-409). Inside the act, before the screen's one
+          // draw, its record replaces the judging the cache holds for its character, program and
+          // map (D-440, D-441), unless the store has halted (D-323). The act takes no result into the
+          // store, which saves nothing for it (D-170); the judging is given back for the screen to
+          // show, with the cause and the minute of each death the cache does not keep.
           judge(characterId, judged, programId) {
             const made: Judging[] = [];
             mapsAct(() =>
-              store.act((take) => {
-                const done = judgeAndRemember(store.get(), {
-                  mapId: judged,
-                  characterId,
-                  programId,
-                });
-                take(done);
+              store.act(() => {
+                const ids = { mapId: judged, characterId, programId };
+                const done = judgeAndRecord(store.get(), ids);
+                if (!store.halted()) judgingCache?.remember(ids, done.record);
                 made.push(done.judging);
               }),
             );

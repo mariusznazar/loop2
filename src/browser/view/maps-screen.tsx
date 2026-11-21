@@ -22,7 +22,8 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import { judgingMark } from "../sim/judging-record.js";
+import { markOfRecord } from "../sim/judging-record.js";
+import type { JudgingIds, JudgingRecord } from "../sim/judging-record.js";
 import { rowProgram } from "../sim/programs.js";
 import type {
   Character,
@@ -69,6 +70,11 @@ export type MapsScreenProps = {
   nowMs: number;
   /** The map the address names, or null under `#/mapy`. */
   mapId: MapId | null;
+  /**
+   * The record of the judging remembered for a character, program and map, or null where none is. The
+   * screen reads it at each draw, so a judging made in another tab shows at the next one (D-441).
+   */
+  readRecord(ids: JudgingIds): JudgingRecord | null;
 };
 
 /** What the screen asks of the page; the page turns each into a call of the simulation. */
@@ -86,7 +92,7 @@ export type MapsScreenControls = {
   stop(characterId: CharacterId): void;
   /**
    * Judges the program of a character's list „Program:” on the map of the card and gives the judging
-   * back (D-439); the page counts the time first and remembers the judging in the game state (D-409, D-440).
+   * back (D-439); the page counts the time first and remembers the judging's record (D-409, D-440, D-441).
    */
   judge(characterId: CharacterId, mapId: MapId, programId: ProgramId): Judging;
 };
@@ -358,11 +364,8 @@ function CharacterRow({
     held !== undefined && held.mapId === mapId && held.programId === program.id
       ? held
       : undefined;
-  const mark = judgingMark(
-    state.judgings,
-    { characterId: id, programId: program.id, mapId },
-    state.team.chest,
-  );
+  const triple = { characterId: id, programId: program.id, mapId };
+  const mark = markOfRecord(state, triple, props.readRecord(triple));
   const judgeText = waiting ? JUDGING_WAITING_TEXT : JUDGE_BUTTON_TEXT;
   // The first click of „Puść w pętlę” found a seed unsolved: the sentence stands over the button, which reads
   // „Puść mimo to” and starts the earning loop at its click (D-243).

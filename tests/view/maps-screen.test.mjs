@@ -19,7 +19,8 @@ import {
   send,
   setPaused,
 } from "../../dist/browser/sim/game.js";
-import { createProgram } from "../../dist/browser/sim/programs.js";
+import { createProgram, editProgram } from "../../dist/browser/sim/programs.js";
+import { openJudgingCache } from "../../dist/browser/view/judging-cache.js";
 import { createMapsEntry } from "../../dist/browser/view/maps-entry.js";
 import { createMapsScreen } from "../../dist/browser/view/maps-screen.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
@@ -85,7 +86,67 @@ const LOOP = {
   run: { mapId: "forest", minute: 212 },
 };
 
-const propsOf = (state, mapId = null, nowMs = NOW) => ({ state, nowMs, mapId });
+/**
+ * What the page gives the screen: the state, the moment, the map and the way to read the record of a
+ * triple, from `cache` (the judging cache the entry would give) or, with none, from nowhere.
+ */
+const propsOf = (state, mapId = null, nowMs = NOW, cache = null) => ({
+  state,
+  nowMs,
+  mapId,
+  readRecord: (ids) => cache?.read(ids) ?? null,
+});
+
+const ACCOUNT = "acct-1";
+const MADE = 1_000;
+
+/** A storage backed by a map, as the browser's `Storage` answers; `held` is the map. */
+function mapStorage() {
+  const held = new Map();
+  return {
+    held,
+    get length() {
+      return held.size;
+    },
+    key: (index) => [...held.keys()][index] ?? null,
+    getItem: (key) => (held.has(key) ? held.get(key) : null),
+    setItem: (key, value) => void held.set(key, String(value)),
+    removeItem: (key) => void held.delete(key),
+  };
+}
+
+/**
+ * The judging cache of the account `accountId`'s game made at `madeAtMs`, opened on `storage` with
+ * `state` as the loaded game.
+ */
+function cacheOn(
+  storage,
+  state,
+  { accountId = ACCOUNT, madeAtMs = MADE, afterRefusedSave = false } = {},
+) {
+  return openJudgingCache({
+    accountId,
+    madeAtMs,
+    state,
+    afterRefusedSave,
+    storage,
+  });
+}
+
+/**
+ * The record of a judging whose twelve results are of `kinds`, made for the program and the character
+ * as `state` holds them.
+ */
+function recordIn(state, [characterId, programId], kinds, equipment = []) {
+  const character = state.team.characters.find(({ id }) => id === characterId);
+  const saved = state.programs.find(({ id }) => id === programId);
+  return {
+    results: kinds,
+    equipment,
+    contentRevision: saved.contentRevision,
+    generation: character.generation,
+  };
+}
 
 /**
  * Builds the screen in the page's body. `calls` lists what the screen handed the page; `reaction`
@@ -901,14 +962,6 @@ const kindsOf = (solvedCount) =>
     at < solvedCount ? "solved" : "undecided",
   );
 
-/** `state` holding the remembered judging of the triple, as the game state keeps it. */
-function withRemembered(state, [characterId, programId, mapId], held) {
-  return {
-    ...state,
-    judgings: { [characterId]: { [programId]: { [mapId]: held } } },
-  };
-}
-
 const judgeButton = (member) => member.querySelector(".maps-who-judge button");
 const resultOf = (member) => member.querySelector(".judging-result");
 const ROLES = ["positive", "danger", "warning"];
@@ -1163,11 +1216,11 @@ test("beside the list „Program:” stands the badge for twelve of twelve and �
         const mark = member.querySelector(".maps-who-program .maps-who-mark");
         return mark === null ? null : [mark.textContent, roleOf(mark)];
       });
-    const state = withRemembered(base, [1, first.id, "forest"], {
-      results: kindsOf(12),
-      equipment: [],
-    });
-    const { screen } = await mount(page, propsOf(state, "forest"));
+    const cache = cacheOn(mapStorage(), base);
+    const on = (state, mapId) => propsOf(state, mapId, NOW, cache);
+    const ids = (programId) => ({ characterId: 1, programId, mapId: "forest" });
+    cache.remember(ids(first.id), recordIn(base, [1, first.id], kindsOf(12)));
+    const { screen } = await mount(page, on(base, "forest"));
     assert.deepEqual(
       marks(),
       [["szczelny: 12 z 12", "positive"], null],
@@ -1178,37 +1231,22 @@ test("beside the list „Program:” stands the badge for twelve of twelve and �
       null,
     );
 
-    const lower = withRemembered(base, [1, first.id, "forest"], {
-      results: kindsOf(9),
-      equipment: [],
-    });
-    await inAct(() => screen.update(propsOf(lower, "forest")));
+    cache.remember(ids(first.id), recordIn(base, [1, first.id], kindsOf(9)));
+    await inAct(() => screen.update(on(base, "forest")));
     assert.deepEqual(marks(), [["9 z 12", ""], null], "„{n} z 12” in text");
 
     // The list shows another program: the mark of the program judged does not stand, and the other
     // program has none.
-    await inAct(() =>
-      screen.update(
-        propsOf({ ...lower, pickedPrograms: { 1: second.id } }, "forest"),
-      ),
-    );
+    const picked = { ...base, pickedPrograms: { 1: second.id } };
+    await inAct(() => screen.update(on(picked, "forest")));
     assert.deepEqual(marks(), [null, null]);
-    const both = {
-      ...lower,
-      pickedPrograms: { 1: second.id },
-      judgings: {
-        1: {
-          [first.id]: { forest: { results: kindsOf(9), equipment: [] } },
-          [second.id]: { forest: { results: kindsOf(12), equipment: [] } },
-        },
-      },
-    };
-    await inAct(() => screen.update(propsOf(both, "forest")));
+    cache.remember(ids(second.id), recordIn(base, [1, second.id], kindsOf(12)));
+    await inAct(() => screen.update(on(picked, "forest")));
     assert.deepEqual(marks(), [["szczelny: 12 z 12", "positive"], null]);
 
     // The judging was made on Las: no mark on another map, none on Siedziba's lists, which this
     // screen alone draws.
-    await inAct(() => screen.update(propsOf(both, "forestDeep")));
+    await inAct(() => screen.update(on(picked, "forestDeep")));
     assert.deepEqual(marks(), [null, null]);
   });
 });
@@ -1219,36 +1257,33 @@ test("where the chest holds less than the judging took the mark keeps its count 
   // decision: D-440 "Where the chest holds less of an item than the judging took, the result stays with „oceniono z zapasem, którego dziś nie ma w skrzynce” beside it and the badge goes out, „12 z 12” standing in its place."
   await withPage(async (page) => {
     const base = solved(teamOf("Ala"));
-    const held = {
-      results: kindsOf(12),
-      equipment: [{ item: "berry", count: 4 }],
-    };
-    const remembered = withRemembered(
-      base,
-      [1, base.programs[0].id, "forest"],
-      held,
+    const cache = cacheOn(mapStorage(), base);
+    const programId = base.programs[0].id;
+    cache.remember(
+      { characterId: 1, programId, mapId: "forest" },
+      recordIn(base, [1, programId], kindsOf(12), [
+        { item: "berry", count: 4 },
+      ]),
     );
+    const remembered = base;
+    const on = (state) => propsOf(state, "forest", NOW, cache);
     const mark = () => text(page.root, ".maps-who-program .maps-who-mark");
     const note = () =>
       page.root.querySelector(".maps-who-program .maps-who-mark-note");
     const { screen } = await mount(
       page,
-      propsOf(withChest(remembered, { berry: 10 }), "forest"),
+      on(withChest(remembered, { berry: 10 })),
     );
     assert.equal(mark(), "szczelny: 12 z 12");
     assert.equal(note(), null);
-    await inAct(() =>
-      screen.update(propsOf(withChest(remembered, { berry: 4 }), "forest")),
-    );
+    await inAct(() => screen.update(on(withChest(remembered, { berry: 4 }))));
     assert.equal(
       mark(),
       "szczelny: 12 z 12",
       "the chest holds just what it took",
     );
     assert.equal(note(), null);
-    await inAct(() =>
-      screen.update(propsOf(withChest(remembered, { berry: 3 }), "forest")),
-    );
+    await inAct(() => screen.update(on(withChest(remembered, { berry: 3 }))));
     assert.equal(mark(), "12 z 12", "the badge goes out, the count stays");
     assert.equal(
       text(page.root, ".maps-who-mark-note"),
@@ -1263,9 +1298,7 @@ test("where the chest holds less than the judging took the mark keeps its count 
       "",
       "the count is in text, the badge's role gone",
     );
-    await inAct(() =>
-      screen.update(propsOf(withChest(remembered, { berry: 9 }), "forest")),
-    );
+    await inAct(() => screen.update(on(withChest(remembered, { berry: 9 }))));
     assert.equal(mark(), "szczelny: 12 z 12");
     assert.equal(note(), null);
   });
@@ -1279,17 +1312,21 @@ test("the parts of the judging take the role of the styleguide from the styleshe
   // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
   const base = solved(teamOf("Ala"));
   const programId = base.programs[0].id;
-  const remembered = (kinds, equipment = []) =>
-    withRemembered(base, [1, programId, "forest"], {
-      results: kinds,
-      equipment,
-    });
+  /** The props of the screen on `state`, its cache holding a judging of `kinds` for Ala's program on Las. */
+  const remembered = (kinds, equipment = [], state = base) => {
+    const cache = cacheOn(mapStorage(), base);
+    cache.remember(
+      { characterId: 1, programId, mapId: "forest" },
+      recordIn(base, [1, programId], kinds, equipment),
+    );
+    return propsOf(state, "forest", NOW, cache);
+  };
   /** Mounts the screen on a page that has the game's stylesheets and gives `colour(selector)`. */
-  async function styled(page, state, reaction) {
+  async function styled(page, props, reaction) {
     const style = page.document.createElement("style");
     style.textContent = gameStylesheetText();
     page.document.head.append(style);
-    const mounted = await mount(page, propsOf(state, "forest"), reaction);
+    const mounted = await mount(page, props, reaction);
     const colour = (selector, from = page.root) =>
       page.window.getComputedStyle(from.querySelector(selector)).color;
     return { ...mounted, colour, ala: () => members(page.root)[0] };
@@ -1319,7 +1356,11 @@ test("the parts of the judging take the role of the styleguide from the styleshe
   await withPage(async (page) => {
     const { colour } = await styled(
       page,
-      withChest(remembered(kindsOf(12), [{ item: "berry", count: 4 }]), {}),
+      remembered(
+        kindsOf(12),
+        [{ item: "berry", count: 4 }],
+        withChest(base, {}),
+      ),
     );
     assert.equal(colour(".maps-who-mark"), "var(--text)", "no badge");
     assert.equal(
@@ -1380,54 +1421,109 @@ test("a screen taken down while its button waits never asks the page to judge", 
   });
 });
 
+// --- the judging remembered in the cache ---------------------------------------------------
+
+/**
+ * A stand-in of the state store: `act` runs its body with a `take` that records what is taken, and
+ * `halted` answers as the store does after `halt()` (D-323). `log` lists the calls the entry made.
+ */
+function standInStore(initial, { halted = false } = {}) {
+  const log = [];
+  const taken = [];
+  let state = initial;
+  return {
+    log,
+    taken,
+    get: () => state,
+    moment: () => NOW,
+    halted: () => halted,
+    act(body) {
+      log.push("act");
+      body((result) => {
+        taken.push(result);
+        state = result.state;
+      });
+    },
+    send: () => log.push("send"),
+    startLoop: (ids) => log.push(["startLoop", ids]),
+  };
+}
+
+/** Builds the entry of Mapy on Las in the page, with the judging cache `cache` or none. */
+async function enterMaps(page, store, cache = null) {
+  let instance = null;
+  await inAct(() => {
+    instance = createMapsEntry({
+      store,
+      ...(cache === null ? {} : { judgingCache: cache }),
+    }).build(
+      {
+        current: () => ({ kind: "map", mapId: "forest" }),
+        show() {},
+        focusShown() {},
+        focusIfLost() {},
+      },
+      { kind: "map", mapId: "forest" },
+    );
+    page.root.append(instance.element);
+  });
+  return instance;
+}
+
+const markOf = (member) =>
+  text(member, ".maps-who-program .maps-who-mark") ?? null;
+
+/** Presses the judge button of the first character and waits until the store has been asked to act. */
+async function judgeFirst(page, store) {
+  const before = store.log.length;
+  await press(judgeButton(members(page.root)[0]));
+  await until(() => store.log.length > before);
+}
+
 // D-409, D-170, D-439: the entry makes the judging an act of the store, which counts the time
-// first, and the act replaces the judging remembered for the triple and changes nothing else.
-test("the entry judges through the store's act, remembers the judging for the character, program and map, and changes nothing else of the game state", async () => {
+// first; the act gives the record of the judging to the cache and takes no result into the store.
+test("the entry judges through the store's act, gives the record of the judging for the character, program and map to the cache, and takes no result into the store", async () => {
   // decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation."
   // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
   // decision: D-170 "The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map."
   await withPage(async (page) => {
     const before = createProgram(teamOf("Ala")).state;
-    let state = { ...before, pickedPrograms: { 1: before.programs[1].id } };
-    const log = [];
-    const store = {
-      get: () => state,
-      moment: () => NOW,
-      act(body) {
-        log.push("act");
-        body((result) => {
-          state = result.state;
-        });
-      },
-      send: () => log.push("send"),
-      startLoop: () => log.push("startLoop"),
-    };
-    const picked = state;
-    let instance = null;
-    await inAct(() => {
-      instance = createMapsEntry({ store }).build(
-        {
-          current: () => ({ kind: "map", mapId: "forest" }),
-          show() {},
-          focusShown() {},
-          focusIfLost() {},
-        },
-        { kind: "map", mapId: "forest" },
-      );
-      page.root.append(instance.element);
-    });
-    const ala = members(page.root)[0];
-    await press(judgeButton(ala));
-    await until(() => log.length > 0);
+    const state = { ...before, pickedPrograms: { 1: before.programs[1].id } };
+    const store = standInStore(state);
+    const storage = mapStorage();
+    const cache = cacheOn(storage, state);
+    const instance = await enterMaps(page, store, cache);
+    assert.equal(markOf(members(page.root)[0]), null, "no judging yet");
+    await judgeFirst(page, store);
 
-    assert.deepEqual(log, ["act"], "one act of the store, no send, no loop");
-    const remembered = state.judgings[1][picked.programs[1].id].forest;
-    assert.equal(remembered.results.length, 12);
     assert.deepEqual(
-      { ...state, judgings: picked.judgings },
-      picked,
-      "nothing of the game state but the judgings changed: the pick, the program used last and the rest stay",
+      store.log,
+      ["act"],
+      "one act of the store, no send, no loop",
     );
+    assert.equal(
+      store.taken.length,
+      0,
+      "no result is taken, so nothing is saved",
+    );
+    assert.ok(store.get() === state, "the game state is the very state it was");
+    const remembered = cache.read({
+      characterId: 1,
+      programId: before.programs[1].id,
+      mapId: "forest",
+    });
+    assert.equal(remembered.results.length, 12);
+    assert.equal(
+      remembered.contentRevision,
+      before.programs[1].contentRevision,
+      "the record holds the content revision of the program judged",
+    );
+    assert.equal(
+      remembered.generation,
+      state.team.characters[0].generation,
+      "the record holds the generation number of the character judged",
+    );
+    assert.equal(storage.held.size, 1, "one stored value for the triple");
     const shown = all(resultOf(members(page.root)[0]), ".judging-row").map(
       (row) =>
         ({ positive: "solved", danger: "death", warning: "undecided" })[
@@ -1437,7 +1533,7 @@ test("the entry judges through the store's act, remembers the judging for the ch
     assert.deepEqual(
       shown,
       remembered.results,
-      "the result under the character is the judging the state remembers",
+      "the result under the character is the judging the cache holds",
     );
     const solvedCount = shown.filter((kind) => kind === "solved").length;
     assert.equal(
@@ -1445,9 +1541,187 @@ test("the entry judges through the store's act, remembers the judging for the ch
       `Ocena na 12 ziarnach: ${solvedCount} z 12 rozwiązanych`,
     );
     assert.equal(
-      text(members(page.root)[0], ".maps-who-program .maps-who-mark"),
+      markOf(members(page.root)[0]),
       solvedCount === 12 ? "szczelny: 12 z 12" : `${solvedCount} z 12`,
-      "the act drew the screen from the state it made, so the mark stands beside the list",
+      "the act gave the record to the cache before the screen's draw, so the mark stands beside the list",
+    );
+    await inAct(() => instance.dispose());
+  });
+});
+
+// D-441: the stored judging is read again by a screen built anew on the same storage, and an empty
+// storage shows no mark until a judging is made.
+test("a judging remembered is shown again by a screen built anew on the same storage, and an empty storage shows no mark until a judging", async () => {
+  // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala"));
+    const storage = mapStorage();
+    const firstStore = standInStore(state);
+    const judged = await enterMaps(page, firstStore, cacheOn(storage, state));
+    assert.equal(markOf(members(page.root)[0]), null, "an empty storage");
+    await judgeFirst(page, firstStore);
+    const mark = markOf(members(page.root)[0]);
+    assert.ok(mark !== null, "precondition: the judging gives a mark");
+    await inAct(() => judged.dispose());
+
+    // A reload: a new cache is opened on the same storage, a new store and a new screen are built.
+    const reloadedStore = standInStore(state);
+    const reloaded = await enterMaps(
+      page,
+      reloadedStore,
+      cacheOn(storage, state),
+    );
+    assert.equal(markOf(members(page.root)[0]), mark);
+    assert.deepEqual(reloadedStore.log, [], "no judging was made again");
+    await inAct(() => reloaded.dispose());
+  });
+});
+
+// D-441: a judging of another account, or of another game of the account, stands beside no list.
+test("the same triple judged under another account or in another game made at another moment shows no mark", async () => {
+  // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala"));
+    const storage = mapStorage();
+    const ids = {
+      characterId: 1,
+      programId: state.programs[0].id,
+      mapId: "forest",
+    };
+    cacheOn(storage, state).remember(
+      ids,
+      recordIn(state, [1, state.programs[0].id], kindsOf(12)),
+    );
+    const { screen } = await mount(
+      page,
+      propsOf(state, "forest", NOW, cacheOn(storage, state)),
+    );
+    assert.equal(
+      markOf(members(page.root)[0]),
+      "szczelny: 12 z 12",
+      "precondition: the same account and game see the judging",
+    );
+    for (const other of [{ accountId: "acct-2" }, { madeAtMs: MADE + 1 }]) {
+      await inAct(() =>
+        screen.update(
+          propsOf(state, "forest", NOW, cacheOn(storage, state, other)),
+        ),
+      );
+      assert.equal(markOf(members(page.root)[0]), null, JSON.stringify(other));
+    }
+  });
+});
+
+// D-441, D-442: an edit of the program that changes its content raises its content revision, and the
+// judging made for the earlier revision stands no more, also where the content is changed back.
+test("no mark stands after an edit of the program that changes its content, also after the content is changed back, nor after the character's generation number grows", async () => {
+  // decision: D-441 "A remembered judging stands beside the list „Program:” only while its character is on the team at its generation number and its program is on the player's list at its content revision."
+  await withPage(async (page) => {
+    const base = solved(teamOf("Ala"));
+    const saved = base.programs[0];
+    const cache = cacheOn(mapStorage(), base);
+    cache.remember(
+      { characterId: 1, programId: saved.id, mapId: "forest" },
+      recordIn(base, [1, saved.id], kindsOf(12)),
+    );
+    const on = (state) => propsOf(state, "forest", NOW, cache);
+    const { screen } = await mount(page, on(base));
+    assert.equal(
+      markOf(members(page.root)[0]),
+      "szczelny: 12 z 12",
+      "precondition: the judging stands for the revision it was made at",
+    );
+    const changed = editProgram(base, saved.id, {
+      ...saved.program,
+      tripPlan: { take: [{ item: "stick", count: 1 }], bring: [] },
+    }).state;
+    await inAct(() => screen.update(on(changed)));
+    assert.equal(markOf(members(page.root)[0]), null, "the content changed");
+    const back = editProgram(changed, saved.id, saved.program).state;
+    assert.deepEqual(back.programs[0].program, saved.program);
+    await inAct(() => screen.update(on(back)));
+    assert.equal(
+      markOf(members(page.root)[0]),
+      null,
+      "the content changed back",
+    );
+
+    const died = {
+      ...base,
+      team: {
+        ...base.team,
+        characters: base.team.characters.map((character) => ({
+          ...character,
+          generation: character.generation + 1,
+        })),
+      },
+    };
+    await inAct(() => screen.update(on(died)));
+    assert.equal(
+      markOf(members(page.root)[0]),
+      null,
+      "the character's generation grew",
+    );
+  });
+});
+
+// D-441: the screen reads the cache at each draw, so a judging another tab wrote shows at the next draw.
+test("a judging another tab wrote to the storage shows at the screen's next draw", async () => {
+  // decision: D-440 "Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise."
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala"));
+    const storage = mapStorage();
+    const instance = await enterMaps(
+      page,
+      standInStore(state),
+      cacheOn(storage, state),
+    );
+    assert.equal(markOf(members(page.root)[0]), null);
+    cacheOn(storage, state).remember(
+      { characterId: 1, programId: state.programs[0].id, mapId: "forest" },
+      recordIn(state, [1, state.programs[0].id], kindsOf(12)),
+    );
+    await inAct(() => instance.drawReading());
+    assert.equal(markOf(members(page.root)[0]), "szczelny: 12 z 12");
+    await inAct(() => instance.dispose());
+  });
+});
+
+// D-323: after the store has halted nothing is remembered; the result still shows under the character.
+test("a judging made after the store has halted is shown under the character and remembered nowhere", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded"
+  await withPage(async (page) => {
+    const state = solved(teamOf("Ala"));
+    const storage = mapStorage();
+    const store = standInStore(state, { halted: true });
+    const instance = await enterMaps(page, store, cacheOn(storage, state));
+    await judgeFirst(page, store);
+    assert.equal(storage.held.size, 0, "nothing stored");
+    assert.equal(
+      markOf(members(page.root)[0]),
+      null,
+      "no mark beside the list",
+    );
+    assert.equal(
+      all(resultOf(members(page.root)[0]), ".judging-row").length,
+      12,
+      "the result of the judging still stands under the character",
+    );
+    await inAct(() => instance.dispose());
+  });
+});
+
+// The cache is an option of the entry until the page gives it: with none nothing is remembered.
+test("an entry given no cache shows the result of a judging, remembers nothing and shows no mark", async () => {
+  // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
+  await withPage(async (page) => {
+    const store = standInStore(solved(teamOf("Ala")));
+    const instance = await enterMaps(page, store);
+    await judgeFirst(page, store);
+    assert.equal(markOf(members(page.root)[0]), null);
+    assert.equal(
+      all(resultOf(members(page.root)[0]), ".judging-row").length,
+      12,
     );
     await inAct(() => instance.dispose());
   });
@@ -1900,39 +2174,21 @@ test("the entry judges and remembers through one act of the store at the first c
   // decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation."
   // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
   await withPage(async (page) => {
-    let state = solved(teamOf("Ala"));
-    const log = [];
-    const store = {
-      get: () => state,
-      moment: () => NOW,
-      act(body) {
-        log.push("act");
-        body((result) => {
-          state = result.state;
-        });
-      },
-      send: () => log.push("send"),
-      startLoop: (ids) => log.push(["startLoop", ids]),
-    };
-    let instance = null;
-    await inAct(() => {
-      instance = createMapsEntry({ store }).build(
-        {
-          current: () => ({ kind: "map", mapId: "forest" }),
-          show() {},
-          focusShown() {},
-          focusIfLost() {},
-        },
-        { kind: "map", mapId: "forest" },
-      );
-      page.root.append(instance.element);
-    });
+    const state = solved(teamOf("Ala"));
+    const store = standInStore(state);
+    const { log } = store;
+    const cache = cacheOn(mapStorage(), state);
+    const instance = await enterMaps(page, store, cache);
     const programId = state.programs[0].id;
     await press(loopButton(members(page.root)[0]));
     await until(() => log.length > 0);
-    const remembered = state.judgings[1][programId].forest;
+    const remembered = cache.read({
+      characterId: 1,
+      programId,
+      mapId: "forest",
+    });
     const unsolvedSeeds = remembered.results.filter(
-      (result) => result.kind !== "solved",
+      (kind) => kind !== "solved",
     ).length;
     assert.ok(
       unsolvedSeeds > 0,
@@ -1943,9 +2199,10 @@ test("the entry judges and remembers through one act of the store at the first c
       ["act"],
       "one act judges and remembers, nothing starts",
     );
+    assert.equal(store.taken.length, 0, "the judging takes no result");
     assert.equal(remembered.results.length, 12);
     assert.equal(
-      text(members(page.root)[0], ".maps-who-program .maps-who-mark"),
+      markOf(members(page.root)[0]),
       `${12 - unsolvedSeeds} z 12`,
       "the judging is remembered beside the list",
     );
