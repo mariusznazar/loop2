@@ -1,5 +1,0 @@
-
-> loop2@0.0.0 typecheck
-> node scripts/build.mjs --check
-
-src/browser/view/probe-w2f.ts(3,38): error TS2741: Property 'judgingCache' is missing in type '{ store: Pick<StateStore, "act" | "get" | "halted" | "moment" | "send" | "startLoop">; }' but required in type 'MapsEntryOptions'.

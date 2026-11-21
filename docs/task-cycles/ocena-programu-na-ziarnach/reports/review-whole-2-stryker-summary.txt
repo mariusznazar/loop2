@@ -1,6 +1,0 @@
-[Survived] StringLiteral
-src/browser/sim/game.ts:388:7
-All files    |  95.65 |   95.65 |       22 |         0 |          1 |        0 |        0 |
- game.ts     |  91.67 |   91.67 |       11 |         0 |          1 |        0 |        0 |
- programs.ts | 100.00 |  100.00 |       11 |         0 |          0 |        0 |        0 |
-stryker exit 0

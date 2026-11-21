@@ -1,5 +1,0 @@
-
-> loop2@0.0.0 typecheck
-> node scripts/build.mjs --check
-
-src/browser/view/probe-required-option.ts(4,1): error TS2578: Unused '@ts-expect-error' directive.
