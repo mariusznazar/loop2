@@ -65,14 +65,13 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // and `resurrectionNextReturnAtMs` replace `resurrectionReadyAtMs` (D-190); the game refuses it as
 // another version since version 9.
 //
-// The document of the current version, version 9, is that of version 8 with the judgings the game
-// remembers, a key `judgings` of the game state, the two counts of each earning loop, `inARow` and
-// `loopRecord` (D-440, D-241, D-206), the content revision of each program, `contentRevision` beside its
-// number, name and content (D-442), and the real moment the game was made, `madeAtMs` (D-04, D-386). It
-// fills every optional branch of the game state, the new ones among them: judgings remembered for more
-// than one character, program and map, with a take list and each kind of result, programs of content
-// revision 0 and above, and an earning loop whose two counts stand above 0 with the run below the
-// longest. It also fills the others: a map run with a
+// The document of the current version, version 9, is that of version 8 with the two counts of each
+// earning loop, `inARow` and `loopRecord` (D-241, D-206), the content revision of each program,
+// `contentRevision` beside its number, name and content (D-442), and the real moment the game was made,
+// `madeAtMs` (D-04, D-386). It holds no judging: the browser remembers the judgings in its own storage
+// and the game state is whole without them (D-441). It fills every optional branch of the game state, the
+// new ones among them: programs of content revision 0 and above, and an earning loop whose two counts
+// stand above 0 with the run below the longest. It also fills the others: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -83,8 +82,8 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // changes nothing in it. A change of the game state's shape makes the load refuse this document; it
 // is rewritten only together with a raised version, or while no saved game state of the current
 // version exists anywhere. The content revision and the moment of the game are added to it without a
-// raise of the version, since version 9 was raised for the judgings and the counts and no saved game
-// state of version 9 exists anywhere: the change has not reached a server.
+// raise of the version, since version 9 was raised for the counts and no saved game state of version 9
+// exists anywhere: the change has not reached a server.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -739,63 +738,12 @@ const countedLoop = (loop, inARow, loopRecord) => ({
   loopRecord,
 });
 
-/** The twelve results of a judging of each kind among them, written out by hand. */
-const MIXED_RESULTS = [
-  "solved",
-  "death",
-  "undecided",
-  "solved",
-  "solved",
-  "death",
-  "solved",
-  "undecided",
-  "solved",
-  "solved",
-  "solved",
-  "solved",
-];
-const ALL_SOLVED = MIXED_RESULTS.map(() => "solved");
-
 /**
- * The judgings the document remembers (D-440): Ala's of program 1 on Skraj lasu and on Las and of
- * program 3 on Las, Ola's of program 3 on Las — głębiej, a map that is not solved. Program 2 is deleted
- * and Ewa has none. Ala's of program 1 on Las took 4 sticks and 2 berries, which the chest (2 sticks, no
- * berry) no longer holds: the load takes it, as the game makes it (D-386).
- */
-const JUDGINGS = {
-  1: {
-    1: {
-      forestEdge: { results: [...ALL_SOLVED], equipment: [] },
-      forest: {
-        results: [...MIXED_RESULTS],
-        equipment: [
-          { item: "stick", count: 4 },
-          { item: "berry", count: 2 },
-        ],
-      },
-    },
-    3: {
-      forest: {
-        results: [...ALL_SOLVED],
-        equipment: [{ item: "berry", count: 2 }],
-      },
-    },
-  },
-  2: {
-    3: {
-      forestDeep: {
-        results: [...MIXED_RESULTS],
-        equipment: [{ item: "stick", count: 1 }],
-      },
-    },
-  },
-};
-
-/**
- * The document of the current version, version 9: version 8 with the judgings of `JUDGINGS` and the two
- * counts of Ola's earning loop, 2 map runs completed in a row below its loop record of 3, the three
- * runs it completed, the content revision of each program (0 for the program made with the game, 4 for
- * the one saved four times with other content) and the real moment the game was made, before the save.
+ * The document of the current version, version 9: version 8 with the two counts of Ola's earning loop,
+ * 2 map runs completed in a row below its loop record of 3, the three runs it completed, the content
+ * revision of each program (0 for the program made with the game, 4 for the one saved four times with
+ * other content) and the real moment the game was made, before the save. It holds no judging: the
+ * browser remembers the judgings in its own storage, and the game state is whole without them (D-441).
  */
 const DOCUMENT = {
   version: 9,
@@ -806,15 +754,14 @@ const DOCUMENT = {
       { id: 3, name: "Las nocą", program: PROGRAM_3, contentRevision: 4 },
     ],
     loops: { 2: countedLoop(loopOf(2), 2, 3) },
-    judgings: JUDGINGS,
     madeAtMs: 1759900000000,
   },
 };
 
 /**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
- * earning loop whose map run is in a combat going on, no judging remembered, and the team's resurrection
- * with no use spent and no moment of the next return. The earning loop's run in a row equals its record.
+ * earning loop whose map run is in a combat going on, and the team's resurrection with no use spent and
+ * no moment of the next return. The earning loop's run in a row equals its record.
  * Its one program is of content revision 1, and its game was made at the moment 0 the new game takes where
  * the page gives none.
  */
@@ -876,7 +823,6 @@ const HEADQUARTERS = {
     },
     stoppedLoops: {},
     awayReport: [],
-    judgings: {},
     saveTimeMs: 1760000000000,
     madeAtMs: 0,
   },
@@ -1257,10 +1203,10 @@ test("the document of version 7 is refused as version, whatever its game holds",
 
 // invariant: save-version
 // D-206: the document of version 8 is discarded whole, whatever it holds, though its game state is
-// sound but for the judgings, the two counts of an earning loop, the content revision of each program
-// and the moment of the game it lacks; the current version is the one after it, raised once for the
-// changes of the shape (D-440, D-241, D-442, D-04). The same game under the current version is no
-// document of it, as it lacks the new keys, and is refused as shape.
+// sound but for the two counts of an earning loop, the content revision of each program and the
+// moment of the game it lacks; the current version is the one after it, raised once for the changes
+// of the shape (D-241, D-442, D-04). The same game under the current version is no document of it,
+// as it lacks the new keys, and is refused as shape.
 test("the document of version 8 is refused as version, whatever its game holds", () => {
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   assert.equal(DOCUMENT_V8.version, 8);
@@ -1271,7 +1217,7 @@ test("the document of version 8 is refused as version, whatever its game holds",
     "version",
   );
   assertRefused(
-    "the document of version 8 with the judgings and the counts of the current version",
+    "the document of version 8 with the counts of the current version",
     { ...structuredClone(DOCUMENT), version: 8 },
     "version",
   );
@@ -1374,9 +1320,6 @@ function loopUnder(document, key, number) {
   loop.run.character.id = number;
   document.game.loops = JSON.parse(`{"${key}":${JSON.stringify(loop)}}`);
 }
-
-/** The judging remembered for Ala, program 1 and Las in a document: it holds each kind of result and a take list. */
-const judgedOnForest = (document) => document.game.judgings[1][1].forest;
 
 /** Ola's line of the report, which is open. */
 const openLine = (document) => document.game.awayReport[2];
@@ -2551,81 +2494,23 @@ const CRAFTED = {
     (stoppedLine(document).minutes = 0),
   "two open lines of one character": (document) =>
     document.game.awayReport.push({ ...openLine(document) }),
-  // The judgings remembered (D-440, D-165, D-56): by a character of the team, a program of the list and
-  // a map of the data, each judging exactly twelve results of the three kinds and a trip list.
-  "the game without its judgings": (document) => delete document.game.judgings,
-  "judgings of none": (document) => (document.game.judgings = null),
-  "judgings as a list": (document) => (document.game.judgings = []),
-  "judgings of a character not in the team": (document) =>
-    (document.game.judgings[9] = structuredClone(document.game.judgings[2])),
-  "judgings of a character by a key with a leading zero": (document) =>
-    (document.game.judgings["02"] = structuredClone(document.game.judgings[2])),
-  "judgings by the key __proto__": (document) =>
-    (document.game.judgings = JSON.parse('{"__proto__":{}}')),
-  "a judging of a program the list lacks": (document) =>
-    (document.game.judgings[1][4] = structuredClone(
-      document.game.judgings[1][3],
-    )),
-  "a judging of a program deleted from the list": (document) =>
-    (document.game.judgings[1][2] = structuredClone(
-      document.game.judgings[1][3],
-    )),
-  "a judging of a program by a key that is no number": (document) =>
-    (document.game.judgings[1].Program = structuredClone(
-      document.game.judgings[1][3],
-    )),
-  "a judging of a map absent from the data": (document) =>
-    (document.game.judgings[1][1].desert = structuredClone(
-      judgedOnForest(document),
-    )),
-  "a judging of a map by the key __proto__": (document) =>
-    (document.game.judgings[1][1] = JSON.parse(
-      `{"__proto__":${JSON.stringify(judgedOnForest(document))}}`,
-    )),
-  "a judging of none": (document) =>
-    (document.game.judgings[1][1].forest = null),
-  "a judging with a key added": (document) =>
-    (judgedOnForest(document).minute = 243),
-  "a judging with a cause added": (document) =>
-    (judgedOnForest(document).cause = "cold"),
-  "a judging without its results": (document) =>
-    delete judgedOnForest(document).results,
-  "a judging without its equipment": (document) =>
-    delete judgedOnForest(document).equipment,
-  "a judging of eleven results": (document) =>
-    judgedOnForest(document).results.pop(),
-  "a judging of thirteen results": (document) =>
-    judgedOnForest(document).results.push("solved"),
-  "a judging with a hole among its results": (document) =>
-    delete judgedOnForest(document).results[4],
-  "a result of a kind off the list": (document) =>
-    (judgedOnForest(document).results[0] = "dead"),
-  "a result of a kind every object inherits": (document) =>
-    (judgedOnForest(document).results[0] = "toString"),
-  "a result holding the cause and the minute of a death": (document) =>
-    (judgedOnForest(document).results[1] = {
-      kind: "death",
-      cause: "cold",
-      minute: 243,
+  // The judgings the browser remembers are no part of the game state (D-441): a document holding the
+  // key, empty or filled, is of another shape.
+  "an empty judgings key added to the game": (document) =>
+    (document.game.judgings = {}),
+  "a judgings key added to the game, filled as the browser stores a judging": (
+    document,
+  ) =>
+    (document.game.judgings = {
+      1: {
+        1: {
+          forest: {
+            results: Array.from({ length: 12 }, () => "solved"),
+            equipment: [{ item: "stick", count: 4 }],
+          },
+        },
+      },
     }),
-  "a result as a number": (document) =>
-    (judgedOnForest(document).results[0] = 1),
-  "an item absent from the data in the equipment of a judging": (document) =>
-    (judgedOnForest(document).equipment[0].item = "sword"),
-  "an item twice in the equipment of a judging": (document) =>
-    judgedOnForest(document).equipment.push({ item: "stick", count: 1 }),
-  "an entry of the equipment of count 0": (document) =>
-    (judgedOnForest(document).equipment[0].count = 0),
-  "an entry of the equipment of a fractional count": (document) =>
-    (judgedOnForest(document).equipment[0].count = 2.5),
-  "an entry of the equipment of a count as text": (document) =>
-    (judgedOnForest(document).equipment[0].count = "4"),
-  "an entry of the equipment of a count beyond the safe integers": (document) =>
-    (judgedOnForest(document).equipment[0].count = 2 ** 53),
-  "an entry of the equipment with a key added": (document) =>
-    (judgedOnForest(document).equipment[0].note = "x"),
-  "the equipment of a judging as an object": (document) =>
-    (judgedOnForest(document).equipment = {}),
   // Deep nesting where a value stands.
   "the pace nested deep": (document) => (document.game.pace = nested(100000)),
   "a tile's stock nested deep": (document) =>
@@ -2650,7 +2535,7 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   // decision: D-241 "Each earning loop also holds, from its start, the number of its map runs completed in a row with no death between them, which a death that does not stop the earning loop sets back to zero, and the largest such number, its loop record"
-  // decision: D-440 "The game remembers the last judging of each character, program and map in the browser that made it, as D-441 gives: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
+  // decision: D-441 "The saved game state holds no judging, and nothing of a remembered judging enters the game state, which is whole without it."
   // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
   // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content"
   // decision: D-442 "The copy of a map run and the program of an earning loop hold content alone and carry no content revision"
@@ -3042,9 +2927,7 @@ test("a document at the edges of what the earning loops, the report and the save
   // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
   // decision: D-241 "Each earning loop also holds, from its start, the number of its map runs completed in a row with no death between them, which a death that does not stop the earning loop sets back to zero, and the largest such number, its loop record"
   const edges = {
-    // The counts an earning loop starts with, one with the run in a row at its record, one below it, and
-    // judgings at the edges of what they admit (D-440): none, a level with none left, twelve deaths,
-    // twelve undecided and every item of the data in the equipment of one.
+    // The counts an earning loop starts with, one with the run in a row at its record, one below it.
     "an earning loop's counts both 0": (document) => {
       olaLoop(document).inARow = 0;
       olaLoop(document).loopRecord = 0;
@@ -3053,25 +2936,6 @@ test("a document at the edges of what the earning loops, the report and the save
       (olaLoop(document).inARow = 3),
     "a run in a row of 0 below a loop record": (document) =>
       (olaLoop(document).inARow = 0),
-    "no judging remembered": (document) => (document.game.judgings = {}),
-    "a character with an empty record of judgings": (document) =>
-      (document.game.judgings[3] = {}),
-    "a program with no judging left": (document) =>
-      (document.game.judgings[2][1] = {}),
-    "twelve deaths judged": (document) =>
-      (judgedOnForest(document).results = MIXED_RESULTS.map(() => "death")),
-    "twelve results undecided": (document) =>
-      (judgedOnForest(document).results = MIXED_RESULTS.map(() => "undecided")),
-    "a judging that took every item of the data": (document) =>
-      (judgedOnForest(document).equipment = [
-        { item: "stick", count: 1 },
-        { item: "berry", count: 1 },
-        { item: "moss", count: 1 },
-        { item: "fiber", count: 1 },
-      ]),
-    "a judging that took more than the chest holds or the character carries": (
-      document,
-    ) => (judgedOnForest(document).equipment = [{ item: "stick", count: 500 }]),
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
     // D-386: a safe integer of any sign, as the team's moment of the next return is read, so the case
     // is no crafted document.
