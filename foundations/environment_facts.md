@@ -1024,6 +1024,12 @@ The HTML Standard has the `setItem` method of a `Storage` object throw a `QuotaE
 
 - **Source:** https://html.spec.whatwg.org/commit-snapshots/0e292f402d0c3dd17fe00c1bb2ef3a3c94cd8bce/ § 12.2.1 The Storage interface — "Throws a QuotaExceededError if the new value couldn't be set. (Setting could fail if, e.g., the user has disabled storage for the site, or if the quota has been exceeded.)"; read 2026-11-21
 
+## android-touch-target-size
+
+Android's developer guidance on making an app accessible recommends, for touch interfaces, that each interactive UI element have a touch target of at least 48dp by 48dp, and notes that for precise input, mouses and trackpads, the touch target can be smaller.
+
+- **Source:** https://developer.android.com/guide/topics/ui/accessibility/apps (archived: https://web.archive.org/web/20261116093600/https://developer.android.com/guide/topics/ui/accessibility/apps, 2026-11-16) § Use large, simple controls — "For touch interfaces, we recommend that each interactive UI element have a focusable area, or touch target size, of at least 48dpx48dp. Larger is even better." · § Use large, simple controls, Note — "For precise input (mouses and trackpads), the touch target can be smaller."; read 2026-11-21
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
