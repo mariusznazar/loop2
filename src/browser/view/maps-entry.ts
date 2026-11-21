@@ -20,10 +20,11 @@ export type MapsEntryOptions = {
     "get" | "moment" | "halted" | "act" | "send" | "startLoop"
   >;
   /**
-   * The cache of the judgings the browser remembers (D-441). With none, no judging is remembered and
-   * no mark stands beside the list „Program:”.
+   * The cache of the judgings the browser remembers (D-441): the entry reads the mark beside the list
+   * „Program:” from it and gives it each judging. A page whose storage is refused gives it a cache that
+   * keeps the judgings for the open page alone.
    */
-  readonly judgingCache?: JudgingCache;
+  readonly judgingCache: JudgingCache;
 };
 
 /** The map the address names, or null under `#/mapy`. */
@@ -46,7 +47,7 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
         state: store.get(),
         nowMs: store.moment(),
         mapId,
-        readRecord: (ids: JudgingIds) => judgingCache?.read(ids) ?? null,
+        readRecord: (ids: JudgingIds) => judgingCache.read(ids),
       });
 
       /**
@@ -125,7 +126,7 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
               store.act(() => {
                 const ids = { mapId: judged, characterId, programId };
                 const done = judgeAndRecord(store.get(), ids);
-                if (!store.halted()) judgingCache?.remember(ids, done.record);
+                if (!store.halted()) judgingCache.remember(ids, done.record);
                 made.push(done.judging);
               }),
             );

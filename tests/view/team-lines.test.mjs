@@ -10,7 +10,7 @@ import {
   loopLine,
   programPositions,
   resurrectionLine,
-  runWaitingSentence,
+  runWaitingParts,
   stoppedLoopLine,
 } from "../../dist/browser/view/team-lines.js";
 
@@ -241,12 +241,30 @@ test("the line after a stop lists the practice gathered in the skills' order, an
 // data's, that drops the second sentence every inactive send shows, and a map other than the run's.
 test("the sentence beside an inactive send names the run's map from the data and tells the player to finish the run", () => {
   // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
+  const sentence = (mapId) => {
+    const { lead, link } = runWaitingParts(mapId);
+    return lead + link;
+  };
   assert.equal(
-    runWaitingSentence("forest"),
+    sentence("forest"),
     "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
   );
   assert.equal(
-    runWaitingSentence("forestDeep"),
+    sentence("forestDeep"),
     "Przejście na mapie Las — głębiej jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
   );
+});
+
+// D-287. Catches a screen that cuts the sentence at the wrong place, or the link text a second copy that
+// a change of the wording of the sentence alone leaves behind: the screen takes the two parts from here.
+test("the sentence beside an inactive send comes in two parts, the one that names the run's map and the one that leads back to it, and the parts make the sentence", () => {
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
+  assert.deepEqual(runWaitingParts("forest"), {
+    lead: "Przejście na mapie Las jest niezakończone. ",
+    link: "Wróć do niego i je zakończ, żeby wysłać postać.",
+  });
+  assert.deepEqual(runWaitingParts("forestDeep"), {
+    lead: "Przejście na mapie Las — głębiej jest niezakończone. ",
+    link: "Wróć do niego i je zakończ, żeby wysłać postać.",
+  });
 });

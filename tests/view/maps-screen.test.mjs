@@ -1503,14 +1503,11 @@ function standInStore(initial, { halted = false } = {}) {
   };
 }
 
-/** Builds the entry of Mapy on Las in the page, with the judging cache `cache` or none. */
-async function enterMaps(page, store, cache = null) {
+/** Builds the entry of Mapy on Las in the page, with the judging cache `cache`. */
+async function enterMaps(page, store, cache) {
   let instance = null;
   await inAct(() => {
-    instance = createMapsEntry({
-      store,
-      ...(cache === null ? {} : { judgingCache: cache }),
-    }).build(
+    instance = createMapsEntry({ store, judgingCache: cache }).build(
       {
         current: () => ({ kind: "map", mapId: "forest" }),
         show() {},
@@ -1765,19 +1762,31 @@ test("a judging made after the store has halted is shown under the character and
   });
 });
 
-// The cache is an option of the entry until the page gives it: with none nothing is remembered.
-test("an entry given no cache shows the result of a judging, remembers nothing and shows no mark", async () => {
-  // decision: D-440 "A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map."
+// A browser that refuses its lasting storage gives the entry a cache with no storage (D-441): the
+// judging stands for the open page, and a screen built anew, as after a reload, shows none.
+test("an entry given a cache with no storage shows the result and the mark of a judging for the open page, and a screen built anew shows none", async () => {
+  // decision: D-441 "Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323)."
   await withPage(async (page) => {
-    const store = standInStore(solved(teamOf("Ala")));
-    const instance = await enterMaps(page, store);
+    const state = solved(teamOf("Ala"));
+    const store = standInStore(state);
+    const cache = cacheOn(null, state);
+    const instance = await enterMaps(page, store, cache);
+    assert.equal(markOf(members(page.root)[0]), null, "no judging yet");
     await judgeFirst(page, store);
-    assert.equal(markOf(members(page.root)[0]), null);
+    assert.ok(markOf(members(page.root)[0]) !== null, "the mark stands");
     assert.equal(
       all(resultOf(members(page.root)[0]), ".judging-row").length,
       12,
     );
     await inAct(() => instance.dispose());
+
+    const reloaded = await enterMaps(
+      page,
+      standInStore(state),
+      cacheOn(null, state),
+    );
+    assert.equal(markOf(members(page.root)[0]), null);
+    await inAct(() => reloaded.dispose());
   });
 });
 
