@@ -27,6 +27,7 @@ import {
   settleDeath,
 } from "../../dist/browser/sim/game.js";
 import { ABOUT } from "../../dist/browser/sim/data/about.js";
+import { judgeAndRemember } from "../../dist/browser/sim/judging.js";
 import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
@@ -2557,18 +2558,35 @@ const ACTS = [
     expected: (start) => pickProgram(start, 1, 2).state,
   },
   {
-    name: "„Puść w pętlę”",
+    // „Puść w pętlę” judges the program of the list first (D-243), and a judging is a change of the
+    // game state the game saves (D-207); the program Ala's list shows, 2, does not solve all twelve
+    // seeds of Las, so the earning loop starts at the second click, „Puść mimo to”, whose save waits
+    // behind the first until it is answered.
+    name: "„Puść w pętlę”: its judging, and the start at the second click",
     start: solvedAla,
     hash: "#/mapy/forest",
-    act: (root) =>
-      fire(buttonLabelled(root, "Puść w pętlę: Ala, mapa Las"), "click"),
-    // The start takes the real date as its time, and the list shows program 2.
+    ownActs: true,
+    act: async (root) => {
+      await press(buttonLabelled(root, "Puść w pętlę: Ala, mapa Las"));
+      await inAct(async () => mock.timers.tick(100));
+    },
     expected: (start) =>
-      startLoop(
-        start,
-        { mapId: "forest", characterId: 1, programId: 2 },
-        CLOCK_MS,
-      ).state,
+      judgeAndRemember(start, { mapId: "forest", characterId: 1, programId: 2 })
+        .state,
+    afterwards: {
+      act: (root) => press(buttonLabelled(root, "Puść mimo to: Ala, mapa Las")),
+      // The start takes the real date as its time, and the list shows program 2.
+      expected: (start) =>
+        startLoop(
+          judgeAndRemember(start, {
+            mapId: "forest",
+            characterId: 1,
+            programId: 2,
+          }).state,
+          { mapId: "forest", characterId: 1, programId: 2 },
+          CLOCK_MS,
+        ).state,
+    },
   },
   {
     // Siedziba keeps the line of an earning loop with its „Zatrzymaj”.
@@ -2680,7 +2698,8 @@ test("each act of the player that changes the game state is saved at once, and o
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
   // The clock reads no real time, so an act that starts the map run again leaves no carried time.
@@ -2689,7 +2708,16 @@ test("each act of the player that changes the game state is saved at once, and o
     value: handClock(() => 0),
   });
   try {
-    for (const { name, start, hash, ownActs, act, expected, check } of ACTS) {
+    for (const {
+      name,
+      start,
+      hash,
+      ownActs,
+      act,
+      expected,
+      check,
+      afterwards,
+    } of ACTS) {
       await onPage(async ({ root }) => {
         const held = heldClient();
         const begun = start();
@@ -2711,6 +2739,25 @@ test("each act of the player that changes the game state is saved at once, and o
             name,
           );
         else check(sent.game, begun);
+        // An act of two steps: the save of the second is held until the first is answered, as at most
+        // one save request is in flight (D-207).
+        if (afterwards) {
+          await afterwards.act(root);
+          assert.deepEqual(
+            waitingCalls(held),
+            ["saveGame"],
+            `${name}: the second step waits behind the first save`,
+          );
+          await held.answer("saveGame", { kind: "saved", revision: 5 });
+          assert.deepEqual(waitingCalls(held), ["saveGame"], name);
+          const [next] = argsOf(held, "saveGame");
+          assert.equal(next.basedOn, 5, name);
+          assert.deepEqual(
+            next.game,
+            plain({ ...afterwards.expected(begun), saveTimeMs: CLOCK_MS }),
+            name,
+          );
+        }
       });
     }
   } finally {
@@ -2765,6 +2812,25 @@ function whoOf(root, name) {
 }
 
 /**
+ * Starts the earning loop of the character named `name` on Las from the screen Mapy under `root`:
+ * „Puść w pętlę” judges the program of the list first and waits for a second click where a seed
+ * stays unsolved, which the programs of these cases do (D-243), so the helper lets the page judge,
+ * checks that the second click stands, and presses it.
+ */
+async function startLoopOf(root, name) {
+  await press(
+    buttonLabelled(whoOf(root, name), `Puść w pętlę: ${name}, mapa Las`),
+  );
+  await inAct(async () => mock.timers.tick(100));
+  const second = buttonLabelled(
+    whoOf(root, name),
+    `Puść mimo to: ${name}, mapa Las`,
+  );
+  assert.equal(second.disabled, false, `${name}: the second click stands`);
+  await press(second);
+}
+
+/**
  * The game of `state` built in the page without the account page around it, as a reload at
  * `address` builds it; its element stands in the body.
  */
@@ -2804,7 +2870,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj” in Siedz
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   await onPage(async ({ root }) => {
@@ -2968,11 +3034,13 @@ test("the name in a character's row is a link to its screen Postać, which then 
 // D-329. Catches a click on „Puść w pętlę” that leaves the character as it was, that opens a
 // map run or leads away from the screen Mapy, that is not saved, or that does not move the focus to
 // the „Zatrzymaj” that now stands in the button's place; the earning loop line must stand at once with the
-// buttons of the character shut.
-test("„Puść w pętlę” puts the character into an earning loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
+// buttons of the character shut. The program of the list does not solve all twelve seeds of Las, so
+// the earning loop starts at the second click, „Puść mimo to” (D-243).
+test("„Puść w pętlę” puts the character into an earning loop, at its second click where a seed stays unsolved, and the player stays on the screen Mapy, where the character shows it", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
-  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
+  // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
   // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   await onPage(async ({ root }) => {
@@ -2980,7 +3048,7 @@ test("„Puść w pętlę” puts the character into an earning loop at once and
     const { view, held } = await viewOf(solvedAla(), address);
     const ala = whoOf(root, "Ala");
     assert.equal(byClass(ala, "maps-who-loop").length, 0);
-    await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
+    await startLoopOf(root, "Ala");
     assert.equal(shownScreen(root), "maps", "the player stays on Mapy");
     assert.deepEqual(address.entries, ["#/mapy/forest"], "with no new entry");
     assert.equal(
@@ -3002,7 +3070,12 @@ test("„Puść w pętlę” puts the character into an earning loop at once and
       "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
       "Siedziba holds the line as well",
     );
+    // The judging is saved first, and the start waits behind that save (D-207).
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    assert.equal(argsOf(held, "saveGame")[0].game.loops[1], undefined);
+    await held.answer("saveGame", { kind: "saved", revision: 2 });
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    assert.notEqual(argsOf(held, "saveGame")[0].game.loops[1], undefined);
     await inAct(() => view.dispose());
   });
 });
@@ -3040,9 +3113,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
       buttonLabelled(whoOf(root, "Ala"), "Wejdź: Ala, mapa Las").disabled,
       false,
     );
-    await press(
-      buttonLabelled(whoOf(root, "Ala"), "Puść w pętlę: Ala, mapa Las"),
-    );
+    await startLoopOf(root, "Ala");
     await follow(address, "#/");
     assert.ok(!shown(stopped));
     assert.ok(shown(byClass(ala, "team-member-loop")[0]));
@@ -3113,9 +3184,7 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
     assert.ok(heading().startsWith("Skrzynka 7/"));
 
     // Ola's start takes three sticks out of the chest.
-    await press(
-      buttonLabelled(whoOf(root, "Ola"), "Puść w pętlę: Ola, mapa Las"),
-    );
+    await startLoopOf(root, "Ola");
     assert.deepEqual(chestText(), ["patyk: 4"]);
     assert.ok(heading().startsWith("Skrzynka 4/"));
     assert.equal(rowOf(root, "Ala"), row, "the row is the same element");
