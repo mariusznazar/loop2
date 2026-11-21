@@ -10,6 +10,7 @@ import {
 import type { LogoutSave } from "./game-saver.js";
 import { createSaveRow } from "./header-rows.js";
 import { createHeadquartersEntry } from "./headquarters-entry.js";
+import { lastingStorageOf, openJudgingCache } from "./judging-cache.js";
 import { createKnowledgeEntry } from "./knowledge-entry.js";
 import { createMapsEntry } from "./maps-entry.js";
 import { readResetToken } from "./password-reset.js";
@@ -55,6 +56,11 @@ export type GameViewOptions = {
     | "revokePreviousSave"
   >;
   /**
+   * The identifier the server gives the signed-in account, never its email address: the judgings the
+   * browser remembers are kept under it (D-441).
+   */
+  readonly accountId: string;
+  /**
    * Whether the account holds the previous-save privilege (D-400), from the account the page names;
    * left out, it counts as false. Where it is false the game asks for nothing of the previous save
    * and shows no control for it.
@@ -76,7 +82,10 @@ export type GameViewOptions = {
   readonly state: GameState;
   /** The revision of the saved game state `state` came from; 0 when the server held none. */
   readonly revision: number;
-  /** The game was built from the server's save after a conflict (D-209). */
+  /**
+   * The game was built from the server's save after a conflict (D-209), which removes the judgings
+   * this browser remembers for the game (D-441).
+   */
   readonly afterConflict?: boolean;
   /** The page's address, which the view reads its screen from and writes it to (D-281). */
   readonly address: PageAddress;
@@ -214,6 +223,14 @@ export function createGameView(options: GameViewOptions): GameView {
   const folding = createFolding();
   const chronicle = createChronicle(options.state);
   const acts = createProgramPanelActs(store);
+  // The one reach of the browser's storage: the cache of the judgings the browser remembers for this
+  // account and this game, which the game's moment names (D-441). Opening it removes what D-441 says.
+  const judgingCache = openJudgingCache({
+    accountId: options.accountId,
+    state: options.state,
+    afterRefusedSave: options.afterConflict ?? false,
+    storage: lastingStorageOf(window),
+  });
   const programsEntry = createProgramsEntry({
     store,
     acts,
@@ -255,7 +272,7 @@ export function createGameView(options: GameViewOptions): GameView {
         gameElement: element,
       }),
       createCharacterEntry({ store }),
-      createMapsEntry({ store }),
+      createMapsEntry({ store, judgingCache }),
       createKnowledgeEntry({ store }),
       createAccountsEntry({
         client: options.client,

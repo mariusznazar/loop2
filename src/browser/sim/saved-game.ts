@@ -79,7 +79,7 @@ import type {
  * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
  * record of a manual map run: a new action or a removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 8;
+export const SAVED_GAME_VERSION = 9;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -484,14 +484,20 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
   const ids = new Set<ProgramId>();
   const names = new Set<string>();
   const programs = list(value).map((item): SavedProgram => {
-    const read = fields(item, ["id", "name", "program"]);
+    const read = fields(item, ["id", "name", "program", "contentRevision"]);
     const id = identity(read.id);
     const named = givenName(read.name);
     const folded = named.toLowerCase();
     if (id >= nextProgramId || ids.has(id) || names.has(folded)) refuse();
     ids.add(id);
     names.add(folded);
-    return { id, name: named, program: program(read.program) };
+    return {
+      id,
+      name: named,
+      program: program(read.program),
+      // Compared with nothing at the load: the count only rises from 0 (D-442, D-386).
+      contentRevision: count(read.contentRevision),
+    };
   });
   if (programs.length === 0) refuse();
   return programs;
@@ -1123,7 +1129,9 @@ function characterKey(
 /**
  * The earning loop of `characterId`: its program by the program check, and a `MapRun` that is that
  * character's, goes on (D-241) and stands on a map among the solved maps, since no earning loop's map run
- * adds to them. Completions stand below the number of the map run going on.
+ * adds to them. Completions stand below the number of the map run going on, and the map runs completed
+ * in a row with no death between them are whole numbers from 0, not above the loop record, which is not
+ * above the completions.
  */
 function earningLoop(
   value: unknown,
@@ -1135,6 +1143,8 @@ function earningLoop(
     "run",
     "runNumber",
     "completed",
+    "inARow",
+    "loopRecord",
     "practice",
   ]);
   const run = plainMapRun(fields(read.run, MAP_RUN_KEYS), records);
@@ -1147,11 +1157,16 @@ function earningLoop(
   const runNumber = identity(read.runNumber);
   const completed = count(read.completed);
   if (completed >= runNumber) refuse();
+  const inARow = count(read.inARow);
+  const loopRecord = count(read.loopRecord);
+  if (inARow > loopRecord || loopRecord > completed) refuse();
   return {
     program: program(read.program),
     run,
     runNumber,
     completed,
+    inARow,
+    loopRecord,
     practice: practice(read.practice),
   };
 }
@@ -1262,6 +1277,7 @@ const GAME_KEYS = [
   "stoppedLoops",
   "awayReport",
   "saveTimeMs",
+  "madeAtMs",
 ] as const;
 
 /**
@@ -1361,6 +1377,9 @@ function game(value: unknown): GameState {
     ]),
     awayReport: awayReport(read.awayReport, records),
     saveTimeMs: integer(read.saveTimeMs),
+    // Any safe integer, like the save time: the browser's clock when the game was made, compared with
+    // no clock here (D-386).
+    madeAtMs: integer(read.madeAtMs),
   };
 }
 

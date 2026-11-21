@@ -90,7 +90,7 @@ function startFrom(
     const loaded = loadSavedGame(document);
     return loaded.ok
       ? { state: loaded.state, revision, refused: null }
-      : { state: newGame(), revision, refused: loaded.reason };
+      : { state: newGame(Date.now()), revision, refused: loaded.reason };
   } catch (error) {
     recordLoadFailure(error, owner.id);
     return null;
@@ -197,6 +197,7 @@ function showGame(
   let first: ScreenPlace | null = null;
   const view: GameView = createGameView({
     client: page.client,
+    accountId: owner.id,
     previousSaveAllowed: owner.previousSaveAllowed,
     role: owner.role,
     state: start.state,
@@ -309,7 +310,7 @@ async function loadGame(page: Page, owner: Account): Promise<void> {
     const save = result.value;
     const start =
       save === null
-        ? { state: newGame(), revision: 0, refused: null }
+        ? { state: newGame(Date.now()), revision: 0, refused: null }
         : startFrom(save, save.revision, owner);
     if (start === null) loadFailed(places);
     else showGame(page, owner, start, false);

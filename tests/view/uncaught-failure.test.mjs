@@ -141,6 +141,16 @@ const buttonNamed = (root, text) =>
     (element) => element.localName === "button" && element.textContent === text,
   );
 
+/** Every key of the window's lasting storage with its value, in the order of the keys. */
+function storedEntries() {
+  const { localStorage } = globalThis.window;
+  return Array.from({ length: localStorage.length }, (_, index) =>
+    localStorage.key(index),
+  )
+    .sort()
+    .map((key) => [key, localStorage.getItem(key)]);
+}
+
 /** Gives the page's continuations their turns, outside `act`. */
 async function turns() {
   for (let round = 0; round < 8; round += 1) await Promise.resolve();
@@ -462,14 +472,38 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
     assert.deepEqual(waitingCalls(held), [], "precondition: no save waits");
 
     await inAct(() => reportError(new TypeError(QUOTED)));
+    const stored = storedEntries();
     await press(buttonNamed(root, "Puść w pętlę"));
+    // „Puść w pętlę” judges the program first and starts the earning loop only at the second click, or at
+    // once where it solves all twelve seeds (D-243), so the case lets the page judge and then presses the
+    // second click, which the program of a new game, dying on some seed of Las, asks for.
+    await inAct(async () => mock.timers.tick(100));
+    const second = buttonNamed(root, "Puść mimo to");
+    assert.ok(
+      second,
+      "precondition: the judging of the new game's program asks for a second click",
+    );
+    await press(second);
+    await inAct(async () => mock.timers.tick(100));
     await press(buttonNamed(root, "Wejdź"));
+    // The button of a judging goes through the act of the store as „Puść w pętlę” does, and a judging
+    // remembered in the game state would be a change of it (D-440).
+    await press(buttonNamed(root, "Oceń na 12 ziarnach"));
+    await inAct(async () => mock.timers.tick(100));
     await settle();
 
     assert.deepEqual(waitingCalls(held), [], "no act started a save");
-    assert.ok(
-      buttonNamed(root, "Puść w pętlę"),
-      "no earning loop took the button",
+    // A judging is remembered in the browser's lasting storage (D-441), and after the error the game
+    // changes and remembers nothing, so the storage stands as the error left it.
+    assert.deepEqual(
+      storedEntries(),
+      stored,
+      "the judgings left the browser's storage as it was",
+    );
+    assert.equal(
+      buttonNamed(root, "Zatrzymaj"),
+      undefined,
+      "no earning loop was started",
     );
     assert.equal(address.current, "#/mapy/forest", "no map run was opened");
   });

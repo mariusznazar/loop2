@@ -9,6 +9,7 @@ import {
   CREATED_ARCHETYPE,
 } from "../dist/browser/sim/data/archetypes.js";
 import { ACTIONS } from "../dist/browser/sim/data/actions.js";
+import { BALANCE } from "../dist/browser/sim/data/balance.js";
 import { CAMPFIRE } from "../dist/browser/sim/data/campfire.js";
 import { CONDITIONS } from "../dist/browser/sim/data/conditions.js";
 import { CREATURES } from "../dist/browser/sim/data/creatures.js";
@@ -28,7 +29,13 @@ import { newSkills } from "../dist/browser/sim/skills.js";
 import { takeTrip, tripLoot } from "../dist/browser/sim/trip.js";
 
 /** A map run still open after this many game minutes ends as a run at the cap. */
-export const DEFAULT_CAP_MINUTES = 4000;
+export const DEFAULT_CAP_MINUTES = BALANCE.judgingCapMinutes;
+
+/**
+ * The moment the instrument gives every game it makes as the moment the game was made: a fixed one,
+ * never the clock (invariant balance-instrument-repeatability). No measurement reads it.
+ */
+export const GAME_MADE_AT_MS = 0;
 
 /** How a map run stands: `solved` after its completion, `death` after its death, else `cap`, still open. */
 export function outcomeOf(run) {
@@ -90,7 +97,10 @@ export function makeState({
   chest = {},
   solvedMaps = [],
 } = {}) {
-  let state = { ...newGame(), understanding: fullUnderstanding() };
+  let state = {
+    ...newGame(GAME_MADE_AT_MS),
+    understanding: fullUnderstanding(),
+  };
   state = createCharacter(state, "Mag").state;
   const [created] = state.team.characters;
   state = {

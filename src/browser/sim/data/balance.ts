@@ -43,6 +43,16 @@ export const BALANCE = {
    * to pass at will (D-219).
    */
   resurrectionRenewalRealMinutes: 240,
+  /**
+   * Game minutes after which a judging gives up a map run that has neither solved the map nor ended
+   * in a death (D-439): such a seed is undecided. A run that ends in the cap's own minute counts.
+   */
+  judgingCapMinutes: 4000,
+  /**
+   * The seeds of a judging (D-22, D-439): the same twelve on every map, for every program and
+   * character, so the same program is judged the same way each time.
+   */
+  judgingSeeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   /** The mage's nature energy, with which spells are paid. */
   natureEnergy: {
     /** The cap, which is also the energy every map run starts with. */

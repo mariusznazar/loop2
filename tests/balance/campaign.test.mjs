@@ -6,10 +6,12 @@ import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { newGame } from "../../dist/browser/sim/game.js";
 import { catchUp } from "../../dist/browser/sim/loop.js";
+import { editProgram } from "../../dist/browser/sim/programs.js";
 import {
   campaignSweep,
   comeBack,
   dueAttempt,
+  newAccount,
   playCampaign,
   programsOf,
 } from "../../balance/campaign.mjs";
@@ -222,6 +224,32 @@ test("the three players of Skraj lasu name programs of the reference file, maps 
       );
     }
   }
+});
+
+// D-442. Catches a program of the campaign's account that starts at another content revision than the
+// game gives a program it makes, which a first change would then raise from the wrong number.
+test("each program of a new campaign account starts at content revision 0, and the first change of one raises it to 1", () => {
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made"
+  const player = { ...decent, knowing: true };
+  const { state, ids } = newAccount(
+    player,
+    programsOf(player, REFERENCE_PROGRAMS),
+    7,
+  );
+  assert.ok(state.programs.length >= 2, "precondition: several programs");
+  assert.deepEqual(
+    state.programs.map((saved) => saved.contentRevision),
+    state.programs.map(() => 0),
+  );
+  const loop = state.programs.find((saved) => saved.id === ids.loop);
+  const changed = editProgram(state, loop.id, {
+    ...loop.program,
+    tripPlan: { take: [{ item: "stick", count: 1 }], bring: [] },
+  }).state;
+  assert.deepEqual(
+    changed.programs.map((saved) => saved.contentRevision),
+    state.programs.map((saved) => (saved.id === loop.id ? 1 : 0)),
+  );
 });
 
 test("a player naming a program the registry lacks is refused", () => {

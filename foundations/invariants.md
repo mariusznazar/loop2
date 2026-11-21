@@ -1377,7 +1377,7 @@ The account server moves a stored saved game state into the previous save only a
 
 ## previous-save-programs-reader
 
-The reader of the programs of a previous save reads from a document only its version, the list of programs of its game and the items of that list, accepts each program only through the check of the program editor, skips an item that is not exactly the keys `id`, `name` and `program`, and throws for no value a document can hold.
+The reader of the programs of a previous save reads from a document only its version, the list of programs of its game and the items of that list, accepts each program only through the check of the program editor, skips an item that is not exactly the keys `id`, `name`, `program` and the content revision in a document of version 9 or above, or exactly the keys `id`, `name` and `program` in a document of an earlier version, and throws for no value a document can hold.
 
 - **Method:** test
 - **Rests on:** none
@@ -1463,6 +1463,16 @@ No file of code in `balance/` reads the system clock or draws a random number fr
 - **Rests on:** none
 - **Derives from:** recovered from code — `balance/engine.mjs`, in which a map run takes its seed as an input and no line reads the system clock or a random source, as no other file of code in `balance/` does
 - **Part:** balance-tools
+- **Violated:** no
+
+## judging-cache-reading
+
+A value the judging cache of the browser view reads from the browser's lasting storage gives a judging only where it has the form the cache writes and stands under a key of the cache's own version that names the account and the game the cache was opened for, and no value read from that storage, nor an exception of the storage, throws out of the cache.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-441
+- **Part:** browser-view
 - **Violated:** no
 
 ## Withdrawn identifiers

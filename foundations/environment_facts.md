@@ -994,6 +994,18 @@ The Firefox and WebKit releases that Playwright holds on the author's computer, 
 - **Source:** reading: `(Get-ChildItem "$env:LOCALAPPDATA\ms-playwright" -Directory | Where-Object Name -Match '^(firefox|webkit)-').Name
 (Get-Content "$(npm root -g)\@playwright\cli\node_modules\playwright-core\browsers.json" -Raw | ConvertFrom-Json).browsers | Where-Object name -In 'firefox','webkit' | ForEach-Object { "$($_.name) $($_.revision)" }` on the author's computer, in Windows PowerShell 5.1.26100.9818, with npm 11.13.0 and Playwright CLI 0.1.22, as `playwright-cli --version` prints it, whose playwright-core is 1.64.0-alpha-1790635538000 — "firefox-1532" · "webkit-2311" · "firefox 1553" · "webkit 2368"; run 2026-11-17
 
+## local-storage-lasting
+
+The HTML Standard designs the storage that the `localStorage` getter reaches for storage that spans the windows of a site and lasts beyond the current session.
+
+- **Source:** https://html.spec.whatwg.org/commit-snapshots/0e292f402d0c3dd17fe00c1bb2ef3a3c94cd8bce/ § 12.1 Introduction — "The second storage mechanism is designed for storage that spans multiple windows, and lasts beyond the current session." · "The localStorage getter is used to access a page's local storage area."; read 2026-11-21
+
+## storage-set-item-refusal
+
+The HTML Standard has the `setItem` method of a `Storage` object throw a `QuotaExceededError` where the new value cannot be set, as where the user has disabled storage for the site or the quota has been exceeded.
+
+- **Source:** https://html.spec.whatwg.org/commit-snapshots/0e292f402d0c3dd17fe00c1bb2ef3a3c94cd8bce/ § 12.2.1 The Storage interface — "Throws a QuotaExceededError if the new value couldn't be set. (Setting could fail if, e.g., the user has disabled storage for the site, or if the quota has been exceeded.)"; read 2026-11-21
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

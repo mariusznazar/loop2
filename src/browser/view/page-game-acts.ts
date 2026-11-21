@@ -184,7 +184,7 @@ export function resetGame(page: GameActsPage): void {
       memory.entry = "address";
       calls.showGame(
         owner,
-        { state: newGame(), revision: 0, refused: null },
+        { state: newGame(Date.now()), revision: 0, refused: null },
         false,
       );
       return;

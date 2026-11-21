@@ -193,9 +193,9 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323
+- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323 · D-329 · D-439
 - **Invariant:** none
-- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
+- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; przycisk „Oceń na 12 ziarnach” na czas liczenia oceny wyłączony i z napisem „Oceniam…”, choć na serwer nie czeka; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
 
 Wspólne kontrolki stoją w `src/browser/view/controls/`, a ekrany budują z nich
@@ -225,7 +225,11 @@ stanów:
   programy z poprzedniego zapisu” na ekranie Programy, czekający na odpowiedź
   serwera, zmienia napis na „Wciąganie…” (D-44, D-401), a przycisk niszczący
   „Zacznij od zera”, czekający na odpowiedź na reset, jest wyłączony i zachowuje
-  napis (D-44, D-402); tak samo przycisk „Zablokuj” z listy kont, czekający na odpowiedź serwera (D-411). Nie ma ruchomego wskaźnika. Odmowa
+  napis (D-44, D-402); tak samo przycisk „Zablokuj” z listy kont, czekający na odpowiedź serwera (D-411).
+  Dostaje go też przycisk oceny „Oceń na 12 ziarnach” przy postaci w „Kto idzie”,
+  choć na serwer nie czeka: na czas liczenia oceny jest wyłączony, jego tekst
+  stoi w `text-disabled`, a napis zmienia się na „Oceniam…” (D-329, D-439).
+  Nie ma ruchomego wskaźnika. Odmowa
   serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
   formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
@@ -260,7 +264,9 @@ Kontrolki odstępujące od tej listy stanów:
   Loading dotyczy zwykłego przycisku, który czeka na odpowiedź serwera,
   także w głównym wyglądzie, i przycisku niszczącego „Zacznij od zera”, który
   czeka na odpowiedź na reset: jest wtedy wyłączony i zachowuje napis (D-44,
-  D-402); przycisk wybrany w grupie nie czeka na serwer. Główny wygląd ma
+  D-402); dotyczy też zwykłego przycisku oceny „Oceń na 12 ziarnach”, który
+  na czas liczenia oceny jest wyłączony i czyta „Oceniam…”, choć na serwer nie
+  czeka (D-329, D-439); przycisk wybrany w grupie nie czeka na serwer. Główny wygląd ma
   przycisk, który wysyła formularz, i „Wejdź” przy każdej postaci w sekcji
   „Kto idzie” karty mapy (D-274; reguła Main button, secondary action and
   tab): tekst w `text-strong`
@@ -460,7 +466,7 @@ w tym katalogu, w modułach obok jej modułu wejściowego, a nie w
 
 ### Main button, secondary action and tab
 
-- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-44 · D-39
+- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-44 · D-39 · D-243 · D-329
 - **Invariant:** none
 - **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym; „Odbierz” przy wierszu raportu w Siedzibie przyciskiem w `positive`, nie w głównym wyglądzie.
 - **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
@@ -477,7 +483,8 @@ States of shared controls.
   nie wysyła (D-274): ekran daje mu rodzaj `main` wspólnego przycisku
   (`<ReactButton kind="main">`, klasa `main`). Wyłączony „Wejdź” (D-287) traci główny wygląd i wygląda jak
   każdy wyłączony przycisk (reguła States of shared controls), a „Puść w
-  pętlę” obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
+  pętlę” obok, także jako „Puść mimo to” po pierwszym kliknięciu (D-243), i „Oceń
+  na 12 ziarnach” (D-329) zostają zwykłymi przyciskami. Działanie poza formularzem i poza
   „Wejdź” zostaje przy przycisku, który daje mu D-44.
 - Przycisk w `positive` (`kind: "positive"`) to zwykły przycisk z tekstem w `positive`;
   jest nim tylko „Odbierz” przy wierszu raportu z nieobecności w Siedzibie, który wypłaca
@@ -646,10 +653,10 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-39 · D-40
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40
 - **Invariant:** none
-- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`.
-- **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie.
+- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
+- **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
 
 Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: po lewej
 listę otwartych map, po prawej kartę wybranej mapy.
@@ -679,7 +686,43 @@ listę otwartych map, po prawej kartę wybranej mapy.
   „Puść w pętlę” zwykłym przyciskiem, a obok „Pętla nic nie zarobi do
   skrzynki” w `warning`, gdy lista „Wynieś” jest pusta (D-326); zdanie
   o przejściu ręcznym, które czeka albo się skończyło, pod wyłączonymi
-  przyciskami każdej postaci, w `text-secondary` (D-287).
+  przyciskami każdej postaci, w `text-secondary` (D-287); jego druga część,
+  „Wróć do niego i je zakończ, żeby wysłać postać.”, jest odnośnikiem do ekranu
+  tego przejścia (D-281), tego samego w każdym wierszu, w tej samej roli
+  `text-secondary`.
+- Ocena programu przy postaci (D-439, D-440, D-329, D-243): przycisk „Oceń na
+  12 ziarnach” stoi obok „Wejdź” przy każdej postaci, na mapie rozwiązanej
+  i nierozwiązanej, jako zwykły wspólny przycisk — nie w głównym wyglądzie — a na
+  czas liczenia oceny jest wyłączony i czyta „Oceniam…” (reguła States of
+  shared controls). Pod postacią stoi wynik oceny, dopóki stoi (D-329):
+  - nagłówek „Ocena na 12 ziarnach: {n} z 12 rozwiązanych” w `text-strong`, bo
+    to wartość, na którą patrzy się najpierw (D-40);
+  - dwanaście wierszy „Ziarno {i}: …”, każdy w roli swojego wyniku: „rozwiązane”
+    w `positive`; śmierć — „mag zamarzł w {m}. minucie”, „mag umarł z głodu
+    w {m}. minucie” albo „mag zginął w walce w {m}. minucie” — w `danger`, bo
+    w pętli taka śmierć grozi utratą postaci; „bez rozstrzygnięcia po {pułap}
+    minutach” w `warning`, bo mapa nie zostanie rozwiązana (D-39). {pułap} to
+    pułap minut z danych gry (D-439);
+  - pod wierszami zdanie „Ocena nic nie kosztuje: nie bierze ze skrzynki, nic nie
+    płaci, a śmierć w niej nie zabiera wprawy ani wskrzeszenia.” w
+    `text-secondary`, jako wyjaśnienie (D-40).
+- Ocena zapamiętana obok listy „Program:” (D-440): „szczelny: 12 z 12” w
+  `positive` przy wyniku dwanaście z dwunastu, a przy niższym wyniku „{n} z 12”
+  w `text`. Gdy skrzynka ma mniej przedmiotu, niż ocena wzięła, wynik zostaje bez
+  odznaki — „12 z 12” stoi wtedy w `text`, bo odznaka gaśnie — a obok niego stoi
+  dopisek „oceniono z zapasem, którego dziś nie ma w skrzynce” w `warning`, jak
+  inne ostrzeżenia karty, które mówią, że coś nie zadziała tak, jak wynik
+  obiecuje, na przykład „Pętla nic nie zarobi do skrzynki” (D-39, D-326).
+- Drugie kliknięcie „Puść w pętlę” (D-243): po pierwszym kliknięciu, gdy któreś
+  ziarno nie jest rozwiązane, nad przyciskiem stoi „Na {k} z 12 ziaren program mapy
+  nie rozwiązuje.” w `warning` (mapa nie zostanie rozwiązana, D-39), a przycisk
+  czyta „Puść mimo to”; zostaje zwykłym wspólnym przyciskiem, jak „Puść w pętlę”.
+  Gdy wszystkie dwanaście ziaren jest rozwiązane, „Puść w pętlę” rusza od razu
+  i żadne takie zdanie nie stoi.
+- Ocena, jej odznaka, dopisek o zapasie i zdanie przed drugim kliknięciem nie
+  wnoszą nowej roli, wartości tokenu ani znaczenia roli: każda część stoi
+  w znaczeniu z tabeli Roles, a przyciski oceny i „Puść w pętlę” — także jako
+  „Puść mimo to” — to zwykłe wspólne przyciski (D-44).
 - Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
   w `text-secondary`.
 

@@ -88,8 +88,17 @@ export type Program = {
 /** Tells the player's programs apart; given once, never again after a deletion (D-165). */
 export type ProgramId = number;
 
-/** A program of the player's list: its number, its name and its content. */
-export type SavedProgram = { id: ProgramId; name: string; program: Program };
+/**
+ * A program of the player's list: its number, its name, its content and its content revision (D-442),
+ * which is 0 when the program is made and one higher at each save after which its rules, rule groups
+ * with their order or trip plan differ; the content revision is no part of the content.
+ */
+export type SavedProgram = {
+  id: ProgramId;
+  name: string;
+  program: Program;
+  contentRevision: number;
+};
 
 /** Why a typed program name is refused: nothing left after trimming, or another program's name. */
 export type ProgramNameRefusal = "empty" | "taken";
@@ -365,19 +374,40 @@ export type RunRecord = Pick<
 >;
 
 /**
+ * How a judging's map run on one seed ended (D-439): the map solved, the character dead of `cause`
+ * in game minute `minute`, or neither by the cap of game minutes, so undecided.
+ */
+export type SeedResult =
+  | { kind: "solved" }
+  | { kind: "death"; cause: DeathCause; minute: number }
+  | { kind: "undecided" };
+
+/**
+ * A judging of a program on a map (D-439): the result of each of the twelve seeds in the order of the
+ * data's seeds, and the equipment every one of the twelve runs entered with: the take list cut by the
+ * chest, the carrying capacity and the map's entry cap, none of which leaves the chest.
+ */
+export type Judging = { results: SeedResult[]; equipment: TripEntry[] };
+
+/**
  * An earning loop of one character (D-241): the content of the program taken at its start, a plain
  * map run, which always goes on, since the function that reaches its end deals with that end at
  * once, the number of that map run from 1, the map runs completed, and the practice gathered from
  * them since the player last took it with „Odbierz” (D-189), which empties it together with the
  * practice of the map run going on, so what the earning loop and that map run hold is exactly what waits to
  * be paid. Each map run binds its lists anew from `program`, so the earning loop keeps no copy of a manual
- * map run and no link to the player's programs.
+ * map run and no link to the player's programs. It also counts, from its start, the map runs completed in a
+ * row with no death between them (`inARow`), which a death that does not stop the earning loop sets back
+ * to 0, and the largest such number, its loop record (`loopRecord`); both are 0 at the start, `inARow`
+ * is never above `loopRecord`, and both go with the earning loop.
  */
 export type EarningLoop = {
   program: Program;
   run: MapRun;
   runNumber: number;
   completed: number;
+  inARow: number;
+  loopRecord: number;
   practice: Practice;
 };
 
@@ -498,4 +528,9 @@ export type GameState = {
    * only; null in a game that never came from a save. Only the catch-up reads it, on a loaded state.
    */
   saveTimeMs: number | null;
+  /**
+   * The real moment the game was made (D-04, D-441), given by the page to `newGame`, 0 where none is
+   * given. It tells one game of an account from another; no function of the simulation reads it.
+   */
+  madeAtMs: number;
 };

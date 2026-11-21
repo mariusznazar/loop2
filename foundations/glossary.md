@@ -304,3 +304,21 @@ An overlay is a file that changes the game's data in memory for the time of one 
 A map that asks for something new — an item, a spell or another idea of a program — and without it is solved rarely.
 
 - **Not:** none
+
+## judging
+
+A judging is twelve runs of one character's program on one game map, each from one of twelve fixed seeds that are the same on every game map, the runs being no map run of the character and each able to end at a cap of game minutes, neither solved nor in a death.
+
+- **Not:** none
+
+## loop record
+
+A loop record is the largest number of map runs of one earning loop completed in a row with no death between them, counted from the start of that earning loop and gone with it.
+
+- **Not:** none
+
+## content revision
+
+A content revision is the count a program of the player's list carries, 0 when the program is made and one higher at each save after which its rules, rule groups or trip plan differ, a rename leaving it as it is, which the game state keeps and the server neither gives nor reads, unlike the revision the server gives each save it accepts (D-209).
+
+- **Not:** none

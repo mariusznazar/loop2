@@ -19,6 +19,10 @@ import {
   ReactPasswordField,
   ReactTextField,
 } from "../view/controls/react-text-field.js";
+import {
+  JUDGE_BUTTON_TEXT,
+  JUDGING_WAITING_TEXT,
+} from "../view/judging-lines.js";
 import { Forced, reason, Section } from "./sample-parts.js";
 import type { State } from "./sample-parts.js";
 
@@ -236,13 +240,22 @@ function NumberFieldSample({ state }: { state: State }) {
  * The shared controls of D-44 and the pick cell of D-288, each with the maker of its samples, and
  * beside the button the looks other kinds of it have: the main button of D-274, the one that sends
  * a form and, as the kind `main`, the one that sends none, and the tab of D-276, which is the
- * button selected in its group drawn as a tab. The password field is the text field with its entry
- * hidden.
+ * button selected in its group drawn as a tab. The plain button of a judging, „Oceń na 12 ziarnach”
+ * (D-329, D-439), has a row of its own: it waits for no server and still shows the loading state,
+ * disabled and reading „Oceniam…”; its two texts come from `judging-lines.ts`, as the screen's do.
+ * The password field is the text field with its entry hidden.
  */
 const CONTROLS: readonly (readonly [string, (state: State) => ReactNode])[] = [
   [
     "Przycisk",
     buttonSample("Wyślij ponownie", {}, ["Wyślij ponownie", "Wysyłanie…"]),
+  ],
+  [
+    "Przycisk oceny",
+    buttonSample(JUDGE_BUTTON_TEXT, {}, [
+      JUDGE_BUTTON_TEXT,
+      JUDGING_WAITING_TEXT,
+    ]),
   ],
   [
     "Przycisk główny",

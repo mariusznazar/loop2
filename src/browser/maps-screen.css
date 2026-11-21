@@ -176,6 +176,13 @@
   color: var(--text-secondary);
 }
 
+/* The second part of that sentence is a link to the screen of the manual map run (D-287): it keeps the role of the
+ * sentence, `text-secondary`, and the underline of a link inside a sentence. Focus is the one :focus-visible rule of
+ * styles.css. */
+.maps-who-run-link {
+  color: var(--text-secondary);
+}
+
 .maps-who-resurrection.danger {
   color: var(--danger);
 }
@@ -183,11 +190,29 @@
 .maps-who-loop,
 .maps-who-program,
 .maps-who-actions,
-.maps-who-loop-start {
+.maps-who-judge,
+.maps-who-loop-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs) var(--space-s);
+}
+
+/*
+ * „Puść w pętlę” with what stands over it: after its judging found a seed unsolved, the sentence about the
+ * seeds in `warning`, as the other warnings of the card are (D-243, D-39), stands over the row of the
+ * button, which then reads „Puść mimo to” and is the same plain shared button.
+ */
+.maps-who-loop-start {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.maps-who-loop-unsolved {
+  margin: 0;
+  color: var(--warning);
 }
 
 .maps-who-actions {
@@ -222,4 +247,60 @@
 /* The sentence beside „Puść w pętlę” when the list „Wynieś” is empty, in `warning` (D-326). */
 .maps-who-empty-loop {
   color: var(--warning);
+}
+
+/*
+ * The judging of a program at a character (D-329, D-440; styleguide rule "The screen Mapy"). The mark
+ * beside the list „Program:” is the count in `text` and the badge „szczelny: 12 z 12” in `positive`; the
+ * note that the chest holds less than the judging took is `warning`, as the other warnings of the card
+ * are. The result under the character has its heading in `text-strong`, each row in the role of its
+ * result — solved `positive`, a death `danger`, a seed left undecided `warning` — and the sentence that
+ * the judging costs nothing in `text-secondary`. The button is the shared plain one and takes its look,
+ * waiting included, from styles.css.
+ */
+.maps-who-mark {
+  color: var(--text);
+}
+
+.maps-who-mark.positive {
+  color: var(--positive);
+}
+
+.maps-who-mark-note.warning {
+  color: var(--warning);
+}
+
+.judging-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.judging-heading {
+  margin: 0;
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.judging-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.judging-row.positive {
+  color: var(--positive);
+}
+
+.judging-row.danger {
+  color: var(--danger);
+}
+
+.judging-row.warning {
+  color: var(--warning);
+}
+
+.judging-note {
+  margin: 0;
+  color: var(--text-secondary);
 }

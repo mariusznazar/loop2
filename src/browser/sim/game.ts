@@ -378,11 +378,25 @@ function startRun(
 /**
  * The game as it stands before anything is done: program 1, „Program”, with the empty rule group
  * „Program” under „Zawsze” and the next program number 2, a team with no character, an empty chest
- * and its resurrection with every use left, no map run.
+ * and its resurrection with every use left, no map run. `madeAtMs` is the real moment the page made
+ * the game, kept as it is and read by nothing in the simulation (D-04, D-441); 0 where none is given.
+ * A `madeAtMs` that is no safe integer is a RangeError, since the load would refuse such a game (D-386).
  */
-export function newGame(): GameState {
+export function newGame(madeAtMs = 0): GameState {
+  if (!Number.isSafeInteger(madeAtMs)) {
+    throw new RangeError(
+      `newGame: ${String(madeAtMs)} is not a safe integer moment`,
+    );
+  }
   return {
-    programs: [{ id: 1, name: FIRST_PROGRAM_NAME, program: emptyProgram() }],
+    programs: [
+      {
+        id: 1,
+        name: FIRST_PROGRAM_NAME,
+        program: emptyProgram(),
+        contentRevision: 0,
+      },
+    ],
     nextProgramId: 2,
     pickedPrograms: {},
     lastUsedPrograms: {},
@@ -408,6 +422,7 @@ export function newGame(): GameState {
     stoppedLoops: {},
     awayReport: [],
     saveTimeMs: null,
+    madeAtMs,
   };
 }
 

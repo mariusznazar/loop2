@@ -13,12 +13,20 @@ import type {
   Team,
 } from "../sim/types.js";
 
+/** The words of the sentence under a character's sending that lead back to the map run (D-287). */
+const RUN_LINK_TEXT = "Wróć do niego i je zakończ, żeby wysłać postać.";
+
 /**
  * The sentence under a character's sending while a manual map run waits or has ended (D-287): why
- * „Wejdź” and „Puść w pętlę” are inactive, the map's name from the data. Pure.
+ * „Wejdź” and „Puść w pętlę” are inactive, the map's name from the data. It comes in two parts that
+ * make the sentence, `lead` and then `link`, the part the screen makes a link to the screen of the
+ * map run. Pure.
  */
-export function runWaitingSentence(mapId: MapId): string {
-  return `Przejście na mapie ${MAPS[mapId].name} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.`;
+export function runWaitingParts(mapId: MapId): { lead: string; link: string } {
+  return {
+    lead: `Przejście na mapie ${MAPS[mapId].name} jest niezakończone. `,
+    link: RUN_LINK_TEXT,
+  };
 }
 
 /**
