@@ -190,7 +190,7 @@ test("a new game holds its first program at content revision 0, and a created pr
 for (const [change, program] of Object.entries(CHANGES)) {
   for (const [save, run] of Object.entries(SAVES)) {
     test(`${change} and saved by ${save} raises the content revision by one and changes nothing else of the saved program`, () => {
-      // decision: D-442 "and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were"
+      // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were"
       const saved = run(program).programs[0];
       assert.deepEqual(saved, {
         id: 1,
@@ -203,7 +203,7 @@ for (const [change, program] of Object.entries(CHANGES)) {
 }
 
 test("the first chill writes the rule of D-123 into the program of the copy and raises its content revision by one, and no other program's", () => {
-  // decision: D-442 "the rule the game writes at the first chill (D-123) included"
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were, the rule the game writes at the first chill (D-123) included"
   const empty = {
     groups: [{ id: 1, name: "Program", condition: ALWAYS, rules: [] }],
     tripPlan: { take: [], bring: [] },
@@ -237,7 +237,7 @@ test("the first chill writes the rule of D-123 into the program of the copy and 
 });
 
 test("a program changed to another content and back is raised twice, and its content is the first again", () => {
-  // decision: D-442 "and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were"
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were"
   const there = editProgram(seeded(), 1, CHANGES["two rules swapped"]).state;
   const back = editProgram(there, 1, BASE).state;
   assert.equal(there.programs[0].contentRevision, 4);
@@ -311,7 +311,7 @@ test("saving a copy whose content is the program's, or differs in the identity c
 });
 
 test("a pick, a send and the deletion of another program leave the content revision as it is", () => {
-  // decision: D-442 "and every other act leave the content revision as it is, so it never goes down"
+  // decision: D-442 "A rename, a save after which none of the three differs, though the counters that number new rules and groups may have changed, and every other act leave the content revision as it is, so it never goes down"
   const two = {
     ...seeded(),
     programs: [
@@ -391,7 +391,7 @@ test("the load takes the moment of the game as any safe integer and refuses it m
 });
 
 test("the load takes a program's content revision as a safe integer from 0 and refuses it missing, below 0, fractional, beyond the safe integers or no number", () => {
-  // decision: D-386 "and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
+  // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
   const document = savedGame(withSaveTime(seeded(), REAL_MS));
   const withRevision = (contentRevision) => ({
     ...document,
