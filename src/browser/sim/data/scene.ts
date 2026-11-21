@@ -321,19 +321,6 @@ export const SCENE_PROPS = {
  * the bottom edge of the band each kind of picture stands, its bottom edge: the fire and the chest a little
  * higher than the characters, as the fire of the scene stands above the mage's line (`SCENE_FIRE.place`).
  */
-/**
- * The figure of a character at the top of the screen Postać (D-445), in the pixels of its picture: the
- * character's idle sheet of `SCENE_MAGES`, the picture a character of the picture band stands in, drawn
- * at `PICTURE_PIXEL` as the band draws it, in a box that shows the figure and none of the frame's empty
- * rows. The mage's figure takes columns 20 to 44 and rows 32 to 63 of its frame of 64 × 64 in every
- * frame of the sheet, so a box of 32 × 34 with the frame centred across it and its bottom edge on the
- * box's bottom edge holds it whole, with two rows to spare over its head.
- */
-export const CHARACTER_FIGURE = { width: 32, height: 34 } as const satisfies {
-  width: number;
-  height: number;
-};
-
 export const CAMP = {
   background: { file: "camp-clearing.png", width: 672, height: 48, frames: 1 },
   chest: { file: "chest.png", width: 26, height: 21, frames: 1 },
@@ -346,4 +333,17 @@ export const CAMP = {
   cell: number;
   gap: number;
   lift: { character: number; fire: number; chest: number };
+};
+
+/**
+ * The figure of a character at the top of the screen Postać (D-445), in the pixels of its picture: the
+ * character's idle sheet of `SCENE_MAGES`, the picture a character of the picture band stands in, drawn
+ * at `PICTURE_PIXEL` as the band draws it, in a box that shows the figure and none of the frame's empty
+ * rows. The mage's figure takes columns 20 to 44 and rows 32 to 63 of its frame of 64 × 64 in every
+ * frame of the sheet, so a box of 32 × 34 with the frame centred across it and its bottom edge on the
+ * box's bottom edge holds it whole, with two rows to spare over its head.
+ */
+export const CHARACTER_FIGURE = { width: 32, height: 34 } as const satisfies {
+  width: number;
+  height: number;
 };
