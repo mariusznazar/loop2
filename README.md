@@ -75,7 +75,7 @@ Python files are formatted with `.runs/quality-venv/Scripts/ruff.exe format --co
 
 ## Icons
 
-The resource icons come from game-icons.net (licence CC BY 3.0). The icons are changed from the source: the black background is removed and the shape is in a light colour. Their sources lie in `assets/icons`, outside the directory the server serves; `npm run build` copies them to `dist/public/icons`. The titles of the icons are held by the resource data in `src/browser/sim/data/resources.ts`, next to the icon's file name; the authors of the icons and the source commit are held by `src/browser/view/credits.ts`, and the required mentions are shown by the collapsed section "Autorzy grafiki" ("Graphics credits") on the login card and at the bottom of the "Siedziba" ("Headquarters") screen.
+The resource icons come from game-icons.net (licence CC BY 3.0). The icons are changed from the source: the black background is removed and the shape is in a light colour. Their sources lie in `assets/icons`, outside the directory the server serves; `npm run build` copies them to `dist/public/icons`. The titles of the icons are held by the resource data in `src/browser/sim/data/resources.ts` and, for the bandage, the item data in `src/browser/sim/data/items.ts`, next to the icon's file name; the authors of the icons and the source commit are held by `src/browser/view/credits.ts`, and the required mentions are shown by the collapsed section "Autorzy grafiki" ("Graphics credits") on the login card and at the bottom of the "Siedziba" ("Headquarters") screen.
 
 ## The page of all states
 

@@ -84,6 +84,8 @@ AUTHORS = {
     "dodge.svg": "Felbrigg",
     "wood-pile.svg": "Delapouite",
     "wolf-head.svg": "Lorc",
+    "bandage-roll.svg": "Lorc",
+    "first-aid-kit.svg": "Delapouite",
 }
 # Titles of the current icon files, as the headings of their pages on game-icons.net give them
 # (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
@@ -91,8 +93,8 @@ AUTHORS = {
 # game-icons-binoculars-title, game-icons-hiking-title, game-icons-direction-sign-title,
 # game-icons-grab-title, game-icons-claw-hammer-title, game-icons-match-tip-title,
 # game-icons-logging-title, game-icons-meal-title, game-icons-deadly-strike-title,
-# game-icons-boot-kick-title, game-icons-dodge-title, game-icons-wood-pile-title and
-# game-icons-wolf-head-title).
+# game-icons-boot-kick-title, game-icons-dodge-title, game-icons-wood-pile-title,
+# game-icons-wolf-head-title, game-icons-bandage-roll-title and game-icons-first-aid-kit-title).
 TITLES = {
     "wood-stick.svg": "Wood stick icon",
     "berry-bush.svg": "Berry bush icon",
@@ -112,6 +114,8 @@ TITLES = {
     "dodge.svg": "Dodge icon",
     "wood-pile.svg": "Wood Pile icon",
     "wolf-head.svg": "Wolf head icon",
+    "bandage-roll.svg": "Bandage roll icon",
+    "first-aid-kit.svg": "First aid kit icon",
 }
 
 REACT_DRIVER = r"""

@@ -18,6 +18,7 @@ import {
   judgeAndRecord,
   judgeOnSeeds,
 } from "../../dist/browser/sim/judging.js";
+import { contentFingerprint } from "../../dist/browser/sim/judging-record.js";
 import { startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
@@ -474,6 +475,7 @@ test("the act of a judging gives the judging and its record, both from the state
     results: SEEDS.map(() => "death"),
     equipment: [],
     contentRevision: empty.programs[0].contentRevision,
+    contentFingerprint: contentFingerprint(empty.programs[0].program),
     generation: 1,
   });
   // A program that takes berries: the record holds the equipment the judging took, the kinds of its results
@@ -485,6 +487,7 @@ test("the act of a judging gives the judging and its record, both from the state
     results: eats.judging.results.map((result) => result.kind),
     equipment: [entry("berry", 4)],
     contentRevision: eating.programs[0].contentRevision,
+    contentFingerprint: contentFingerprint(eating.programs[0].program),
     generation: 1,
   });
   assert.deepEqual(eats.judging.equipment, [entry("berry", 4)]);

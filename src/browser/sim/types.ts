@@ -55,9 +55,11 @@ export type Action =
   | { kind: "lightItem" }
   | { kind: "feedCampfire" }
   | { kind: "eat" }
+  | { kind: "tend"; item: ItemId }
   | { kind: "strikeWithStick" }
   | { kind: "kick" }
-  | { kind: "dodge" };
+  | { kind: "dodge" }
+  | { kind: "craft"; item: ItemId };
 
 /** Stable within a program, including after a rule moves to another group. */
 export type RuleId = number;

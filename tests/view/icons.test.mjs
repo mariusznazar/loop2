@@ -11,7 +11,7 @@ import {
   ICON_SOURCE_COMMIT,
 } from "../../dist/browser/view/credits.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
-import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
 import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { CreditsSection } from "../../dist/browser/view/credits-section.js";
@@ -173,21 +173,42 @@ const TITLES = {
   dodge: "Dodge icon",
   "wood-pile": "Wood Pile icon",
   "wolf-head": "Wolf head icon",
+  "bandage-roll": "Bandage roll icon",
+  "first-aid-kit": "First aid kit icon",
 };
 
 /**
+ * The icons of the items, one line each, the first lines of the section: the four resources' and the
+ * bandage's, whose icon is the first aid kit's and which no map holds, in the order of the data
+ * (items.ts).
+ */
+const ITEM_ICONS = [
+  { name: "patyk", icon: "wood-stick" },
+  { name: "jagoda", icon: "berry-bush" },
+  { name: "mech", icon: "fern" },
+  { name: "włókno", icon: "flax" },
+  { name: "opatrunek", icon: "first-aid-kit" },
+];
+
+/** Where the lines of the section after the items' stand: the two campfires' and the actions'. */
+const CAMPFIRE_AT = ITEM_ICONS.length;
+const ACTIONS_AT = CAMPFIRE_AT + 2;
+
+/**
  * The icons of the actions, one line each in the section, after the campfire's: named by the actions
- * that show the icon, in the order of the data (actions.ts).
+ * that show the icon, in the order of the data (actions.ts); „Opatrz” brings the roll of bandage, and
+ * „Wytwórz” joins „Wytwórz — ognisko”, whose icon it shares.
  */
 const ACTION_ICONS = [
   { name: "Eksploruj", icon: "binoculars" },
   { name: "Wędruj", icon: "hiking" },
   { name: "Idź, Idź — ognisko", icon: "direction-sign" },
   { name: "Zbierz, Obchód", icon: "grab" },
-  { name: "Wytwórz — ognisko", icon: "claw-hammer" },
+  { name: "Wytwórz — ognisko, Wytwórz", icon: "claw-hammer" },
   { name: "Zapal — ognisko, Zapal — patyk", icon: "match-tip" },
   { name: "Zasil — ognisko", icon: "logging" },
   { name: "Zjedz — jagoda", icon: "meal" },
+  { name: "Opatrz", icon: "bandage-roll" },
   { name: "Uderz — patyk", icon: "deadly-strike" },
   { name: "Kopnij", icon: "boot-kick" },
   { name: "Odskocz", icon: "dodge" },
@@ -197,11 +218,11 @@ const ACTION_ICONS = [
 const CREATURE_ICONS = [{ name: "wilk", icon: "wolf-head" }];
 
 /**
- * Everything the data gives an icon, in the section's order: the resources, the campfire, the
+ * Everything the data gives an icon, in the section's order: the items, the campfire, the
  * extinguished campfire, the actions, the creatures.
  */
 const NAMED = [
-  ...Object.values(RESOURCES),
+  ...ITEM_ICONS,
   CAMPFIRE,
   CAMPFIRE.extinguished,
   ...ACTION_ICONS,
@@ -223,15 +244,15 @@ const PACK_PAGES = [
 ];
 const PACK_LICENCE = "http://creativecommons.org/licenses/by/3.0/";
 
-test("the section credits the campfire's icon, by Lorc, after the four resources' icons", () => {
+test("the section credits the campfire's icon, by Lorc, after the five items' icons", () => {
   const items = itemsOf(sectionMarkup());
   assert.equal(items.length, NAMED.length + PACK_LINES.length);
   assert.equal(
-    textOfMarkup(items[4]),
+    textOfMarkup(items[CAMPFIRE_AT]),
     "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
   );
   assert.match(
-    linksOf(items[4])[0].attributes,
+    linksOf(items[CAMPFIRE_AT])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/campfire\.html"/,
   );
 });
@@ -239,20 +260,59 @@ test("the section credits the campfire's icon, by Lorc, after the four resources
 test("the section credits the extinguished campfire's icon, by Delapouite, right after the campfire's", () => {
   const items = itemsOf(sectionMarkup());
   assert.equal(
-    textOfMarkup(items[5]),
+    textOfMarkup(items[CAMPFIRE_AT + 1]),
     "ognisko wygasłe: „Wood Pile icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (zmieniony kolor)",
   );
   assert.match(
-    linksOf(items[5])[0].attributes,
+    linksOf(items[CAMPFIRE_AT + 1])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/delapouite\/wood-pile\.html"/,
   );
+});
+
+test("the section credits the bandage's icon, the first aid kit by Delapouite, as the last line of the items, before the campfire's", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  assert.equal(
+    textOfMarkup(items[CAMPFIRE_AT - 1]),
+    "opatrunek: „First aid kit icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[CAMPFIRE_AT - 1])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/delapouite\/first-aid-kit\.html"/,
+  );
+});
+
+test("the section credits „Opatrz”'s icon, the roll of bandage by Lorc, once, among the actions' icons after „Zjedz — jagoda”", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at = ACTIONS_AT + ACTION_ICONS.findIndex((a) => a.name === "Opatrz");
+  assert.equal(
+    textOfMarkup(items[at]),
+    "Opatrz: „Bandage roll icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/bandage-roll\.html"/,
+  );
+  assert.match(textOfMarkup(items[at - 1]), /^Zjedz — jagoda: /);
+  assert.equal(
+    items.filter((item) => item.includes("bandage-roll.html")).length,
+    1,
+  );
+});
+
+test("the bandage's data names the icon file first-aid-kit.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  assert.equal(ITEMS.bandage.icon, "first-aid-kit");
+  assert.equal(ITEMS.bandage.iconTitle, "First aid kit icon");
+  assert.ok(existsSync(`${ICONS}first-aid-kit.svg`));
 });
 
 test("the section credits the actions' icons after the two campfires', one line each, in the order of the data", () => {
   const items = itemsOf(sectionMarkup());
   assert.deepEqual(
     items
-      .slice(6, 6 + ACTION_ICONS.length)
+      .slice(ACTIONS_AT, ACTIONS_AT + ACTION_ICONS.length)
       .map((item) => textOfMarkup(item).split(":")[0]),
     ACTION_ICONS.map((action) => action.name),
   );
@@ -261,7 +321,7 @@ test("the section credits the actions' icons after the two campfires', one line 
 test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the packs", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   const items = itemsOf(sectionMarkup());
-  const at = 6 + ACTION_ICONS.length;
+  const at = ACTIONS_AT + ACTION_ICONS.length;
   assert.equal(
     textOfMarkup(items[at]),
     "wilk: „Wolf head icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",

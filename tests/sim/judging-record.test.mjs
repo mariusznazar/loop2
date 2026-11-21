@@ -4,7 +4,9 @@
 // stands), D-440 (the mark and the note on the stock), D-442 (the content revision), D-190 (which deaths
 // take a character's practice and ranks, whose generation number grows), D-123 (the rule the game writes at
 // the first chill is a rule written into the listed program) and the invariant `simulation-inputs`. The data
-// are written out by hand.
+// are written out by hand. The fingerprint of a content is checked against the relation D-442 gives, which
+// the code of the fingerprint does not compute: a save raises the content revision of its program exactly where
+// the content changed.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -16,6 +18,8 @@ import {
   withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import {
+  contentFingerprint,
+  isContentFingerprint,
   markOfRecord,
   recordOfJudging,
 } from "../../dist/browser/sim/judging-record.js";
@@ -30,6 +34,7 @@ import {
   deleteProgram,
   editProgram,
   renameProgram,
+  saveCopyIntoProgram,
 } from "../../dist/browser/sim/programs.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
@@ -187,6 +192,7 @@ const recordAt = (state, solved, equipment = []) => ({
   results: kindsOf(solved),
   equipment,
   contentRevision: state.programs[0].contentRevision,
+  contentFingerprint: contentFingerprint(state.programs[0].program),
   generation: 1,
 });
 
@@ -205,8 +211,9 @@ const standing = (solved) => ({
 /** A game with Ala and Ola at generation 1 and two programs. */
 const plainGame = () => game();
 
-test("the record of a judging holds the kind of each of the twelve results, the equipment, and the content revision and the generation number of the game state the judging read", () => {
+test("the record of a judging holds the kind of each of the twelve results, the equipment, the content revision and the fingerprint of the content of its program, and the generation number of the game state the judging read", () => {
   // decision: D-441 "The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
   const judging = {
     results: [
       { kind: "solved" },
@@ -252,8 +259,14 @@ test("the record of a judging holds the kind of each of the twelve results, the 
     ],
     equipment: [entry("berry", 4), entry("stick", 2)],
     contentRevision: 2,
+    contentFingerprint: contentFingerprint(state.programs[1].program),
     generation: 3,
   });
+  // The fingerprint is that of the triple's program, program 2, and not of program 1, whose content differs.
+  assert.notEqual(
+    record.contentFingerprint,
+    contentFingerprint(state.programs[0].program),
+  );
   // The record shares nothing with the judging it was made from.
   const shared = recordOfJudging(state, ids(2, 2, "forest"), judging);
   judging.equipment[0].count = 99;
@@ -375,6 +388,423 @@ test("a record whose program was saved with other content stands no more, a chan
     null,
     "a revision above",
   );
+});
+
+/** `value` with the keys of every object in it written in the opposite order: the same data, made another way. */
+function keysReversed(value) {
+  if (Array.isArray(value)) return value.map(keysReversed);
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value)
+        .reverse()
+        .map(([key, held]) => [key, keysReversed(held)]),
+    );
+  return value;
+}
+
+const ALWAYS = { kind: "always" };
+const content = (groups, tripPlan, counters = {}) => ({
+  tripPlan,
+  groups,
+  nextGroupId: 3,
+  nextRuleId: 4,
+  ...counters,
+});
+const grouped = (id, name, condition, rules) => ({
+  id,
+  name,
+  condition,
+  rules,
+});
+const ruled = (id, condition, kind) => ({ id, condition, action: { kind } });
+const PLAN = { take: [entry("stick", 2), entry("berry", 1)], bring: [] };
+const FIRST = grouped(1, "Najpierw", { kind: "healthBelow", value: 8 }, [
+  ruled(1, ALWAYS, "explore"),
+  ruled(2, ALWAYS, "wander"),
+]);
+const SECOND = grouped(2, "Potem", ALWAYS, [ruled(3, ALWAYS, "eat")]);
+/** The content every change below is made from: two groups of two rules and one, and a trip plan of two takes. */
+const FINGERPRINTED = content([FIRST, SECOND], PLAN);
+
+/** What a save of each content into the program that holds `FINGERPRINTED` does to its content revision (D-442). */
+const SAVES = [
+  [
+    "a rule's action changed",
+    content(
+      [{ ...FIRST, rules: [ruled(1, ALWAYS, "kick"), FIRST.rules[1]] }, SECOND],
+      PLAN,
+    ),
+    true,
+  ],
+  [
+    "a rule's condition changed",
+    content(
+      [
+        {
+          ...FIRST,
+          rules: [
+            ruled(1, { kind: "healthBelow", value: 50 }, "explore"),
+            FIRST.rules[1],
+          ],
+        },
+        SECOND,
+      ],
+      PLAN,
+    ),
+    true,
+  ],
+  [
+    "a rule added",
+    content(
+      [{ ...FIRST, rules: [...FIRST.rules, ruled(4, ALWAYS, "kick")] }, SECOND],
+      PLAN,
+      { nextRuleId: 5 },
+    ),
+    true,
+  ],
+  [
+    "a rule removed",
+    content([{ ...FIRST, rules: [FIRST.rules[0]] }, SECOND], PLAN),
+    true,
+  ],
+  [
+    "two rules swapped",
+    content(
+      [{ ...FIRST, rules: [FIRST.rules[1], FIRST.rules[0]] }, SECOND],
+      PLAN,
+    ),
+    true,
+  ],
+  [
+    "a rule moved to another group",
+    content(
+      [
+        { ...FIRST, rules: [FIRST.rules[0]] },
+        { ...SECOND, rules: [FIRST.rules[1], ...SECOND.rules] },
+      ],
+      PLAN,
+    ),
+    true,
+  ],
+  [
+    "the identity of a rule changed",
+    content(
+      [
+        { ...FIRST, rules: [ruled(9, ALWAYS, "explore"), FIRST.rules[1]] },
+        SECOND,
+      ],
+      PLAN,
+      { nextRuleId: 10 },
+    ),
+    true,
+  ],
+  ["two groups swapped", content([SECOND, FIRST], PLAN), true],
+  [
+    "a group's condition changed",
+    content(
+      [{ ...FIRST, condition: { kind: "healthBelow", value: 94 } }, SECOND],
+      PLAN,
+    ),
+    true,
+  ],
+  [
+    "a group renamed",
+    content([{ ...FIRST, name: "Inaczej" }, SECOND], PLAN),
+    true,
+  ],
+  [
+    "the take list changed",
+    content([FIRST, SECOND], {
+      ...PLAN,
+      take: [entry("stick", 3), entry("berry", 1)],
+    }),
+    true,
+  ],
+  [
+    "the take list in another order",
+    content([FIRST, SECOND], { ...PLAN, take: [...PLAN.take].reverse() }),
+    true,
+  ],
+  [
+    "the bring list changed",
+    content([FIRST, SECOND], { ...PLAN, bring: [entry("stick", 1)] }),
+    true,
+  ],
+  ["the content saved again", structuredClone(FINGERPRINTED), false],
+  [
+    "the content with the identity counters alone changed",
+    content([FIRST, SECOND], PLAN, { nextGroupId: 9, nextRuleId: 12 }),
+    false,
+  ],
+];
+
+test("the fingerprint of a content differs exactly where a save of it raises the content revision of its program", () => {
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were, the rule the game writes at the first chill (D-123) included."
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  const state = editProgram(game(), 1, FINGERPRINTED).state;
+  const before = state.programs[0];
+  assert.equal(
+    before.contentRevision,
+    1,
+    "precondition: the content was saved",
+  );
+  for (const [name, saved, raises] of SAVES) {
+    const after = editProgram(state, 1, saved).state.programs[0];
+    // The relation of D-442, read from the save: the revision rises where the content changed.
+    assert.equal(
+      after.contentRevision > before.contentRevision,
+      raises,
+      `precondition: ${name}`,
+    );
+    assert.equal(
+      contentFingerprint(after.program) !== contentFingerprint(before.program),
+      raises,
+      name,
+    );
+  }
+  // A copy saved into its program with the keys of its objects made in another order, which the editor's
+  // save puts in order and the copy's save does not: the revision stays and so does the fingerprint.
+  const running = send(
+    state,
+    { mapId: "forest", characterId: 1, programId: 1 },
+    T0,
+  ).state;
+  for (const reordered of [
+    keysReversed(FINGERPRINTED),
+    keysReversed({ ...FINGERPRINTED, nextGroupId: 9, nextRuleId: 12 }),
+  ]) {
+    const copySaved = saveCopyIntoProgram({
+      ...running,
+      run: {
+        ...running.run,
+        copy: { ...running.run.copy, program: reordered, base: SAVES[3][1] },
+      },
+    }).state.programs[0];
+    assert.notEqual(
+      Object.keys(copySaved.program)[0],
+      Object.keys(before.program)[0],
+      "precondition: the keys stand in another order",
+    );
+    assert.equal(
+      copySaved.contentRevision,
+      before.contentRevision,
+      "precondition: the revision is left as it was",
+    );
+    assert.equal(
+      contentFingerprint(copySaved.program),
+      contentFingerprint(before.program),
+    );
+  }
+  // The rule the game writes at the first chill, the case that the save of the player does not make.
+  const calm = advanceMinutes(
+    send(
+      createCharacter(withEdgeSolved(newGame()), "Ala").state,
+      { mapId: "forest", characterId: 1 },
+      T0,
+    ).state,
+    83,
+  ).state;
+  const chilled = advanceMinutes(calm, 1).state;
+  assert.equal(
+    chilled.programs[0].contentRevision,
+    calm.programs[0].contentRevision + 1,
+    "precondition: the first chill raised the revision",
+  );
+  assert.notEqual(
+    contentFingerprint(chilled.programs[0].program),
+    contentFingerprint(calm.programs[0].program),
+  );
+  // A change and the change back give the content judged again, whose fingerprint is the first one.
+  const other = editProgram(state, 1, SAVES[0][1]).state;
+  const back = editProgram(other, 1, structuredClone(FINGERPRINTED)).state;
+  assert.equal(back.programs[0].contentRevision, 3, "precondition");
+  assert.equal(
+    contentFingerprint(back.programs[0].program),
+    contentFingerprint(before.program),
+  );
+});
+
+test("five thousand contents that differ in a number, in the order of their rules or in a trip plan have each a fingerprint of its own", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  // Each content below differs from every other in a number, in the order of rules that differ, or in a count of a trip plan.
+  const contents = [];
+  for (let value = 0; value < 4000; value += 1)
+    contents.push(
+      content(
+        [
+          grouped(1, "Program", ALWAYS, [
+            {
+              id: 1,
+              condition: { kind: "healthBelow", value },
+              action: { kind: "eat" },
+            },
+          ]),
+        ],
+        { take: [], bring: [] },
+      ),
+    );
+  const kinds = ["explore", "wander", "eat", "kick", "dodge", "patrol"];
+  const orders = (rest) =>
+    rest.length <= 1
+      ? [rest]
+      : rest.flatMap((kind, at) =>
+          orders([...rest.slice(0, at), ...rest.slice(at + 1)]).map((tail) => [
+            kind,
+            ...tail,
+          ]),
+        );
+  for (const order of orders(kinds))
+    contents.push(
+      content(
+        [
+          grouped(
+            1,
+            "Program",
+            ALWAYS,
+            order.map((kind, at) => ruled(at + 1, ALWAYS, kind)),
+          ),
+        ],
+        { take: [], bring: [] },
+      ),
+    );
+  for (let count = 1; count <= 500; count += 1)
+    contents.push(
+      content([grouped(1, "Program", ALWAYS, [])], {
+        take: [entry("stick", count)],
+        bring: [],
+      }),
+    );
+  assert.equal(
+    contents.length,
+    4000 + 720 + 500,
+    "precondition: 5220 contents",
+  );
+  const fingerprints = new Set(contents.map((one) => contentFingerprint(one)));
+  assert.equal(fingerprints.size, contents.length);
+});
+
+test("the fingerprint is sixteen lower-case hexadecimal digits, the same at each call, and leaves the content it was given as it was", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  const given = frozen(structuredClone(FINGERPRINTED));
+  const first = contentFingerprint(given);
+  assert.match(first, /^[0-9a-f]{16}$/);
+  assert.equal(contentFingerprint(given), first);
+  assert.deepEqual(given, FINGERPRINTED);
+  assert.equal(isContentFingerprint(first), true);
+  assert.equal(isContentFingerprint("0123456789abcdef"), true);
+  for (const refused of [
+    "",
+    "0123456789abcde",
+    "0123456789abcdef0",
+    "0123456789ABCDEF",
+    "0123456789abcdeg",
+    " 0123456789abcde",
+    "0123456789abcde\n",
+    "0123456789abcdef".repeat(1000),
+    1234567890123456,
+    null,
+    undefined,
+    ["0123456789abcdef"],
+    { toString: () => "0123456789abcdef" },
+  ])
+    assert.equal(isContentFingerprint(refused), false, String(refused));
+});
+
+test("two contents whose group names, put together without their quotes, read as the same text have each a fingerprint of its own", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  // One group whose name holds the end of a group and the start of the next, and the two groups it reads as
+  // when the quotes of the names are left out: the same text of the groups, a different content.
+  const asOne = content(
+    [
+      grouped(
+        1,
+        'x,"rules":[]},{"condition":{"kind":always},"id":2,"name":y',
+        ALWAYS,
+        [],
+      ),
+    ],
+    { take: [], bring: [] },
+  );
+  const asTwo = content(
+    [grouped(1, "x", ALWAYS, []), grouped(2, "y", ALWAYS, [])],
+    { take: [], bring: [] },
+  );
+  assert.notEqual(contentFingerprint(asOne), contentFingerprint(asTwo));
+});
+
+test("the fingerprint of every content is its whole sixteen digits, one whose two words start with a zero included", () => {
+  // decision: D-441 "The value holds besides a fingerprint of the content of the program it judged, a short text that is the same for two contents the content revision counts as no change (D-442) and another for every change it counts, but for a chance of a collision of at most one in 2^52."
+  const fingerprints = [];
+  for (let value = 0; value < 4000; value += 1)
+    fingerprints.push(
+      contentFingerprint(
+        content(
+          [
+            grouped(1, "Program", ALWAYS, [
+              ruled(1, { kind: "healthBelow", value }, "eat"),
+            ]),
+          ],
+          { take: [], bring: [] },
+        ),
+      ),
+    );
+  // About one fingerprint in sixteen starts with a zero in each of its two words of eight digits.
+  assert.ok(
+    fingerprints.some((one) => one.startsWith("0")),
+    "precondition: a fingerprint whose first word starts with a zero",
+  );
+  assert.ok(
+    fingerprints.some((one) => one[8] === "0"),
+    "precondition: a fingerprint whose second word starts with a zero",
+  );
+  for (const one of fingerprints) assert.match(one, /^[0-9a-f]{16}$/);
+});
+
+test("a record made at a content revision stands beside the content it judged and not beside another content that reached the same revision after a change that was lost", () => {
+  // decision: D-441 "A remembered judging stands there too only while the fingerprint of the content the program holds equals the one stored, so two different contents share a judging only through such a collision, and a value whose fingerprint is no text of the form of a fingerprint is a value of another form."
+  const base = game();
+  const judged = editProgram(base, 1, programFromRules(rule("explore"))).state;
+  // The save that made another content was lost, and the same edit made again gave another content: the same count.
+  const lost = editProgram(base, 1, programFromRules(rule("wander"))).state;
+  assert.equal(
+    judged.programs[0].contentRevision,
+    lost.programs[0].contentRevision,
+    "precondition: the two contents stand at one content revision",
+  );
+  const record = recordOfJudging(frozen(judged), ids(1, 1, "forest"), {
+    results: kindsOf(12).map((kind) => ({ kind })),
+    equipment: [],
+  });
+  assert.deepEqual(markOf(judged, record), standing(12));
+  assert.equal(
+    markOf(lost, record),
+    null,
+    "another content at the same revision",
+  );
+  // The same content saved by another path stands.
+  const again = editProgram(
+    base,
+    1,
+    structuredClone(programFromRules(rule("explore"))),
+  ).state;
+  assert.deepEqual(
+    markOf(again, record),
+    standing(12),
+    "the same content again",
+  );
+  // A record whose fingerprint is not that of the content at hand shows nothing, whatever it is instead.
+  for (const fingerprint of [
+    "0000000000000000",
+    contentFingerprint(lost.programs[0].program),
+    "",
+    undefined,
+    null,
+  ])
+    assert.equal(
+      markOf(judged, { ...record, contentFingerprint: fingerprint }),
+      null,
+      String(fingerprint),
+    );
 });
 
 test("the rule the game writes at the first chill into the listed program takes the record of that program out of standing", () => {

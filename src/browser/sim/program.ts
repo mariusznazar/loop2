@@ -1,4 +1,5 @@
 import { backpackCap, backpackCount } from "./character.js";
+import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
@@ -61,12 +62,15 @@ export type ActionPrice = {
 /**
  * The price of an action for a character of `skills`, as the data gives it: what crafting, lighting,
  * feeding and eating use up of the piece the data marks for that use (the same first piece the
- * reason of a rule names, D-310), and the nature energy of a spell (D-175). A strike uses up
+ * reason of a rule names, D-310), and the nature energy of a spell (D-175). An action with a target
+ * is priced by it, given as `item`: „Wytwórz” by the recipe's pieces of its target, „Opatrz” by one
+ * piece of it (D-363, D-443); the bare verb, with no target, uses up nothing. A strike uses up
  * nothing (D-145), nor does any action of walking, gathering or combat. Pure.
  */
 export function actionPrice(
   kind: Action["kind"],
   skills: CharacterSkills,
+  item?: ItemId,
 ): ActionPrice {
   const natureEnergy = (ACTIONS[kind] as ActionDef).natureEnergy ?? 0;
   const pieces: ActionPrice["pieces"] = [];
@@ -88,6 +92,15 @@ export function actionPrice(
       break;
     case "eat":
       pieces.push({ item: firstItemFor("food"), count: 1 });
+      break;
+    case "craft":
+      if (item !== undefined)
+        pieces.push(
+          ...(ITEMS[item].recipe?.uses ?? []).map((use) => ({ ...use })),
+        );
+      break;
+    case "tend":
+      if (item !== undefined) pieces.push({ item, count: 1 });
       break;
     default:
       break;
@@ -264,14 +277,19 @@ function walkingTiles(run: RunView): Tile[] {
   }));
 }
 
-/** The name of a resource or an item as the game writes it, in lower case. */
-function thingName(item: ItemId): string {
-  return RESOURCES[item].name;
+/** The name of an item as the game writes it, in lower case: read from the item's row. */
+function itemName(item: ItemId): string {
+  return ITEMS[item].name;
+}
+
+/** The name of a resource on a map as the game writes it, in lower case: read from its row. */
+function resourceName(resource: ResourceId): string {
+  return RESOURCES[resource].name;
 }
 
 /** „brakuje {how many} × {item}”: what the backpack lacks of the pieces `need` names. */
 function lacking(backpack: Backpack, need: { item: ItemId; count: number }) {
-  return `brakuje ${need.count - backpack[need.item]} × ${thingName(need.item)}`;
+  return `brakuje ${need.count - backpack[need.item]} × ${itemName(need.item)}`;
 }
 
 /** The first item of the data's order that the data marks for a use. */
@@ -314,10 +332,10 @@ function worldRefusal(run: RunView, action: Action): string | null {
     case "walkTo": {
       const target = walkTarget(run, action.resource);
       if (target === null)
-        return `nie znasz miejsca, gdzie leży ${thingName(action.resource)}`;
+        return `nie znasz miejsca, gdzie leży ${resourceName(action.resource)}`;
       return target.minutes > 0
         ? null
-        : `${thingName(action.resource)} leży już tutaj`;
+        : `${resourceName(action.resource)} leży już tutaj`;
     }
     case "walkToCampfire": {
       const target = campfireTarget(run);
@@ -327,7 +345,7 @@ function worldRefusal(run: RunView, action: Action): string | null {
     case "gather":
     case "patrol":
       if (stockHere(run, action.resource) <= 0)
-        return `tu nie leży ${thingName(action.resource)}`;
+        return `tu nie leży ${resourceName(action.resource)}`;
       return backpackCount(backpack) < backpackCap(run.character)
         ? null
         : "plecak pełny";
@@ -358,11 +376,22 @@ function worldRefusal(run: RunView, action: Action): string | null {
         return "tu nie płonie ognisko";
       return itemFor(backpack, "fuel") !== null
         ? null
-        : `brak opału: ${thingName(firstItemFor("fuel"))}`;
+        : `brak opału: ${itemName(firstItemFor("fuel"))}`;
     case "eat":
       return itemFor(backpack, "food") !== null
         ? null
         : lacking(backpack, { item: firstItemFor("food"), count: 1 });
+    case "craft": {
+      const piece = ITEMS[action.item].recipe!.uses.find(
+        (use) => !holds(backpack, use),
+      );
+      return piece === undefined ? null : lacking(backpack, piece);
+    }
+    case "tend":
+      if (run.body.health >= BALANCE.body.startHealth) return "zdrowie pełne";
+      return holds(backpack, { item: action.item, count: 1 })
+        ? null
+        : lacking(backpack, { item: action.item, count: 1 });
     case "strikeWithStick":
     case "kick":
     case "dodge":

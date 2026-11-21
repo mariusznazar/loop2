@@ -8,6 +8,7 @@ import {
   CONDITION_SECTIONS,
   CONDITIONS,
 } from "../../dist/browser/sim/data/conditions.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
@@ -22,6 +23,7 @@ import {
   removeGroup,
   dropRule,
   actionPick,
+  actionFieldValue,
   actionPriceText,
   actionSentence,
   actionTargetPick,
@@ -46,6 +48,7 @@ import {
   ruleFields,
   ruleNumber,
   ruleSentence,
+  withActionItem,
   withActionKind,
   withActionResource,
   withConditionItem,
@@ -53,6 +56,7 @@ import {
   withConditionResource,
   withConditionValue,
 } from "../../dist/browser/view/program-editor.js";
+import { itemTargetTime } from "../../dist/browser/view/item-target-pick.js";
 import {
   newKnowingGame,
   withEdgeSolved,
@@ -106,7 +110,7 @@ const HERE_BELOW = { defaultValue: 1, min: 0, max: 50, step: 1 };
 const TEMPERATURE = { defaultValue: 36.5, min: 30, max: 37, step: 0.1 };
 // The items the editor is given, in the order it offers them: written out, so that a new item
 // in the data changes none of these cases.
-const ITEMS_LISTED = ["stick", "berry", "moss", "fiber"];
+const ITEMS_LISTED = ["stick", "berry", "moss", "fiber", "bandage"];
 
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -818,9 +822,11 @@ test("every program the editor builds passes setProgram, before sending and duri
     "gather",
     "patrol",
     ...CAMPFIRE_AND_BACKPACK,
+    "tend",
     "strikeWithStick",
     "kick",
     "dodge",
+    "craft",
   ]);
 
   // Every pair of kinds, every resource and item in every slot, and the number at its ends, off its
@@ -847,7 +853,12 @@ test("every program the editor builds passes setProgram, before sending and duri
           ITEMS_LISTED,
         ),
       );
-      keep(withActionKind(program, 1, last, actionKind, resources));
+      keep(
+        withActionKind(program, 1, last, actionKind, resources, ITEMS_LISTED),
+      );
+      if (actionKind === "craft" || actionKind === "tend")
+        for (const item of ITEMS_LISTED)
+          keep(withActionItem(program, 1, last, item));
       for (const resource of resources) {
         if (conditionKind === "hereBelow")
           keep(withConditionResource(program, 1, last, resource));
@@ -1052,10 +1063,10 @@ function cellsOf(sections) {
   );
 }
 
-test("the actions of the pick stand in four named groups, in the order of D-290, the combat ones picked outside combat", () => {
+test("the actions of the pick stand in five named groups, in the order of D-290, the combat ones picked outside combat", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
-  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+  // decision: D-290 "The pick of the rule panel sets the actions in five named groups"
   // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
   // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const sections = actionPick(newKnowingGame(), EXPLORE);
@@ -1078,12 +1089,27 @@ test("the actions of the pick stand in four named groups, in the order of D-290,
       ],
       [
         "Żywność i walka",
-        ["Zjedz — jagoda (1 jagoda)", "Uderz — patyk", "Kopnij", "Odskocz"],
+        [
+          "Zjedz — jagoda (1 jagoda)",
+          "Opatrz",
+          "Uderz — patyk",
+          "Kopnij",
+          "Odskocz",
+        ],
       ],
+      ["Wytwarzanie", ["Wytwórz"]],
     ],
   );
   const cells = cellsOf(sections);
-  for (const kind of ["strikeWithStick", "kick", "dodge", "gather", "eat"])
+  for (const kind of [
+    "strikeWithStick",
+    "kick",
+    "dodge",
+    "gather",
+    "eat",
+    "tend",
+    "craft",
+  ])
     assert.equal(cells[kind].greyed, false, kind);
 });
 
@@ -1200,6 +1226,47 @@ test("„Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „
   assert.equal(cellsOf(conditionPick(one, ALWAYS)).itemBelow.greyed, false);
 });
 
+test("„Wytwórz” and „Opatrz” stand greyed „nie znasz jeszcze celu” until the Understanding holds an item each takes as its target", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
+  const reasons = (state) =>
+    Object.fromEntries(
+      ["craft", "tend"].map((kind) => {
+        const cell = cellsOf(actionPick(state, EXPLORE))[kind];
+        return [kind, [cell.greyed, cell.reason]];
+      }),
+    );
+  const greyed = [true, NO_TARGET];
+  const open = [false, null];
+  assert.deepEqual(reasons(knowing(newKnowingGame(), { items: [] })), {
+    craft: greyed,
+    tend: greyed,
+  });
+  // Moss holds neither a recipe nor a healing property, so it is a target of neither verb.
+  assert.deepEqual(
+    reasons(knowing(newKnowingGame(), { items: ["stick", "berry", "moss"] })),
+    { craft: greyed, tend: greyed },
+  );
+  assert.deepEqual(reasons(knowing(newKnowingGame(), { items: ["bandage"] })), {
+    craft: open,
+    tend: open,
+  });
+  assert.deepEqual(reasons(knowing(runningGame(), { items: [] })), {
+    craft: greyed,
+    tend: greyed,
+  });
+  assert.deepEqual(reasons(runningGame()), { craft: open, tend: open });
+  // A verb stays picked and greyed with no reason made up where the Understanding lacks the verb.
+  const lacking = knowing(newKnowingGame(), {
+    actions: ["explore"],
+    items: ["bandage"],
+  });
+  const held = cellsOf(actionPick(lacking, { kind: "tend", item: "bandage" }));
+  assert.deepEqual(
+    [held.tend.chosen, held.tend.greyed, held.tend.reason],
+    [true, true, null],
+  );
+});
+
 test("a known resource the map of the map run lacks stands greyed: „nie ma go na tej mapie”; with no map run every known resource may be picked", () => {
   // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
@@ -1248,6 +1315,7 @@ test("a known resource the map of the map run lacks stands greyed: „nie ma go 
         ["Jagoda", false, null],
         ["Mech", false, null],
         ["Włókno", false, null],
+        ["Opatrunek", false, null],
       ],
     );
     const outside = actionTargetPick(newKnowingGame(), {
@@ -1289,6 +1357,273 @@ test("a target is picked from the resources of the Understanding alone, and an a
   assert.equal(
     conditionTargetPick(state, { kind: "healthBelow", value: 5 }),
     null,
+  );
+});
+
+const BANDAGE_RECIPE = ITEMS.bandage.recipe;
+/** What the price of „Wytwórz — Opatrunek” says, by shape: the count of the recipe's moss and a form of its name. */
+const BANDAGE_PRICE = new RegExp(
+  `^${BANDAGE_RECIPE.uses[0].count} (mech|mchy|mchów)$`,
+);
+
+test("the pick of the target of „Wytwórz” and „Opatrz” holds the bandage by its name with its price in brackets, and no resource", () => {
+  // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
+  const state = newKnowingGame();
+  const crafting = actionTargetPick(state, { kind: "craft", item: "bandage" });
+  assert.deepEqual(
+    crafting.map((cell) => [cell.value, cell.chosen, cell.greyed, cell.reason]),
+    [["bandage", true, false, null]],
+  );
+  const named = /^Opatrunek \((.*)\)$/.exec(crafting[0].label);
+  assert.ok(named, crafting[0].label);
+  assert.match(named[1], BANDAGE_PRICE);
+  assert.deepEqual(
+    actionTargetPick(state, { kind: "tend", item: "bandage" }).map((cell) => [
+      cell.label,
+      cell.chosen,
+    ]),
+    [["Opatrunek (1 opatrunek)", true]],
+  );
+  // The time of a making stands beside each target; the minutes of „Opatrz” are its own.
+  assert.equal(
+    itemTargetTime(state, "craft", "bandage"),
+    `${BANDAGE_RECIPE.minutes} min`,
+  );
+  assert.equal(itemTargetTime(state, "tend", "bandage"), null);
+  // A target the Understanding does not hold stands out of the pick, but a held one stays, greyed.
+  const unknown = knowing(state, { items: ["stick"] });
+  assert.deepEqual(
+    actionTargetPick(unknown, { kind: "tend", item: "bandage" }).map((cell) => [
+      cell.value,
+      cell.chosen,
+      cell.greyed,
+      cell.reason,
+    ]),
+    [["bandage", true, true, null]],
+  );
+  // The bandage is no target of a verb that names a resource, and a verb with no target has no pick.
+  for (const kind of ["gather", "walkTo", "patrol"])
+    assert.equal(
+      actionTargetPick(state, { kind, resource: "stick" }).some(
+        (cell) => cell.value === "bandage",
+      ),
+      false,
+      kind,
+    );
+});
+
+test("the time of one making comes from the recipe of its target, the minutes of „Opatrz” are its own, and neither verb has a price or a time of the bare verb", () => {
+  // decision: D-293 "Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out of the action takes, such as „10 min”, „tura” for an action of combat, for a movement during a map run the time of a step on that map, and nothing for a movement outside a map run"
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
+  const outside = newKnowingGame();
+  const during = runningGame();
+  for (const state of [outside, during]) {
+    assert.equal(actionTime(state, "craft"), null, "the bare „Wytwórz”");
+    assert.equal(
+      actionTime(state, "craft", "bandage"),
+      `${BANDAGE_RECIPE.minutes} min`,
+    );
+    assert.equal(actionTime(state, "tend"), `${ACTIONS.tend.minutes} min`);
+    assert.equal(
+      actionTime(state, "tend", "bandage"),
+      `${ACTIONS.tend.minutes} min`,
+    );
+    assert.equal(actionPriceText(state, "craft"), null);
+    assert.equal(actionPriceText(state, "tend"), null);
+    assert.match(actionPriceText(state, "craft", "bandage"), BANDAGE_PRICE);
+    assert.equal(actionPriceText(state, "tend", "bandage"), "1 opatrunek");
+  }
+  // A target a verb does not take adds nothing to an action that names none.
+  assert.equal(actionTime(outside, "gather", "bandage"), "10 min");
+  assert.equal(actionPriceText(outside, "eat", "bandage"), "1 jagoda");
+});
+
+test("the sentence of a rule's row names the verb and its target, with no price and no time", () => {
+  // decision: D-288 "A rule's row reads as a sentence"
+  assert.equal(
+    actionSentence({ kind: "craft", item: "bandage" }),
+    "Wytwórz — Opatrunek",
+  );
+  assert.equal(
+    actionSentence({ kind: "tend", item: "bandage" }),
+    "Opatrz — Opatrunek",
+  );
+  assert.deepEqual(
+    ruleSentence({
+      id: 1,
+      condition: { kind: "healthBelow", value: 40 },
+      action: { kind: "tend", item: "bandage" },
+    }),
+    { condition: "Zdrowie poniżej 40 pkt", action: "Opatrz — Opatrunek" },
+  );
+});
+
+test("the action field shows the verb, its target and its price; an action with no target shows its cell", () => {
+  // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
+  const state = newKnowingGame();
+  const crafting = actionFieldValue(state, { kind: "craft", item: "bandage" });
+  const named = /^Wytwórz — Opatrunek \((.*)\)$/.exec(crafting);
+  assert.ok(named, crafting);
+  assert.match(named[1], BANDAGE_PRICE);
+  assert.equal(
+    actionFieldValue(state, { kind: "tend", item: "bandage" }),
+    "Opatrz — Opatrunek (1 opatrunek)",
+  );
+  assert.equal(actionFieldValue(state, { kind: "kick" }), "Kopnij");
+  assert.equal(
+    actionFieldValue(state, { kind: "gather", resource: "stick" }),
+    "Zbierz",
+  );
+  assert.equal(
+    actionFieldValue(state, { kind: "craftCampfire" }),
+    "Wytwórz — ognisko (6 patyków)",
+  );
+});
+
+test("the rule of a verb with an item target has a field of its target; picking the verb takes the first known target, picking a target changes the rule", () => {
+  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  const rule = (action) => ({ id: 1, condition: ALWAYS, action });
+  for (const kind of ["craft", "tend"])
+    assert.deepEqual(
+      ruleFields(rule({ kind, item: "bandage" })),
+      ["condition", "action", "actionTarget"],
+      kind,
+    );
+  const known = ["stick", "berry", "moss", "fiber", "bandage"];
+  for (const kind of ["craft", "tend"]) {
+    const picked = withActionKind(THREE, 1, 0, kind, LAS, known);
+    assert.deepEqual(
+      picked.groups[0].rules[0],
+      { id: 1, condition: ALWAYS, action: { kind, item: "bandage" } },
+      kind,
+    );
+    // The same kind commits nothing, and a rule of another kind names no item to change.
+    assert.equal(withActionKind(picked, 1, 0, kind, LAS, known), null, kind);
+    assert.equal(withActionItem(THREE, 1, 0, "bandage"), null);
+    assert.equal(withActionItem(picked, 1, 0, "bandage"), null, kind);
+    // Without a known target of the verb nothing is committed; moss is a target of neither verb.
+    assert.equal(withActionKind(THREE, 1, 0, kind, LAS, []), null, kind);
+    assert.equal(
+      withActionKind(THREE, 1, 0, kind, LAS, ["stick", "moss"]),
+      null,
+      kind,
+    );
+    assert.equal(withActionItem(picked, 1, 0, "moss"), null, kind);
+  }
+  // From one verb with an item target to the other, and away from it, the target goes with the kind.
+  const crafting = withActionKind(THREE, 1, 0, "craft", LAS, known);
+  assert.deepEqual(
+    withActionKind(crafting, 1, 0, "tend", LAS, known).groups[0].rules[0]
+      .action,
+    { kind: "tend", item: "bandage" },
+  );
+  assert.deepEqual(
+    withActionKind(crafting, 1, 0, "kick", LAS, known).groups[0].rules[0]
+      .action,
+    { kind: "kick" },
+  );
+  assert.equal(withActionResource(crafting, 1, 0, "stick"), null);
+});
+
+/**
+ * Runs `check` with a second item laid over the built `ITEMS`, whose row holds a recipe and a healing
+ * property, and takes it away after, whatever `check` does: no data of the game holds it.
+ */
+function withSplint(check) {
+  ITEMS.splint = {
+    name: "szyna",
+    plural: { few: "szyny", many: "szyn" },
+    icon: "first-aid-kit",
+    iconTitle: "First aid kit icon",
+    revealedBy: { kind: "gathered", item: "stick" },
+    recipe: { uses: [{ item: "stick", count: 3 }], minutes: 15 },
+    healing: { health: 10 },
+  };
+  try {
+    check();
+  } finally {
+    delete ITEMS.splint;
+  }
+}
+
+test("a second item with a recipe and a healing property becomes a target of both verbs in the editor, and moss of neither, by a change of the data alone", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
+  withSplint(() => {
+    const state = newKnowingGame();
+    const craft = actionTargetPick(state, { kind: "craft", item: "splint" });
+    assert.deepEqual(
+      craft.map((cell) => [cell.value, cell.chosen, cell.greyed]),
+      [
+        ["bandage", false, false],
+        ["splint", true, false],
+      ],
+    );
+    assert.equal(craft[1].label, "Szyna (3 patyki)");
+    const tend = actionTargetPick(state, { kind: "tend", item: "splint" });
+    assert.deepEqual(
+      tend.map((cell) => [cell.value, cell.label]),
+      [
+        ["bandage", "Opatrunek (1 opatrunek)"],
+        ["splint", "Szyna (1 szyna)"],
+      ],
+    );
+    // The verbs' cells stay open, and the verb takes the first of its known targets in the data's order.
+    const cells = cellsOf(actionPick(state, EXPLORE));
+    assert.deepEqual([cells.craft.greyed, cells.tend.greyed], [false, false]);
+    const only = ["moss", "splint"];
+    for (const kind of ["craft", "tend"]) {
+      assert.deepEqual(
+        withActionKind(THREE, 1, 0, kind, LAS, only).groups[0].rules[0].action,
+        { kind, item: "splint" },
+        kind,
+      );
+      const picked = withActionKind(THREE, 1, 0, kind, LAS, [
+        "moss",
+        "splint",
+        "bandage",
+      ]);
+      assert.deepEqual(
+        picked.groups[0].rules[0].action,
+        { kind, item: "bandage" },
+        `${kind} takes the first known target in the data's order`,
+      );
+      assert.deepEqual(
+        withActionItem(picked, 1, 0, "splint").groups[0].rules[0].action,
+        { kind, item: "splint" },
+        kind,
+      );
+      assert.equal(withActionItem(picked, 1, 0, "bandage"), null, kind);
+      assert.equal(withActionItem(picked, 1, 0, "moss"), null, kind);
+    }
+    // Its words, price and time come from its row.
+    const rule = { kind: "craft", item: "splint" };
+    assert.equal(actionSentence(rule), "Wytwórz — Szyna");
+    assert.equal(actionFieldValue(state, rule), "Wytwórz — Szyna (3 patyki)");
+    assert.equal(
+      actionFieldValue(state, { kind: "tend", item: "splint" }),
+      "Opatrz — Szyna (1 szyna)",
+    );
+    assert.equal(itemTargetTime(state, "craft", "splint"), "15 min");
+    assert.equal(actionTime(state, "craft", "splint"), "15 min");
+    assert.equal(actionPriceText(state, "craft", "splint"), "3 patyki");
+    // Moss is a target of neither verb, with the second item among the items too.
+    for (const kind of ["craft", "tend"])
+      assert.equal(
+        actionTargetPick(state, { kind, item: "splint" }).some(
+          (cell) => cell.value === "moss",
+        ),
+        false,
+        kind,
+      );
+  });
+  // Taken away, it stands in no pick: the targets follow the data.
+  assert.equal("splint" in ITEMS, false);
+  assert.deepEqual(
+    actionTargetPick(newKnowingGame(), { kind: "craft", item: "bandage" }).map(
+      (cell) => cell.value,
+    ),
+    ["bandage"],
   );
 });
 

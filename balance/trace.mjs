@@ -42,12 +42,16 @@ function lineOf(run, text) {
   ].join(" ");
 }
 
-/** The text of a started rule action: its label of the data and the resource it names, if any. */
+/**
+ * The text of a started rule action: its label of the data and the resource or the item it names, if
+ * any, each by the name the data give it.
+ */
 function startText(activity) {
   const { action } = activity;
   const label = ACTIONS[action.kind].label;
   const resource = action.resource ? ` ${RESOURCES[action.resource].name}` : "";
-  return `start ${label}${resource}`;
+  const item = action.item ? ` ${ITEMS[action.item].name}` : "";
+  return `start ${label}${resource}${item}`;
 }
 
 /** The text an event of the map run reads as in the trace, or null where the trace shows nothing of it. */

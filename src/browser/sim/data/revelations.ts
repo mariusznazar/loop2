@@ -15,6 +15,8 @@ export type Revelation =
   | { kind: "tileHolds"; item: ItemId }
   /** The first piece of the item gathered. */
   | { kind: "gathered"; item: ItemId }
+  /** The first piece of the item crafted with „Wytwórz”. */
+  | { kind: "crafted"; item: ItemId }
   /** The first campfire crafted. */
   | { kind: "campfireCrafted" }
   /** The first finished lighting, of a campfire or of an item. */

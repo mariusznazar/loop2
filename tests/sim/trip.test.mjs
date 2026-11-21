@@ -142,6 +142,7 @@ test("entry spends one budget in order, shortages leave room and partial rows fi
     berry: 7,
     moss: 0,
     fiber: 0,
+    bandage: 0,
   });
   assert.deepEqual(state.team.chest.pieces, { stick: 2, berry: 3, moss: 2 });
   assert.equal(state.run.minute, 0);
@@ -219,7 +220,7 @@ test("entry caps, including zero, affect equipment independently of exit caps", 
     takeTrip(plan, chest, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
     {
       chest: { pieces: { berry: 16 } },
-      backpack: { stick: 0, berry: 4, moss: 0, fiber: 0 },
+      backpack: { stick: 0, berry: 4, moss: 0, fiber: 0, bandage: 0 },
     },
   );
   assert.equal(
@@ -314,6 +315,7 @@ test("restart uses the unsaved copy and current stock; unfinished end and death 
     berry: 3,
     moss: 0,
     fiber: 0,
+    bandage: 0,
   });
   assert.deepEqual(restarted.team.chest.pieces, {
     stick: 2,
@@ -417,6 +419,7 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
     berry: 3,
     moss: 0,
     fiber: 0,
+    bandage: 0,
   });
   assert.deepEqual(next.team.chest.pieces, { stick: 0, berry: 0, moss: 2 });
 });
@@ -592,6 +595,7 @@ test("a manual run of a solved map takes its take list from the chest, cut by it
     berry: 7,
     moss: 0,
     fiber: 0,
+    bandage: 0,
   });
   assert.deepEqual(started.team.chest.pieces, {
     stick: 2,

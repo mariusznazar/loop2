@@ -59,6 +59,17 @@ export function eatenBody(body: Body, satiety: number): Body {
   };
 }
 
+/**
+ * The body after a piece of the thing that heals `health` is used on it: health rises by that
+ * healing, whatever took it, not above the starting health (D-145).
+ */
+export function tendedBody(body: Body, health: number): Body {
+  return {
+    ...body,
+    health: Math.min(BALANCE.body.startHealth, decimal(body.health + health)),
+  };
+}
+
 /** What cost the character health in a game minute: chill, starvation, or both together. */
 export type HealthLossCause = "cold" | "hunger" | "coldAndHunger";
 

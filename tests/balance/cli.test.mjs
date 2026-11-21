@@ -281,6 +281,42 @@ test("a condition or an action the data does not hold is refused with a sentence
   assert.throws(() => describeProgram("broken", broken), /teleport/);
 });
 
+// A program written out in the test whose rules carry out both verbs with an item as their target.
+const BOTH_VERBS = program({
+  groups: [
+    {
+      name: "Opatrunek",
+      rules: [
+        [itemBelow("bandage", 1), { kind: "craft", item: "bandage" }],
+        [always, { kind: "tend", item: "bandage" }],
+      ],
+    },
+  ],
+});
+
+test("an action with an item as its target is described as the game words it, with the item's name from the data and no identifier of the data", () => {
+  const text = describeProgram("verbs", BOTH_VERBS);
+  const rules = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^\d+\. /.test(line));
+  assert.deepEqual(rules, [
+    `1. ${CONDITIONS.itemBelow.label} 1 × ${ITEMS.bandage.name} → Wytwórz — Opatrunek`,
+    `2. ${CONDITIONS.always.label} → Opatrz — Opatrunek`,
+  ]);
+  for (const word of ["craft", "tend", "bandage"])
+    assert.ok(!new RegExp(`\\b${word}\\b`).test(text), word);
+});
+
+test("an action whose item the data lack is refused with a sentence that names the item, for each verb, not described without it", () => {
+  for (const kind of ["craft", "tend"]) {
+    const broken = program({
+      groups: [{ name: "x", rules: [[always, { kind, item: "splint" }]] }],
+    });
+    assert.throws(() => describeProgram("broken", broken), /splint/, kind);
+  }
+});
+
 test("the descriptions of all reference programs make one text, one description after another", () => {
   const text = describePrograms(REFERENCE_PROGRAMS);
   Object.keys(REFERENCE_PROGRAMS).forEach((id, index) =>

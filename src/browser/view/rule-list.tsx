@@ -34,6 +34,7 @@ import type { RuleSigns } from "../sim/game.js";
 import type { GameState, GroupId, Program, RuleGroup } from "../sim/types.js";
 import type { MoveHint } from "./chronicle-entries.js";
 import { ReactButton } from "./controls/react-button.js";
+import { namesItem } from "./item-target-pick.js";
 import {
   actionTime,
   addGroup,
@@ -204,7 +205,12 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
     parts;
   const each = group.rules[index];
   const sentence = ruleSentence(each);
-  const time = actionTime(state, each.action.kind);
+  // The time of an action whose target gives it is that of the target, and no price stands in the row.
+  const time = actionTime(
+    state,
+    each.action.kind,
+    namesItem(each.action) ? each.action.item : undefined,
+  );
   const arrows = ruleArrows(program, group.id, index);
   const isOpen = open?.groupId === group.id && open.ruleId === each.id;
   const target = { over: "row", group, index } as const;

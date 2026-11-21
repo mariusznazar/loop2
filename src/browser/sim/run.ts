@@ -6,6 +6,7 @@ import {
   regainedNatureEnergy,
   startingBody,
   startingNatureEnergy,
+  tendedBody,
 } from "./body.js";
 import { resolveCombat } from "./combat.js";
 import {
@@ -149,7 +150,12 @@ function startActivity(
       case "lightItem":
       case "feedCampfire":
       case "eat":
+      case "tend":
         minutes = ACTIONS[action.kind].minutes;
+        break;
+      case "craft":
+        // The minutes of the verb come from the property of its target that its row names.
+        minutes = ITEMS[action.item][ACTIONS.craft.minutes.fromTarget]!.minutes;
         break;
     }
     minutes = actionMinutes(minutes, action.kind, run.character.skills);
@@ -245,8 +251,11 @@ type Landing = Pick<
  * chosen by `itemFor`. Crafting puts an unlit campfire on the character's tile; lighting gives the
  * campfire there its minutes of burning; lighting an item puts one piece of it burning on the
  * tile; feeding adds the fuel's minutes to the campfire there, whatever its minutes left, 0
- * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59).
- * Where what the action needs is no longer there, nothing changes.
+ * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59);
+ * „Wytwórz” takes the recipe's pieces of its target and puts one piece of the target in, needing no
+ * room, as the recipe uses at least one piece; „Opatrz” takes one piece of its target and raises
+ * health by the target's healing, not above full health (D-145). Where what the action needs is no
+ * longer there, nothing changes — health full at the end of „Opatrz” included.
  */
 function landUse(state: Landing, action: Action): Landing {
   const { character } = state;
@@ -322,6 +331,36 @@ function landUse(state: Landing, action: Action): Landing {
         ...state,
         character: using(item, 1),
         body: eatenBody(state.body, food.satiety),
+      };
+    }
+    case "craft": {
+      const recipe = ITEMS[action.item].recipe;
+      if (!recipe || recipe.uses.some((use) => backpack[use.item] < use.count))
+        return state;
+      const crafted = recipe.uses.reduce(
+        (kept, use) => without(kept, use.item, use.count),
+        backpack,
+      );
+      return {
+        ...state,
+        character: {
+          ...character,
+          backpack: { ...crafted, [action.item]: crafted[action.item] + 1 },
+        },
+      };
+    }
+    case "tend": {
+      const healing = ITEMS[action.item].healing;
+      if (
+        !healing ||
+        backpack[action.item] < 1 ||
+        state.body.health >= BALANCE.body.startHealth
+      )
+        return state;
+      return {
+        ...state,
+        character: using(action.item, 1),
+        body: tendedBody(state.body, healing.health),
       };
     }
     default:

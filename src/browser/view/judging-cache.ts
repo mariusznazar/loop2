@@ -1,6 +1,7 @@
 import { BALANCE } from "../sim/data/balance.js";
 import { ITEMS } from "../sim/data/items.js";
 import type { ItemId } from "../sim/data/items.js";
+import { isContentFingerprint } from "../sim/judging-record.js";
 import type { JudgingIds, JudgingRecord } from "../sim/judging-record.js";
 import type { GameState, SeedResult, TripEntry } from "../sim/types.js";
 
@@ -38,14 +39,20 @@ export type JudgingCache = {
   remember(ids: JudgingIds, record: JudgingRecord): void;
 };
 
-// The stored form is version 1; the key names it. A key of another version never matches the prefix,
+// The stored form is version 2; the key names it. A key of another version never matches the prefix,
 // since the prefix ends with the separator right after the version.
-const KEY_PREFIX = "loop2-judging-1|";
+const KEY_PREFIX = "loop2-judging-2|";
 const SEPARATOR = "|";
-// A valid value holds twelve letters, a short list of the data's items and two numbers, well under
-// this; a longer one is no value of the cache's and is not parsed.
+// A valid value holds twelve letters, a short list of the data's items, a fingerprint and two numbers,
+// well under this; a longer one is no value of the cache's and is not parsed.
 const MAX_VALUE_LENGTH = 1024;
-const FIELDS = ["results", "equipment", "revision", "generation"] as const;
+const FIELDS = [
+  "results",
+  "equipment",
+  "revision",
+  "fingerprint",
+  "generation",
+] as const;
 
 const LETTER_OF: Record<SeedResult["kind"], string> = {
   solved: "s",
@@ -129,10 +136,11 @@ function readEquipment(list: unknown): TripEntry[] | null {
 
 /**
  * The record a stored value holds, or null where the value is not the form the cache writes: too long,
- * no JSON, not an object of exactly the four fields, results that are not one known letter for each seed
+ * no JSON, not an object of exactly the five fields, results that are not one known letter for each seed
  * of a judging, an item the data lack or named twice, a count that is no safe integer from 1, a content
- * revision that is none from 0 or a generation that is none from 1. Everything it returns is built here;
- * nothing the parse made is handed on.
+ * revision that is none from 0, a fingerprint that is no text of the form the simulation gives or a
+ * generation that is none from 1. Everything it returns is built here; nothing the parse made is handed
+ * on.
  */
 function readValue(value: unknown): JudgingRecord | null {
   if (typeof value !== "string" || value.length > MAX_VALUE_LENGTH) return null;
@@ -156,6 +164,7 @@ function readValue(value: unknown): JudgingRecord | null {
     results === null ||
     equipment === null ||
     !isCount(held.revision, 0) ||
+    !isContentFingerprint(held.fingerprint) ||
     !isCount(held.generation, 1)
   )
     return null;
@@ -163,6 +172,7 @@ function readValue(value: unknown): JudgingRecord | null {
     results,
     equipment,
     contentRevision: held.revision,
+    contentFingerprint: held.fingerprint,
     generation: held.generation,
   };
 }
@@ -176,6 +186,7 @@ function writeValue(record: JudgingRecord): string {
     results: record.results.map((kind) => LETTER_OF[kind]).join(""),
     equipment,
     revision: record.contentRevision,
+    fingerprint: record.contentFingerprint,
     generation: record.generation,
   });
 }
@@ -185,6 +196,7 @@ function copyOf(record: JudgingRecord): JudgingRecord {
     results: [...record.results],
     equipment: record.equipment.map(({ item, count }) => ({ item, count })),
     contentRevision: record.contentRevision,
+    contentFingerprint: record.contentFingerprint,
     generation: record.generation,
   };
 }
@@ -244,11 +256,14 @@ function isNotBelow(text: string | undefined, next: number): boolean {
 }
 
 /**
- * Whether a stored value of this game's triple can only come from a save that never reached the server
- * (D-441): its program number or its character number is one the loaded game has not yet given, or its
- * content revision or its generation stands above that of its program or character where the loaded
- * game holds it. A triple whose program or character the loaded game once gave and no longer holds is
- * left alone, as is a key or value of no form of the cache's.
+ * Whether the opening removes the stored value of a triple of this game as one that can only come from a
+ * save that never reached the server (D-441). It removes a triple whose program number or character
+ * number the loaded game has not yet given; where the loaded game holds the triple's character, one whose
+ * generation stands above that character's; and where it holds the triple's program, one whose content
+ * revision stands above that program's. Each of the last two checks reads only what the loaded game
+ * holds, so a triple whose program the loaded game no longer holds is still removed by its character's
+ * generation, and only a triple neither of whose character and program the loaded game holds, both once
+ * given, is left by them. A key or value of no form of the cache's is left alone.
  */
 function isAboveLoaded(
   state: GameState,
