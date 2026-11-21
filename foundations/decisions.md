@@ -70,7 +70,8 @@ reduced motion for the scene (D-317), the saver's sentence for the row of saving
 and, for the scene and the chronicle, its previous reading of the game state and the events the
 simulation returned, for the chronicle also the player's acts on the copy with the copy before each
 act and after it (D-348), and for the scene the place the browser gives for the mage while it walks,
-and from the memories of the page, none of them in the game state or the save: the folding of rule
+and, for the mark beside the list „Program:”, the judgings the browser remembers in its lasting
+storage for the signed-in account and the game (D-441), and from the memories of the page, none of them in the game state or the save: the folding of rule
 groups (D-294), the chronicle with the tab and the filter the player picks over it (D-339, D-346,
 D-383), the question „Zapisać, odrzucić, wrócić?” (D-324), whether the end-of-run window is open
 (D-371), the pull of the previous save and the reset control of Programy, which draw their buttons from the previous-save privilege the page keeps from the account's answer (D-400, D-401, D-402) and, for
@@ -78,6 +79,10 @@ what one screen alone shows, the state of that screen's own component (D-407); i
 the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or the unsaved game state it kept in the page's memory after a save found no session (D-211).
+
+The game state stores the moment of the browser's clock at which the page made the game, which the
+page passes to the function that makes a new game, every save and load keeps, and which tells one
+game of an account from another (D-441).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -102,7 +107,10 @@ the server or the unsaved game state it kept in the page's memory after a save f
     the copy from the copy before the player's act and the copy after it, and the entry of a loss of
     the streak from an event the simulation returned; the scene starting the turn of a mage that is
     walking from the place the browser gives for it; the game view keeping whether the end-of-run
-    window is open as a memory of the page
+    window is open as a memory of the page; the screen Mapy drawing the mark beside „Program:” from
+    a judging the browser keeps in its lasting storage, read under the account's identifier and the
+    moment the game state names its game by; the page passing the clock's reading to the function
+    that makes a new game
   - violates: a screen of the game written as a Godot scene; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
@@ -144,6 +152,10 @@ records what happened between two readings, such as a loss of the streak in a ga
 reading passed over or a change the player made to the copy, which one reading does not say either,
 and its previous reading and the events give it, the player's acts on the copy with the copy before
 and after them giving the changes (D-348), so the chronicle does not enter the save (D-339).
+A remembered judging can be made again at any moment at no cost to the character, so the browser
+keeps it beside the game state, in its lasting storage, and never in the save, whose limit costs
+the player's progress (D-441); the game it belongs to is named by the moment the game was made, a
+moment of an event stored once, at the making, as the other moments of events are.
 Putting the whole chronicle into the save would raise the version of the save, so a save in use
 would be lost with the programs in it (D-206), and would add the size of the chronicle to a save
 that is not sent above 64 KiB (D-207). That size was measured with the chronicle's own code fed with
@@ -3895,6 +3907,10 @@ document that a save of a higher version replaces as the previous save (D-399), 
 the previous-save privilege (D-400) can append its programs one by one (D-401). A saved game state
 whose character names an archetype missing from the data is also discarded whole.
 
+The judgings the browser remembers (D-441) are no part of the saved game state: a discarded saved
+game state takes none of them along, and the game started anew shows none of those remembered for
+the game discarded.
+
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
@@ -3905,7 +3921,12 @@ whose character names an archetype missing from the data is also discarded whole
   slot the save that a save of a higher version replaces; the programs of a previous save of each
   version read one by one, a program the check refuses skipped, and the pull appending the others;
   a document whose character names an archetype missing from the data refused whole, and starting
-  a new game.
+  a new game; the saved document holding no judging, and a document of the current version holding
+  one refused whole. An agent compares a change with the part no invariant and no test holds:
+  - complies: a saved game state of version 8 discarded, the new game made at another moment and
+    showing no badge beside „Program:” though the browser holds judgings of the discarded game
+  - violates: the judgings of the discarded game shown beside the same character, program and map
+    numbers of the new game
 - **Origin:** none
 
 *Rationale:* loading a saved game state whose shape the game no longer describes gives faults that
@@ -4233,17 +4254,19 @@ same seed.
 
 The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards. A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle.
 
+The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing.
+
 A saved game state holds the uses of the account's resurrection as the count spent and not yet returned at the moment of the save, with the moment the next one returns, and the settlement of a death that spent a use holds the uses spent after that death. Lowering the number of uses in the balance data makes the load refuse a saved game state only where more uses are spent than the new number, in the team or in the settlement of a death, so a saved game state with an end-of-run window open after a death stays loadable.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-213 · derives from D-221 · derives from D-248
-- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time and the team's moment of the next return at zero or below zero loading, and stored as given when a death or a first completion is settled; the function that stamps a save time, the ones that settle a death, of a manual map run and of an earning loop's map run, and the one that settles a first completion refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle; a save made after spent uses came back holding only the uses still spent at the save moment and the moment of the next, the uses reckoned from the save moment on the same as from the state saved; a number of uses lowered in the balance data after a save refusing a game with more uses spent than the new number, in the team or in the settlement of a death, and loading one with no more, an end-of-run window open after a first death included, and a settlement holding the uses spent after its death, none below one and none above the number of the data. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
+- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time, the moment the game was made and the team's moment of the next return at zero or below zero loading, and stored as given when a death or a first completion is settled; the moment the game was made far ahead loading too, and a program's content revision of 0 and above; the function that stamps a save time, the ones that settle a death, of a manual map run and of an earning loop's map run, and the one that settles a first completion refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle; a save made after spent uses came back holding only the uses still spent at the save moment and the moment of the next, the uses reckoned from the save moment on the same as from the state saved; a number of uses lowered in the balance data after a save refusing a game with more uses spent than the new number, in the team or in the settlement of a death, and loading one with no more, an end-of-run window open after a first death included, and a settlement holding the uses spent after its death, none below one and none above the number of the data. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
   - complies: a save time far beyond the present loaded as it stands; a new kind of game state a function of the game makes loading back from its saved document
   - violates: a load that compares a moment with the clock; a game state made by the game's own functions in a play that the load refuses
 - **Origin:** none
 
-*Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death and to the one that settles a first completion at every step, a step with no death or completion included, so a reading there is not looked at. The uses of the resurrection are held as the count spent and not yet returned at the moment of the save, and the settlement of a death holds the uses spent after it, so that the number of uses in the balance data can be tuned, a number expected to change when the first walls are measured, without the player losing a whole save for it: a count of uses left would stand above a lowered number at once, in the team and in the window of the end of a run alike. The load repairs no state, so where more is spent than the new number it refuses, and elsewhere it loads what the save holds.
+*Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death and to the one that settles a first completion at every step, a step with no death or completion included, so a reading there is not looked at. The moment the game was made is the browser's clock read when the page made the game, so it stands where any reading of that clock may stand, and the content revision only rises from 0, so the load asks no more of either. The uses of the resurrection are held as the count spent and not yet returned at the moment of the save, and the settlement of a death holds the uses spent after it, so that the number of uses in the balance data can be tuned, a number expected to change when the first walls are measured, without the player losing a whole save for it: a count of uses left would stand above a lowered number at once, in the team and in the window of the end of a run alike. The load repairs no state, so where more is spent than the new number it refuses, and elsewhere it loads what the save holds.
 *Rejected:* a load that refuses a moment below zero or beyond the present — a device clock set before 1970 reads below zero, and the refusal would discard a save the game itself wrote and start the player anew; a check of the moment against the clock at the load — the load takes no real time (D-247) and a forged moment costs its own player alone (D-07); the team holding the uses left — at every change of the number of uses in the data the game refuses saved games, at a raise all those with a full stock; the settlement of a death holding the uses left and checked against a lowered number — a save with an end-of-run window open after a first death is refused although it holds no more spent than the new number, and the player loses the whole save for an ordinary tuning of a number of the data; the uses left cut to the new number at the load — it repairs a state, which the load of a saved game state never does.
 
 ### D-399 — Which saved game state does the server keep beside the current one?
@@ -4280,18 +4303,20 @@ An account with the owner role (D-410) also grants and revokes the privilege of 
 
 ### D-401 — How does an account with the privilege pull the programs of its previous save?
 
-An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button. The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on, and throws for no value a document can hold. Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read, that there is no previous save, or that it could not be fetched.
+An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button. The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on, and throws for no value a document can hold. Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read, that there is no previous save, or that it could not be fetched.
+
+Each program appended starts at the content revision 0, and the content revision an item holds, like its `id`, is neither read nor checked.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-206 · derives from D-399 · derives from D-400
-- **Verification:** invariants: save-version · previous-save-programs-reader. tests: the button on Programy for an account with the privilege only once the server has answered that a previous save exists, asked at each entering of the screen, standing on that screen alone and also while a manual map run goes on or has ended, and none for an account without the privilege or with no previous save; a press fetching the previous save again and appending its programs to the end of the list, a second press appending them again; a document of each version from 1 to the game's current one read and one of any other version unreadable; an item whose name is empty after trimming skipped, and an item whose program the check refuses skipped while the reading goes on; each program appended with the next number and its trimmed name, or with the name, a space and „(n)” where that name is taken, nothing else of the game state changed and the game saving at once; one sentence telling how many programs were appended and naming every program skipped, or that the previous save holds no program this version of the game can read, that there is none, or that it could not be fetched. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** invariants: save-version · previous-save-programs-reader. tests: the button on Programy for an account with the privilege only once the server has answered that a previous save exists, asked at each entering of the screen, standing on that screen alone and also while a manual map run goes on or has ended, and none for an account without the privilege or with no previous save; a press fetching the previous save again and appending its programs to the end of the list, a second press appending them again; a document of each version from 1 to the game's current one read and one of any other version unreadable; an item of a document of version 9 or above whose keys are not exactly `id`, `name`, `program` and the content revision, and one of an earlier version whose keys are not exactly the first three, skipped and named while the reading goes on; an item whose name is empty after trimming skipped, and an item whose program the check refuses skipped while the reading goes on; each program appended with the next number, the content revision 0 and its trimmed name, or with the name, a space and „(n)” where that name is taken, nothing else of the game state changed and the game saving at once; one sentence telling how many programs were appended and naming every program skipped, or that the previous save holds no program this version of the game can read, that there is none, or that it could not be fetched. An agent compares a change with the part no invariant and no test holds:
   - complies: the reader kept in `src/browser/sim/previous-programs.ts`, the load of D-206 and D-213 calling nothing of it
   - violates: the previous save loaded as a game by the load of D-206; the reading of the programs written into `src/browser/sim/saved-game.ts`
 - **Origin:** none
 
-*Rationale:* a program is the player's work, and a raising of the version should cost the player the shape of the game, not the programs; the pull brings them back when the player asks, after playing from zero and judging whether the game reads clearly, which only a button available at any time allows. The reader stands apart from the load so that the load stays whole or nothing (D-206, D-213) and the pull is a second act that reads less: it takes programs, one by one, because a program of an older version may lack what the game has since required, such as a trip plan, or may name an action or an item that the game's data no longer holds, and one refused program must not refuse the rest. A version above the game's current one is unreadable, since its shape is unknown to this code; one from 1 up to the current is read, the current one included, because the reset puts a document of the current version in the previous save. An item is read strictly, as every version wrote it, so a document that does not look like one the game wrote gives a skip and no guess; the `id` of an item is neither used nor checked, since the program takes a number of the present game. Each program passes the check of the editor, so none appended is one the editor would refuse or the load would discard. The names of the skipped programs come from the document and are shown as text only. The button fetches the previous save again when pressed, so the pull works on what the server holds then. Accepted with it: a second press appends the programs again, as copies; a program the check refuses stays in the previous save and is not appended; two raisings of the version or a reset before the pull replace the previous save and its programs.
-*Rejected:* the button only under the message „Zapis pochodził z innej wersji gry…” — one occasion, at the moment of loading; the programs appended in place of the whole list — the programs written after the start from zero are lost; one program the check refuses stopping the whole pull — one old program blocks the rest; a lenient load of a saved game state of an older version — a migration by another name, which D-213 refuses; the reader inside the saved-game code — it would change the guideline of that kind and D-213 for a function that is no load; reading the whole game state of the older document and picking the programs out of it — it reads what the game is not to read of a document of another version; items read leniently, any other key ignored — the items had one shape in every version, so strict items skip one by one the same way.
+*Rationale:* a program is the player's work, and a raising of the version should cost the player the shape of the game, not the programs; the pull brings them back when the player asks, after playing from zero and judging whether the game reads clearly, which only a button available at any time allows. The reader stands apart from the load so that the load stays whole or nothing (D-206, D-213) and the pull is a second act that reads less: it takes programs, one by one, because a program of an older version may lack what the game has since required, such as a trip plan, or may name an action or an item that the game's data no longer holds, and one refused program must not refuse the rest. A version above the game's current one is unreadable, since its shape is unknown to this code; one from 1 up to the current is read, the current one included, because the reset puts a document of the current version in the previous save. An item is read strictly, as every version wrote it, so a document that does not look like one the game wrote gives a skip and no guess; the `id` and the content revision of an item are neither used nor checked, since the program takes a number of the present game and starts at the content revision 0, as every program made does (D-442). Each program passes the check of the editor, so none appended is one the editor would refuse or the load would discard. The names of the skipped programs come from the document and are shown as text only. The button fetches the previous save again when pressed, so the pull works on what the server holds then. Accepted with it: a second press appends the programs again, as copies; a program the check refuses stays in the previous save and is not appended; two raisings of the version or a reset before the pull replace the previous save and its programs.
+*Rejected:* the button only under the message „Zapis pochodził z innej wersji gry…” — one occasion, at the moment of loading; the programs appended in place of the whole list — the programs written after the start from zero are lost; one program the check refuses stopping the whole pull — one old program blocks the rest; a lenient load of a saved game state of an older version — a migration by another name, which D-213 refuses; the reader inside the saved-game code — it would change the guideline of that kind and D-213 for a function that is no load; reading the whole game state of the older document and picking the programs out of it — it reads what the game is not to read of a document of another version; items read leniently, any other key ignored — the items had one shape up to version 8 and another, with the content revision, from version 9, each version writing its own whole, so items read strictly by their version skip one by one the same way.
 
 ### D-402 — How does an account with the privilege start the game from zero?
 
@@ -8118,7 +8143,7 @@ Programs belong to the player, as one list shared by all characters; a character
 
 ### D-165 — How does the game state tell one program from another?
 
-Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number. A judging the game remembers for a character, a program and a map (D-440) names its program by that number too.
+Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number. A judging the browser remembers for a character, a program and a map (D-441) names its program by that number too, so the judging of a deleted program stands beside no other program.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -8127,7 +8152,8 @@ Each program of the player carries a number the game gives it when the program i
   number the game state gave last, and a deleted program's number never given again; the program
   the copy belongs to, the program a character used last, the program picked for it, the program
   entered with last, the program the counts stand beside after „Zakończ” and the program of a
-  remembered judging recorded by that number.
+  judging the browser remembers recorded by that number, the judging of a deleted program standing
+  beside no other.
 - **Origin:** none
 
 *Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
@@ -8345,6 +8371,29 @@ Where the program the program panel shows is gone from the player's list, or the
 
 *Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last fallback of the order D-170 gives the list „Program:”. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
 *Rejected:* unknown.
+
+### D-442 — How does the game state count the changes of a program's content?
+
+Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content: 0 when the program is made — the first program of a new game, a program created, a copy saved as a new program and a program pulled from a previous save (D-401) — and one higher at each save into the program after which its rules, its rule groups with their order or its trip plan differ from what they were, the rule the game writes at the first chill (D-123) included. A rename, a save after which none of the three differs, though the counters that number new rules and groups may have changed, and every other act leave the content revision as it is, so it never goes down.
+
+The copy of a map run and the program of an earning loop hold content alone and carry no content revision, and a copy saved into its program raises that program's content revision only where the content differs. The content revision is no revision of a save (D-209): it belongs to one program, and the server neither gives it nor reads it.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-441
+- **Verification:** an agent compares a change with the decision:
+  - complies: the threshold of a rule changed and saved, raising the program's content revision from
+    3 to 4; that program renamed and staying at 4; two of its rule groups swapped and saved, raising
+    it to 5; a copy saved as a new program, and a program pulled from a previous save whose item
+    held 7, starting at 0
+  - violates: a rename raising the content revision; a save that swaps two rules leaving it as it
+    was; a program pulled from a previous save keeping the content revision its item held; the
+    content revision raised at every save, whatever changed; the server raising it at an accepted
+    save
+- **Origin:** none
+
+*Rationale:* a judging the browser remembers (D-441) speaks of the content it judged, and a change of the rules, the rule groups or the trip plan erases it (D-440), a change made back to the content judged included; a count raised at every change of the content tells that on every device and after every reload, since it travels in the saved game state, while a rename, which changes nothing the character does, keeps the judging. The count rises where every write of a program's content passes, so no act that writes content can miss it, and it needs no hash and no clock. Accepted with it: one more number in each saved program and in the load; and where a change whose save never reached the server is lost, a judging the browser made after it carries a content revision the server's game never had, so if the program later reaches the same content revision with other content, with no judging of its triple between, that judging stands beside it until the next judging of the triple or the next change of the program, which D-441 narrows and accepts.
+*Rejected:* a fingerprint of the program's content, compared when a judging is read — a program changed from one content to another and back shows the judging of the first content again, which a change of the program erases (D-440); the content revision as the real moment of each change, read from the clock — it never repeats, but every function that writes a program's content, and its tests, take a clock argument for the case of a lost save; the judgings erased by the view at each change, the store handing the view each new game state with the one before it — a second way beside the check when a judging is read, which a reload, another tab and another device still need, and a write to the browser's storage at edits.
 
 ## Trip plan, chest and items
 
@@ -10248,7 +10297,9 @@ simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's 
 inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a
 map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać
 postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone. Stopnie
-kupisz po jego zakończeniu.”
+kupisz po jego zakończeniu.” Wherever the sentence under the buttons of a character stands,
+„Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of that manual map
+run, `#/postac/{n}/przejscie` with {n} the number of the map run's character (D-281).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10258,20 +10309,26 @@ kupisz po jego zakończeniu.”
   alone, another character's staying active; „Kup” on the screen Postać inactive while the map run
   waits and after its end; under the buttons of each character in „Kto idzie” the sentence naming
   the map from the data, gone after „Zakończ”; at „Umiejętności” the sentence that ranks are bought
-  after the end of the map run. For what Siedziba and the screen Postać keep active, an agent
-  compares a change with the part no test holds:
+  after the end of the map run. For what Siedziba and the screen Postać keep active, and for the
+  link in the sentence under the buttons, an agent compares a change with the part no test holds:
   - complies: while a map run of Las waits in a pause, „Załóż” on Siedziba creating a character and
-    „Zatrzymaj” on the screen Postać stopping another character's earning loop
+    „Zatrzymaj” on the screen Postać stopping another character's earning loop; while a map run of
+    character 2 on „Las — głębiej” waits, „Wróć do niego i je zakończ, żeby wysłać postać.” under
+    the buttons of every character on the card of Las leading to `#/postac/2/przejscie`
   - violates: Siedziba or the screen Postać blocking an act the simulation allows, such as „Załóż”
-    or „Zatrzymaj”, while a manual map run waits or has ended
+    or „Zatrzymaj”, while a manual map run waits or has ended; that sentence standing as plain text
+    under the buttons of a character, or its link leading to the screen Postać of the character of
+    its row
 - **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
 do not act and what the player does to free them, and what the simulation allows stays open. The
 simulation refuses to send a character and to buy a rank while the game state holds a map run, one
 that has ended included (D-200), and refuses an earning loop only to the character of that map run,
-so the rest stays active. Accepted with it: the sentence repeats under the buttons of each character
-in „Kto idzie”.
+so the rest stays active. The words that tell the player to go back to the map run lead there, so the
+player who meets an inactive „Wejdź” on a card reaches the map run that holds it with one click.
+Accepted with it: the sentence repeats under the buttons of each character in „Kto idzie”, its link
+included.
 *Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba, the screen
 Postać and the screen Mapy for viewing alone — the player could not start the earning loop of
 another character, and the code would have to block what the simulation allows.
@@ -11804,7 +11861,7 @@ The results of the measurements of the balance instrument do not enter the repos
 
 ## Judging a program
 
-How the game judges a program on fixed seeds of a map before an earning loop, and what it remembers of a judging.
+How the game judges a program on fixed seeds of a map before an earning loop, and what it remembers of a judging and where.
 
 ### D-439 — How does the game judge a program before an earning loop?
 
@@ -11835,33 +11892,64 @@ A program can be judged on every map open to the player, a map not yet solved in
 
 ### D-440 — What does the game remember of a judging, and what stands beside the list „Program:”?
 
-The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329). A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map.
+The game remembers the last judging of each character, program and map in the browser that made it, as D-441 gives: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329). A judging, the one „Puść w pętlę” runs included (D-243), replaces the judging remembered for its character, program and map.
 
 Beside the list „Program:” of a character in „Kto idzie” stands the judging remembered for that character, the program the list shows and the map of the card: the badge „szczelny: 12 z 12” in `positive` where it solved all twelve seeds, and „{n} z 12” in `text` otherwise. Where the chest holds less of an item than the judging took, the result stays with „oceniono z zapasem, którego dziś nie ma w skrzynce” beside it and the badge goes out, „12 z 12” standing in its place.
 
-A change of the rules, the rule groups or the trip plan of a program erases the judgings remembered for it, and a death that takes a character's practice and bought ranks because no use of the resurrection is left (D-190) erases every judging remembered for that character, on every map.
+A change of the rules, the rule groups or the trip plan of a program erases the judgings remembered for it, and a death that takes a character's practice and bought ranks because no use of the resurrection is left (D-190) erases every judging remembered for that character, on every map. A judging so erased never stands again, since such a save raises the program's content revision (D-442) and such a death the character's generation number, and the judging of a deleted program stands beside no other program (D-165).
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-439 · derives from D-165
 - **Verification:** tests: a judging remembered as the kind of each of its twelve results and the
-  equipment it took, with no cause and no game minute, through a save and a load, and a saved game
-  state holding a cause, another kind or other than twelve results refused; a judging, the one
+  equipment it took, with no cause and no game minute, with the content revision of its program and
+  the generation number of its character in the game state it read; a judging, the one
   „Puść w pętlę” runs included, replacing the one remembered for its character, program and map and
   no other; beside the list „Program:” the judging of that character, the program the list shows
   and the map of the card alone, the badge „szczelny: 12 z 12” in `positive` for twelve solved
   seeds and „{n} z 12” in `text` for fewer; with less of an item in the chest than the judging took
   the note „oceniono z zapasem, którego dziś nie ma w skrzynce” beside the count and the badge gone
   out, and with more the mark as it was; the judgings of a program erased by a change of its rules,
-  its rule groups or its trip plan, the rule the game writes at the first chill included, and by no
-  edit or save that changes none of them; every judging of a character erased, on every map, by a
+  its rule groups or its trip plan, the rule the game writes at the first chill included and a
+  change back to the content judged included, and by no rename and no edit or save that changes
+  none of them; the judging of a deleted program standing beside no program; every judging of a character erased, on every map, by a
   death that takes its practice and bought ranks, in a manual map run, in an earning loop and in the
   catch-up, and none by a death a use of the resurrection covers, by a death of a character with no
   practice or by the purchase of a rank.
 - **Origin:** none
 
-*Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the saved game states of the earlier version are discarded (D-206); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings.
+*Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the badge and the count are missing on another device, in a browser whose data were cleared and, for the game whose save the server refused, in the refused browser, until the next judging there (D-441); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings.
 *Rejected:* the judging remembered for a program and a map, with no character — less state, but the badge at one character may come from a judging of another character with other bought ranks; the badge from 11 of 12 seeds — the badge stands at a program that does not solve one of the twelve seeds of the map, the earning loop draws further seeds and meets similar ones, and 11 is a guessed number; nothing remembered — the game does not know which program was judged, so there is neither a warning of a program not judged nor a memory that a program passed, every return to the card judges again, and the card of a map has no remembered result to show; the result gone when the chest no longer gives what the judging took — the player loses how the program did with that stock; the judging kept for a span of time with the equipment it was judged with — not taken, since the next judging replaces the result and a change of the program erases it; the judgings of a character kept after a death that took its practice, as after the purchase of a rank — beside a character that has just lost everything „szczelny: 12 z 12” may stand until the next judging, the badge lying at the worst moment; those judgings kept with a note such as „oceniono przed utratą wprawy” and their badges gone out — a second note and one more state of the result on the screen, whose text would have to be settled with the others.
+
+### D-441 — Where does the game keep the last judging of each character, program and map?
+
+The browser keeps the judging each character, program and map last had (D-440) in its lasting storage (`localStorage`), one value under a key of its own for each such triple, the key naming the version of the stored form, the signed-in account by its identifier, the game by the moment it was made (D-04), the character, the program and the map, and the value holding the kind of each of the twelve results, the equipment the judging took, and the content revision of the program (D-442) and the generation number of the character in the game state the judging read. The saved game state holds no judging, and nothing of a remembered judging enters the game state, which is whole without it.
+
+A remembered judging stands beside the list „Program:” only while its character is on the team at its generation number and its program is on the player's list at its content revision. A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed.
+
+Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323). When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts. Another device, or a browser whose data were cleared, shows no remembered judging until a judging is made there.
+
+The unsaved game state stays out of the browser's lasting storage as D-211 gives, and the remembered judgings stay there after „Wyloguj”, holding the account's identifier, numbers of characters and programs, identifiers of maps, kinds of results and items with their counts, and no email address, no name and nothing the game loads.
+
+- **Scope:** browser-view · simulation
+- **Based on:** https://html.spec.whatwg.org/multipage/webstorage.html § 12.1 Introduction — "The second storage mechanism is designed for storage that spans multiple windows, and lasts beyond the current session."; read 2026-11-21 · same page § 12.2.1 The Storage interface, `setItem` — "Throws a `QuotaExceededError` if the new value couldn't be set."; read 2026-11-21
+- **Relations:** derives from D-440 · derives from D-04
+- **Verification:** invariants: judging-cache-reading. An agent compares a change with the part no
+  invariant holds:
+  - complies: a judging made, the page reloaded and the badge of that character, program and map
+    standing again with no judging made; a program saved with other rules and then with the rules it
+    had, showing no mark until it is judged; a game made by „Zacznij od zera” showing no mark the
+    game before it had; a browser that refuses `localStorage` showing a judging until the page is
+    reloaded, with no sentence; a game built after a refused save showing no mark this browser had
+    for it; the judgings of the account kept after „Wyloguj” and shown at the next sign-in
+  - violates: a judging written into the game state or the saved game state; a key naming the
+    account by its email address; a judging of one account or of one game shown in another; an
+    exception of `localStorage` reaching the handling of D-323; the judgings cleared at „Wyloguj”;
+    a function of the simulation reading or writing the browser's storage
+- **Origin:** none
+
+*Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number can come only from a save that never reached the server, so both go when the game opens; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and a judging made after a change lost with a page closed while its save failed (D-208), or with a save refused at „Wyloguj” (D-97), can stand beside other content that reaches the same content revision (D-442), until the next judging of the triple or the next change of the program.
+*Rejected:* the judgings in the saved game state — a player who judges much pushes the save past its limit and loses progress, and with hundreds of maps the limit would be passed anyway; a shortened judging in the saved game state, the judgings used least recently removed before the save reaches its limit — the judgings stay in the one place whose limit costs the player's progress, and some go to keep under it; one value for each game — the whole record rewritten at each judging, a judging lost when two tabs judge, and one corrupt value losing every judging of the game; a value for each game beside one for each triple — two places to keep agreeing; a key naming the account alone, the page clearing the account's judgings whenever it makes a new game — a reset or a discarded save made on another device is loaded here, not made here, so nothing clears and the judgings of the old game show in the new one; a random token from the view in place of the moment the game was made — the same cost and a text to check at the load, with no gain; the judgings cleared at „Wyloguj” — the badges vanish at every logout on the player's own device, for data that tells another person nothing they can use.
 
 ## Withdrawn identifiers
 

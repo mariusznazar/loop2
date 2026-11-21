@@ -316,3 +316,9 @@ A judging is twelve runs of one character's program on one game map, each from o
 A loop record is the largest number of map runs of one earning loop completed in a row with no death between them, counted from the start of that earning loop and gone with it.
 
 - **Not:** none
+
+## content revision
+
+A content revision is the count a program of the player's list carries, 0 when the program is made and one higher at each save after which its rules, rule groups or trip plan differ, a rename leaving it as it is, which the game state keeps and the server neither gives nor reads, unlike the revision the server gives each save it accepts (D-209).
+
+- **Not:** none
