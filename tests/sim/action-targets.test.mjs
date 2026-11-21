@@ -378,7 +378,7 @@ test("an action with an item target lies in the repertoire where its kind and it
 });
 
 test("the reason of a rule whose item target lies outside the repertoire names the item by its row", () => {
-  // decision: D-310 "the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed cell of the rule panel, or „jeszcze nieodkryte: {name}”."
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name, such as „tu nie leży mech”, „brakuje 4 × patyk”, „brak opału: patyk” and „brak energii natury: 7 z 10”, and the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed cell of the rule panel, or „jeszcze nieodkryte: {name}”."
   const items = fullUnderstanding().items;
   const withoutBandage = repertoireWith(items.filter((id) => id !== "bandage"));
   for (const verb of VERBS)

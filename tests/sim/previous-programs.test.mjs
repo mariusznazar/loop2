@@ -571,7 +571,7 @@ function documentOf(programs) {
 // invariant: previous-save-programs-reader
 test("an item whose program holds „Wytwórz” or „Opatrz” with a target the data do not give, or with none, is skipped and named while the reading goes on", () => {
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data"
-  // decision: D-401 "accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on, and throws for no value a document can hold."
   const bandage = (kind) => programWith({ kind, item: "bandage" });
   const refused = {};
   for (const kind of ["craft", "tend"]) {

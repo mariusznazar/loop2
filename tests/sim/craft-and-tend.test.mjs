@@ -158,7 +158,7 @@ test("„Wytwórz” lasts the minutes of its target's recipe and „Opatrz” t
 });
 
 test("a bought duration branch shortens both verbs as it does every action, down to the floor of one game minute", () => {
-  // decision: D-71 "the ending action takes effect"
+  // decision: D-374 "An action shortened by bought branches lasts at least one game minute."
   const branches = {
     testShorter: {
       skill: "campfireCrafting",
@@ -212,7 +212,7 @@ test("a bought duration branch shortens both verbs as it does every action, down
 
 test("„Wytwórz” takes the recipe's pieces and gives one piece of its target at its end, together, and nothing before it", () => {
   // decision: D-142 "„Wytwórz” and „Opatrz” take what they use out of the backpack when they end, together with their effect, so an attack that interrupts either takes nothing."
-  // decision: D-71 "the ending action takes effect"
+  // decision: D-71 "Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, the nature energy of a well-fed mage comes back, up to its cap, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect"
   const run = runWith(
     { ...RECIPE_PIECES, moss: RECIPE_PIECES.moss + 1 },
     body(100),
@@ -382,7 +382,7 @@ test("an attack in the minute in which „Wytwórz” ends comes after its effec
 
 test("in combat „Opatrz” and „Wytwórz” give „trwa walka”, and a minute of combat carries out neither", () => {
   // decision: D-145 "It is not carried out in combat and cannot be carried out at full health, and where health is full when it ends, the piece stays in the backpack and the action ends with no effect."
-  // decision: D-309 "and an ordinary rule whose condition holds is amber with the reason „trwa walka”"
+  // decision: D-309 "In the minutes of an attack, from the minute of the attack to the resolving of its turns, the signs of the copy show what the first combat turn would choose now, at the health of the mage and of the creature as they stand: the combat rule the turn would choose stands on the background `rule-winning`, no rule stands on `rule-running`, and an ordinary rule whose condition holds is amber with the reason „trwa walka”."
   const program = programFromRules(rule(ALWAYS, TEND), rule(ALWAYS, CRAFT));
   const run = runWith(
     { ...RECIPE_PIECES, bandage: 1 },
@@ -471,7 +471,7 @@ test("„Wytwórz” with fewer pieces than the recipe asks for is refused with 
 });
 
 test("„Opatrz” at full health is refused with „zdrowie pełne”, before the lack of a bandage; at 99.95 it is not refused for health", () => {
-  // decision: D-380 "„Opatrz — {rzecz}” at full health, „zdrowie pełne”, which stands before „brakuje …” where both hold."
+  // decision: D-380 "„Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack, „brakuje {ile} × {rzecz}”, such as „brakuje 2 × mech” and „brakuje 1 × opatrunek”; „Opatrz — {rzecz}” at full health, „zdrowie pełne”, which stands before „brakuje …” where both hold."
   const refusal = (health, pieces) =>
     actionRefusal(runWith(pieces, body(health)), TEND);
   assert.equal(refusal(100, { bandage: 1 }), "zdrowie pełne");
@@ -482,7 +482,7 @@ test("„Opatrz” at full health is refused with „zdrowie pełne”, before t
 });
 
 test("a rule of „Opatrz” refused at full health is passed over for the next rule of the program", () => {
-  // decision: D-380 "„Opatrz — {rzecz}” at full health, „zdrowie pełne”, which stands before „brakuje …” where both hold."
+  // decision: D-380 "„Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack, „brakuje {ile} × {rzecz}”, such as „brakuje 2 × mech” and „brakuje 1 × opatrunek”; „Opatrz — {rzecz}” at full health, „zdrowie pełne”, which stands before „brakuje …” where both hold."
   const program = programFromRules(rule(ALWAYS, TEND), rule(ALWAYS, WANDER));
   const run = runWith({ bandage: 1 }, body(100));
   assert.equal(chooseActivity(run, program).ruleId, 2);
@@ -517,7 +517,7 @@ test("the price of an action with a target is read from the target: the recipe's
 });
 
 test("what a finished „Wytwórz” or „Opatrz” takes from the backpack is exactly the price of the action with its target", () => {
-  // decision: D-363 "so it tells the truth about what leaves the backpack and agrees with the reason at the rule"
+  // decision: D-142 "„Wytwórz” and „Opatrz” take what they use out of the backpack when they end, together with their effect, so an attack that interrupts either takes nothing."
   const crafted = after(
     carrying(runWith({ ...RECIPE_PIECES }, body(100)), CRAFT),
     1,
@@ -579,7 +579,7 @@ function withPieces(run, pieces) {
 }
 
 test("the first gathered moss reveals the bandage and „Wytwórz”, and „Opatrz” and the condition „Zdrowie poniżej” stay hidden", () => {
-  // decision: D-121 "the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”, the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
   const state = prepared(START, (run) => ({
     tiles: run.tiles.map((tile) =>
       sameHex(tile.at, run.character.at)
@@ -605,7 +605,7 @@ test("the first gathered moss reveals the bandage and „Wytwórz”, and „Opa
 });
 
 test("the first „Wytwórz” that ends with its effect on the bandage reveals „Opatrz” in that minute and nothing before it", () => {
-  // decision: D-121 "the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”, the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
   const knowing = {
     ...START,
     actions: ["explore", "craft"],
@@ -641,7 +641,7 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
 });
 
 test("a „Wytwórz” that ends with no effect for want of its pieces reveals nothing, and a bandage crafted again reveals nothing new", () => {
-  // decision: D-121 "the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”, the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
   const knowing = {
     ...START,
     actions: ["explore", "craft"],
@@ -687,7 +687,7 @@ test("the first crafted piece of any item reveals what its row names as revealed
 });
 
 test("a „Wytwórz” ending in the minute of the character's death reveals nothing", () => {
-  // decision: D-121 "the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”, the first gathered moss brings the bandage and „Wytwórz”, and the first piece of the bandage crafted brings „Opatrz”."
   const knowing = {
     ...START,
     actions: ["explore", "craft"],
