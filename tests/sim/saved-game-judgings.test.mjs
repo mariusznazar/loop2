@@ -167,7 +167,7 @@ test("what the game can make loads: empty levels, equipment beyond the chest and
 // A record that names a character, a program or a map the game did not give, or the data lacks, would
 // leave the game a judging it can neither show nor erase (D-56, D-165).
 test("a judging naming a character the team lacks, a program the list lacks or a map the data lacks is refused as shape", () => {
-  // decision: D-165 "Each record of the game state that names a program"
+  // decision: D-165 "A judging the game remembers for a character, a program and a map (D-440) names its program by that number too."
   const judging = { results: [...MIXED], equipment: [] };
   for (const key of [
     "3",

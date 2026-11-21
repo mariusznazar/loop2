@@ -158,7 +158,7 @@ const dead = (cause, minute) => ({ kind: "death", cause, minute });
 
 test("the game's data holds the cap of 4000 game minutes and the twelve seeds 1 to 12 beside each other", () => {
   // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data, 4000 to start"
-  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of its map"
+  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of a judging, the same on every map"
   assert.equal(BALANCE.judgingCapMinutes, 4000);
   assert.deepEqual(BALANCE.judgingSeeds, SEEDS);
 });
@@ -176,7 +176,7 @@ test("an empty program on Las is twelve deaths of cold in game minute 243, in tw
 
 test("each seed's line is the map run of that seed, in the order 1 to 12, whether it is solved or a death of cold, of hunger or of a fight", () => {
   // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed"
-  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of its map, the same at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does."
+  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of a judging, the same on every map and at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does."
   const cases = [
     ["forestNaive", "forestEdge", ["solved", "hunger"]],
     ["forestBest", "forest", ["solved", "cold"]],
@@ -247,7 +247,7 @@ test("a map run that neither solves the map nor dies by the cap is undecided, an
 });
 
 test("the same judging twice gives the same twelve lines, whatever the last seed and the map run of the game are", () => {
-  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of its map, the same at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does"
+  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of a judging, the same on every map and at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does"
   const plain = game(REFERENCE_PROGRAMS.forestDecent);
   const first = judgeOnSeeds(plain, asked("forestEdge"));
   assert.deepEqual(judgeOnSeeds(plain, asked("forestEdge")), first);

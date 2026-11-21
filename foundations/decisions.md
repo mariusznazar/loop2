@@ -5476,8 +5476,9 @@ seed, and each map run of an earning loop takes its seed from a draw of the map 
 first map run of an earning loop, with none before it, takes a new seed, as a send of a character
 does.
 
-A judging of a program (D-439) runs on the twelve fixed seeds of its map, the same at each
-judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does.
+A judging of a program (D-439) runs on the twelve fixed seeds of a judging, the same on every map
+and at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a
+map run does.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -5492,7 +5493,7 @@ judging, and takes no new seed, each of its twelve runs drawing from its own see
   the fifth generator of the map run before it. For the seeds of a judging, an agent compares a
   change with the part no invariant and no test holds:
   - complies: two judgings of one program of one character on Las, with one chest, giving the same
-    twelve lines, their runs taking the same twelve seeds of the map
+    twelve lines, their runs taking the same twelve seeds as a judging on Skraj lasu
   - violates: a judging that draws a new seed for its runs, or takes the seeds from the seed of the
     character's last map run
 - **Origin:** none
@@ -8120,7 +8121,7 @@ Programs belong to the player, as one list shared by all characters; a character
 
 ### D-165 — How does the game state tell one program from another?
 
-Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number.
+Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number. A judging the game remembers for a character, a program and a map (D-440) names its program by that number too.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -8128,8 +8129,8 @@ Each program of the player carries a number the game gives it when the program i
 - **Verification:** tests: each created program, an appended one included, taking one more than the
   number the game state gave last, and a deleted program's number never given again; the program
   the copy belongs to, the program a character used last, the program picked for it, the program
-  entered with last and the program the counts stand beside after „Zakończ” recorded by that
-  number.
+  entered with last, the program the counts stand beside after „Zakończ” and the program of a
+  remembered judging recorded by that number.
 - **Origin:** none
 
 *Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
@@ -8788,21 +8789,18 @@ and a second click starts the earning loop.
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-170 · derives from D-239
 - **Verification:** tests: „Puść w pętlę” standing beside „Wejdź” at each character in „Kto idzie”
-  of the card of a solved map alone, and starting the earning loop at once on the click with the
-  program the character's list „Program:” shows, the player staying on the card; the start making
-  that program the one the character used last and the one with which a character last entered a
-  map, and clearing the pick; at a character in an earning loop „Wejdź” and „Puść w pętlę” inactive
-  and a send and a start refused, while those of another character stay active. For the judging
-  that „Puść w pętlę” runs first, an agent compares a change with the part no test holds:
-  - complies: on Las, a click of „Puść w pętlę” at a program that solves all twelve seeds starting
-    the earning loop at once; at a program that dies on two seeds the result under the character,
-    „Na 2 z 12 ziaren program mapy nie rozwiązuje.” above the button, „Puść mimo to” on it and the
-    earning loop started by the second click; at a program whose result with two deaths stands
-    under the character from „Oceń na 12 ziarnach”, a click that gives the same twelve lines
-    starting the earning loop at once
-  - violates: „Puść w pętlę” starting an earning loop on the first click at a program that dies on
-    some seed while no result with the same lines stands under the character; „Puść w pętlę”
-    starting from a result that stands under the character without judging the program again
+  of the card of a solved map alone, with the program the character's list „Program:” shows; its
+  click judging that program on the map of the card first, and starting the earning loop at once
+  where the judging solves all twelve seeds, or gives each seed the same row as a result of the
+  button of a judging that stands under the character, a result an earlier „Puść w pętlę” left
+  there being none; otherwise the new result under the character, „Na {k} z 12 ziaren program mapy
+  nie rozwiązuje.” above the button in `warning`, the button reading „Puść mimo to”, and the second
+  click starting the earning loop with no new judging, the player staying on the card; the second
+  click gone where another program is picked, a new judging is made or the player leaves the card,
+  and kept where the chest or the time changes alone; the start making that program the one the
+  character used last and the one with which a character last entered a map, and clearing the
+  pick; at a character in an earning loop „Wejdź” and „Puść w pętlę” inactive and a send and a
+  start refused, while those of another character stay active.
 - **Origin:** none
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
@@ -8810,17 +8808,18 @@ shows, so a tuned program goes out with one click: a program that solves all twe
 judging starts at once. A program that loses on some seed shows where before the character risks it
 in an earning loop, where a death with no use of the resurrection left takes all its practice
 (D-190), and the player still sends it with a second click, so solving a map still unlocks its
-earning loop with no guarantee asked of the program (D-239). The judging runs anew at each start,
-with what the earning loop takes from the chest at that moment, so a result judged with a chest that
-has changed since starts nothing; a result the player has just seen from the button of a judging
-starts the earning loop at once where the new judging gives it again. Stopping first keeps the
-backpack of the map run going on from being lost by a click on another button. Accepted with it: one
-click more at every program that loses on some seed, also where the player knows what it does, so
-„Puść w pętlę” is no longer one click for such a program; a moment of counting at each start; a
-little more logic of the screen; a player who judged a program before and forgot its result starts
-the earning loop with one click, while that result stands under the character until the player
-leaves the card; one click more where the predecessor game stopped the earning loop when a character
-was sent.
+earning loop with no guarantee asked of the program (D-239). The judging runs anew at each first
+click, with what the earning loop takes from the chest at that moment, so no result judged with an
+older chest starts the earning loop at the first click; a result the player has just seen from the
+button of a judging starts the earning loop at once where the new judging gives it again, and the
+second click starts it on the result the first click has just shown, with no judging again.
+Stopping first keeps the backpack of the map run going on from being lost by a click on another
+button. Accepted with it: one click more at every program that loses on some seed, also where the
+player knows what it does, so „Puść w pętlę” is no longer one click for such a program; a moment
+of counting at each start; a little more logic of the screen; a player who judged a program before
+and forgot its result starts the earning loop with one click, while that result stands under the
+character until the player leaves the card; one click more where the predecessor game stopped the
+earning loop when a character was sent.
 *Rejected:* a section „Pętle” with a pick of character, map and program — a second place for sending
 characters and several times more to draw; „Wejdź” stopping the earning loop by itself, as sending a
 character did in the predecessor game — one click silently loses the backpack; „Puść w pętlę” acting
@@ -11820,18 +11819,19 @@ A program can be judged on every map open to the player, a map not yet solved in
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-179 · derives from D-409
-- **Verification:** an agent compares a change with the decision:
-  - complies: a judging of a program on Las giving twelve lines, and the same twelve at the next
-    judging with the same chest and character; a run that neither completes nor dies by game minute
-    4000 ending undecided and counted as unsolved, and one that completes or dies in game minute
-    4000 counted as solved or as a death; after the judging the chest, the character's practice and
-    ranks, the uses of the resurrection, the Understanding and the program as they were, also at a
-    character in an earning loop; the take list „jagoda 10” with 4 berries in the chest entering each
-    of the twelve runs with 4 berries; „Oceń na 12 ziarnach” acting on a map not yet solved
-  - violates: a judging that takes items from the chest or pays practice; a death in a judging that
-    uses up a use of the resurrection; a judging that writes a discovery into the Understanding or a
-    rule into the program; a judging refused on a map not yet solved or at a character in an earning
-    loop; the cap of game minutes written as a number in the code of the simulation or of the view
+- **Verification:** tests: the twelve seeds and the cap of 4000 game minutes in the game's data,
+  the same judging giving the same twelve lines; each seed's line the map run of that seed, in the
+  order of the seeds, solved, a death with its cause and game minute or undecided, a run that
+  solves the map or dies in the game minute of the cap counting and one still going there
+  undecided, and an undecided row naming the cap the data hold; the take list cut by
+  what lies in the chest, by the character's carrying capacity and by the map's entry cap, the same
+  for all twelve runs, with nothing leaving the chest and the character's skills and traits as they
+  stand acting in the runs; a judging changing nothing of the game — the chest, the character's
+  practice and ranks, the uses of the resurrection, the Understanding, the programs, a manual map
+  run and an earning loop — and a program the character cannot carry out yet judged as the program
+  it can; a program judged on a map not yet solved, and for a character in an earning loop or a
+  manual map run as for one outside both, the button „Oceń na 12 ziarnach” standing and active
+  there; a map, a character or a program the game lacks, and a map not open, refused.
 - **Origin:** none
 
 *Rationale:* In the product's own measurements, whose record is not open to a reader of the repository, 108 variants of the thresholds of one program gave on a fixed twelve of seeds the same count or a count one seed apart, so a bare count answers almost no change the player makes; and on fresh seeds a program that solves 94% of map runs passed a mark of 95 in 100 in 44% of tries, so a result on fresh seeds grows from trying again. A program that keeps the character alive and keeps losing the streak never ends its run, so the judging stops it at a cap; such a seed is no death, since the program does not die but does not hold the streak, which asks for another correction of the program. The cap is one number in the game's data, as the game's numbers are; it starts where the balance instrument stops a run, so that the judging and the measurement of a map stop the same run at the same minute. Accepted with it: a map with a much longer streak needs the number changed. A program can be judged on every map open to the player, a map not yet solved included, so the player sees what a program dies of on a new map before risking the character; accepted with it: part of the tension of a first try goes, and on a map where the player has not discovered something the program has no rules for it. The character enters a judging with what the earning loop would take from the chest at that moment, since in a game where many maps ask for the right equipment a judging with equipment from nowhere would not last: the result tells what the earning loop really gets at its start, and stock is gained by manual play on solved maps, so gaining it and then judging costs minutes, not hours; accepted with it: the game has no place where a program is tried with stock the player does not have yet, and the result changes with every change of the chest. A judging discovers nothing, as a map run of an earning loop discovers nothing (D-249); accepted with it: on a map not yet solved a judging may show failures that a manual map run, with its discoveries, could avoid.
@@ -11848,17 +11848,20 @@ A change of the rules, the rule groups or the trip plan of a program erases the 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-439 · derives from D-165
-- **Verification:** an agent compares a change with the decision:
-  - complies: a judging of the program „Ostrożny” of the character Ola on Las that solved all twelve
-    seeds showing „szczelny: 12 z 12” beside the list while it shows „Ostrożny”, and nothing beside
-    the list while it shows another program; the same after a load; after the chest lost the
-    berries the judging took, „12 z 12” with „oceniono z zapasem, którego dziś nie ma w skrzynce”
-    and no badge, and with more berries than it took the badge as it was; an edit of a rule of
-    „Ostrożny”, and a death of Ola with no use of the resurrection left, each leaving no judging
-    remembered for it
-  - violates: the cause or the game minute of a line kept in the saved game state; the badge still
-    standing after the chest lost what the judging took; a judging remembered for a program and a
-    map with no character; a judging of Ola kept after the death that took her practice
+- **Verification:** tests: a judging remembered as the kind of each of its twelve results and the
+  equipment it took, with no cause and no game minute, through a save and a load, and a saved game
+  state holding a cause, another kind or other than twelve results refused; a judging, the one
+  „Puść w pętlę” runs included, replacing the one remembered for its character, program and map and
+  no other; beside the list „Program:” the judging of that character, the program the list shows
+  and the map of the card alone, the badge „szczelny: 12 z 12” in `positive` for twelve solved
+  seeds and „{n} z 12” in `text` for fewer; with less of an item in the chest than the judging took
+  the note „oceniono z zapasem, którego dziś nie ma w skrzynce” beside the count and the badge gone
+  out, and with more the mark as it was; the judgings of a program erased by a change of its rules,
+  its rule groups or its trip plan, the rule the game writes at the first chill included, and by no
+  edit or save that changes none of them; every judging of a character erased, on every map, by a
+  death that takes its practice and bought ranks, in a manual map run, in an earning loop and in the
+  catch-up, and none by a death a use of the resurrection covers, by a death of a character with no
+  practice or by the purchase of a rank.
 - **Origin:** none
 
 *Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the saved game states of the earlier version are discarded (D-206); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings.
