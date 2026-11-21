@@ -27,7 +27,8 @@ const team = () => game().team;
 
 /**
  * The earning loops of the characters named in `waiting`, each on Las, holding the practice
- * gathered from completions `{ loop }` and the practice of the map run going on `{ run }`.
+ * gathered from completions `{ loop }`, the practice of the map run going on `{ run }` and the loop
+ * record `{ record }`, 0 where not given.
  */
 function loopsOf(waiting) {
   let state = game();
@@ -38,11 +39,15 @@ function loopsOf(waiting) {
       1,
     ).state;
   const loops = {};
-  for (const [id, { loop = {}, run = {} }] of Object.entries(waiting))
+  for (const [id, { loop = {}, run = {}, record = 0 }] of Object.entries(
+    waiting,
+  ))
     loops[id] = {
       ...state.loops[id],
       practice: loop,
       run: { ...state.loops[id].run, practice: run },
+      inARow: 0,
+      loopRecord: record,
     };
   return loops;
 }
@@ -229,6 +234,89 @@ test("a resurrection used in the catch-up adds „ · wskrzeszenie zużyte” at
     entriesOf([away({ resurrectionUsed: true })])[0].text,
     "Ala: 5 min · wskrzeszenie zużyte",
   );
+});
+
+// Catches the loop record left out of a line that went on, put before the other parts, or drawn with
+// a mark: it is the last words of the line, plain text, with the line's role and „Odbierz” unchanged.
+test("a line of an earning loop that goes on ends with its loop record in plain text, after the other parts", () => {
+  // decision: D-246 "At the end of the line of a character whose earning loop goes on stands the loop record of that earning loop (D-241) as plain text, with no mark and no comparison with anything, „ · najdłużej bez śmierci: {n} przejść z rzędu”, declined as „1 przejście”, „3 przejścia”, „5 przejść”."
+  assert.deepEqual(
+    entriesOf([away({ chest: { stick: 3 }, resurrectionUsed: true })], {
+      1: { loop: { eating: 2 }, record: 3 },
+    }),
+    [
+      {
+        text: "Ala: 5 min · skrzynka: patyk +3 · wprawa do odebrania: Jedzenie +2 · wskrzeszenie zużyte · najdłużej bez śmierci: 3 przejścia z rzędu",
+        danger: false,
+        takeFor: 1,
+      },
+    ],
+  );
+  assert.equal(
+    entriesOf([away()], { 1: { record: 3 } })[0].text,
+    "Ala: 5 min · najdłużej bez śmierci: 3 przejścia z rzędu",
+  );
+});
+
+// Catches the noun declined by a rule other than the three forms of D-246: 1 przejście, 2 to 4
+// przejścia (not 12 to 14), every other count przejść.
+test("the loop record declines „przejście” as 1 przejście, 3 przejścia, 5 przejść, with 12 to 14 and the tens as the rule of Polish gives", () => {
+  // decision: D-246 "At the end of the line of a character whose earning loop goes on stands the loop record of that earning loop (D-241) as plain text, with no mark and no comparison with anything, „ · najdłużej bez śmierci: {n} przejść z rzędu”, declined as „1 przejście”, „3 przejścia”, „5 przejść”."
+  const expected = [
+    [1, "1 przejście"],
+    [2, "2 przejścia"],
+    [3, "3 przejścia"],
+    [4, "4 przejścia"],
+    [5, "5 przejść"],
+    [11, "11 przejść"],
+    [12, "12 przejść"],
+    [14, "14 przejść"],
+    [21, "21 przejść"],
+    [22, "22 przejścia"],
+    [25, "25 przejść"],
+  ];
+  for (const [record, noun] of expected)
+    assert.equal(
+      entriesOf([away()], { 1: { record } })[0].text,
+      `Ala: 5 min · najdłużej bez śmierci: ${noun} z rzędu`,
+      `record ${record}`,
+    );
+});
+
+// Catches a zero drawn as „0 przejść z rzędu”, and a line of a character with no earning loop given a
+// number from nowhere.
+test("a loop record of zero, and a line whose character has no earning loop, show no loop record", () => {
+  // decision: D-246 "It is read from the earning loop whenever the section is drawn, as the practice waiting is, and stands nowhere where it is zero."
+  assert.equal(entriesOf([away()], { 1: { record: 0 } })[0].text, "Ala: 5 min");
+  assert.equal(entriesOf([away()])[0].text, "Ala: 5 min");
+  assert.equal(entriesOf([away()], { 2: { record: 4 } })[0].text, "Ala: 5 min");
+});
+
+// Catches the loop record of a stopped line, which has no earning loop, taken from a later earning
+// loop of the same character.
+test("a line of an earning loop a death stopped carries no loop record, whatever a later earning loop of the character holds", () => {
+  // decision: D-246 "At the end of the line of a character whose earning loop goes on stands the loop record of that earning loop (D-241) as plain text, with no mark and no comparison with anything, „ · najdłużej bez śmierci: {n} przejść z rzędu”, declined as „1 przejście”, „3 przejścia”, „5 przejść”."
+  for (const stopped of [stoppedAway(1, 3, 2), stoppedOpen(1, 2)])
+    assert.equal(
+      entriesOf([stopped], { 1: { record: 7 } })[0].text.includes("najdłużej"),
+      false,
+    );
+});
+
+// Catches the loop record kept in the report line instead of read from the earning loop at each
+// drawing: the same line of the report reads the number the earning loop holds now.
+test("the loop record is read from the earning loop of the line's own character at each drawing", () => {
+  // decision: D-246 "It is read from the earning loop whenever the section is drawn, as the practice waiting is, and stands nowhere where it is zero."
+  const report = [away(), line(2, { minutes: 7 })];
+  const read = (waiting) => entriesOf(report, waiting).map(({ text }) => text);
+  assert.deepEqual(read({ 1: { record: 2 }, 2: { record: 9 } }), [
+    "Ala: 5 min · najdłużej bez śmierci: 2 przejścia z rzędu",
+    "Ola: 7 min · najdłużej bez śmierci: 9 przejść z rzędu",
+  ]);
+  assert.deepEqual(read({ 1: { record: 6 }, 2: { record: 0 } }), [
+    "Ala: 5 min · najdłużej bez śmierci: 6 przejść z rzędu",
+    "Ola: 7 min",
+  ]);
 });
 
 // Catches the order of the data (earning loops stopped last) or of the lines' arrival replacing the order

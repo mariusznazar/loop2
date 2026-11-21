@@ -63,6 +63,8 @@ const withChest = (state, pieces) => ({
 const LOOP = {
   runNumber: 3,
   completed: 2,
+  inARow: 0,
+  loopRecord: 0,
   run: { mapId: "forest", minute: 212 },
 };
 

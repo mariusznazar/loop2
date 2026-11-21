@@ -8,6 +8,7 @@ import { ITEMS } from "../sim/data/items.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
 import { waitingPractice } from "../sim/loop.js";
 import { pieceCount } from "../sim/trip.js";
+import { countedName } from "./counted-name.js";
 import type {
   AwayReportLine,
   Character,
@@ -54,6 +55,20 @@ function signed(name: string, amount: number): string {
   return amount > 0 ? `${name} +${amount}` : `${name} ${MINUS}${-amount}`;
 }
 
+/**
+ * The loop record at the end of a line that went on (D-246): „ · najdłużej bez śmierci: {n}
+ * przejść z rzędu” as plain text, empty where the record is zero.
+ */
+function recordText(loopRecord: number): string {
+  if (loopRecord === 0) return "";
+  const noun = countedName(loopRecord, {
+    one: "przejście",
+    few: "przejścia",
+    many: "przejść",
+  });
+  return ` · najdłużej bez śmierci: ${loopRecord} ${noun} z rzędu`;
+}
+
 /** The text of a line that stopped: with „po {m} min” only where it stopped in a catch-up. */
 function stoppedText(
   name: string,
@@ -66,12 +81,14 @@ function stoppedText(
 
 /**
  * The text of a line that went on: minutes, chest, the practice waiting, as data orders them, empty
- * parts out. The minutes and the chest are those of the return, the practice is that of now.
+ * parts out, and the loop record of the earning loop last. The minutes and the chest are those of
+ * the return, the practice and the loop record are those of now.
  */
 function goingText(
   name: string,
   line: AwayReportLine,
   waiting: Practice,
+  loopRecord: number,
 ): string {
   const chest = (Object.keys(ITEMS) as ItemId[])
     .filter((id) => (line.chest[id] ?? 0) !== 0)
@@ -84,15 +101,16 @@ function goingText(
   if (practice.length > 0)
     parts.push(`wprawa do odebrania: ${practice.join(", ")}`);
   if (line.resurrectionUsed) parts.push("wskrzeszenie zużyte");
-  return `${name}: ${parts.join(" · ")}`;
+  return `${name}: ${parts.join(" · ")}${recordText(loopRecord)}`;
 }
 
 /**
  * The lines of the report as drawn: the earning loops that stopped first, in `danger`, then the others, in
  * `text`, each group in the team's order, a character's lines in the order of the report. Names
  * come from the team and the data; the practice of a line that went on is read from the earning
- * loop of its character as it stands now, and `takeFor` names that character where some waits.
- * Pure.
+ * loop of its character as it stands now, and `takeFor` names that character where some waits; its
+ * loop record, at the end of the line, is read from that earning loop too and stands nowhere where
+ * it is zero. Pure.
  */
 export function reportEntries(
   state: Pick<GameState, "awayReport" | "team" | "loops">,
@@ -114,7 +132,12 @@ export function reportEntries(
       : undefined;
     const waiting = loop === undefined ? {} : waitingPractice(loop);
     return {
-      text: goingText(character.name, line, waiting),
+      text: goingText(
+        character.name,
+        line,
+        waiting,
+        loop === undefined ? 0 : loop.loopRecord,
+      ),
       danger: false,
       takeFor: Object.keys(waiting).length > 0 ? character.id : null,
     };
