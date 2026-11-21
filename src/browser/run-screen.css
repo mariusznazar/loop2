@@ -514,11 +514,13 @@
  * (592 px) would end 23 px under its lower edge, the buttons with it. The height is the window's less 220
  * px: the 172 px, and a line of the row of warnings under the bar, about 48 px, which a failed save puts
  * there (D-208); a layout dimension, which D-43 leaves out, chosen from the measurement of the bar and
- * the window in a real browser.
+ * the window in a real browser. The unit is `svh`, the height of the window with the browser's bars
+ * shown: Chrome on Android counts `vh` with its address bar hidden, while the window opens with the
+ * page at its top and the bar in sight (D-370), so `vh` would put the buttons under the lower edge.
  */
 @media (width < 1280px) {
   .end-window {
-    max-height: calc(100vh - 220px);
+    max-height: calc(100svh - 220px);
   }
 }
 

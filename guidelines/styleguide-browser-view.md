@@ -512,6 +512,12 @@ Jak układ telefonu się zapisuje:
 - Poza progiem 1280 px nie ma żadnego innego progu szerokości w regule `@media`, z jednym
   wyjątkiem: progiem, przy którym scena w układzie telefonu przechodzi na większy rozmiar (reguła
   The scene of a map run, D-349). Warunek `prefers-reduced-motion` nie jest progiem szerokości.
+  Warunek `hover: none` też nie jest progiem szerokości ani osobnym układem: blok
+  `@media (width < 1280px) and (hover: none)` zdejmuje tło `highlight` spod kursora kontrolkom,
+  których tło w spoczynku jest przezroczyste, tam, gdzie urządzenie nie ma kursora, który najeżdża.
+  Powód: przeglądarka dotyku trzyma `:hover` na ostatnio dotkniętym elemencie aż do następnego
+  dotknięcia, więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym; mysz, także
+  w wąskim oknie komputera, widzi tło pod kursorem jak dotąd.
 - Reguła układu telefonu nie jest sprawdzana testem, bo jsdom jej nie stosuje; sprawdza ją
   agent w przeglądarce (reguła A change is checked in both layouts). To granica testów, nie
   usterka: zielony test mówi o układzie komputera i o logice, nie o układzie telefonu.
@@ -595,10 +601,10 @@ układu komputera zostają takie, jakie są.
 - Kontrolka, której reguła stoi w arkuszu ekranu albo części, trzyma minimum tak samo jak wspólna:
   ekran dokłada je w swoim bloku `@media (width < 1280px)`. Wspólne kontrolki i kontrolki,
   których reguły stoją w `src/browser/styles.css`, trzyma jeden blok tego pliku.
-- Odnośnik wewnątrz toczącego się zdania leży poza minimum: cel wysoki na 48 px rozerwałby linię
-  tekstu, a D-396 nazywa kontrolkami przycisk, komórkę wyboru, strzałkę i pozycję menu, nie odnośnik
-  w zdaniu. Odnośnik, który sam jest kontrolką — cały wiersz nawigacji, pozycja menu, odnośnik
-  stojący osobno jako cel podobny do przycisku — trzyma minimum.
+- Odnośnik wewnątrz toczącego się zdania zachowuje wielkość swojego tekstu, a odnośnik, który sam
+  jest kontrolką — cały wiersz nawigacji, pozycja menu, odnośnik stojący osobno jako cel podobny do
+  przycisku — trzyma minimum (D-396). To jedyny wyjątek od minimum: D-47 liczy każdy odnośnik jako
+  kontrolkę, a cel wysoki na 48 px rozerwałby linię tekstu.
 
 Przegląd zmiany czyta każdą kontrolkę zmienionego ekranu wobec minimum, w pomiarze z
 `.claude/skills/loop2-play/SKILL.md` (lista `controlsSmallerThan48`), i każdą czynność wobec
@@ -1038,14 +1044,16 @@ Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej
 reakcji na kliknięcie, a cały jej obszar nie błyska (D-272, D-321, D-317).
 
 Scena ma dwa rozmiary, jedną i dwie wielokrotności swojego obrazu 336 × 152 px (D-349): w układzie
-komputera 672 × 304 px, a w układzie telefonu większy z dwóch, który mieści się w szerokości obszaru
-strony, więc 336 × 152 px przy obszarze strony szerokim na 360 px. Nie ma skali ułamkowej ani większej
+komputera 672 × 304 px, a w układzie telefonu większy z dwóch, który mieści się w miejscu sceny, gdy
+w szerokości okna liczy się klasyczny pasek przewijania, więc 336 × 152 px przy obszarze strony
+szerokim na 360 px. Nie ma skali ułamkowej ani większej
 od dwukrotności: piksele obrazu zostają równe, a efekty sceny są robione dla dwóch rozmiarów. Gdy do całego
 obrazka brakuje kilku pikseli szerokości, boki sceny są lekko przycięte, a przycięcie nie chowa niczego,
 z czym gracz działa, takiego jak mag przy brzegu lasu, stwór albo przedmiot; przycięcie obrazka nie jest
 przewijaniem w bok (reguła Nothing scrolls to the side in the phone layout, and no text crosses its frame).
 Drugi rozmiar daje reguła w blokach układu telefonu: próg szerokości okna, przy którym mieści się 672 px,
-liczony z odstępów układu telefonu i zapisany z tą arytmetyką w komentarzu, jest jedynym progiem `@media`
+liczony z odstępów układu telefonu i z szerokości klasycznego paska przewijania, którą warunek `@media`
+liczy w szerokości okna, i zapisany z tą arytmetyką w komentarzu, jest jedynym progiem `@media`
 poza progiem 1280 px (reguła Two layouts and one threshold between them); `width` i `height` tła zostają
 672 × 304. Drobne elementy sceny, takie jak ikona na plakietce odkrycia i plakietka nad głową maga,
 mają rozmiar własny, niezależny od skali sceny, żeby były czytelne w obu rozmiarach; zmniejszone razem
@@ -1296,8 +1304,10 @@ Jak przykrywa ekran:
   (D-40), w kolumnie treści ekranu, tak szerokim jak ta kolumna w układzie komputera i w układzie
   telefonu (D-370, D-280), o takiej wysokości, że pod nim zostaje
   miejsce na pasek menu i wiersz ostrzeżeń.
-- Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`: wymiar układu,
-  którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
+- Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`, a w układzie
+  telefonu w `svh`, wysokości okna z widocznym paskiem adresu, bo okno otwiera
+  się przy stronie przewiniętej do góry, gdy pasek adresu telefonu stoi: wymiar
+  układu, którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
   stoi w regule `end-window` w `src/browser/run-screen.css`. Wyższa treść przewija
   się w oknie, nie wypycha go.
 - Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,

@@ -821,6 +821,7 @@ test("a pick cell with the icon of an action draws it as a hidden mask of that f
 // Breaks: a cell whose name is a bare text node beside the icon cannot drop under the icon when its
 // longest word does not fit beside it, so in a narrow grid the word crosses the cell's frame.
 test("a pick cell holds its name in an element of its own, after the icon and before the reason", async () => {
+  // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame"
   await withPage(async ({ document }) => {
     const cell = drawnElement(
       await drawn(
@@ -845,6 +846,7 @@ test("a pick cell holds its name in an element of its own, after the icon and be
 // back the fault of a name crossing the frame of its cell in a narrow window. jsdom resolves the
 // cascade, not the layout, so the case reads which declarations the real stylesheets give.
 test("the stylesheets let the name of a pick cell wrap beside its icon and break where no space helps", async () => {
+  // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame"
   await withPage(async ({ document, window }) => {
     const style = document.createElement("style");
     style.textContent = gameStylesheetText();

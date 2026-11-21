@@ -169,8 +169,9 @@ its frame, and the content of a frame that scrolls to the side, which `scrollsTo
 show. `outsideTheWindow` lists each element with a side beyond the window. The three must say
 `false`, an empty list and an empty list. `controlsSmallerThan48` lists each button, link, field,
 cell and item of a menu lower or narrower than 48 px, the touch-target minimum of D-396, with its
-size; change `const min = 48;` for another size. A link inside a sentence stands on that list too,
-and the source cited in D-396, not this list, says whether it counts. A line of the lists is
+size; change `const min = 48;` for another size. A link inside a running sentence stands on that
+list too, and D-396 exempts it: it keeps the size of its text, while a link that stands by itself as
+a control holds the minimum. A line of the lists is
 a sign, not a verdict: the picture of the scene or a clipped element may show there, and a screenshot
 (section "Show a screenshot to the human") shows whether text crosses a border.
 

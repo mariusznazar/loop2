@@ -448,7 +448,6 @@ test("the header's arrows carry the names of a group's move, and a single group 
 
 test("„↓” on a group's header moves the group one place down and hands the group as the hint of the move", async () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
-  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await press(buttonIn(headerOf(page.root, 1), "↓"));
