@@ -27,7 +27,6 @@ import {
   settleDeath,
 } from "../../dist/browser/sim/game.js";
 import { ABOUT } from "../../dist/browser/sim/data/about.js";
-import { judgeAndRemember } from "../../dist/browser/sim/judging.js";
 import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
@@ -2558,35 +2557,27 @@ const ACTS = [
     expected: (start) => pickProgram(start, 1, 2).state,
   },
   {
-    // „Puść w pętlę” judges the program of the list first (D-243), and a judging is a change of the
-    // game state the game saves (D-207); the program Ala's list shows, 2, does not solve all twelve
-    // seeds of Las, so the earning loop starts at the second click, „Puść mimo to”, whose save waits
-    // behind the first until it is answered.
-    name: "„Puść w pętlę”: its judging, and the start at the second click",
+    // „Puść w pętlę” judges the program of the list first (D-243), and a judging changes no game
+    // state, so the game saves nothing for it; the program Ala's list shows, 2, does not solve all
+    // twelve seeds of Las, so the earning loop starts at the second click, „Puść mimo to”, and the
+    // one save the case sees is the save of that start, of the state before the judging with the
+    // loop started.
+    name: "„Puść w pętlę”: its judging saves nothing, and the start at the second click",
     start: solvedAla,
     hash: "#/mapy/forest",
     ownActs: true,
     act: async (root) => {
       await press(buttonLabelled(root, "Puść w pętlę: Ala, mapa Las"));
       await inAct(async () => mock.timers.tick(100));
+      await press(buttonLabelled(root, "Puść mimo to: Ala, mapa Las"));
     },
+    // The start takes the real date as its time, and the list shows program 2.
     expected: (start) =>
-      judgeAndRemember(start, { mapId: "forest", characterId: 1, programId: 2 })
-        .state,
-    afterwards: {
-      act: (root) => press(buttonLabelled(root, "Puść mimo to: Ala, mapa Las")),
-      // The start takes the real date as its time, and the list shows program 2.
-      expected: (start) =>
-        startLoop(
-          judgeAndRemember(start, {
-            mapId: "forest",
-            characterId: 1,
-            programId: 2,
-          }).state,
-          { mapId: "forest", characterId: 1, programId: 2 },
-          CLOCK_MS,
-        ).state,
-    },
+      startLoop(
+        start,
+        { mapId: "forest", characterId: 1, programId: 2 },
+        CLOCK_MS,
+      ).state,
   },
   {
     // Siedziba keeps the line of an earning loop with its „Zatrzymaj”.
@@ -2708,16 +2699,7 @@ test("each act of the player that changes the game state is saved at once, and o
     value: handClock(() => 0),
   });
   try {
-    for (const {
-      name,
-      start,
-      hash,
-      ownActs,
-      act,
-      expected,
-      check,
-      afterwards,
-    } of ACTS) {
+    for (const { name, start, hash, ownActs, act, expected, check } of ACTS) {
       await onPage(async ({ root }) => {
         const held = heldClient();
         const begun = start();
@@ -2739,25 +2721,6 @@ test("each act of the player that changes the game state is saved at once, and o
             name,
           );
         else check(sent.game, begun);
-        // An act of two steps: the save of the second is held until the first is answered, as at most
-        // one save request is in flight (D-207).
-        if (afterwards) {
-          await afterwards.act(root);
-          assert.deepEqual(
-            waitingCalls(held),
-            ["saveGame"],
-            `${name}: the second step waits behind the first save`,
-          );
-          await held.answer("saveGame", { kind: "saved", revision: 5 });
-          assert.deepEqual(waitingCalls(held), ["saveGame"], name);
-          const [next] = argsOf(held, "saveGame");
-          assert.equal(next.basedOn, 5, name);
-          assert.deepEqual(
-            next.game,
-            plain({ ...afterwards.expected(begun), saveTimeMs: CLOCK_MS }),
-            name,
-          );
-        }
       });
     }
   } finally {
@@ -3048,7 +3011,12 @@ test("„Puść w pętlę” puts the character into an earning loop, at its sec
     const { view, held } = await viewOf(solvedAla(), address);
     const ala = whoOf(root, "Ala");
     assert.equal(byClass(ala, "maps-who-loop").length, 0);
-    await startLoopOf(root, "Ala");
+    // The first click judges and changes no game state, so nothing is saved for it (D-207).
+    await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
+    await inAct(async () => mock.timers.tick(100));
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "the judging saves nothing");
+    await press(buttonLabelled(ala, "Puść mimo to: Ala, mapa Las"));
     assert.equal(shownScreen(root), "maps", "the player stays on Mapy");
     assert.deepEqual(address.entries, ["#/mapy/forest"], "with no new entry");
     assert.equal(
@@ -3070,12 +3038,11 @@ test("„Puść w pętlę” puts the character into an earning loop, at its sec
       "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
       "Siedziba holds the line as well",
     );
-    // The judging is saved first, and the start waits behind that save (D-207).
-    assert.deepEqual(waitingCalls(held), ["saveGame"]);
-    assert.equal(argsOf(held, "saveGame")[0].game.loops[1], undefined);
-    await held.answer("saveGame", { kind: "saved", revision: 2 });
+    // The one save is the start's: its game state holds the earning loop (D-207).
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
     assert.notEqual(argsOf(held, "saveGame")[0].game.loops[1], undefined);
+    await held.answer("saveGame", { kind: "saved", revision: 2 });
+    assert.deepEqual(waitingCalls(held), [], "no save follows the start's");
     await inAct(() => view.dispose());
   });
 });
