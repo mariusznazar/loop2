@@ -5,10 +5,6 @@
 // it), and for the save from D-213 and D-206 (a crafted document is refused whole as `shape`, and no
 // value a document can hold makes the load throw) and D-386 (the load admits what the game makes). The
 // expected numbers are written out by hand from those sentences.
-//
-// The version of the shape is raised in a later slice together with the document of
-// `tests/sim/saved-game.test.mjs`, so the save's part of this file builds its documents from a save of a
-// game state and changes them at one place, whatever the version stands at.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createCharacter, withSaveTime } from "../../dist/browser/sim/game.js";
@@ -368,8 +364,9 @@ test("the states an earning loop makes through completions and a covered death l
   assert.deepEqual(counts(state), [1, 2, 3], "precondition: the numbers moved");
 });
 
-test("a load admits a run in a row equal to the record, and both at 0", () => {
+test("a load admits a run in a row equal to the record, and both at 0, the record up to the map runs completed", () => {
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
+  assert.equal(DOCUMENT.game.loops[1].completed, 5, "precondition");
   for (const [inARow, loopRecord] of [
     [5, 5],
     [0, 0],
@@ -446,6 +443,28 @@ test("a run in a row above the loop record is refused as shape", () => {
     assertRefused(
       `${String(inARow)} in a row, a record of ${String(loopRecord)}`,
       changed((loop) => {
+        loop.inARow = inARow;
+        loop.loopRecord = loopRecord;
+      }),
+    );
+});
+
+// invariant: save-version
+// Fault: the load takes a loop record no earning loop can reach, and a forged number stands in the line of
+// the report „Gdy cię nie było”. The record is a run of completions, so it is never above the completions
+// counted from the same start (D-241); the document's earning loop of Ala has completed 5.
+test("a loop record above the map runs completed is refused as shape", () => {
+  // decision: D-241 "Each earning loop also holds, from its start, the number of its map runs completed in a row with no death between them, which a death that does not stop the earning loop sets back to zero, and the largest such number, its loop record"
+  for (const [runNumber, completed, inARow, loopRecord] of [
+    [6, 5, 2, 6],
+    [6, 5, 999, 999],
+    [1, 0, 1, 1],
+  ])
+    assertRefused(
+      `${String(completed)} completed, ${String(inARow)} in a row, a record of ${String(loopRecord)}`,
+      changed((loop) => {
+        loop.runNumber = runNumber;
+        loop.completed = completed;
         loop.inARow = inARow;
         loop.loopRecord = loopRecord;
       }),

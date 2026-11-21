@@ -3012,9 +3012,12 @@ test("a document at the edges of what the earning loops, the report and the save
     // D-386: a safe integer of any sign, as the team's moment of the next return is read, so the case
     // is no crafted document.
     "a save time below 0": (document) => (document.game.saveTimeMs = -1),
+    // With no map run completed yet, no run of completions in a row stands either (D-241).
     "an earning loop in its first map run, nothing gathered": (document) => {
       olaLoop(document).runNumber = 1;
       olaLoop(document).completed = 0;
+      olaLoop(document).inARow = 0;
+      olaLoop(document).loopRecord = 0;
       olaLoop(document).practice = {};
     },
     "a stopped earning loop that gathered nothing": (document) =>
