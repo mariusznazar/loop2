@@ -19,6 +19,7 @@ import {
   send,
   setPaused,
 } from "../../dist/browser/sim/game.js";
+import { contentFingerprint } from "../../dist/browser/sim/judging-record.js";
 import { createProgram, editProgram } from "../../dist/browser/sim/programs.js";
 import { openJudgingCache } from "../../dist/browser/view/judging-cache.js";
 import { createMapsEntry } from "../../dist/browser/view/maps-entry.js";
@@ -143,6 +144,7 @@ function recordIn(state, [characterId, programId], kinds, equipment = []) {
     results: kinds,
     equipment,
     contentRevision: saved.contentRevision,
+    contentFingerprint: contentFingerprint(saved.program),
     generation: character.generation,
   };
 }
