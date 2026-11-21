@@ -643,7 +643,7 @@ test("a tree's row stands in its columns, with „+{n} pkt czeka w pętli” aft
 // Catches a bar in green, a track in `highlight`, which can hardly be seen on the panel of the area,
 // points that are not the light text of names, and a mark of the waiting practice in green.
 test("the bar of a tree has its track in text-disabled and its fill in text, its points stand in text-strong and the mark of the waiting practice in text", async () => {
-  // decision: D-40 "The bar of the practice of a tree on the screen Postać has a darker track and a light fill with no green, as the bar of a requirement that is not met has, its track in `text-disabled` and its fill in `text`, though neither is text, and the points of that tree to spend stand beside it in `text-strong`"
+  // decision: D-40 "The bar of the practice of a tree on the screen Postać has a darker track and a light fill with no green, as the bar of a requirement that is not met has, its track in `text-disabled`, at a contrast ratio of at least 2:1 against `panel` (D-42), and its fill in `text`, though neither is text, and the points of that tree to spend stand beside it in `text-strong`"
   // decision: D-199 "Each known tree stands as a row in columns: its name, „poziom {p}”, a bar of its practice up to its next threshold with „{wprawa} / {próg}”, or after its last threshold a full bar with „najwyższy”, and „{k} pkt” only where it has points to spend; right after the name, in the role `text`, stands „+{n} pkt czeka w pętli”"
   await withPage(async (page) => {
     const loop = {

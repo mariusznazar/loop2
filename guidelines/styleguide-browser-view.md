@@ -26,7 +26,7 @@ bez odstępstw zgodnie z D-38.
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, i jako wypełnienie paska wprawy drzewa na ekranie Postać, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
-| `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem.                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
+| `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem, z progiem 2:1 wobec `panel` (D-42).                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
 | `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                                                                               | —          | D-39     |
 | `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                                                                                       | —          | D-39     |
@@ -184,7 +184,10 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
 - ramka plakietki odkrycia w scenie, `discovery` na `panel`, nie dokłada pary
   ani progu: reguła sceny wymaga dla niej co najmniej 3:1 wobec `panel` (D-39,
   D-42), a `discovery` ma już 4,5:1 na `panel` z pierwszego punktu;
-- `text-disabled` nie ma progu;
+- `text-disabled` nie ma progu jako tekst; jako tor paska wprawy drzewa na
+  ekranie Postać ma co najmniej 2:1 wobec `panel` — para osobna, próg własny
+  produktu, nie kryterium WCAG, żeby tor nie zlał się z tłem bloku; tekstu
+  w `text-disabled` ten próg nie dotyczy (D-42, D-40);
 - `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
   tłach;
 - `condition-unmet`, pasek reguły, której warunek nie jest spełniony, nie ma
@@ -796,7 +799,8 @@ Wiedza, jedna czwarta i trzy czwarte szerokości — a w oknie węższym niż 72
   w `positive` (D-39); „poziom {p}” w `text-secondary`; pasek wprawy o grubości podwojonej
   `--bar-width`, jak pasek nad głową maga; ciemniejszy tor i jasne wypełnienie, bez zieleni, jak
   pasek niespełnionego wymagania w nagłówku przejścia, ale tor w `text-disabled`, bo tor w
-  `highlight` ledwo widać na `panel` bloku, a wypełnienie w `text` (D-40); „{wprawa} / {próg}” albo „najwyższy” w `text-secondary`; „{k} pkt” w
+  `highlight` ledwo widać na `panel` bloku — z co najmniej 2:1 wobec `panel`, które pilnuje test
+  kontrastu (D-42) — a wypełnienie w `text` (D-40); „{wprawa} / {próg}” albo „najwyższy” w `text-secondary`; „{k} pkt” w
   `text-strong`, tylko gdy są punkty. Kliknięcie w dowolne miejsce wiersza rozwija albo zwija drzewo,
   a klawiatura dochodzi do zwijaka, który robi to samo Enterem albo Spacją, jak każdy przycisk. Stany
   zwijaka podaje reguła States of shared controls: error, empty i loading go nie dotyczą, bo nie ma
