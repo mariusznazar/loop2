@@ -66,10 +66,12 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // another version since version 9.
 //
 // The document of the current version, version 9, is that of version 8 with the judgings the game
-// remembers, a key `judgings` of the game state, and the two counts of each earning loop, `inARow` and
-// `loopRecord` (D-440, D-241, D-206). It fills every optional branch of the game state, the new ones
-// among them: judgings remembered for more than one character, program and map, with a take list and
-// each kind of result, and an earning loop whose two counts stand above 0 with the run below the
+// remembers, a key `judgings` of the game state, the two counts of each earning loop, `inARow` and
+// `loopRecord` (D-440, D-241, D-206), the content revision of each program, `contentRevision` beside its
+// number, name and content (D-442), and the real moment the game was made, `madeAtMs` (D-04, D-386). It
+// fills every optional branch of the game state, the new ones among them: judgings remembered for more
+// than one character, program and map, with a take list and each kind of result, programs of content
+// revision 0 and above, and an earning loop whose two counts stand above 0 with the run below the
 // longest. It also fills the others: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
@@ -80,7 +82,9 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // combat going on, with no manual map run. Its map run is written paused, so the load's pause
 // changes nothing in it. A change of the game state's shape makes the load refuse this document; it
 // is rewritten only together with a raised version, or while no saved game state of the current
-// version exists anywhere.
+// version exists anywhere. The content revision and the moment of the game are added to it without a
+// raise of the version, since version 9 was raised for the judgings and the counts and no saved game
+// state of version 9 exists anywhere: the change has not reached a server.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -790,14 +794,20 @@ const JUDGINGS = {
 /**
  * The document of the current version, version 9: version 8 with the judgings of `JUDGINGS` and the two
  * counts of Ola's earning loop, 2 map runs completed in a row below its loop record of 3, the three
- * runs it completed.
+ * runs it completed, the content revision of each program (0 for the program made with the game, 4 for
+ * the one saved four times with other content) and the real moment the game was made, before the save.
  */
 const DOCUMENT = {
   version: 9,
   game: {
     ...DOCUMENT_V8.game,
+    programs: [
+      { id: 1, name: "Program", program: PROGRAM_1, contentRevision: 0 },
+      { id: 3, name: "Las nocą", program: PROGRAM_3, contentRevision: 4 },
+    ],
     loops: { 2: countedLoop(loopOf(2), 2, 3) },
     judgings: JUDGINGS,
+    madeAtMs: 1759900000000,
   },
 };
 
@@ -805,11 +815,15 @@ const DOCUMENT = {
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on, no judging remembered, and the team's resurrection
  * with no use spent and no moment of the next return. The earning loop's run in a row equals its record.
+ * Its one program is of content revision 1, and its game was made at the moment 0 the new game takes where
+ * the page gives none.
  */
 const HEADQUARTERS = {
   version: 9,
   game: {
-    programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
+    programs: [
+      { id: 1, name: "Program", program: PROGRAM_1, contentRevision: 1 },
+    ],
     nextProgramId: 2,
     pickedPrograms: {},
     lastUsedPrograms: { 1: 1 },
@@ -864,6 +878,7 @@ const HEADQUARTERS = {
     awayReport: [],
     judgings: {},
     saveTimeMs: 1760000000000,
+    madeAtMs: 0,
   },
 };
 
@@ -1242,9 +1257,10 @@ test("the document of version 7 is refused as version, whatever its game holds",
 
 // invariant: save-version
 // D-206: the document of version 8 is discarded whole, whatever it holds, though its game state is
-// sound but for the judgings and the two counts of an earning loop it lacks; the current version is the
-// one after it, raised once for both changes of the shape (D-440, D-241). The same game under the
-// current version is no document of it, as it lacks the new keys, and is refused as shape.
+// sound but for the judgings, the two counts of an earning loop, the content revision of each program
+// and the moment of the game it lacks; the current version is the one after it, raised once for the
+// changes of the shape (D-440, D-241, D-442, D-04). The same game under the current version is no
+// document of it, as it lacks the new keys, and is refused as shape.
 test("the document of version 8 is refused as version, whatever its game holds", () => {
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   assert.equal(DOCUMENT_V8.version, 8);
@@ -2174,6 +2190,48 @@ const CRAFTED = {
     (document.game.saveTimeMs = 2 ** 53),
   "a save time below the safe integers": (document) =>
     (document.game.saveTimeMs = -(2 ** 53)),
+  // The moment the game was made (D-04, D-386): a safe integer of any sign, so a document without it, or
+  // holding no safe integer, is refused.
+  "the game without the moment it was made": (document) =>
+    delete document.game.madeAtMs,
+  "a moment of the game of none": (document) => (document.game.madeAtMs = null),
+  "a fractional moment of the game": (document) =>
+    (document.game.madeAtMs = 0.5),
+  "a moment of the game as text": (document) =>
+    (document.game.madeAtMs = "1759900000000"),
+  "a moment of the game not a number": (document) =>
+    (document.game.madeAtMs = NaN),
+  "a moment of the game infinite": (document) =>
+    (document.game.madeAtMs = Infinity),
+  "a moment of the game beyond the safe integers": (document) =>
+    (document.game.madeAtMs = 2 ** 53),
+  "a moment of the game below the safe integers": (document) =>
+    (document.game.madeAtMs = -(2 ** 53)),
+  // The content revision of a program (D-442): beside its number, name and content, a safe integer from
+  // 0; held in the content, in the copy of a map run or in the program of an earning loop, which hold
+  // content alone, it is a key the program check does not know.
+  "a program without its content revision": (document) =>
+    delete document.game.programs[0].contentRevision,
+  "a content revision below 0": (document) =>
+    (document.game.programs[0].contentRevision = -1),
+  "a fractional content revision": (document) =>
+    (document.game.programs[1].contentRevision = 1.5),
+  "a content revision as text": (document) =>
+    (document.game.programs[1].contentRevision = "4"),
+  "a content revision of none": (document) =>
+    (document.game.programs[1].contentRevision = null),
+  "a content revision not a number": (document) =>
+    (document.game.programs[0].contentRevision = NaN),
+  "a content revision infinite": (document) =>
+    (document.game.programs[0].contentRevision = Infinity),
+  "a content revision beyond the safe integers": (document) =>
+    (document.game.programs[1].contentRevision = 2 ** 53),
+  "a content revision held in the content of a program": (document) =>
+    (document.game.programs[0].program.contentRevision = 0),
+  "a content revision held in the copy of a map run": (document) =>
+    (document.game.run.copy.program.contentRevision = 0),
+  "a content revision held in the program of an earning loop": (document) =>
+    (olaLoop(document).program.contentRevision = 0),
   // The earning loops (D-241): a key in canonical form naming a character of the team.
   "the game without its earning loops": (document) =>
     delete document.game.loops,
@@ -2592,7 +2650,10 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   // decision: D-241 "Each earning loop also holds, from its start, the number of its map runs completed in a row with no death between them, which a death that does not stop the earning loop sets back to zero, and the largest such number, its loop record"
-  // decision: D-440 "The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
+  // decision: D-440 "The game remembers the last judging of each character, program and map in the browser that made it, as D-441 gives: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
+  // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
+  // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content"
+  // decision: D-442 "The copy of a map run and the program of an earning loop hold content alone and carry no content revision"
   // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
@@ -2793,6 +2854,7 @@ test("a program whose number is not below the next program number is refused as 
         id: 2,
         name: "Other",
         program: structuredClone(PROGRAM_1),
+        contentRevision: 0,
       });
     }, HEADQUARTERS),
     "shape",
@@ -2972,10 +3034,12 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
 
 // D-386. Catches a condition set one step too strict, each edge being a value the game
 // writes: a clock at zero or below it, an earning loop's first run, a stop with nothing gathered, a stop in
-// the open game with no minutes, a second earning loop of a character whose first stopped.
+// the open game with no minutes, a second earning loop of a character whose first stopped, the moment the
+// game was made at zero, below it and far ahead, and a program's content revision at 0 and at the top.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the next spent use of the account's resurrection returns, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-386 "The moment the game was made (D-04) is a moment the game state stores too, which the load takes as a safe integer of milliseconds of any sign without comparing it with any clock, and the load takes the content revision of each program (D-442) as any safe integer from 0, comparing it with nothing"
   // decision: D-241 "Each earning loop also holds, from its start, the number of its map runs completed in a row with no death between them, which a death that does not stop the earning loop sets back to zero, and the largest such number, its loop record"
   const edges = {
     // The counts an earning loop starts with, one with the run in a row at its record, one below it, and
@@ -3012,6 +3076,23 @@ test("a document at the edges of what the earning loops, the report and the save
     // D-386: a safe integer of any sign, as the team's moment of the next return is read, so the case
     // is no crafted document.
     "a save time below 0": (document) => (document.game.saveTimeMs = -1),
+    // The moment the game was made (D-04, D-386): any safe integer, as the save time is, and no clock
+    // read: 0, below 0 and far ahead of the save time and of any present.
+    "a game made at the moment 0": (document) => (document.game.madeAtMs = 0),
+    "a game made at a moment below 0": (document) =>
+      (document.game.madeAtMs = -1),
+    "a game made at the lowest safe moment": (document) =>
+      (document.game.madeAtMs = Number.MIN_SAFE_INTEGER),
+    "a game made far ahead of its save": (document) =>
+      (document.game.madeAtMs = document.game.saveTimeMs + 10 ** 12),
+    "a game made at the highest safe moment": (document) =>
+      (document.game.madeAtMs = Number.MAX_SAFE_INTEGER),
+    // The content revision of a program (D-442): 0, the revision of a program just made, and as high as
+    // a safe integer goes, compared with nothing.
+    "programs both of content revision 0": (document) =>
+      (document.game.programs[1].contentRevision = 0),
+    "a program of the highest safe content revision": (document) =>
+      (document.game.programs[1].contentRevision = Number.MAX_SAFE_INTEGER),
     // With no map run completed yet, no run of completions in a row stands either (D-241).
     "an earning loop in its first map run, nothing gathered": (document) => {
       olaLoop(document).runNumber = 1;
