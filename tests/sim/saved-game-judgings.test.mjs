@@ -112,7 +112,7 @@ function loadedJudgings(judgings) {
 // Fault: a field the save writes and the load does not read (or reads loosely) loses the remembered
 // judgings at the first reload, or the game writes a save its own load discards (D-386).
 test("a game state with remembered judgings goes through the save and the load whole", () => {
-  // decision: D-440 "the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held"
+  // decision: D-440 "The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
   assert.equal(
     Object.keys(DOCUMENT.game.judgings).length,
     2,
@@ -133,7 +133,7 @@ test("a new game remembers no judging, and its save loads with none", () => {
 });
 
 test("a load builds the judgings from new values, and a save shares none with the state", () => {
-  // decision: D-213 "changing nothing passed to it"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const document = structuredClone(DOCUMENT);
   const before = structuredClone(document);
   const loaded = loadSavedGame(document);
@@ -225,7 +225,7 @@ test("a judging naming a character the team lacks, a program the list lacks or a
 });
 
 test("a judging of a program that was deleted from the list is refused as shape, though its number was given", () => {
-  // decision: D-165 "so the numbers of two programs of one game differ, a deleted program's number included"
+  // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included"
   const deleted = {
     ...deleteProgram(STATE, 2).state,
     judgings: STATE.judgings,
@@ -258,7 +258,7 @@ test("a judging of a program that was deleted from the list is refused as shape,
 // Twelve results, one for each of the data's twelve seeds, each of a kind the decision names and no more
 // than the kind: the cause and the minute of a death stand only in the result shown after the judging.
 test("a judging with other than twelve results, or a result of another kind, is refused as shape", () => {
-  // decision: D-440 "while the cause and the game minute of a line stand only in the result shown after the judging"
+  // decision: D-440 "The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
   const at = (held, change) => change(held[1][1].forest);
   const sparse = [...SOLVED_ALL];
   delete sparse[5];
@@ -305,7 +305,7 @@ test("a judging with other than twelve results, or a result of another kind, is 
 // The equipment is a trip list as the game gives one: items of the data, each once, each count a safe
 // integer from 1 (D-181); a count of the data's cap or of the chest is not compared (D-440).
 test("a judging whose equipment holds an item the data lacks, an item twice or a count that is no safe integer from 1 is refused as shape", () => {
-  // decision: D-440 "the equipment it took from what the chest held"
+  // decision: D-440 "The saved game state holds the last judging of each character, program and map: the twelve results of its seeds — solved, a death or undecided — and the equipment it took from what the chest held, while the cause and the game minute of a line stand only in the result shown after the judging (D-329)"
   const berry = entry("berry", 3);
   for (const [name, equipment] of Object.entries({
     "an item the data lacks": [entry("pebble", 1)],
@@ -348,7 +348,7 @@ test("a judging whose equipment holds an item the data lacks, an item twice or a
 // invariant: save-version
 // Strict reading: every key present, no foreign key, only own keys, at every level of the record.
 test("a judging record, a level of the record or the record itself of another shape is refused as shape", () => {
-  // decision: D-213 "a crafted document of the current version refused whole"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const judging = () => ({ results: [...SOLVED_ALL], equipment: [] });
   const cases = {
     "a judging without its results": (held) => {
@@ -469,7 +469,7 @@ function placesIn(value, path = []) {
 // own refusal, and the player gets „Spróbuj ponownie” for a damaged save for good instead of the refusal
 // D-96 gives. The expected result comes from D-213: a crafted document is a refusal, so it never throws.
 test("no value a document can hold, at any place of the judgings, throws out of the load", () => {
-  // decision: D-213 "no value a document can hold making it throw"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const places = placesIn(DOCUMENT.game.judgings, ["game", "judgings"]);
   assert.ok(places.length > 30, "precondition: the sweep reaches the judgings");
   for (const path of places) {
@@ -497,7 +497,7 @@ test("no value a document can hold, at any place of the judgings, throws out of 
 // a check dropped from one place is found: each leaf of the judgings is replaced by a value of no kind
 // it may hold.
 test("every leaf of a remembered judging refuses a value of another kind", () => {
-  // decision: D-213 "a crafted document of the current version refused whole"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const leaves = placesIn(DOCUMENT.game.judgings).filter((path) => {
     let value = DOCUMENT.game.judgings;
     for (const key of path) value = value[key];

@@ -151,7 +151,7 @@ function withCap(minutes, body) {
 const dead = (cause, minute) => ({ kind: "death", cause, minute });
 
 test("the game's data holds the cap of 4000 game minutes and the twelve seeds 1 to 12 beside each other", () => {
-  // decision: D-439 "within a cap of game minutes set in the game's data, 4000 to start"
+  // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data, 4000 to start"
   // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of its map"
   assert.equal(BALANCE.judgingCapMinutes, 4000);
   assert.deepEqual(BALANCE.judgingSeeds, SEEDS);
@@ -196,7 +196,7 @@ test("each seed's line is the map run of that seed, in the order 1 to 12, whethe
 });
 
 test("a run that solves the map or dies in the very minute of the cap counts, and one still going there is undecided", () => {
-  // decision: D-439 "a run that neither completes nor dies by game minute 4000 ending undecided and counted as unsolved, and one that completes or dies in game minute 4000 counted as solved or as a death"
+  // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data, 4000 to start"
   // The empty program dies of cold in game minute 243 on every seed.
   const empty = game();
   assert.deepEqual(
@@ -230,7 +230,7 @@ test("a run that solves the map or dies in the very minute of the cap counts, an
 });
 
 test("a map run that neither solves the map nor dies by the cap is undecided, and is no death and no solving", () => {
-  // decision: D-439 "such a seed is no death, since the program does not die but does not hold the streak"
+  // decision: D-439 "The game runs a program on twelve fixed seeds of a map, the same seeds each time, and shows the result seed by seed: solved, a death with its cause and game minute, or undecided where the program has neither solved the map nor died within a cap of game minutes set in the game's data, 4000 to start"
   const results = withCap(100, () =>
     judgeOnSeeds(game(), asked("forest")),
   ).results;
@@ -241,7 +241,7 @@ test("a map run that neither solves the map nor dies by the cap is undecided, an
 });
 
 test("the same judging twice gives the same twelve lines, whatever the last seed and the map run of the game are", () => {
-  // decision: D-22 "violates: a judging that draws a new seed for its runs, or takes the seeds from the seed of the character's last map run"
+  // decision: D-22 "A judging of a program (D-439) runs on the twelve fixed seeds of its map, the same at each judging, and takes no new seed, each of its twelve runs drawing from its own seed as a map run does"
   const plain = game(REFERENCE_PROGRAMS.forestDecent);
   const first = judgeOnSeeds(plain, asked("forestEdge"));
   assert.deepEqual(judgeOnSeeds(plain, asked("forestEdge")), first);
@@ -255,7 +255,7 @@ test("the same judging twice gives the same twelve lines, whatever the last seed
 
 test("the take list is cut by the chest, the carrying capacity and the map's entry, none of it leaves the chest, and all twelve runs start with the same", () => {
   // decision: D-439 "The character enters each of the twelve runs with the take list of the program cut by what lies in the chest, by the character's carrying capacity and by the map's entry cap, all twelve starting with the same equipment, and nothing leaves the chest."
-  // decision: D-179 "as many go in from the top of the list as fit"
+  // decision: D-179 "Reality cuts the trip plan down and never up: what the chest lacks does not go into the backpack, what the backpack lacks does not come back, and where items compete for one budget — the backpack, the map's cap, the free room in the chest — as many go in from the top of the list as fit"
   const eaterWith = (chest) => game(EATER, chest);
   const none = judgeOnSeeds(eaterWith({}), asked("forest"));
   const four = judgeOnSeeds(eaterWith({ berry: 4 }), asked("forest"));
@@ -312,7 +312,7 @@ test("the take list is cut by the chest, the carrying capacity and the map's ent
 
 test("nothing of the game is changed: the chest, the character's practice and ranks, the Understanding, the programs, a manual map run and an earning loop stand as they were", () => {
   // decision: D-439 "Such a judging is no map run of the character: it takes nothing from the chest, pays nothing and settles no death."
-  // decision: D-439 "after the judging the chest, the character's practice and ranks, the uses of the resurrection, the Understanding and the program as they were, also at a character in an earning loop"
+  // decision: D-439 "A judging discovers nothing: it runs with what the player has discovered, writes nothing into the Understanding and adds no rule to the program"
   // decision: D-249 "A map run of an earning loop discovers nothing: the Understanding and the program stay as they stand"
   // invariant: simulation-inputs
   const state = game(EATER, { berry: 4, stick: 3 });
