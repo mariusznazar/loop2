@@ -230,7 +230,7 @@ test("group conditions offer the same kinds and editable fields while preserving
 
 test("native drop targets place a rule before the target after removal, or append to a group", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   const input = {
     ...THREE,
     groups: [
@@ -442,7 +442,7 @@ test("„Usuń” removes the rule at its position without reassigning identitie
 });
 
 test("„↑” and „↓” swap a rule with its neighbour; past either end nothing is committed", () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   const before = copy(THREE);
   assert.deepEqual(moveRule(THREE, 1, 1, -1).groups[0].rules, [
     BELOW_WANDER,
@@ -919,7 +919,7 @@ test("every program the editor builds passes setProgram, before sending and duri
 test("rule edits preserve other groups, group boundaries and identities", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   const first = {
     id: 8,
@@ -1967,7 +1967,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
 });
 
 test("the arrows are off only where no group stands before (after) the rule's group, a group's edge being no end", () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it, so a rule group left empty at the edge of the program takes the rule"
   const second = {
     id: 2,
@@ -2004,7 +2004,7 @@ test("the arrows are off only where no group stands before (after) the rule's gr
 
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   const rules = (program) =>
     program.groups.map((group) => group.rules.map((rule) => rule.id));
@@ -2046,7 +2046,7 @@ test("„↓” on the last rule of a group makes it the first of the next, „�
 });
 
 test("a rule group is dropped before another group or at the end, and a drop that changes nothing commits nothing", () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   const group = (id) => ({ id, name: `G${id}`, condition: ALWAYS, rules: [] });
   const program = {
     ...THREE,
@@ -2078,7 +2078,7 @@ test("a rule group is dropped before another group or at the end, and a drop tha
 });
 
 test("a rule dropped on a folded group, which shows no rule to go before, lands at the group's end", () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-295 "A folded rule group shows its name, its condition and the number of its program rules, and a program rule dropped on it lands at its end"
   const program = {
     ...THREE,
