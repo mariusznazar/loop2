@@ -1,3 +1,4 @@
+import { itemTargets, type ItemAction } from "./action-targets.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import type { GameResult } from "./game.js";
@@ -60,6 +61,23 @@ function checkItem(value: unknown): ItemId {
   if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
     throw new ProgramCheckError(
       `program: item ${shown(value)} is not an item of the data`,
+    );
+  }
+  return value as ItemId;
+}
+
+/**
+ * An item that a verb takes as its target: one of the verb's targets the data give at this call
+ * (D-443), so an item of the data that the verb does not take, and a value that is no item, are
+ * refused.
+ */
+function checkTarget(kind: ItemAction["kind"], value: unknown): ItemId {
+  if (
+    typeof value !== "string" ||
+    !itemTargets(kind).some((target) => target === value)
+  ) {
+    throw new ProgramCheckError(
+      `program: item ${shown(value)} is not a target of the action kind ${kind}`,
     );
   }
   return value as ItemId;
@@ -160,6 +178,11 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
         kind: value.kind,
         resource: checkResource(value.resource, allowed),
       };
+    // A verb with a target names an item among the verb's targets, and the action is built from the
+    // two fields alone.
+    case "craft":
+    case "tend":
+      return { kind: value.kind, item: checkTarget(value.kind, value.item) };
     // The actions on the campfire and the backpack name nothing: the simulation picks the
     // campfire on the character's tile, or the nearest one, and the pieces they use.
     case "walkToCampfire":

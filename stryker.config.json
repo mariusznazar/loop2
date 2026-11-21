@@ -14,6 +14,7 @@
   "tap": {
     "testFiles": [
       "tests/sim/acceptance.test.mjs",
+      "tests/sim/action-targets.test.mjs",
       "tests/sim/actions.test.mjs",
       "tests/sim/body.test.mjs",
       "tests/sim/campfire.test.mjs",

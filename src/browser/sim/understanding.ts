@@ -97,7 +97,7 @@ export function conditionInRepertoire(
   }
 }
 
-/** Whether an action, with the resource it names, lies in the repertoire. */
+/** Whether an action, with the resource or the item it names, lies in the repertoire. */
 export function actionInRepertoire(
   repertoire: Repertoire,
   action: Action,
@@ -108,6 +108,9 @@ export function actionInRepertoire(
     case "gather":
     case "patrol":
       return repertoire.items.includes(action.resource);
+    case "craft":
+    case "tend":
+      return repertoire.items.includes(action.item);
     default:
       return true;
   }
@@ -197,7 +200,7 @@ export const BRANCH_NOT_BOUGHT = "gałąź niewykupiona";
 /**
  * The first thing of a rule the repertoire lacks, in the order the row reads: its condition, that
  * condition's target, its action, that action's target — named as the player sees it, a kind by its
- * label and a resource or an item by its name.
+ * label, a resource by its name and an item by the name its row gives.
  */
 function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
   const { condition, action } = rule;
@@ -222,6 +225,11 @@ function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
     !repertoire.items.includes(action.resource)
   )
     return RESOURCES[action.resource].name;
+  if (
+    (action.kind === "craft" || action.kind === "tend") &&
+    !repertoire.items.includes(action.item)
+  )
+    return ITEMS[action.item].name;
   return ACTIONS[action.kind].label;
 }
 

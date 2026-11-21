@@ -16,15 +16,17 @@ Reading of the sentence:
   after a send and after 30 game minutes of a map run; the program `setProgram` edits (`heldProgram`:
   the copy during a map run, outside a map run the list's program the team goes with) must hold the
   offer as offered;
-- a thing of the world: a tile, or a resource lying on one; its kind: the identifier of a resource
-  as the data files give it — `stick`, `berry`, `moss`, `fiber`, written out below;
+- a thing of the world: a tile, or a resource lying on one, or an item; its kind: the identifier of
+  a resource as the data files give it — `stick`, `berry`, `moss`, `fiber` — or of an item, which
+  adds the bandage, `bandage`, written out below;
 - a number or a position of its own: an index, a coordinate or a number given to one tile or one
   thing. A number a condition compares a quantity with names no thing: the `value` of a
   `hereBelow` condition (a stock on the tile), of a `temperatureBelow` condition (the character's
   temperature) and of an `itemBelow` condition (the pieces of an item in the backpack), the kinds of
   condition that the programs of this check hold, written out in COMPARES_QUANTITY below. An item
   of an `itemBelow` condition is named by its kind, like a resource: the identifier of an item as
-  the data files give it, written out below, which is that of a resource. Read from the held
+  the data files give it, written out below. So is the item of the two actions that take one,
+  „Wytwórz” (`craft`) and „Opatrz” (`tend`). Read from the held
   program's JSON, a thing is named by a number or a position where:
   - a number stands outside that `value` or the structural metadata below (a coordinate pair,
     an index, a tile's number, a resource or an item given by its index);
@@ -42,12 +44,15 @@ Reading of the sentence:
 Offers, each made outside a map run and during a map run of Las (`forest`) of a character
 created in a new game, of the archetype `elementalMage`, sent at the real time T, after the program
 BASE: the valid programs in LEGIT, among them programs holding the conditions `temperatureBelow`
-and `itemBelow`, on rules and on groups, with the lowest and the highest number each takes; and
+and `itemBelow`, on rules and on groups, with the lowest and the highest number each takes, and
+programs holding `craft` and `tend` with the bandage; and
 programs in NAMING, each of which names a tile or a resource by a number or a position — a
 `walkTo` with a coordinate pair, a tile's number, a column and row, an index of a tile, a number
 of its own, a resource given by its index or as a tile's label; a `hereBelow`, a `temperatureBelow`
 or an `itemBelow` with a coordinate pair or a tile's number; an `itemBelow` with an item given by
-its index or as a tile's label; a rule and a program carrying a position of their own.
+its index or as a tile's label; a `craft` or a `tend` with an item given by its index, as a tile's
+label or as a text that is no identifier, and with a coordinate pair, a tile's number or a number
+of its own; a rule and a program carrying a position of their own.
 
 Controls, so the check can fail: every program of LEGIT is taken in and held as offered (the
 offers reach the program the simulation holds); and the reading flags made-up held programs
@@ -78,8 +83,9 @@ GAME_MODULE = "dist/browser/sim/game.js"
 SENT = {"mapId": "forest", "characterId": 1}
 T = 1760000000000
 RESOURCE_IDS = ("stick", "berry", "moss", "fiber")
-# The identifiers of the items of the data (`items.ts`), which are those of the resources.
-ITEM_IDS = ("stick", "berry", "moss", "fiber")
+# The identifiers of the items of the data (`items.ts`): those of the resources and the bandage, which
+# lies on no map.
+ITEM_IDS = ("stick", "berry", "moss", "fiber", "bandage")
 # The kinds of condition whose `value` is a number compared with a quantity: a stock on the tile,
 # the character's temperature, the pieces of an item in the backpack.
 COMPARES_QUANTITY = ("hereBelow", "temperatureBelow", "itemBelow")
@@ -106,6 +112,10 @@ def colder_than(value, **extra):
 
 def stock_below(item, value, **extra):
     return dict({"kind": "itemBelow", "item": item, "value": value}, **extra)
+
+
+def make(kind, item, **extra):
+    return dict({"kind": kind, "item": item}, **extra)
 
 
 def program_from_groups(groups):
@@ -166,6 +176,19 @@ LEGIT = (
         [
             (colder_than(35.5), [rule(ALWAYS, walk("stick"))]),
             (stock_below("moss", 5), [rule(below("berry", 2), walk("berry"))]),
+        ]
+    ),
+    program_from_rules(
+        [
+            rule(stock_below("moss", 4), make("craft", "bandage")),
+            rule(ALWAYS, make("tend", "bandage")),
+            rule(stock_below("bandage", 2), make("craft", "bandage")),
+        ]
+    ),
+    program_from_groups(
+        [
+            (stock_below("bandage", 1), [rule(ALWAYS, make("craft", "bandage"))]),
+            (ALWAYS, [rule(colder_than(30), make("tend", "bandage"))]),
         ]
     ),
 )
@@ -232,6 +255,42 @@ NAMING = (
     (
         "itemBelow with an item as a tile's label",
         program_from_rules([rule(stock_below("(1, 1)", 3), {"kind": "explore"})]),
+    ),
+    (
+        "craft with an item by its index",
+        program_from_rules([rule(ALWAYS, make("craft", 0))]),
+    ),
+    (
+        "tend with an item by its index",
+        program_from_rules([rule(ALWAYS, make("tend", 1))]),
+    ),
+    (
+        "craft with an item as a tile's label",
+        program_from_rules([rule(ALWAYS, make("craft", "(1, 1)"))]),
+    ),
+    (
+        "tend with an item as a tile's key",
+        program_from_rules([rule(ALWAYS, make("tend", "1,1"))]),
+    ),
+    (
+        "craft with an item that is no identifier",
+        program_from_rules([rule(ALWAYS, make("craft", "tile"))]),
+    ),
+    (
+        "tend with the tile alone",
+        program_from_rules([rule(ALWAYS, {"kind": "tend", "at": {"q": 2, "r": 0}})]),
+    ),
+    (
+        "craft with a coordinate pair",
+        program_from_rules([rule(ALWAYS, make("craft", "bandage", at={"q": 1, "r": 1}))]),
+    ),
+    (
+        "tend with a tile's number",
+        program_from_rules([rule(ALWAYS, make("tend", "bandage", tile=5))]),
+    ),
+    (
+        "craft with a number of its own",
+        program_from_rules([rule(ALWAYS, make("craft", "bandage", id=7))]),
     ),
     (
         "a group under temperatureBelow with a position",
@@ -536,6 +595,17 @@ class ProgramWorldReference(unittest.TestCase):
             ),
             [],
         )
+        self.assertEqual(
+            naming(
+                {
+                    "rules": [
+                        rule(stock_below("bandage", 2), make("craft", "bandage")),
+                        rule(ALWAYS, make("tend", "bandage")),
+                    ]
+                }
+            ),
+            [],
+        )
         held = {
             "a coordinate pair": {"rules": [rule(ALWAYS, walk("stick", at={"q": 1, "r": 1}))]},
             "a tile's number": {"rules": [rule(ALWAYS, walk("stick", tile=5))]},
@@ -562,6 +632,16 @@ class ProgramWorldReference(unittest.TestCase):
             "an item as a tile's label": {"rules": [rule(stock_below("(1, 1)", 3), walk("moss"))]},
             "an item that is no identifier": {
                 "rules": [rule(stock_below("tile", 3), walk("moss"))]
+            },
+            "an item of a verb by its index": {"rules": [rule(ALWAYS, make("craft", 0))]},
+            "an item of a verb as a tile's label": {
+                "rules": [rule(ALWAYS, make("tend", "(1, 1)"))]
+            },
+            "an item of a verb that is no identifier": {
+                "rules": [rule(ALWAYS, make("tend", "tile"))]
+            },
+            "a verb with an item on a position": {
+                "rules": [rule(ALWAYS, make("craft", "bandage", at={"q": 0, "r": 0}))]
             },
         }
         action_id = copying.deepcopy(BASE)
