@@ -15,7 +15,8 @@
  * rules they share that stand here are named above. It reads each value of appearance from the design
  * tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md).
  * Layout values D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and
- * the sizes of the columns of the layout grid.
+ * the sizes of the columns of the layout grid. The rules of the phone layout stand in blocks
+ * `@media (width < 1280px)` (D-396), each after the rules of the computer layout it changes.
  */
 [hidden] {
   display: none !important;
@@ -513,6 +514,41 @@ header .failure-line {
   margin-bottom: var(--space-2xs);
   font-size: var(--font-size-label);
   color: var(--text-label);
+}
+
+/*
+ * The touch target of the phone layout: every control whose rule stands in this file — the button in
+ * each of its kinds, the arrows and „✕” among them, the pick cell, the select list, the number field
+ * and the text field, the items of the menu bar and the link „Panel właściciela” of the menu „Konto” —
+ * is at least `--touch-target-min` high and wide in a window narrower than 1280 px (D-396 gives the
+ * 1280 px and the minimum; the computer layout's rules above stay as they are). The text of an item
+ * of the bar and of the link is centred in its target, so the line of the current item stays at
+ * the text. A link inside a sentence is no such control and keeps its size; so do the controls whose
+ * rules stand in the stylesheets of the screens, which the rules of those screens reach.
+ */
+@media (width < 1280px) {
+  .button,
+  .select-list,
+  .input-field input,
+  .menu-bar-item,
+  .account-menu-panel-link {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  /* These three are `content-box` by default, so the minimum would come on top of their padding and frame. */
+  .input-field input,
+  .menu-bar-item,
+  .account-menu-panel-link {
+    box-sizing: border-box;
+  }
+
+  .menu-bar-item,
+  .account-menu-panel-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* A form that sends its fields to the server: its fields, its button and one sentence under it. */
