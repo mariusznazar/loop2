@@ -99,11 +99,31 @@ const FIELD_LABELS: Record<RuleField, string> = {
 const COPY_NOTE = "Zmiana zeruje passę tego przejścia.";
 
 /**
- * Cells to a line in a field's grid: the conditions in two columns (D-290), every other pick in four.
- * `program-panel.css` draws the same numbers, the class `two-columns` naming the first.
+ * Cells to a line in a field's grid in the computer layout: the conditions in two columns (D-290),
+ * every other pick in four. `program-panel.css` draws the same numbers, the class `two-columns` naming
+ * the first, and two for every pick in the phone layout, which `drawnColumns` reads.
  */
 function columnsOf(field: RuleField): number {
   return field === "condition" ? 2 : 4;
+}
+
+/**
+ * Cells to a line as the page draws the grid of the pick in `grid`: the number of its column tracks,
+ * which the browser gives in pixels, so the arrow keys go to the line above or below in either layout.
+ * Where the page gives no tracks in pixels — a document laid out by no browser — the number of
+ * `columnsOf`.
+ */
+function drawnColumns(grid: HTMLElement | null, field: RuleField): number {
+  const cells = grid?.querySelector(".rule-panel-cells");
+  const view = cells?.ownerDocument.defaultView;
+  if (cells == null || view == null) return columnsOf(field);
+  const tracks = view
+    .getComputedStyle(cells)
+    .gridTemplateColumns.split(" ")
+    .filter((track) => track !== "");
+  return tracks.length > 0 && tracks.every((track) => track.endsWith("px"))
+    ? tracks.length
+    : columnsOf(field);
 }
 
 /**
@@ -366,7 +386,7 @@ function PickGrid({
     event.preventDefault();
     const to = cellAfterKey(
       sections.map((section) => section.cells.length),
-      columnsOf(field),
+      drawnColumns(gridRef.current, field),
       at,
       event.key,
     );

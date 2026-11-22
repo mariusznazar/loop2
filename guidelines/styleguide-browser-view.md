@@ -512,12 +512,16 @@ Jak układ telefonu się zapisuje:
 - Poza progiem 1280 px nie ma żadnego innego progu szerokości w regule `@media`, z jednym
   wyjątkiem: progiem, przy którym scena w układzie telefonu przechodzi na większy rozmiar (reguła
   The scene of a map run, D-349). Warunek `prefers-reduced-motion` nie jest progiem szerokości.
-  Warunek `hover: none` też nie jest progiem szerokości ani osobnym układem: blok
-  `@media (width < 1280px) and (hover: none)` zdejmuje tło `highlight` spod kursora kontrolkom,
-  których tło w spoczynku jest przezroczyste, tam, gdzie urządzenie nie ma kursora, który najeżdża.
-  Powód: przeglądarka dotyku trzyma `:hover` na ostatnio dotkniętym elemencie aż do następnego
-  dotknięcia, więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym; mysz, także
-  w wąskim oknie komputera, widzi tło pod kursorem jak dotąd.
+  Warunek `hover: none` też nie jest progiem szerokości ani osobnym układem: bloki
+  `@media (width < 1280px) and (hover: none)`, każdy w arkuszu, do którego należy element,
+  zdejmują tło `highlight` spod kursora tam, gdzie urządzenie nie ma kursora, który najeżdża —
+  kontrolkom, których tło w spoczynku jest przezroczyste, i wierszom: wierszowi reguły i nagłówkowi
+  grupy w edytorze programu, „Teraz” i „Potem”, wierszowi listy map i listy programów. Wiersz
+  otwarty zostaje na `highlight`, a wiersz reguły, która wygrywa albo której czynność trwa, na
+  `rule-winning` albo `rule-running`. Powód: przeglądarka dotyku trzyma `:hover` na ostatnio
+  dotkniętym elemencie, także na wierszu wokół dotkniętego przycisku, aż do następnego dotknięcia,
+  więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym, a na wierszu reguły
+  udawałoby regułę wybraną; mysz, także w wąskim oknie komputera, widzi tło pod kursorem jak dotąd.
 - Reguła układu telefonu nie jest sprawdzana testem, bo jsdom jej nie stosuje; sprawdza ją
   agent w przeglądarce (reguła A change is checked in both layouts). To granica testów, nie
   usterka: zielony test mówi o układzie komputera i o logice, nie o układzie telefonu.

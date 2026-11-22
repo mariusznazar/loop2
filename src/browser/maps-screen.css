@@ -330,3 +330,15 @@
     min-height: var(--touch-target-min);
   }
 }
+
+/*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the row of the map last tapped, so in
+ * the phone layout on a device whose pointer cannot hover the row keeps its background of rest; the
+ * picked map is told by its text and its bar, which stay.
+ */
+@media (width < 1280px) and (hover: none) {
+  .maps-list-item:hover {
+    background: transparent;
+  }
+}

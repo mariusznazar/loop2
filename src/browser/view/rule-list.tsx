@@ -153,6 +153,43 @@ function clickedBody(event: MouseEvent<HTMLElement>): boolean {
   );
 }
 
+/** Whether a click reached the bare row or header, outside its text, which asks for itself. */
+function clickedBare(event: MouseEvent<HTMLElement>): boolean {
+  return (
+    clickedBody(event) &&
+    !(
+      event.target instanceof Element && event.target.closest(".rule-list-body")
+    )
+  );
+}
+
+/**
+ * The text of a row or a header, its handle included, in an element of its own beside the buttons,
+ * which a click on the text asks to open. The element takes the click itself, not the row that also
+ * holds the buttons, because Chromium's touch adjustment gives a tap that lands near a button to that
+ * button unless an element that takes clicks and holds no button lies under the finger, so a tap on
+ * the text beside the arrows of the phone layout opens the rule and moves nothing (D-396). The
+ * stylesheet draws the element as if its parts stood in the row itself (`display: contents`).
+ */
+function RowText({
+  onOpen,
+  children,
+}: {
+  onOpen: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className="rule-list-body"
+      onClick={(event) => {
+        if (clickedBody(event)) onOpen();
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
 /** The edits a row, a header or a group's actions ask of the list. */
 type ListEdits = {
   move: (group: RuleGroup, index: number, offset: -1 | 1) => void;
@@ -217,6 +254,7 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
   );
   const arrows = ruleArrows(program, group.id, index);
   const isOpen = open?.groupId === group.id && open.ruleId === each.id;
+  const openRule = () => onOpen({ groupId: group.id, ruleId: each.id });
   const target = { over: "row", group, index } as const;
   const judged = signs?.judgement.rules[each.id];
   const standing =
@@ -238,69 +276,74 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
         aria-current={isOpen ? "true" : undefined}
         ref={track(`rule:${each.id}:open`)}
         onClick={(event) => {
-          if (clickedBody(event))
-            onOpen({ groupId: group.id, ruleId: each.id });
+          if (clickedBare(event)) openRule();
         }}
         onKeyDown={(event) => {
           if (!asksToOpen(event)) return;
           event.preventDefault();
-          onOpen({ groupId: group.id, ruleId: each.id });
+          openRule();
         }}
         onDragOver={(event) => drag.dragOver(event, target)}
         onDrop={(event) => drag.drop(event, target)}
       >
-        <span
-          className="drag-handle"
-          draggable
-          aria-hidden="true"
-          title="Przeciągnij regułę"
-          onDragStart={(event) =>
-            drag.startDrag(
-              event,
-              { kind: "rule", id: each.id },
-              event.currentTarget.closest("li"),
-            )
-          }
-        >
-          ⋮⋮
-        </span>
-        <span className="rule-number">{ruleNumber(groupIndex, index)}</span>
-        <span className="rule-condition">{sentence.condition}</span>
-        <span className="rule-arrow">→</span>
-        <span className="rule-action">
+        <RowText onOpen={openRule}>
           <span
-            className="icon-mask"
+            className="drag-handle"
+            draggable
             aria-hidden="true"
-            style={
-              {
-                "--icon": `url("/icons/${ACTIONS[each.action.kind].icon}.svg")`,
-              } as CSSProperties
+            title="Przeciągnij regułę"
+            onDragStart={(event) =>
+              drag.startDrag(
+                event,
+                { kind: "rule", id: each.id },
+                event.currentTarget.closest("li"),
+              )
             }
-          />
-          {sentence.action}
-        </span>
-        {judged?.reason == null ? null : (
-          <span className="rule-reason">{judged.reason}</span>
-        )}
-        {time === null ? null : <span className="rule-time">{time}</span>}
-        {counts === null ? null : (
-          <span className="rule-count">{countText(counts[each.id] ?? 0)}</span>
-        )}
+          >
+            ⋮⋮
+          </span>
+          <span className="rule-number">{ruleNumber(groupIndex, index)}</span>
+          <span className="rule-condition">{sentence.condition}</span>
+          <span className="rule-arrow">→</span>
+          <span className="rule-action">
+            <span
+              className="icon-mask"
+              aria-hidden="true"
+              style={
+                {
+                  "--icon": `url("/icons/${ACTIONS[each.action.kind].icon}.svg")`,
+                } as CSSProperties
+              }
+            />
+            {sentence.action}
+          </span>
+          {judged?.reason == null ? null : (
+            <span className="rule-reason">{judged.reason}</span>
+          )}
+          {time === null ? null : <span className="rule-time">{time}</span>}
+          {counts === null ? null : (
+            <span className="rule-count">
+              {countText(counts[each.id] ?? 0)}
+            </span>
+          )}
+        </RowText>
         <span className="rule-list-controls">
-          <ReactButton
-            text="↑"
-            label="W górę"
-            disabled={!arrows.up}
-            buttonRef={track(`rule:${each.id}:up`)}
-            onClick={() => edits.move(group, index, -1)}
-          />
-          <ReactButton
-            text="↓"
-            label="W dół"
-            disabled={!arrows.down}
-            buttonRef={track(`rule:${each.id}:down`)}
-            onClick={() => edits.move(group, index, 1)}
-          />
+          <span className="rule-list-arrows">
+            <ReactButton
+              text="↑"
+              label="W górę"
+              disabled={!arrows.up}
+              buttonRef={track(`rule:${each.id}:up`)}
+              onClick={() => edits.move(group, index, -1)}
+            />
+            <ReactButton
+              text="↓"
+              label="W dół"
+              disabled={!arrows.down}
+              buttonRef={track(`rule:${each.id}:down`)}
+              onClick={() => edits.move(group, index, 1)}
+            />
+          </span>
           <ReactButton
             text="Usuń"
             kind="destructive"
@@ -338,6 +381,7 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
   const arrows = groupArrows(program, groupIndex);
   const isFolded = folded.includes(group.id);
   const isOpen = open?.groupId === group.id && open.ruleId === null;
+  const openGroup = () => onOpen({ groupId: group.id, ruleId: null });
   const bar = signs?.judgement.groups[group.id];
   return (
     <div
@@ -348,51 +392,57 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
       aria-current={isOpen ? "true" : undefined}
       ref={track(`group:${group.id}:open`)}
       onClick={(event) => {
-        if (clickedBody(event)) onOpen({ groupId: group.id, ruleId: null });
+        if (clickedBare(event)) openGroup();
       }}
       onKeyDown={(event) => {
         if (!asksToOpen(event)) return;
         event.preventDefault();
-        onOpen({ groupId: group.id, ruleId: null });
+        openGroup();
       }}
     >
-      <span
-        className="drag-handle"
-        draggable
-        aria-hidden="true"
-        title="Przeciągnij grupę"
-        onDragStart={(event) =>
-          drag.startDrag(
-            event,
-            { kind: "group", id: group.id },
-            event.currentTarget.closest("section"),
-          )
-        }
-      >
-        ⋮⋮
-      </span>
-      <span className="rule-list-number">{groupNumber(groupIndex)}</span>
-      <span className="rule-list-name">{summary.name}</span>
-      <span className="rule-list-condition">{summary.condition}</span>
-      <span className="rule-list-size">{ruleCountText(summary.ruleCount)}</span>
-      {summary.executed === null ? null : (
-        <span className="rule-list-count">{countText(summary.executed)}</span>
-      )}
+      <RowText onOpen={openGroup}>
+        <span
+          className="drag-handle"
+          draggable
+          aria-hidden="true"
+          title="Przeciągnij grupę"
+          onDragStart={(event) =>
+            drag.startDrag(
+              event,
+              { kind: "group", id: group.id },
+              event.currentTarget.closest("section"),
+            )
+          }
+        >
+          ⋮⋮
+        </span>
+        <span className="rule-list-number">{groupNumber(groupIndex)}</span>
+        <span className="rule-list-name">{summary.name}</span>
+        <span className="rule-list-condition">{summary.condition}</span>
+        <span className="rule-list-size">
+          {ruleCountText(summary.ruleCount)}
+        </span>
+        {summary.executed === null ? null : (
+          <span className="rule-list-count">{countText(summary.executed)}</span>
+        )}
+      </RowText>
       <span className="rule-list-controls">
-        <ReactButton
-          text="↑"
-          label="Grupa w górę"
-          disabled={!arrows.up}
-          buttonRef={track(`group:${group.id}:up`)}
-          onClick={() => edits.moveGroup(groupIndex, -1)}
-        />
-        <ReactButton
-          text="↓"
-          label="Grupa w dół"
-          disabled={!arrows.down}
-          buttonRef={track(`group:${group.id}:down`)}
-          onClick={() => edits.moveGroup(groupIndex, 1)}
-        />
+        <span className="rule-list-arrows">
+          <ReactButton
+            text="↑"
+            label="Grupa w górę"
+            disabled={!arrows.up}
+            buttonRef={track(`group:${group.id}:up`)}
+            onClick={() => edits.moveGroup(groupIndex, -1)}
+          />
+          <ReactButton
+            text="↓"
+            label="Grupa w dół"
+            disabled={!arrows.down}
+            buttonRef={track(`group:${group.id}:down`)}
+            onClick={() => edits.moveGroup(groupIndex, 1)}
+          />
+        </span>
         <ReactButton
           text={isFolded ? "▸" : "▾"}
           label={isFolded ? "Rozwiń grupę" : "Zwiń grupę"}

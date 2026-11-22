@@ -869,6 +869,33 @@ test("the stylesheets let the name of a pick cell wrap beside its icon and break
   });
 });
 
+// Breaks: the reason of a greyed cell taking the cell's way of breaking a word where no space helps,
+// so „gałąź niewykupiona” breaks inside „niewykupiona” in a narrow cell. jsdom resolves the cascade,
+// not the layout, so the case reads which declaration the real stylesheets give the reason.
+test("the stylesheets let the reason of a greyed pick cell break only between its words", async () => {
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, {
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+    const reasonStyle = window.getComputedStyle(
+      cell.querySelector(".pick-cell-reason"),
+    );
+    assert.equal(reasonStyle.overflowWrap, "normal");
+    assert.equal(reasonStyle.wordBreak, "normal");
+  });
+});
+
 // Breaks: a cell that takes its tab index from an effect of its panel instead of from the property
 // has none at its first drawing, so the keyboard finds it out of the order of Tab; a cell that sets
 // a tab index when none is given puts every cell of a grid in the order of Tab, which D-306 forbids.

@@ -505,9 +505,15 @@ header .failure-line {
   background: transparent;
 }
 
+/*
+ * The reason breaks only between its words (`overflow-wrap: normal`), not inside one as the name may:
+ * a reason is the game's own words, none longer than a cell of the pick is wide in either layout
+ * (in the phone layout the pick stands in two columns, program-panel.css).
+ */
 .pick-cell-reason {
   flex: 0 0 100%;
   min-width: 0;
+  overflow-wrap: normal;
   font-size: var(--font-size-detail);
   color: var(--text-secondary);
 }

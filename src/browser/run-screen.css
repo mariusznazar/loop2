@@ -617,6 +617,19 @@
 }
 
 /*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the row last tapped, so in the phone
+ * layout on a device whose pointer cannot hover „Teraz” and „Potem” keep their background of rest
+ * after a tap, which shows the rule they name in the program.
+ */
+@media (width < 1280px) and (hover: none) {
+  .now-row[tabindex]:hover,
+  .next-row[tabindex]:hover {
+    background: transparent;
+  }
+}
+
+/*
  * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
  * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
  * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
