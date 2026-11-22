@@ -65,7 +65,7 @@ files or requests. The MCP has full rights, so the following limits are an agree
   agent may read" in `references/backup_and_restore.md` (expects `0`; the number only, never a
   line); the metadata of the installed deploy script only,
   `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` (expects `755 root:root`); and the number of
-  lines of the account's own `~/.ssh/authorized_keys` that begin with the forced command
+  lines of the account's own `authorized_keys` that begin with the forced command
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
   (expects `1`; the count only, never a line or a key).
 - Allowed, for a reading in an environment fact only: `stat --version`, `bash --version`,

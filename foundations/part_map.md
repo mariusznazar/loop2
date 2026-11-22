@@ -227,7 +227,7 @@ may not.
 | the Mikrus host | both | trusted |
 | the container image registry | them → us | untrusted |
 | the GitHub repository the server fetches over its read-only key | them → us | trusted |
-| the GitHub repository `mariusznazar/screenshots` | us → them | — |
+| the GitHub repository `github.com/mariusznazar/screenshots` | us → them | — |
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
 | the Pixel Crawler pack of Anokolisa | them → us | untrusted |
