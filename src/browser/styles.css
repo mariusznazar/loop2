@@ -15,7 +15,8 @@
  * rules they share that stand here are named above. It reads each value of appearance from the design
  * tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md).
  * Layout values D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and
- * the sizes of the columns of the layout grid.
+ * the sizes of the columns of the layout grid. The rules of the phone layout stand in blocks
+ * `@media (width < 1280px)` (D-396), each after the rules of the computer layout it changes.
  */
 [hidden] {
   display: none !important;
@@ -249,8 +250,12 @@ header .failure-line {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-/* A window under 720 px sets the areas of Programy, Mapy and Wiedza on one line each (D-282). */
-@media (max-width: 720px) {
+/*
+ * The phone layout of Programy, Mapy and Wiedza (D-396, D-282): in a window narrower than 1280 px the
+ * areas of the three screens stand in one column, one under the other in the order of the document, the
+ * order of the computer layout from the left to the right.
+ */
+@media (width < 1280px) {
   .screen.programs-screen,
   .screen.maps-screen,
   .screen.knowledge-areas {
@@ -264,6 +269,31 @@ header .failure-line {
   border: var(--frame-width) solid var(--divider);
   padding: var(--space-m) var(--space-l);
   min-height: 120px;
+}
+
+/*
+ * The shell of the page in the phone layout (D-396, D-280): it leaves the screens their width. The side
+ * padding of the page and that of an area are the steps of the spacing scale chosen so that the scene of a
+ * map run, whose picture is 336 px wide (D-349), loses at most 32 px of it to its crop in a window with a page
+ * area 360 px wide: the mage at the right edge ends on column 319 of 336 (`SCENE.rightEdgeX` in
+ * src/browser/sim/data/scene.ts), so 304 px must stay. The world area then holds 360 - 2 × 8 (the page) -
+ * 2 × (12 + 1) (the area and its frame) = 318 px; the place of the scene takes the area's side padding of
+ * 12 px too (run-screen.css), so the scene has 342 px there and stands whole. The menu bar wraps its name,
+ * its items and „Konto” onto as many lines as the width needs.
+ */
+@media (width < 1280px) {
+  body {
+    padding: 0 var(--space-s);
+  }
+
+  .screen-area {
+    padding-inline: var(--space-m);
+  }
+
+  .menu-bar {
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-l);
+  }
 }
 
 /*
@@ -311,11 +341,12 @@ header .failure-line {
 
 /*
  * The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
- * program”, „Zatrzymaj” (D-44). Neutral at rest, its text in `text`; under the pointer and at the
- * visible focus its text in `danger` (D-39). The React button carries the class.
+ * program”, „Zatrzymaj” (D-44). Its text in `danger` at rest, in every layout, so a player of a phone
+ * sees it before a tap; under the pointer it adds only the background `highlight` from the rule
+ * above, and disabled it looks as every disabled button does, which the disabled rule below draws
+ * (D-39). The React button carries the class.
  */
-.button.destructive:hover:not(:disabled),
-.button.destructive:focus-visible {
+.button.destructive {
   color: var(--danger);
 }
 
@@ -436,15 +467,30 @@ header .failure-line {
  * the one :focus-visible rule above.
  */
 /*
- * A grid of two columns: the icon takes the first, the name the second, so a name that breaks into
- * two lines keeps its icon beside its first line; the reason takes a line of its own.
+ * A row of flex items that wraps: the icon, then the name, which takes the rest of the line, so a
+ * name that breaks into two lines keeps its icon beside its first line; the reason takes a line of
+ * its own. The name's basis is its longest word (`min-content`), so where that word does not fit
+ * beside the icon — a cell of a narrow grid, about 70 px in a window 390 px wide — the whole name
+ * drops under the icon and has the width of the cell; where the word does not fit even there, the
+ * name may shrink (`min-width: 0`) and `overflow-wrap: break-word` breaks it, so no name crosses
+ * the frame of its cell. `break-word`, not `anywhere`, because it leaves the longest word the
+ * name's basis, so the name drops under the icon before it breaks. In the phone layout the cell
+ * also has the touch target's minimum (the block `@media (width < 1280px)` below): a floor of a
+ * height and a width, which the wrapping row keeps, since a name that drops under its icon only
+ * makes the cell higher.
  */
 .button.pick-cell {
-  display: inline-grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--space-xs);
+  overflow-wrap: break-word;
   text-align: left;
+}
+
+.pick-cell-name {
+  flex: 1 1 min-content;
+  min-width: 0;
 }
 
 .button.pick-cell.greyed {
@@ -459,8 +505,15 @@ header .failure-line {
   background: transparent;
 }
 
+/*
+ * The reason breaks only between its words (`overflow-wrap: normal`), not inside one as the name may:
+ * a reason is the game's own words, none longer than a cell of the pick is wide in either layout
+ * (in the phone layout the pick stands in two columns, program-panel.css).
+ */
 .pick-cell-reason {
-  grid-column: 1 / -1;
+  flex: 0 0 100%;
+  min-width: 0;
+  overflow-wrap: normal;
   font-size: var(--font-size-detail);
   color: var(--text-secondary);
 }
@@ -513,6 +566,69 @@ header .failure-line {
   margin-bottom: var(--space-2xs);
   font-size: var(--font-size-label);
   color: var(--text-label);
+}
+
+/*
+ * The touch target of the phone layout: every control whose rule stands in this file — the button in
+ * each of its kinds, the arrows and „✕” among them, the pick cell, the select list, the number field
+ * and the text field, the items of the menu bar and the link „Panel właściciela” of the menu „Konto” —
+ * is at least `--touch-target-min` high and wide in a window narrower than 1280 px (D-396 gives the
+ * 1280 px and the minimum; the computer layout's rules above stay as they are). The text of an item
+ * of the bar and of the link is centred in its target, so the line of the current item stays at
+ * the text. A link inside a running sentence keeps the size of its text, the one exemption D-396
+ * makes from the minimum, so no rule here reaches it. The controls whose rules stand in the
+ * stylesheets of the screens hold the minimum by the phone-layout blocks of those stylesheets.
+ */
+@media (width < 1280px) {
+  .button,
+  .select-list,
+  .input-field input,
+  .menu-bar-item,
+  .account-menu-panel-link {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  /* These three are `content-box` by default, so the minimum would come on top of their padding and frame. */
+  .input-field input,
+  .menu-bar-item,
+  .account-menu-panel-link {
+    box-sizing: border-box;
+  }
+
+  .menu-bar-item,
+  .account-menu-panel-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /*
+   * The secondary action has no padding at its sides so that its text begins level with the fields
+   * (D-275); where its text is narrower than the minimum, the minimum would centre the text and push
+   * its start off that line, so the text stays at the left of its target.
+   */
+  .button.secondary {
+    text-align: left;
+  }
+}
+
+/*
+ * The background under the pointer where nothing hovers (D-40, D-44; styleguide rule "Two layouts and
+ * one threshold between them"): a browser of touch keeps `:hover` on the element last tapped until the
+ * next tap, so the background `highlight` would stay on the tapped control, a destructive button among
+ * them. In the phone layout on a device whose pointer cannot hover, the controls of this file whose
+ * background at rest is transparent keep it; a mouse, in a narrow window too, sees the rules above.
+ * The media feature `hover` is no threshold of width and makes no layout of its own.
+ */
+@media (width < 1280px) and (hover: none) {
+  .menu-bar-item:hover,
+  .account-menu-panel-link:hover,
+  .button:hover:not(:disabled),
+  .select-list:hover:not(:disabled),
+  .input-field input:hover:not(:disabled) {
+    background: transparent;
+  }
 }
 
 /* A form that sends its fields to the server: its fields, its button and one sentence under it. */
@@ -668,6 +784,76 @@ header .failure-line {
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
 .tile-list tbody tr.hovered th {
   border-left-color: var(--link-highlight);
+}
+
+/*
+ * The table of revealed tiles in the phone layout (D-396, D-19, D-421): it fits the width of its area and
+ * nothing in it scrolls to the side, with its numbers still in the rows. The state of the campfire and of
+ * the burning items, which stands in the last cell, is too wide to share a line with the numbers in a page
+ * area 360 px wide (about 195 px for „ognisko — płonie, zostało 42 min” against the 318 px of the area), so
+ * each row is a wrapping line of cells: the label of the tile and the numbers share the first line, the
+ * numbers in columns of one width, the same in the head and in each row, and the last cell takes a line
+ * of its own under them, indented by the width of the label so that it stands under its row's numbers,
+ * where the texts break between one another and, if one still does not fit, at a space. A row with no
+ * state in its last cell has no line for it. The icon of a column heading stands over its name, both at
+ * the right of the column, as the numbers under them. A column is no wider than `max-width`, so in
+ * a wide window of the phone layout the numbers do not spread over the whole area. The markup does not
+ * change; the lengths are layout dimensions, which D-43 leaves out.
+ */
+@media (width < 1280px) {
+  .tile-list,
+  .tile-list thead,
+  .tile-list tbody {
+    display: block;
+  }
+
+  .tile-list tr {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tile-list th,
+  .tile-list td {
+    box-sizing: border-box;
+  }
+
+  .tile-list tr > :first-child {
+    flex: none;
+    width: 8ch;
+  }
+
+  .tile-list th[scope="col"],
+  .tile-list td:not(.tile-fire) {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 12ch;
+  }
+
+  .tile-list thead th {
+    white-space: normal;
+  }
+
+  .tile-list thead .icon-mask {
+    display: block;
+    margin-left: auto;
+  }
+
+  .tile-list thead th:last-child {
+    display: none;
+  }
+
+  .tile-list tbody td.tile-fire {
+    flex: 1 0 100%;
+    padding-left: 8ch;
+  }
+
+  .tile-list tbody td.tile-fire:empty {
+    display: none;
+  }
+
+  .tile-list .tile-fire-text {
+    white-space: normal;
+  }
 }
 
 /*

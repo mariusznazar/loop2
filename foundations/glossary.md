@@ -322,3 +322,15 @@ A loop record is the largest number of map runs of one earning loop completed in
 A content revision is the count a program of the player's list carries, 0 when the program is made and one higher at each save after which its rules, rule groups or trip plan differ, a rename leaving it as it is, which the game state keeps and the server neither gives nor reads, unlike the revision the server gives each save it accepts (D-209).
 
 - **Not:** none
+
+## phone layout
+
+The phone layout is the look the game takes in every window whose page area, the area of the page inside the browser's window, is narrower than 1280 px, whether the window belongs to a phone or to a computer, and it is made for a phone held upright with a page area 360 px wide (D-396).
+
+- **Not:** none
+
+## computer layout
+
+The computer layout is the look the game takes in every window whose page area, the area of the page inside the browser's window and not the resolution of the screen, is 1280 px wide or wider, its smallest window having a page area of 1280 × 720 px (D-396).
+
+- **Not:** none

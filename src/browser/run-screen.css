@@ -9,13 +9,15 @@
  */
 
 /*
- * The screen of a map run (D-311, D-282, D-280, D-349): under its header three areas of their own,
- * in the document in the order world, program, tabs. In a window wide enough they stand in two
- * columns by named grid areas: on the left the world and, under it, the area with the tabs „Kronika”
- * and „Teren”, and on the right the program, as tall as the two together; narrower, one under the
- * other in the order of the document. The areas are not moved in the document and not nested. The
- * sizes are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content
- * of at most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
+ * The screen of a map run (D-311, D-282, D-280, D-349, D-396): under its header three areas of their
+ * own, in the document in the order world, program, tabs. In the computer layout, a window 1280 px
+ * wide or wider, they stand in two columns by named grid areas: on the left the world and, under it,
+ * the area with the tabs „Kronika” and „Teren”, and on the right the program, as tall as the two
+ * together. In the phone layout, a narrower window, they stand in one column, one under the other in
+ * the order of the document, by the block `@media (width < 1280px)` after these rules. The areas are
+ * not moved in the document and not nested. The sizes are layout dimensions, which D-43 leaves out,
+ * chosen from the scene's width and the content of at most 1344 px (D-280); the scene is drawn at 672
+ * px wide in the computer layout (D-349).
  *
  * - The left column is the scene's width with the area's padding and frame, 2 × 16 px and 2 × 1 px:
  *   672 + 34 = 706 px.
@@ -24,20 +26,18 @@
  *   1248 px, 526 px. The rule panel opens in the program under its row and takes no column of its own.
  *   The 320 px and the 526 px hold in a browser that draws no classic scrollbar. A media query counts
  *   a classic scrollbar of 15 to 17 px in the window's width, so with one the program is that much
- *   narrower: about 511 px in a window 1280 px wide, and under 320 px from 1074 px up to about 1090 px.
- * - The two columns stand from the window width that holds the left column, the gap, the program's
- *   320 px and the page's padding of 2 × 16 px: 706 + 16 + 320 + 32 = 1074 px.
+ *   narrower: about 511 px in a window 1280 px wide.
  * - The rows are `auto` for the world and `1fr` for the tabs' area: the program, which spans both,
  *   adds the height it needs beyond the two to the second row alone, so the tabs' area stays
  *   directly under the world with the gap of the grid between them.
  */
 .run-screen-areas {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: 706px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "world"
-    "program"
-    "tabs";
+    "world program"
+    "tabs program";
   gap: var(--space-l);
   align-items: start;
 }
@@ -50,23 +50,40 @@
   grid-area: program;
 }
 
-/* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls. */
+/* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls; the phone layout's block below takes the scroll off. */
 .screen-area.run-tabs {
   grid-area: tabs;
   overflow-x: auto;
 }
 
-@media (min-width: 1074px) {
+.screen-area.run-program {
+  align-self: stretch;
+}
+
+/*
+ * The phone layout of the screen of a map run (D-396, D-311, D-282): in a window narrower than 1280 px
+ * one column of the three areas in the order of the document, the world, the program and the area with
+ * the tabs. It undoes the two columns, the rows and the stretch of the program above, and the scroll to
+ * the side of the area with the tabs: nothing in the phone layout scrolls to the side, in a frame either,
+ * so the table of revealed tiles fits the area (the rules of its rows are in styles.css) and the area has
+ * no scroll of its own.
+ */
+@media (width < 1280px) {
   .run-screen-areas {
-    grid-template-columns: 706px minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-template-areas:
-      "world program"
-      "tabs program";
+      "world"
+      "program"
+      "tabs";
   }
 
   .screen-area.run-program {
-    align-self: stretch;
+    align-self: start;
+  }
+
+  .screen-area.run-tabs {
+    overflow-x: visible;
   }
 }
 
@@ -336,7 +353,7 @@
  * The end-of-run window over the screen of a map run (D-368, D-132, D-122, D-188, D-44, D-39, D-46):
  * a column on `panel` with its text in `text` and a frame in `divider`, as wide as the content column
  * of the screen it covers and no taller than 80vh, so that it leaves the menu bar and the row under
- * it visible in a window 720 px high and in the one column under 1074 px. The height is a layout
+ * it visible in a window 720 px high and in the one column of the phone layout. The height is a layout
  * dimension (D-43); 80vh was chosen and checked in a real browser. At the top the label in
  * `text-label`, the title in `text-strong`, or in `positive` after a completion, and „✕”; in the
  * middle the part that scrolls, with its sections parted by a line in `divider` and their names in
@@ -489,6 +506,25 @@
 }
 
 /*
+ * The end-of-run window in the phone layout (D-396, D-370): as wide as the content column, which is the
+ * width of the window, and so tall that its buttons stay in sight. 80vh above leaves room for the menu
+ * bar in a window 720 px high where the bar is one line; in a page area 360 px wide the bar wraps „Konto”
+ * onto a second line and is 116 px high, and the grid of the screen puts its gap of `--space-xl`, 56 px,
+ * between the bar and the window, so the window starts 172 px down and 80vh of a window 740 px high
+ * (592 px) would end 23 px under its lower edge, the buttons with it. The height is the window's less 220
+ * px: the 172 px, and a line of the row of warnings under the bar, about 48 px, which a failed save puts
+ * there (D-208); a layout dimension, which D-43 leaves out, chosen from the measurement of the bar and
+ * the window in a real browser. The unit is `svh`, the height of the window with the browser's bars
+ * shown: Chrome on Android counts `vh` with its address bar hidden, while the window opens with the
+ * page at its top and the bar in sight (D-370), so `vh` would put the buttons under the lower edge.
+ */
+@media (width < 1280px) {
+  .end-window {
+    max-height: calc(100svh - 220px);
+  }
+}
+
+/*
  * The rows „Teraz” and „Potem” under the scene (D-334, D-335). „Teraz” has a fixed height of one line,
  * a layout dimension (D-43), and cuts a longer text instead of wrapping it, so a change of its text
  * moves nothing below it. The text stands in `text`, in `positive` after a completion and in `warning`
@@ -563,6 +599,37 @@
 }
 
 /*
+ * The rows „Teraz” and „Potem” in the phone layout (D-396, D-336): a row that names a rule is a
+ * control, a tap on it scrolls the program, so it is at least `--touch-target-min` high, and its text,
+ * which the flex row centres, stands in the middle of that height. Both rows hold the minimum whether
+ * they name a rule or not, so that a row which gains or loses its rule does not move what is under it.
+ * „Teraz” keeps its fixed height, now the minimum, and cuts a longer text as it does in the computer
+ * layout; the rows are as wide as the world area, far over the minimum.
+ */
+@media (width < 1280px) {
+  .now-row {
+    height: var(--touch-target-min);
+  }
+
+  .next-row {
+    min-height: var(--touch-target-min);
+  }
+}
+
+/*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the row last tapped, so in the phone
+ * layout on a device whose pointer cannot hover „Teraz” and „Potem” keep their background of rest
+ * after a tap, which shows the rule they name in the program.
+ */
+@media (width < 1280px) and (hover: none) {
+  .now-row[tabindex]:hover,
+  .next-row[tabindex]:hover {
+    background: transparent;
+  }
+}
+
+/*
  * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
  * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
  * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
@@ -610,11 +677,19 @@
  * the numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM
  * modules.
  *
- * The scene (D-316, D-320, D-322): the forest picture sets the frame's size from its width and
- * height attributes, and every other part lies over it at the place and size TypeScript gives as
- * percentages of the frame, so the stylesheet holds no length of a sprite. A sheet holds all frames
- * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
- * where it stands still. The scene's motion stands in the rules after the badge.
+ * The scene (D-316, D-320, D-322, D-349): the forest picture sets the frame's size, and every other
+ * part lies over it at the place and size TypeScript gives as percentages of the frame, so the
+ * stylesheet holds no length of a sprite and every part keeps its place at either size of the scene.
+ * A sheet holds all frames of a picture side by side; `--frames` is their number, and the sheet shows
+ * one of them, the first where it stands still. The scene's motion stands in the rules after the
+ * badge.
+ *
+ * The scene has two sizes, once and twice its picture of 336 × 152 px, and never a fraction of it
+ * (D-349). The picture's width and height attributes give the larger, 672 × 304 px, which the computer
+ * layout draws and the phone layout draws where it holds it; the block `@media (width < 707px)` below
+ * draws the smaller. The frame keeps the size of its picture and never shrinks; its place, the
+ * element around it, centres it and clips what of it the place cannot hold, so where a few pixels of
+ * the width are missing the two sides are cropped evenly, a picture cropped and not scrolled.
  *
  * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322, D-372): the forest, the props,
  * the fire, the dust, the creature that attacks, the mage, the cloud of the scuffle, the flying icon on
@@ -623,19 +698,36 @@
  * and the badge over the mage's head. The scene isolates its layers, so the tint and the cold layer
  * blend with what lies under them in the scene and with nothing else on the page.
  */
+.scene-place {
+  display: flex;
+  justify-content: center;
+  overflow-x: clip;
+}
+
 .scene {
+  flex: none;
   position: relative;
   isolation: isolate;
-  width: fit-content;
-  max-width: 100%;
   overflow: hidden;
 }
 
 .scene-background {
   display: block;
-  max-width: 100%;
-  height: auto;
   image-rendering: pixelated;
+}
+
+/*
+ * The place of the scene in the phone layout (D-396, D-349): it takes the side padding of the world
+ * area, `--space-m` there (the phone block of `.screen-area` in styles.css), so the scene may reach the
+ * area's frame before its sides are cropped. In a page area 360 px wide the place is
+ * 360 - 2 × 8 (the page) - 2 × 1 (the area's frame) = 342 px and holds the whole picture of 336 px,
+ * 3 px to spare on each side: the creature that fights the mage at the berry bush, whose frame ends on
+ * column 334 of 336, and the mage at the right edge, whose figure ends on column 319, stand whole.
+ */
+@media (width < 1280px) {
+  .scene-place {
+    margin-inline: calc(-1 * var(--space-m));
+  }
 }
 
 .scene-prop,
@@ -804,11 +896,12 @@
  * the progress, the fill in `positive` on a track in `highlight`. It is no part of the mage's element,
  * which lies under the tint of the light that the badge must stay clear of: its own element, the badge's
  * carrier, has the mage's box and walks with it (the walk's rules below name both). It sits just above
- * the head, at the middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
- * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
- * pixels of the picture drawn at twice its size; the padding and the gap are steps of the spacing
- * scale, and the bar's thickness is `--bar-width` doubled, as the whole scene is drawn at twice its
- * picture (D-349), so the bar keeps its proportion.
+ * the head, at the middle of the mage's frame. Its sizes are its own and do not follow the scale of the
+ * scene, so it is as legible over the scene at its picture's size as over the scene at twice it (D-349).
+ * The icon's side is a layout dimension that D-43 leaves out, chosen by viewing the scene at its larger
+ * size: 32 px, about two thirds of the width of the mage's figure, 25 pixels of the picture drawn at
+ * twice its size; the padding and the gap are steps of the spacing scale, and the bar's thickness is
+ * `--bar-width` doubled, `calc(var(--bar-width) * 2)`, at either size of the scene.
  */
 .scene-badge {
   position: absolute;
@@ -848,7 +941,8 @@
  * system's setting for reduced motion, which leaves only its movement out, so the icon then stands
  * on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
  * gives. The plaque is a solid `panel` like the badge over the head (D-320), the icon on it of the
- * side of 24 px, a layout dimension chosen by viewing the scene at its one size (D-349), the icon
+ * side of 24 px, a layout dimension chosen by viewing the scene at its larger size and kept at either
+ * size, a size of its own that does not follow the scale of the scene (D-349), the icon
  * the mask of `.icon-mask` in `text-strong`, as the icon over the head is, though no text stands
  * beside it (D-40, D-43). The flight is laid over the whole frame in two layers, so that the
  * percentages of `translate` are parts of the frame: the outer one carries the icon across, the
@@ -1086,8 +1180,10 @@
 /*
  * The plaques of a discovery (D-322, D-39, D-320): the icon of each thing
  * the discovery revealed that the game's data gives an icon, each on a solid `panel` like the badge over
- * the mage's head, with a frame in `discovery` of the bar's thickness, one pixel of the scene at its one
- * size (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on it. They lie over the
+ * the mage's head, with a frame in `discovery` of the bar's thickness, a size of its own that does not
+ * follow the scale of the scene (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on
+ * it. At the smaller size of the scene the plaque takes a smaller size of its own, in the block of that
+ * size below. They lie over the
  * tint of the light, like the badge, so the frame keeps the role's colour. Each item is laid over the
  * whole frame so that its percentages are parts of the frame, as the flight of an icon is; the plaque
  * stands at its place over the clearing, where TypeScript gives it.
@@ -1100,6 +1196,39 @@
 
 .scene-discovery-plaque {
   border: var(--bar-width) solid var(--discovery);
+}
+
+/*
+ * The smaller size of the scene (D-349, D-396): its picture once, 336 × 152 px, in a phone layout too
+ * narrow for 672 px. This is the one threshold of width other than 1280 px, the window at which the
+ * place of the scene holds 672 px: 672 + 2 × 8 (the page's side padding in the phone layout) + 2 × 1
+ * (the frame of the world area) + 17 (the widest classic scrollbar, which a media query counts in the
+ * window's width though the page loses it) = 707 px. A browser that draws no classic scrollbar, as a
+ * phone does, could hold 672 px from 690 px and draws the smaller size between the two, so that no
+ * classic scrollbar crops the larger scene: its creature at the berry bush has 2 px to spare at the
+ * right edge.
+ *
+ * The plaques of a discovery stand 22 pixels of the scene apart, centre to centre, so at the smaller
+ * size they stand 22 px apart and a plaque of the larger size, 36 px, would cover its neighbour: each
+ * takes a size of its own here, the icon 16 px with no padding, a plaque of 20 px with its frame,
+ * which leaves 2 px between two. The icon's side is a layout dimension that D-43 leaves out, the side
+ * of the icons in the head of the table of revealed tiles; it is no fraction of the larger plaque's.
+ * The badge over the mage's head and the plaque of the flying icon keep their sizes, which stand alone
+ * and are legible at either size of the scene.
+ */
+@media (width < 707px) {
+  .scene-background {
+    width: 336px;
+    height: 152px;
+  }
+
+  .scene-discovery-plaque {
+    padding: 0;
+  }
+
+  .scene-discovery-plaque .icon-mask {
+    height: 16px;
+  }
 }
 
 /*

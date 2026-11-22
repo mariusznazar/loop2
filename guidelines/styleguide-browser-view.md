@@ -70,8 +70,8 @@ stoi na niej w tabeli Roles: element, któremu styl nadaje tło `page`, `panel`,
 `highlight`, `rule-winning` albo `rule-running`, dostaje kolor tekstu `text`,
 chyba że ma już inną rolę tekstu. Element albo jego część z inną rolą tekstu
 zachowuje ją na każdym z tych pięciu teł, bo każda rola rodzaju `text` stoi
-na wszystkich pięciu (D-39, D-40): przycisk niszczący pod kursorem ma dalej
-tekst w `danger`, a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
+na wszystkich pięciu (D-39, D-40): przycisk niszczący ma tekst w `danger` także
+na `highlight` pod kursorem, a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
 w kodzie reguła Contrast of every pair. Przegląd zmiany tabeli Roles czyta
 każde tło z jego tekstem. Tor paska postępu nad głową postaci (`highlight`)
 nie ma tekstu i kod nie ustawia na nim żadnej roli tekstu. Tor paska wymagania
@@ -106,7 +106,8 @@ W plikach części poza plikiem tokenów wartością wpisaną zamiast tokenu jes
 
 Nie jest nią: `0`, procent, rozmiar w `fr`, `vw` albo `vh`, słowo kluczowe
 (`transparent`, `currentColor`, `inherit`, `none`), próg szerokości ekranu
-w regule `@media`, geometria rysunku siatki, sceny i obozu liczona w TypeScripcie,
+w regule `@media` (które progi wolno napisać, mówi reguła Two layouts and one
+threshold between them), geometria rysunku siatki, sceny i obozu liczona w TypeScripcie,
 klatki i położenia obrazków postaci i zasobów sceny oraz obozu, atrybuty
 `width` i `height` obrazka, wymiar układu — szerokość albo wysokość z jej
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
@@ -128,7 +129,7 @@ nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
 wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/run-screen.css`,
-przy jednym rozmiarze sceny (D-349). Geometria obozu w Siedzibie — rozmiary jego obrazków, odstępy i położenia —
+w rozmiarze własnym, niezależnym od rozmiaru sceny, więc ten sam przy obu rozmiarach sceny (D-349). Geometria obozu w Siedzibie — rozmiary jego obrazków, odstępy i położenia —
 stoi w TypeScripcie (`src/browser/view/camp.tsx`, `src/browser/view/camp-picture.ts`) jako liczby pikseli
 obrazka razy rozmiar piksela obrazka, wpisane w style elementów, a jej liczby w danych gry, w
 `src/browser/sim/data/scene.ts`; arkusz stylów obozu nie wpisuje żadnej długości obrazka (D-349, D-389).
@@ -265,8 +266,12 @@ Kontrolki odstępujące od tej listy stanów:
   — przycisk, przycisk niszczący
   i przycisk wybrany w grupie: error nie dotyczy, bo przycisk nie ma
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
-  wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
-  a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39); są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
+  wpisu. Przycisk niszczący ma już w spoczynku tekst w `danger`, w każdym układzie, jednym
+  wyglądem; pod kursorem dostaje dodatkowo tło `highlight`, jak każdy przycisk, a tekst
+  zostaje w `danger`, przy fokusie rysuje się obwódka z reguły Visible focus (D-44, D-39).
+  Powód: gracz telefonu nie ma kursora, który dochodzi do przycisku przed dotknięciem,
+  więc kolor, który pojawiałby się dopiero pod kursorem, nic by mu nie pokazał, i dlatego
+  nie ma osobnego wyglądu tego przycisku w układzie telefonu. Są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
   „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” (D-44, D-402) i „Zablokuj” na liście kont (D-411), oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
@@ -325,7 +330,7 @@ Kontrolki odstępujące od tej listy stanów:
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
   wyszarzona (stan disabled) ma ramkę przerywaną w `text-disabled` — słowo
-  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289);
+  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289), który łamie się tylko między słowami, a nazwa komórki także w słowie, gdy żaden odstęp nie pomaga;
   pod kursorem nie dostaje tła `highlight`; klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
   powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
   wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
@@ -473,6 +478,175 @@ importuje tylko moduły, których używa gra; kod potrzebny tylko jej zostaje
 w tym katalogu, w modułach obok jej modułu wejściowego, a nie w
 `src/browser/view/`, gdzie trafiłby do wyniku `npm run build`.
 
+### Two layouts and one threshold between them
+
+- **Decision:** D-396 · D-280 · D-282 · D-421 · D-43 · D-349
+- **Invariant:** none
+- **Good:** Reguły układu telefonu ekranu Programy w bloku `@media (width < 1280px)` w arkuszu tego ekranu, z komentarzem „D-396”, po regułach układu komputera, które ten blok zmienia; ekran przejścia w układzie telefonu z trzema obszarami w jednej kolumnie — światem, programem i obszarem z zakładkami „Kronika” i „Teren” — w tej kolejności.
+- **Bad:** `@media screen and (width < 1280px)`; `@media (max-width: 720px)` albo `@media (min-width: 1074px)` jako osobny wygląd; osobny układ dla okna węższego niż 1280 px, a szerszego niż telefon; reguła układu komputera przepisana tak, żeby pasowała do telefonu; obszar strony 360 px wpisany w arkusz; ekran z dwiema kolumnami obok siebie w układzie telefonu.
+
+Gra ma dwa układy i jeden próg między nimi (D-396). Okno, którego obszar strony ma 1280 px
+szerokości albo więcej, pokazuje układ komputera, a każde węższe okno, także okno komputera,
+pokazuje układ telefonu, projektowany pod telefon trzymany pionowo, z obszarem strony szerokim
+na 360 px. Obszar strony to obszar strony wewnątrz okna przeglądarki, który podają `innerWidth`
+i `document.documentElement.clientWidth`; nie jest rozdzielczością ekranu. Wąskie okno komputera
+jest telefonem, nie wąskim komputerem: nie ma trzeciego układu ani osobnego wyglądu dla okna
+węższego niż 1280 px, a szerszego niż telefon, i progi 720 px oraz 1074 px nie wyznaczają
+osobnego wyglądu.
+
+Jak układ telefonu się zapisuje:
+
+- Reguły układu telefonu stoją w blokach `@media (width < 1280px)`, w składni zakresu i z liczbą z
+  D-396 zapisaną tak, jak stoi. Blok stoi w arkuszu, do którego należy element (reguła A stylesheet
+  of its own for each screen and each shared part, D-421): w arkuszu ekranu albo części, a dla
+  wspólnych kontrolek i wspólnego układu w `src/browser/styles.css`. Każdy blok ma komentarz, który
+  nazywa D-396, i stoi po regułach układu komputera, które zmienia; reguł układu komputera blok
+  nie dotyka.
+- Blok nie ma typu nośnika: `@media (width < 1280px)`, nigdy `@media screen and (width < 1280px)`.
+  Powód: jsdom, w którym działają testy, stosuje blok `@media` tylko wtedy, gdy jego lista zawiera
+  słowo `screen`, więc blok ze słowem `screen` obowiązywałby w testach przy każdej szerokości.
+- Próg 1280 px stoi w każdej regule `@media`, a jego źródłem jest komentarz D-396 przy niej i ta
+  reguła. Nie ma na niego tokenu: CSS nie czyta własności niestandardowej w warunku `@media`,
+  a D-43 próg zwalnia. Obszaru 360 px nie ma w żadnym arkuszu: stoi tylko w skillu `loop2-play`
+  i w tej regule.
+- Poza progiem 1280 px nie ma żadnego innego progu szerokości w regule `@media`, z jednym
+  wyjątkiem: progiem, przy którym scena w układzie telefonu przechodzi na większy rozmiar (reguła
+  The scene of a map run, D-349). Warunek `prefers-reduced-motion` nie jest progiem szerokości.
+  Warunek `hover: none` też nie jest progiem szerokości ani osobnym układem: bloki
+  `@media (width < 1280px) and (hover: none)`, każdy w arkuszu, do którego należy element,
+  zdejmują tło `highlight` spod kursora tam, gdzie urządzenie nie ma kursora, który najeżdża —
+  kontrolkom, których tło w spoczynku jest przezroczyste, i wierszom: wierszowi reguły i nagłówkowi
+  grupy w edytorze programu, „Teraz” i „Potem”, wierszowi listy map i listy programów. Wiersz
+  otwarty zostaje na `highlight`, a wiersz reguły, która wygrywa albo której czynność trwa, na
+  `rule-winning` albo `rule-running`. Powód: przeglądarka dotyku trzyma `:hover` na ostatnio
+  dotkniętym elemencie, także na wierszu wokół dotkniętego przycisku, aż do następnego dotknięcia,
+  więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym, a na wierszu reguły
+  udawałoby regułę wybraną; mysz, także w wąskim oknie komputera, widzi tło pod kursorem jak dotąd.
+- Reguła układu telefonu nie jest sprawdzana testem, bo jsdom jej nie stosuje; sprawdza ją
+  agent w przeglądarce (reguła A change is checked in both layouts). To granica testów, nie
+  usterka: zielony test mówi o układzie komputera i o logice, nie o układzie telefonu.
+
+Co układ telefonu robi z ekranem:
+
+- Treść ma szerokość okna pomniejszoną o boczny odstęp strony, a najwyżej 1344 px, jak w układzie
+  komputera (D-280); odstęp strony w układzie telefonu to 8 px z każdej strony, na którym stoi
+  rachunek rozmiaru sceny (reguła The scene of a map run).
+- Obszary ekranu stoją w jednej kolumnie, jeden pod drugim (D-282): ekran przejścia — świat,
+  program i obszar z zakładkami „Kronika” i „Teren”, w tej kolejności (D-311); inny ekran, na
+  przykład Mapy, Wiedza albo Postać — w kolejności, w jakiej obszary stoją w układzie komputera, od
+  lewej do prawej. Ekran, którego obszary układ telefonu mógłby ułożyć tylko obok siebie, narusza
+  D-282.
+- Usterkę układu telefonu naprawia się tam, gdzie pokazuje ją okno szerokości telefonu, wyższe niż
+  szerokie: przy obszarze strony 360 px, a gdy usterka stoi przy innej szerokości, jak napisy komórek
+  wyboru przy 1100 px, przy tej szerokości. Usterki w oknie węższym niż 360 px albo widocznej tylko
+  w oknie szerszym niż wysokie, jak telefon obrócony bokiem, nie naprawia się, a usterki układu
+  komputera w oknie niższym niż 720 px też nie, gdy żadna decyzja nie mówi, jak gra wygląda tam
+  (D-396).
+
+Przegląd zmiany ekranu czyta, czy zmiana ma reguły obu układów, czy blok układu telefonu stoi tak,
+jak tu napisano, i czy żadna reguła układu komputera nie została dotknięta bez powodu.
+
+### Nothing scrolls to the side in the phone layout, and no text crosses its frame
+
+- **Decision:** D-396 · D-280 · D-349 · D-389
+- **Invariant:** none
+- **Good:** Tabela odkrytych kafelków i lista kont ułożone tak, że mieszczą się w szerokości ramki przy obszarze strony 360 px: tekst zawija się w swojej kolumnie albo kolumny stają jedna pod drugą; napis komórki wyboru czynności łamie się w komórce; polana pasa obozu przycięta po bokach ramką pasa, która niczego nie przewija.
+- **Bad:** Ramka, w której tabelę przeciąga się palcem w bok; napis wychodzący poza ramkę komórki albo przycisku; ekran szerszy od okna, który przewija stronę w bok; ramka z paskiem przewijania w poziomie, dodanym po to, żeby za szeroka treść się zmieściła.
+
+W układzie telefonu każdy ekran mieści się w szerokości okna i nic nie przewija się w bok: ani
+strona, ani ramka, w której stoi tabela, lista albo okno (D-396). Żaden napis nie wychodzi poza
+ramkę, w której stoi. Powód: gracz, który przeciąga palcem tabelę w bok, przewija w bok, a gry
+granej na telefonie od początku do końca bez przewijania w bok to wyklucza. Tabela albo lista,
+która w układzie komputera ma kolumny obok siebie, w układzie telefonu układa się tak, żeby zmieścić
+się w szerokości swojej ramki — zawija tekst albo przestawia kolumny — nie dostaje przewijania.
+Tekst, który wpisał gracz, łamie się w swoim wierszu (reguła A name typed by the player breaks in
+its row). Przycięcie obrazka ramką — boki sceny, boki polany pasa obozu — nie jest przewijaniem, o
+ile niczego, z czym gracz działa, nie chowa (D-349, D-389).
+
+Sprawdza to pomiar z `.claude/skills/loop2-play/SKILL.md`: przy obszarze strony 360 px strona się nie
+przewija w bok, a listy `contentWiderThanItsBox` i `outsideTheWindow` są puste. Pozycja na liście
+jest znakiem, nie wyrokiem: obrazek sceny albo przycięty element może się na niej pokazać, a to, czy
+napis wychodzi poza ramkę, rozstrzyga zrzut. Przegląd zmiany czyta każdy zmieniony ekran w tym
+pomiarze.
+
+### Everything is done by touch, and every control holds the touch target
+
+- **Decision:** D-396 · D-44 · D-19 · D-288 · D-306 · D-296 · D-43 · D-47
+- **Invariant:** none
+- **Good:** Strzałki „↑” i „↓” w nagłówku grupy reguł w obu układach, uchwyt dla myszy obok; zaznaczenie wiersza tabeli odkrytych kafelków dotknięciem kafelka obok zaznaczenia najechaniem; przycisk niszczący w `danger` już w spoczynku; `min-height: var(--touch-target-min)` w bloku `@media (width < 1280px)` reguły wiersza listy, który jest odnośnikiem.
+- **Bad:** Czynność, którą da się zrobić tylko przeciągnięciem myszą albo tylko po najechaniu kursorem; przycisk niższy albo węższy niż `--touch-target-min` w układzie telefonu; `min-height: 48px` wpisane zamiast tokenu; kontrolka bez swojego celu dotyku tylko dlatego, że jej reguła stoi w arkuszu ekranu, a nie we wspólnym.
+
+W układzie telefonu wszystko, co gra oferuje, robi się dotykiem (D-396): logowanie, pisanie i
+zmiana programu, puszczenie przejścia i pętli, odczyt raportu z powrotu, odbiór wprawy i kupno
+gałęzi. Żadna czynność nie ma za jedyną drogę najechania kursorem ani przeciągania myszą.
+Najechanie albo przeciągnięcie wolno zostawić w układzie komputera jako dodatek do drogi dotykiem:
+
+- rysunek mapy: najechanie kursorem na kafelek zaznacza jego wiersz w tabeli odkrytych kafelków,
+  a dotknięcie kafelka palcem zaznacza ten wiersz i trzyma zaznaczenie, aż dotknięcie gdzie indziej
+  je zdejmie; kliknięcie myszą w kafelek niczego nie zmienia (D-19);
+- reguły i grupy reguł: przesuwają się strzałkami „↑” i „↓” w każdym układzie, a uchwyt z linią „tu
+  wyląduje” jest dla myszy komputera (D-288);
+- kolor albo wygląd, który pojawia się dopiero pod kursorem, nie niesie żadnej wiedzy, bez której
+  gracz telefonu nie może działać: to, co gracz ma wiedzieć przed dotknięciem, stoi w spoczynku, jak
+  tekst przycisku niszczącego w `danger` (D-44).
+
+Każda kontrolka układu telefonu — przycisk w każdym rodzaju, strzałka, „✕”, komórka wyboru, lista
+wyboru, pole liczby i pole tekstowe, pozycja paska menu, odnośnik menu „Konto”, wiersz listy,
+który jest odnośnikiem do ekranu — ma cel dotyku wysoki i szeroki na co najmniej `--touch-target-min`
+(D-396). Kontrolką jest to, co reguła Visible focus nazywa kontrolką: każdy element, na który
+klawiatura wchodzi, odnośniki też. Wartość tokenu `--touch-target-min` w pliku tokenów pochodzi ze
+źródła zapisanego w fakcie środowiska `android-touch-target-size`: wskazówek Androida o dostępności,
+w których dp czytamy jako piksel strony, czyli jednostkę, w której liczy się obszar strony. Źródło
+zwalnia z minimum wejście precyzyjne, mysz i gładzik, więc minimum dotyczy układu telefonu, a reguły
+układu komputera zostają takie, jakie są.
+
+- Minimum czyta `var(--touch-target-min)` w `min-width` i `min-height`, nigdy liczby wpisanej do
+  arkusza (reguła No value in place of a design token). Rośnie pole dotyku, nie tekst: tekst stoi
+  w środku celu, a linia bieżącej pozycji paska zostaje przy tekście.
+- Kontrolka, której reguła stoi w arkuszu ekranu albo części, trzyma minimum tak samo jak wspólna:
+  ekran dokłada je w swoim bloku `@media (width < 1280px)`. Wspólne kontrolki i kontrolki,
+  których reguły stoją w `src/browser/styles.css`, trzyma jeden blok tego pliku.
+- Odnośnik wewnątrz toczącego się zdania zachowuje wielkość swojego tekstu, a odnośnik, który sam
+  jest kontrolką — cały wiersz nawigacji, pozycja menu, odnośnik stojący osobno jako cel podobny do
+  przycisku — trzyma minimum (D-396). To jedyny wyjątek od minimum: D-47 liczy każdy odnośnik jako
+  kontrolkę, a cel wysoki na 48 px rozerwałby linię tekstu.
+- Wiersz, który otwiera się dotknięciem, otwiera się dotknięciem w dowolnym miejscu poza
+  swoimi przyciskami, a przyciski nie sięgają nad jego środek: dotknięcie środka wiersza
+  reguły nie trafia w sąsiedni przycisk i nie zmienia programu (D-306, D-296; reguła
+  Program editor).
+
+Przegląd zmiany czyta każdą kontrolkę zmienionego ekranu wobec minimum, w pomiarze z
+`.claude/skills/loop2-play/SKILL.md` (lista `controlsSmallerThan48`), i każdą czynność wobec
+pytania, czy da się ją zrobić samym dotykiem.
+
+### A change is checked in both layouts
+
+- **Decision:** D-396
+- **Invariant:** none
+- **Good:** Zmiana ekranu Wiedza sprawdzona w Chromium przy obszarze strony 1280 × 720 px, bez dotyku, a potem przy 360 px w oknie wyższym niż szerokie, z dotykiem, z pomiarem, który nie zgłasza przewijania w bok, napisu poza ramką ani kontrolki mniejszej niż minimum; usterka widziana przy 1100 px sprawdzona przy 1100 px.
+- **Bad:** Sprawdzenie przy rozdzielczości ekranu 1280 × 720 px; układ telefonu sprawdzany kliknięciem myszy; ekran zaprojektowany dla komputera, z układem telefonu dopisanym w osobnym zadaniu; reguła układu telefonu uznana za sprawdzoną, bo test jest zielony.
+
+Ekran projektuje się od razu w obu układach: zmiana, która dodaje albo zmienia ekran, dostaje
+reguły układu komputera i bloki układu telefonu w tej samej zmianie. Jak agent sprawdza zmianę,
+mówi sekcja „Check the phone layout” skilla `.claude/skills/loop2-play/SKILL.md` (D-396):
+
+- układ komputera w Chromium przy obszarze strony 1280 × 720 px, w sesji bez dotyku — nie przy
+  rozdzielczości ekranu 1280 × 720 px, bo obszar strony jest wtedy mniejszy;
+- układ telefonu w Chromium przy obszarze strony szerokim na 360 px, w oknie wyższym niż szerokie,
+  z obsługą dotyku; czynność robi się dotknięciem (`tap`), nie kliknięciem myszy, bo reguła, która
+  czeka na dotyk, kliknięcia myszy nie widzi; do tego pomiar tego, że nic nie przewija się w bok, że żaden napis nie przekracza
+  swojej ramki i że żadna kontrolka nie jest mniejsza niż minimum celu dotyku;
+- inny obszar strony, gdy usterkę widać przy nim, jak 1100 px, i powrót do 1280 × 720 px przez
+  zamknięcie sesji i otwarcie zwykłej, bo samo `resize` zostawia dotyk sesji;
+- Firefox i Edge sprawdza się ręcznie, w prawdziwej przeglądarce, w osobnej sesji (D-396), a
+  Chrome na telefonie z Androidem — gdy ktoś na nim zagra; agent sprawdza układ telefonu w
+  Chromium przy wielkości telefonu, więc usterka widoczna tylko na prawdziwym telefonie może
+  przejść.
+
+Zrzut, który dostaje człowiek, powstaje według sekcji „Show a screenshot to the human” tego
+skilla. Test w jsdom nie sprawdza układu telefonu (reguła Two layouts and one threshold between
+them), więc zielony test nie zastępuje tego sprawdzenia.
+
 ### Main button, secondary action and tab
 
 - **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-44 · D-39 · D-243 · D-329
@@ -590,13 +764,14 @@ ekranów.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
-- **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411
+- **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411 · D-396
 - **Invariant:** none
 - **Good:** Pozycja „Programy” na ekranie Programy w `text-strong` z linią w `selected` u dołu, a „Wyloguj” w menu „Konto”, które po odpowiedzi serwera stoi otwarte ze zdaniem wyniku.
 - **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
 
 Pasek menu stoi u góry każdego ekranu zalogowanego gracza. Treść pod nim ma
-najwyżej 1344 px szerokości, a w węższym oknie całą szerokość okna (D-280);
+najwyżej 1344 px szerokości, a tam, gdzie okno pomniejszone o boczny odstęp strony jest węższe,
+tyle, w układzie komputera i w układzie telefonu (D-280, D-396);
 szerokość z maksimum jest wymiarem układu, nie wartością wpisaną zamiast tokenu
 (D-43).
 
@@ -662,20 +837,21 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40 · D-282 · D-396
 - **Invariant:** none
-- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
-- **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
+- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
+- **Bad:** Obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
 
-Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: po lewej
-listę otwartych map, po prawej kartę wybranej mapy.
+Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: w układzie
+komputera po lewej listę otwartych map, po prawej kartę wybranej mapy, a w układzie
+telefonu karta stoi pod listą (D-282, D-396).
 
 - Lista: każdy wiersz to odnośnik do `#/mapy/{map}` z nazwą mapy w `text`; przy
   mapie rozwiązanej po nazwie stoi „rozwiązana” w `positive` (D-134). Wybrany
   wiersz ma tekst w `text-strong` i belkę w `selected` o grubości `--bar-width`
   po lewej, jak wybrany program na liście programów (D-331, D-40); niewybrany
   wygląda jak niewybrany program na tej liście; pod kursorem tło `highlight`.
-  Przed wyborem mapy, pod `#/mapy`, po prawej stoi „Wybierz mapę z listy.” w
+  Przed wyborem mapy, pod `#/mapy`, w obszarze karty stoi „Wybierz mapę z listy.” w
   `text-secondary` (D-331).
 - Karta mapy (D-327): nagłówek z nazwą mapy w `text-strong`, a przy mapie
   rozwiązanej obok „rozwiązana” w `positive`; przy mapie otwieranej przez inną
@@ -737,15 +913,17 @@ listę otwartych map, po prawej kartę wybranej mapy.
 
 ### The screen Wiedza
 
-- **Decision:** D-416 · D-280 · D-281 · D-282 · D-291 · D-200 · D-44 · D-39 · D-40 · D-43
+- **Decision:** D-416 · D-280 · D-281 · D-282 · D-291 · D-200 · D-44 · D-39 · D-40 · D-43 · D-396
 - **Invariant:** none
 - **Good:** Nagłówek „Wiedza” w `text-strong` nad dwoma obszarami; „Czynności · 2” w `text-label` nad wierszami z ikoną w kolorze nazwy; wiersz drzewa „▸ Eksploracja · 3 gałęzie” jako zwykły wspólny przycisk, a po rozwinięciu gałąź z nazwą w `text-strong`, „3 stopnie” w `text-label`, opisem w `text-secondary` i „1 · 1 · 2 pkt” w `text`.
 - **Bad:** Przy drzewie albo gałęzi poziom, wprawa, punkty, kupiony stopień albo „Kup”; zdanie w obszarze, który nie ma jeszcze rzeczy; obszar „Umiejętności” przed pierwszym poznanym drzewem; nazwa rzeczy bez jej ikony; wiersz drzewa w osobnej kontrolce zamiast wspólnego przycisku.
 
 Ekran Wiedza (`#/wiedza`, D-416, D-281) ma nagłówek „Wiedza” i pod nim dwa obszary, każdy
 osobny (D-282): po lewej Zrozumienie, po prawej drzewa umiejętności. Nagłówek jest w
-`text-strong`, jak „Siedziba” na swoim ekranie (D-40); obszary stoją obok siebie jak na ekranie
-Mapy, a w oknie węższym niż 720 px jeden pod drugim.
+`text-strong`, jak „Siedziba” na swoim ekranie (D-40); w układzie komputera obszary stoją obok
+siebie jak na ekranie Mapy, a w układzie telefonu, w oknie węższym niż 1280 px, jeden pod
+drugim, Zrozumienie nad drzewami umiejętności (D-396, reguła Two layouts and one threshold
+between them).
 
 - Obszar Zrozumienie: nagłówek „Zrozumienie” w `text-label` (nazwa sekcji, D-40) i obok niego
   licznik „{n} poznanych rzeczy” w `text-secondary`. Pod nimi grupy „Czynności · {n}”,
@@ -768,15 +946,16 @@ Mapy, a w oknie węższym niż 720 px jeden pod drugim.
 
 ### The screen Postać
 
-- **Decision:** D-445 · D-446 · D-447 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-389 · D-39 · D-40 · D-43 · D-44
+- **Decision:** D-445 · D-446 · D-447 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-389 · D-39 · D-40 · D-43 · D-44 · D-396
 - **Invariant:** none
 - **Good:** Lewy blok z ludzikiem na płaskim tle bloku, obok niego imię w `text-strong`, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
-- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik na kawałku polany albo z tekstem na nim; ekran w jednej kolumnie; drzewa rozwinięte przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
+- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik na kawałku polany albo z tekstem na nim; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
 
 Ekran Postać (`#/postac/{n}`, D-281) ma dwa obszary, każdy osobny (D-282), i każdy stoi w bloku
 `screen-area`, jak kolumny ekranów Siedziba, Mapy, Wiedza i Przejście: na tle `panel` z cienką ramką
 w `divider`. Lewy obszar jest wąski, prawy szeroki — ta sama proporcja co kolumny ekranów Mapy i
-Wiedza, jedna czwarta i trzy czwarte szerokości — a w oknie węższym niż 720 px lewy stoi nad prawym.
+Wiedza, jedna czwarta i trzy czwarte szerokości w układzie komputera — a w układzie telefonu, w oknie
+węższym niż 1280 px, lewy stoi nad prawym (D-396).
 
 - Lewy obszar, u góry: ludzik postaci (D-445), ten sam obrazek, w tej samej wielkości i w tym samym
   takcie co ta postać na pasie obozu Siedziby, nieruchomy pod ustawieniem ograniczenia ruchu, bez
@@ -811,10 +990,10 @@ Wiedza, jedna czwarta i trzy czwarte szerokości — a w oknie węższym niż 72
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
+- **Decision:** D-288 · D-289 · D-290 · D-291 · D-292 · D-293 · D-296 · D-306 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310 · D-396
 - **Invariant:** none
-- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
-- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym.
+- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; w nagłówku grupy reguł „↑” i „↓” w obu układach; dotknięcie środka wiersza reguły albo nagłówka grupy, jego tekstu i jego wolnego pasa otwiera je; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
+- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym; strzałki grupy reguł tylko w układzie komputera albo grupa, którą przesuwa wyłącznie przeciąganie uchwytem; przycisk wiersza albo nagłówka stojący pod jego środkiem, tak że dotknięcie środka przesuwa regułę zamiast ją otworzyć; powód wyszarzonej komórki przecięty w środku słowa.
 
 Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
 Wygląd jego części bierze się z ról tabeli Roles i z wartości pliku tokenów;
@@ -826,7 +1005,9 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
   kolorze tekstu obok (D-291, D-43). Wiersz otwarty stoi na tle `highlight`,
   a wiersz pod kursorem też, o ile nie ma tła stanu, z tekstem w ich własnych
-  rolach (reguła Every background with its text). Liczba z ułamkiem w zdaniu
+  rolach (reguła Every background with its text); w układzie telefonu na urządzeniu,
+  które nie najeżdża, wiersz nieotwarty nie dostaje tła pod kursorem (reguła Two
+  layouts and one threshold between them). Liczba z ułamkiem w zdaniu
   reguły stoi z przecinkiem dziesiętnym, jak temperatura w wierszu ciała
   (D-57): „Temperatura poniżej 36,5 °C”.
 - Znaki stanu (D-308, D-309, D-310) stoją tylko przy kopii przejścia, w
@@ -842,9 +1023,45 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   spełniony; pasek zostaje przy wierszu otwartym. Powód, jeden, stoi w
   wierszu przy czynności w `warning`.
 - Nagłówek grupy reguł: nazwa w `text-strong`, warunek w `text-secondary`,
-  liczba reguł i suma „Wykonano” w `text-label`.
+  liczba reguł i suma „Wykonano” w `text-label`. W nagłówku każdej grupy stoją
+  strzałki „↑” i „↓”, w układzie komputera i w układzie telefonu: „↓” przesuwa grupę
+  o jedno miejsce w dół, „↑” o jedno w górę, tak jak strzałki reguły, „↑” wyłączona
+  na pierwszej grupie, a „↓” na ostatniej (D-288). Uchwyt grupy i uchwyt reguły
+  zostają w obu układach; przeciąganie uchwytem jest dla myszy komputera, więc
+  żadna czynność nie ma tylko przeciągania (reguła Everything is done by touch,
+  and every control holds the touch target). Strzałki są wspólnymi przyciskami i
+  trzymają minimum celu dotyku tak samo jak każdy przycisk.
+- Wiersz reguły i nagłówek grupy otwiera dotknięcie albo kliknięcie w dowolnym
+  miejscu poza ich przyciskami, także na uchwycie, bo przeciągnięcie uchwytem
+  kliknięcia nie daje (D-306, D-296). Tekst wiersza — uchwyt, numer, warunek,
+  czynność, powód, czas, licznik; w nagłówku uchwyt, numer, nazwa, warunek, liczba
+  reguł, licznik — stoi w elemencie, który sam przyjmuje kliknięcie i nie zawiera
+  przycisku, a przyciski stoją obok niego, strzałki „↑” i „↓” razem, przed
+  pozostałymi (`rule-list-body`, `rule-list-arrows`, `rule-list-controls` w
+  `src/browser/view/rule-list.tsx`); przerwa przed strzałkami, przerwa między dwoma
+  przyciskami i odstęp między grupami przycisków to też takie elementy
+  (`rule-list-gap`). Powód: Chromium oddaje dotknięcie, które ląduje
+  o kilka pikseli od przycisku, temu przyciskowi, o ile pod palcem nie leży element,
+  który przyjmuje kliknięcia i nie ma w sobie przycisku, a sam wiersz, w którym stoją
+  przyciski, pomija; bez takiego elementu dotknięcie tekstu obok strzałek przesuwałoby
+  regułę, a dotknięcie wolnego końca linii tekstu nad „Usuń” albo „✕” usuwałoby regułę
+  albo grupę zamiast ją otworzyć.
+- W układzie telefonu przyciski wiersza i nagłówka stoją w osobnej linii pod
+  tekstem: strzałki z lewej, pozostałe przyciski z prawej, a środek linii jest
+  wolny od przycisków, bo dotknięcie najczęściej ląduje w środku wiersza. Żadne miejsce
+  wiersza poza przyciskami nie jest gołym wierszem: tekst jest pudełkiem na całą
+  pierwszą linię, aż do jej prawego końca, jego dopełnienie zastępuje dopełnienie
+  wiersza, a w linii przycisków przerwy i odstęp z `rule-list-gap` zastępują odstępy
+  wiersza i grup (w układzie komputera się ich nie rysuje). Każdy przycisk
+  zachowuje cel `--touch-target-min`. Cena: wiersz i nagłówek mają w układzie telefonu
+  dwie linie także przy obszarze strony 720–1279 px, gdzie przyciski zmieściłyby się
+  obok tekstu, bo CSS nie odróżni linii, która się mieści, od zawiniętej.
 - Panel reguły stoi na tle `panel` z ramką w `divider`; podpisy jego pól są
   w `text-label`. Komórki jego wyboru podaje reguła States of shared controls.
+  W układzie telefonu wybór każdego pola stoi w dwóch kolumnach, jak warunki
+  (D-290), bo przy czterech komórka ma około 70 px, za mało na słowo „niewykupiona” w
+  powodzie wyszarzonej komórki; strzałki klawiatury idą po kolumnach, które siatka
+  rysuje, a nie po stałej liczbie (`drawnColumns` w `src/browser/view/rule-panel.tsx`).
 - Linia upuszczenia — linia, która pokazuje, gdzie wyląduje przeciągana reguła
   albo grupa reguł — ma napis „tu wyląduje” w `text-strong`, a sama linia bierze
   kolor tego napisu (D-279, reguła A line at a text takes the colour of that
@@ -854,10 +1071,10 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-148 · D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-42 · D-43
+- **Decision:** D-148 · D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-42 · D-43 · D-396
 - **Invariant:** none
-- **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi; wilk w walce stoi obok maga, a między nimi leży mały obłok kurzu.
-- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
+- **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi; wilk w walce stoi obok maga, a między nimi leży mały obłok kurzu; scena 672 × 304 px w układzie komputera i 336 × 152 px w układzie telefonu przy 360 px, z bokami lekko przyciętymi tylko tam, gdzie szerokości brakuje, a plakietka nad głową czytelna w obu rozmiarach.
+- **Bad:** Scena rysowana w ułamku obrazu, na przykład półtora raza, albo w trzykrotności; scena 336 × 152 px w układzie komputera; przycięcie sceny, które chowa maga przy brzegu lasu albo stwora; plakietka nad głową zmniejszona razem ze sceną do rozmiaru trudnego do odczytania; efekt sceny zrobiony dla trzeciego rozmiaru; pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
 
 Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
 w `src/browser/view/scene.tsx`, `src/browser/view/scene-memory.ts` i
@@ -867,12 +1084,29 @@ widoku (D-316).
 Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej
 reakcji na kliknięcie, a cały jej obszar nie błyska (D-272, D-321, D-317).
 
+Scena ma dwa rozmiary, jedną i dwie wielokrotności swojego obrazu 336 × 152 px (D-349): w układzie
+komputera 672 × 304 px, a w układzie telefonu większy z dwóch, który mieści się w miejscu sceny, gdy
+w szerokości okna liczy się klasyczny pasek przewijania, więc 336 × 152 px przy obszarze strony
+szerokim na 360 px. Nie ma skali ułamkowej ani większej
+od dwukrotności: piksele obrazu zostają równe, a efekty sceny są robione dla dwóch rozmiarów. Gdy do całego
+obrazka brakuje kilku pikseli szerokości, boki sceny są lekko przycięte, a przycięcie nie chowa niczego,
+z czym gracz działa, takiego jak mag przy brzegu lasu, stwór albo przedmiot; przycięcie obrazka nie jest
+przewijaniem w bok (reguła Nothing scrolls to the side in the phone layout, and no text crosses its frame).
+Drugi rozmiar daje reguła w blokach układu telefonu: próg szerokości okna, przy którym mieści się 672 px,
+liczony z odstępów układu telefonu i z szerokości klasycznego paska przewijania, którą warunek `@media`
+liczy w szerokości okna, i zapisany z tą arytmetyką w komentarzu, jest jedynym progiem `@media`
+poza progiem 1280 px (reguła Two layouts and one threshold between them); `width` i `height` tła zostają
+672 × 304. Drobne elementy sceny, takie jak ikona na plakietce odkrycia i plakietka nad głową maga,
+mają rozmiar własny, niezależny od skali sceny, żeby były czytelne w obu rozmiarach; zmniejszone razem
+ze sceną byłyby trudne do odczytania.
+
 Plakietka stoi nad głową maga na tle `panel` (D-320). Niesie ikonę bieżącej
 czynności, tę samą co przy regule w wierszu edytora (D-291), w `text-strong`,
 choć obok niej nie ma tekstu (D-40, D-43). Pod ikoną stoi pasek postępu tej
 czynności: wypełnienie w `positive` na torze w `highlight`, z co najmniej 3:1
 wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width` podwojoną,
-`calc(var(--bar-width) * 2)`; cała scena jest rysowana w dwukrotności swojego obrazu (D-349).
+`calc(var(--bar-width) * 2)` w obu rozmiarach sceny, bo drobny element sceny ma rozmiar własny,
+niezależny od jej skali (D-349).
 Plakietki nie ma przy czekaniu, w walce,
 po śmierci i po rozwiązaniu mapy (D-320, D-322).
 
@@ -909,7 +1143,8 @@ w minutach palenia stoją w danych sceny; wygasłe ognisko zostaje takie, jakie 
 Na brzegach kadru leży szron (D-372), nad odcieniem, więc jego kolor nie zmienia się z passą, i pod
 plakietką nad głową, nigdy na całym obszarze sceny. Jego grubość w pikselach obrazu sceny, liczba
 całkowita, przychodzi z TypeScriptu i idzie za temperaturą ciała tak, jak mówi D-372, a ogrzanie przy
-ogniu ją cofa; przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część
+ogniu ją cofa; to piksele obrazu, nie ekranu, więc pełne 16 pikseli to na ekranie 32 px przy scenie
+672 × 304 px i 16 px przy scenie 336 × 152 px, a szron stoi w tej samej części kadru w obu rozmiarach (D-372, D-349); przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część
 wysokości kadru. CSS buduje szron z kwadratów jednego piksela obrazu sceny na jego siatce (D-271),
 z masek na czterech elementach: kolor obrysu, kolor wypełnienia i kolory kryształków to tokeny
 `--scene-frost-*`. Kształt postrzępionego brzegu stoi w regułach szronu w `src/browser/run-screen.css`:
@@ -1037,18 +1272,18 @@ design token”).
 
 ### The picture band of Siedziba
 
-- **Decision:** D-389 · D-272 · D-271 · D-314 · D-315 · D-316 · D-317 · D-321 · D-349 · D-286 · D-280 · D-42 · D-43
+- **Decision:** D-389 · D-272 · D-271 · D-314 · D-315 · D-316 · D-317 · D-321 · D-349 · D-286 · D-280 · D-42 · D-43 · D-396
 - **Invariant:** none
-- **Good:** Pas obozu między wierszem ostrzeżeń a nagłówkiem „Siedziba”, z ogniskiem pośrodku, skrzynką i postaciami, które są w obozie, obok niego; w wąskim oknie polana przycięta po bokach wokół ogniska; pod ograniczeniem ruchu klatki stoją.
-- **Bad:** Tekst, przycisk albo reakcja na kliknięcie na obozie; obóz zmniejszony w wąskim oknie; postać przejścia ręcznego albo pętli zarobkowej przy ognisku; postać ucięta w połowie brzegiem pasa; ognisko obozu wygaszone razem z ogniskiem ze stanu gry; błysk całego pasa.
+- **Good:** Pas obozu między wierszem ostrzeżeń a nagłówkiem „Siedziba”, z ogniskiem pośrodku, skrzynką i postaciami, które są w obozie, obok niego; w układzie telefonu polana przycięta po bokach wokół ogniska; pod ograniczeniem ruchu klatki stoją.
+- **Bad:** Tekst, przycisk albo reakcja na kliknięcie na obozie; obóz zmniejszony w układzie telefonu; postać przejścia ręcznego albo pętli zarobkowej przy ognisku; postać ucięta w połowie brzegiem pasa; ognisko obozu wygaszone razem z ogniskiem ze stanu gry; błysk całego pasa.
 
 Rysuj obóz jako obraz u góry ekranu Siedziba: pas na całą szerokość treści, w wysokości swojego obrazka w
 dwukrotności pikseli, pod wierszem ostrzeżeń pod paskiem menu i nad nagłówkiem „Siedziba”, nad panelem
 ekranu, nie w nim; zdanie strony stoi nad pasem (D-286). Tłem jest polana z obrazków paczki w pełnym świetle,
 bez odcienia. Na niej stoją ognisko, które zawsze płonie i nie zależy od ogniska ze stanu gry, skrzynka jako
 jeden nieruchomy obrazek i postacie w pozie bezczynności: tylko te, które są w obozie, w kolejności
-założenia, tyle całych, ile mieści pas. W wąskim oknie przycinaj polanę po bokach wokół ogniska i nie
-zmniejszaj jej; sekcja „Drużyna” pod pasem wymienia wszystkie postacie. Poruszaj ogień i postacie z CSS, w
+założenia, tyle całych, ile mieści pas. W układzie telefonu (D-396), gdzie okno jest węższe od obrazka,
+przycinaj polanę po bokach wokół ogniska i nie zmniejszaj jej; sekcja „Drużyna” pod pasem wymienia wszystkie postacie. Poruszaj ogień i postacie z CSS, w
 stałym takcie klatek sceny, bez pętli rysowania, a pod ograniczeniem ruchu zostaw klatki w miejscu. Nie daj
 obozowi tekstu, kontrolki ani reakcji na kliknięcie, ukryj go przed czytnikami ekranu i nie rób w nim błysku;
 do postaci prowadzą imiona w „Drużyna” (D-280). Nazwy plików i liczby bierz z danych gry, a rozmiary wpisuj
@@ -1107,10 +1342,13 @@ Jak przykrywa ekran:
   (D-208) i awaria gry (D-323) są widoczne, a kliknięcie w pasek opuszcza
   ekran przejścia (D-311, D-368). Okno nie przykrywa paska menu.
 - Okno nie ma zasłony ani tła za sobą. Stoi na tle `panel` z tekstem w `text` i ramką w `divider`
-  (D-40), w kolumnie treści ekranu, o takiej wysokości, że pod nim zostaje
+  (D-40), w kolumnie treści ekranu, tak szerokim jak ta kolumna w układzie komputera i w układzie
+  telefonu (D-370, D-280), o takiej wysokości, że pod nim zostaje
   miejsce na pasek menu i wiersz ostrzeżeń.
-- Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`: wymiar układu,
-  którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
+- Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`, a w układzie
+  telefonu w `svh`, wysokości okna z widocznym paskiem adresu, bo okno otwiera
+  się przy stronie przewiniętej do góry, gdy pasek adresu telefonu stoi: wymiar
+  układu, którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
   stoi w regule `end-window` w `src/browser/run-screen.css`. Wyższa treść przewija
   się w oknie, nie wypycha go.
 - Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,
@@ -1195,7 +1433,7 @@ Otwarte dla człowieka:
 
 - **Decision:** D-410 · D-411 · D-281 · D-44 · D-39 · D-40
 - **Invariant:** none
-- **Good:** Wiersz konta z rolą właściciela ma adres, stan, uprawnienie, rolę i trzy przyciski, bez „Zablokuj”; „Zablokuj” przy koncie gracza jest neutralne w spoczynku i staje w `danger` pod kursorem.
+- **Good:** Wiersz konta z rolą właściciela ma adres, stan, uprawnienie, rolę i trzy przyciski, bez „Zablokuj”; „Zablokuj” przy koncie gracza stoi w `danger` już w spoczynku, a pod kursorem dostaje dodatkowo tło `highlight`.
 - **Bad:** Przycisk „Zablokuj” przy koncie z rolą właściciela; „Zablokuj” wykonane od pierwszego kliknięcia, bez potwierdzenia.
 
 Ekran listy kont stoi pod `#/konta` i jest tylko dla konta z rolą właściciela
@@ -1219,9 +1457,10 @@ of shared controls:
   do poprzedniego zapisu” to zwykłe przyciski, w `text` na spoczynku; działają od
   razu, bez potwierdzenia; czekając na serwer, są wyłączone i zachowują napis,
   w `text-disabled`;
-- „Zablokuj” to przycisk niszczący (D-411): neutralny w spoczynku, w `danger`
-  pod kursorem i przy fokusie; czekając na serwer, jest wyłączony i zachowuje
-  napis. Przy koncie z rolą właściciela, także przy własnym, go nie ma.
+- „Zablokuj” to przycisk niszczący (D-411, D-44): w `danger` już w spoczynku,
+  w każdym układzie, a pod kursorem dodatkowo na tle `highlight`; czekając na
+  serwer, jest wyłączony i zachowuje napis. Przy koncie z rolą właściciela,
+  także przy własnym, go nie ma.
 
 Potwierdzenie „Zablokuj” stoi tak jak potwierdzenie „Zacznij od zera” (D-402):
 pod wierszem, a w nim jedno zdanie o skutkach blokady w `warning` (sesje gracza

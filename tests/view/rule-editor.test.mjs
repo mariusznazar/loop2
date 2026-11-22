@@ -357,6 +357,88 @@ test("a click on a row asks to open that rule, on a header that group, and a cli
   });
 });
 
+// Breaks: a click on the bare row, on a gap between its buttons or on its handle that asks nothing,
+// or one that asks twice; a click on a button that asks to open.
+test("a click anywhere on a row or a header outside its buttons — its bare area, a gap between buttons, its handle — asks once to open it", async () => {
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
+  await withPage(async (page) => {
+    const { calls } = await mount(page, twoGroups());
+    const row = rowOf(page.root, 2);
+    const header = headerOf(page.root, 2);
+    await press(row);
+    await press(row.querySelector(".rule-list-controls"));
+    await press(row.querySelector(".rule-list-spacer"));
+    await press(row.querySelector(".rule-list-arrows .rule-list-gap"));
+    await press(row.querySelector(".drag-handle"));
+    await press(header);
+    await press(header.querySelector(".rule-list-spacer"));
+    await press(header.querySelector(".drag-handle"));
+    await press(buttonIn(header, "▾"));
+    assert.deepEqual(
+      calls.filter((call) => call[0] === "open"),
+      [
+        ...Array(5).fill(["open", { groupId: 1, ruleId: 2 }]),
+        ...Array(3).fill(["open", { groupId: 2, ruleId: null }]),
+      ],
+    );
+  });
+});
+
+// Breaks: a part of a row outside its buttons that no element of its own covers — the text standing
+// straight in the row, or no element between and around the buttons — so Chromium's touch adjustment
+// gives a tap there to a near button, „Usuń” and „✕” among them; or the arrows not grouped apart from
+// the other buttons. jsdom lays nothing out: where the elements stand and where a tap goes are the
+// browser check's (D-88).
+test("a row and a header are covered outside their buttons by elements that take a click and hold no button: the text, a gap before the arrows and between two buttons, a spacer between the groups", async () => {
+  // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame, and everything the game offers is done by touch."
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
+  await withPage(async (page) => {
+    await mount(page, twoGroups());
+    const partOf = (element) =>
+      element.nodeName === "BUTTON"
+        ? element.textContent
+        : element.classList.contains("rule-list-spacer")
+          ? "spacer"
+          : element.classList.contains("rule-list-gap")
+            ? "gap"
+            : element.className === "rule-list-arrows"
+              ? [...element.children].map(partOf)
+              : element.className;
+    for (const [line, rest] of [
+      [rowOf(page.root, 1), ["Usuń"]],
+      [headerOf(page.root, 1), ["▾", "gap", "✕"]],
+    ]) {
+      const parts = [...line.children].map((child) => child.className);
+      assert.deepEqual(parts, ["rule-list-body", "rule-list-controls"]);
+      const body = line.children[0];
+      assert.equal(body.querySelectorAll("button").length, 0);
+      assert.ok(
+        body.querySelector(".rule-condition, .rule-list-condition"),
+        "the condition stands in the text",
+      );
+      assert.deepEqual([...line.children[1].children].map(partOf), [
+        "gap",
+        ["↑", "gap", "↓"],
+        "spacer",
+        ...rest,
+      ]);
+      // A click listener of its own on each cover is what makes it a target of a tap apart from the
+      // row, which holds the buttons too.
+      const covers = [body, ...line.querySelectorAll(".rule-list-gap")];
+      assert.ok(
+        covers.every(
+          (cover) =>
+            typeof cover.onclick === "function" &&
+            cover.querySelectorAll("button").length === 0,
+        ),
+        "each cover takes a click and holds no button",
+      );
+    }
+  });
+});
+
 test("Enter and Space on a row or a header ask to open it, and other keys do not", async () => {
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
@@ -379,9 +461,9 @@ test("Enter and Space on a row or a header ask to open it, and other keys do not
 
 // --- the buttons of a row and of a group ---------------------------------------------------------
 
-test("a row has „↑”, „↓” and the destructive „Usuń”, and a header has no arrows", async () => {
+test("a row has „↑”, „↓” and the destructive „Usuń”, and a header has „↑”, „↓” and the destructive „✕”", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
   // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name and condition, and the group's „✕” stands in its header"
   await withPage(async (page) => {
     await mount(page, twoGroups());
@@ -392,14 +474,99 @@ test("a row has „↑”, „↓” and the destructive „Usuń”, and a head
     );
     assert.ok(buttonIn(row, "Usuń").classList.contains("destructive"));
     const header = headerOf(page.root, 1);
-    assert.equal(buttonIn(header, "↑"), undefined);
-    assert.equal(buttonIn(header, "↓"), undefined);
+    assert.ok(buttonIn(header, "↑"), "the header holds „↑”");
+    assert.ok(buttonIn(header, "↓"), "the header holds „↓”");
     assert.ok(buttonIn(header, "✕").classList.contains("destructive"));
   });
 });
 
+test("a header's „↑” is off on the first group and „↓” on the last, both on between them, folded or not", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  await withPage(async (page) => {
+    await mount(page, threeGroups());
+    const off = (id) =>
+      ["↑", "↓"].map(
+        (text) => buttonIn(headerOf(page.root, id), text).disabled,
+      );
+    assert.deepEqual(off(1), [true, false]);
+    assert.deepEqual(off(2), [false, false]);
+    assert.deepEqual(off(3), [false, true]);
+  });
+  await withPage(async (page) => {
+    await mount(page, threeGroups(), { folded: [2] });
+    const off = (id) =>
+      ["↑", "↓"].map(
+        (text) => buttonIn(headerOf(page.root, id), text).disabled,
+      );
+    assert.deepEqual(off(2), [false, false]);
+  });
+});
+
+test("the header's arrows carry the names of a group's move, and a single group has both off", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  await withPage(async (page) => {
+    await mount(page, twoGroups());
+    assert.equal(
+      buttonIn(headerOf(page.root, 2), "↑").getAttribute("aria-label"),
+      "Grupa w górę",
+    );
+    assert.equal(
+      buttonIn(headerOf(page.root, 2), "↓").getAttribute("aria-label"),
+      "Grupa w dół",
+    );
+  });
+  await withPage(async (page) => {
+    const single = {
+      ...twoGroups(),
+      groups: [twoGroups().groups[0]],
+    };
+    await mount(page, single);
+    const off = ["↑", "↓"].map(
+      (text) => buttonIn(headerOf(page.root, 1), text).disabled,
+    );
+    assert.deepEqual(off, [true, true]);
+  });
+});
+
+test("„↓” on a group's header moves the group one place down and hands the group as the hint of the move", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  await withPage(async (page) => {
+    const { calls } = await mount(page, threeGroups());
+    await press(buttonIn(headerOf(page.root, 1), "↓"));
+    assert.equal(calls.length, 1);
+    const [kind, next, move] = calls[0];
+    assert.equal(kind, "commit");
+    assert.deepEqual(
+      next.groups.map((group) => group.id),
+      [2, 1, 3],
+      "the first group swaps with the second",
+    );
+    assert.deepEqual(
+      idsOf(next),
+      [[3], [1, 2], []],
+      "each group keeps its rules",
+    );
+    assert.deepEqual(move, { kind: "group", groupId: 1 });
+  });
+});
+
+test("„↑” on a group's header moves it one place up and hands its identity as the hint", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  await withPage(async (page) => {
+    const { calls } = await mount(page, threeGroups());
+    await press(buttonIn(headerOf(page.root, 2), "↑"));
+    assert.equal(calls.length, 1);
+    const [, next, move] = calls[0];
+    assert.deepEqual(
+      next.groups.map((group) => group.id),
+      [2, 1, 3],
+    );
+    assert.deepEqual(move, { kind: "group", groupId: 2 });
+  });
+});
+
 test("the arrows are off only where no group stands before (after) the rule's group, so „↑” on the first rule and „↓” on the last are off", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it"
   await withPage(async (page) => {
     await mount(page, twoGroups());
@@ -413,7 +580,7 @@ test("the arrows are off only where no group stands before (after) the rule's gr
 });
 
 test("„↑” on the first rule of a group moves it to the end of the previous group", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
@@ -423,7 +590,7 @@ test("„↑” on the first rule of a group moves it to the end of the previous
 });
 
 test("a „↓” inside a group swaps the rule with its neighbour", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(rowOf(page.root, 1), "↓"));
@@ -437,7 +604,7 @@ test("a „↓” inside a group swaps the rule with its neighbour", async () =>
 // and a hint that names the wrong kind.
 test("„↑” and „↓” hand the identity of the rule moved as the hint of the edit, across a group border too", async () => {
   // decision: D-348 "The browser view describes an act of the player on the copy"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(rowOf(page.root, 1), "↓"));
@@ -451,7 +618,7 @@ test("„↑” and „↓” hand the identity of the rule moved as the hint of
 
 test("the drop of a rule hands the identity of the rule dragged as the hint, and the drop of a group that of the group", async () => {
   // decision: D-348 "The browser view describes an act of the player on the copy"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await drag(rowOf(page.root, 2).querySelector(".drag-handle"), "dragstart");
@@ -557,19 +724,20 @@ test("„+ dodaj grupę” appends an empty group with the next number", async (
   });
 });
 
-test("the buttons of an old „Dodaj regułę”, „Dodaj grupę” and the arrows of a group are gone", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+test("the buttons of an old „Dodaj regułę” and „Dodaj grupę” are gone, and the group arrows of a header are named", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
   // decision: D-304 "The button that adds a rule group reads „+ dodaj grupę”"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const names = allButtons(page.root);
     assert.ok(!names.includes("Dodaj regułę"));
     assert.ok(!names.includes("Dodaj grupę"));
-    assert.equal(page.root.querySelector('[aria-label="Grupa w górę"]'), null);
+    assert.ok(page.root.querySelector('[aria-label="Grupa w górę"]'));
   });
 });
 
-test("groups do not move by the keyboard: arrow keys on a header commit nothing", async () => {
+test("arrow keys on a header commit nothing; a group moves by its „↑” and „↓” buttons", async () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     const { Event } = page.window;
@@ -643,7 +811,7 @@ test("„zwiń wszystkie” and „rozwiń wszystkie” stand only beside more t
 // --- the drag and the drop line ------------------------------------------------------------------
 
 test("only the handle is draggable, never the row or the header", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     assert.equal(rowOf(page.root, 1).draggable, false);
@@ -660,7 +828,7 @@ test("only the handle is draggable, never the row or the header", async () => {
 });
 
 test("the drop line stands once, with „tu wyląduje”, at the place a rule dragged over a row of another group would land", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     await drag(rowOf(page.root, 1).querySelector(".drag-handle"), "dragstart");
@@ -675,7 +843,7 @@ test("the drop line stands once, with „tu wyląduje”, at the place a rule dr
 });
 
 test("a rule dropped between groups lands before the rule it was dropped on and the line leaves", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await drag(rowOf(page.root, 1).querySelector(".drag-handle"), "dragstart");
@@ -688,7 +856,7 @@ test("a rule dropped between groups lands before the rule it was dropped on and 
 });
 
 test("the lower half of a row puts the rule after it, and a drop on the empty rest of a group puts it at the end", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     const handle = rowOf(page.root, 3).querySelector(".drag-handle");
@@ -708,7 +876,7 @@ test("the lower half of a row puts the rule after it, and a drop on the empty re
 });
 
 test("a rule dropped on a folded group lands at its end, the line stands under the header and the group stays folded", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-295 "A folded rule group shows its name, its condition and the number of its program rules, and a program rule dropped on it lands at its end while the group stays folded"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups(), { folded: [2] });
@@ -725,7 +893,7 @@ test("a rule dropped on a folded group lands at its end, the line stands under t
 });
 
 test("a rule dragged over its own place shows no line and a drop there changes nothing", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await drag(rowOf(page.root, 2).querySelector(".drag-handle"), "dragstart");
@@ -737,7 +905,7 @@ test("a rule dragged over its own place shows no line and a drop there changes n
 });
 
 test("the line is gone after a cancelled drag and after a drag that leaves the list, and stays while the drag moves inside it", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const handle = rowOf(page.root, 1).querySelector(".drag-handle");
@@ -764,7 +932,7 @@ test("the line is gone after a cancelled drag and after a drag that leaves the l
 });
 
 test("a drag that ends where the list does not see it still takes the line away", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { list, props } = await mount(page, twoGroups());
     await drag(rowOf(page.root, 1).querySelector(".drag-handle"), "dragstart");
@@ -788,7 +956,7 @@ test("a drag that is none of the list's — a file or a text — makes no line a
 });
 
 test("a group dragged by its handle shows the line between groups, and a drop puts it there", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await drag(
@@ -813,7 +981,7 @@ test("a group dragged by its handle shows the line between groups, and a drop pu
 });
 
 test("a group dragged to the lower half of the last group lands at the end, and over its own place shows no line", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     const handle = headerOf(page.root, 1).querySelector(".drag-handle");
@@ -838,7 +1006,7 @@ test("a group dragged to the lower half of the last group lands at the end, and 
 });
 
 test("a group dragged over one of its rows is placed among the groups, never among rules", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     await mount(page, threeGroups());
     await drag(
@@ -857,7 +1025,7 @@ test("a group dragged over one of its rows is placed among the groups, never amo
 });
 
 test("a group dragged by its handle can be dropped on a folded group too, before or after it", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups(), { folded: [2] });
     await drag(
@@ -1087,11 +1255,11 @@ async function mountEditor({ root }, program, state = newKnowingGame()) {
 const panelOf = (root) => root.querySelector(".rule-panel");
 const cellsIn = (element) => [...element.querySelectorAll(".pick-cell")];
 /** The name a cell shows, without the reason drawn inside it. */
-const nameOf = (cell) =>
-  [...cell.childNodes]
-    .filter((node) => node.nodeType === 3)
-    .map((node) => node.textContent)
-    .join("");
+const nameOf = (cell) => {
+  const copy = cell.cloneNode(true);
+  copy.querySelectorAll(".pick-cell-reason").forEach((node) => node.remove());
+  return copy.textContent;
+};
 const cellNamed = (element, name) =>
   cellsIn(element).find((cell) => nameOf(cell) === name);
 const labelsIn = (element) =>
@@ -2036,7 +2204,7 @@ test("the item that holds the panel under a row is no list item to assistive tec
 // no row and no group's empty part: the panel takes no drop, and no line promises a landing the
 // pointer is not at. Catches a line at the end of the group when the pointer is on the panel.
 test("a rule or a group dragged over the panel shows no line, is not accepted there, and a drop on the panel changes nothing", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups(), {
       open: { groupId: 2, ruleId: 3 },

@@ -56,3 +56,31 @@
 .program-list-item:hover {
   background: var(--highlight);
 }
+
+/*
+ * The list of programs in the phone layout (D-396, D-282): a program of the list is a link that is a
+ * control by itself, a whole row that leads to the program, so it holds the touch target of the
+ * minimum high and wide, and its name stands in the middle of that height. The name still breaks
+ * inside the row (`overflow-wrap: anywhere` above); the computer layout's rows above stay as they are.
+ */
+@media (width < 1280px) {
+  .program-list-item {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+/*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the program last tapped, so in the
+ * phone layout on a device whose pointer cannot hover the row keeps its background of rest; the chosen
+ * program is told by its text and its bar, which stay.
+ */
+@media (width < 1280px) and (hover: none) {
+  .program-list-item:hover {
+    background: transparent;
+  }
+}

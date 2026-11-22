@@ -351,11 +351,31 @@
   color: var(--text-strong);
 }
 
+/*
+ * The text of a row or a header stands in an element of its own (`rule-list-body` in `rule-list.tsx`),
+ * which takes a tap on the text apart from the buttons; in the computer layout it draws no box, so its
+ * parts stand in the row as items of the row's own line, and the gaps and the spacer among the buttons
+ * (`rule-list-gap`) are not drawn. The phone layout gives both a box (the block below).
+ */
+.rule-list-body {
+  display: contents;
+}
+
+.rule-list-gap {
+  display: none;
+}
+
 /* The arrows and „Usuń” of a row, the fold and „✕” of a header, at the end of the line. */
 .rule-list-controls {
   display: inline-flex;
   gap: var(--space-xs);
   margin-left: auto;
+}
+
+/* The arrows „↑” and „↓” stand together, the gap between them that of the other buttons. */
+.rule-list-arrows {
+  display: inline-flex;
+  gap: var(--space-xs);
 }
 
 .rule-list-rules {
@@ -402,7 +422,8 @@
  * labels of its fields, the names of the groups of actions and the time beside an action in
  * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
  * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
- * two (`two-columns`, the number `columnsOf` in `rule-panel.tsx` moves by), the sections of the
+ * two (`two-columns`, the number `columnsOf` in `rule-panel.tsx` gives), and every pick in two in the
+ * phone layout (the block `@media (width < 1280px)` below), the sections of the
  * conditions parted by a line in `divider`. Focus is the one :focus-visible rule of styles.css.
  */
 .rule-panel {
@@ -490,4 +511,85 @@
 
 .rule-panel-cell > .pick-cell {
   width: 100%;
+}
+
+/*
+ * The rows and headers of the rule list in the phone layout (D-396, D-288): a row of a rule and the header
+ * of a group are controls the keyboard reaches, so each holds the touch target of the minimum high
+ * and wide, as the buttons in them do (styles.css). The buttons already make a row higher than the
+ * minimum; the rule keeps that so where a row holds none. The buttons stand on a line of their own
+ * under the text, the arrows at its left and the other buttons at its right, so the middle of a row,
+ * where a tap most often lands, is far from every button. Chromium gives a tap that lands a few pixels
+ * from a button to that button unless an element that takes clicks and holds no button lies under the
+ * finger, and passes over the row, which holds the buttons; so no part of a row outside its buttons is
+ * bare row (D-306, D-296): the text is a box over the whole first line, its padding taking the row's
+ * own, and on the line of the buttons a gap before the arrows, a gap between two buttons and the
+ * spacer between the groups (`rule-list-gap`, drawn only here) take the place of the gaps of the flex
+ * rows. Nothing in a row is wider than the row.
+ *
+ * The pick of the rule panel stands in two columns in every field, as the conditions do (D-290): four
+ * to a line leave a cell about 70 px wide at a page area 360 px wide, too narrow for the word
+ * „niewykupiona” of a greyed cell's reason, which breaks only between words (styles.css). The arrow
+ * keys of the panel read the columns the grid draws (`rule-panel.tsx`).
+ */
+@media (width < 1280px) {
+  .rule-list-header,
+  .rule-list-row {
+    box-sizing: border-box;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding: 0;
+    row-gap: 0;
+  }
+
+  .rule-list-body {
+    display: flex;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    align-items: center;
+    gap: var(--space-xs) var(--space-s);
+    box-sizing: border-box;
+    min-width: 0;
+    padding: var(--space-2xs) var(--space-xs) var(--space-xs);
+  }
+
+  .rule-list-controls,
+  .rule-list-arrows {
+    gap: 0;
+  }
+
+  .rule-list-controls {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  .rule-list-gap {
+    display: block;
+    flex: none;
+    align-self: stretch;
+    width: var(--space-xs);
+  }
+
+  .rule-list-spacer {
+    flex: 1 1 auto;
+  }
+
+  .rule-panel-cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the element last tapped, and on the
+ * row around a tapped button, until the next tap, so `highlight` would stay on a row that is not open
+ * and seem to mark the rule chosen. In the phone layout on a device whose pointer cannot hover, a row
+ * or a header keeps its background of rest; the open one keeps `highlight`, and the row of the rule that
+ * wins now or whose action runs keeps `rule-winning` or `rule-running`.
+ */
+@media (width < 1280px) and (hover: none) {
+  .rule-list-header:hover:not(.open),
+  .rule-list-row:hover:not(.open):not(.winning):not(.running) {
+    background: transparent;
+  }
 }

@@ -4525,7 +4525,7 @@ open while the screens move to React.
 ### D-280 — Which screens does the game have, and how does the player move between them?
 
 The game has the screens Siedziba, Postać, Mapy, Programy, Wiedza and Przejście, all of one content width
-under one menu bar: at most 1344 px, and the full width of a narrower window.
+under one menu bar, in the computer layout and in the phone layout (D-396): at most 1344 px, and the width of the window less the page's side padding where that is narrower.
 
 The menu bar holds at
 its left the game's name, which stands alone on the waiting screens (D-262), and over the game the
@@ -4558,10 +4558,12 @@ An account with the owner role (D-410) has one more screen, the list of accounts
   player holding no link, the items of the bar equal for both, and an account with the owner role
   following the link to the screen of the list of accounts. For the width of the content, an agent
   compares a change with the part no test holds:
-  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
-    wide as a window 1000 px wide
-  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than a
-    window 1000 px wide
+  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide, 1248 px
+    wide in a window 1280 px wide, where the page's padding is 16 px at each side in the computer
+    layout, and 344 px wide in a window 360 px wide, where it is 8 px at each side in the phone
+    layout, the window's width less that padding in any window between
+  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than the
+    window's width less the page's padding in the phone layout
 - **Origin:** none
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
@@ -4644,7 +4646,7 @@ map would become a case of its own, apart from „any other”, which opens Sied
 
 Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws
 the team as a section with a heading, and the rule panel offers its pick in steps, the action first
-and its target after it.
+and its target after it. The narrower layout is the phone layout (D-396).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4654,11 +4656,11 @@ and its target after it.
   Siedziba as the section „Drużyna” under its heading; the rule panel offering the action „Zbierz”
   as one cell and its target in a field after it. An agent compares a change with the part no test
   holds:
-  - complies: a narrower layout placing the world, the program and the area with the tabs „Kronika”
+  - complies: the phone layout placing the world, the program and the area with the tabs „Kronika”
     and „Teren” of the screen of a map run one above the other in that order; on Mapy the list of
     maps and the card of a map each an area of its own
-  - violates: the list of maps and the card of a map of Mapy drawn as one block that a narrower
-    layout cannot set apart; areas of a screen whose places a narrower layout cannot change
+  - violates: the list of maps and the card of a map of Mapy drawn as one block that the phone
+    layout cannot set apart; areas of a screen whose places the phone layout cannot change
 - **Origin:** none
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
@@ -4839,10 +4841,10 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
   browser, which the tests on a document imitation do not show, and for the layout, an agent
   compares a change with the part no test holds:
   - complies: Enter and Space on the row of a tree opening it in the browser, as the browser's own
-    click of a native button; in a window narrower than 720 px the two areas of the screen standing
+    click of a native button; in the phone layout the two areas of the screen standing
     one under the other, each an area of its own
   - violates: a key handler on the row of a tree that stops Enter or Space, or a row that is no
-    native button; the two areas drawn as one block that a narrower layout cannot set apart
+    native button; the two areas drawn as one block that the phone layout cannot set apart
 - **Origin:** none
 
 *Rationale:* the Understanding is the one gain a death never takes, and before this screen the player saw it nowhere, so after losing a character the player saw only what was lost and not what stayed. The predecessor game, loop, has such a screen, with a count of the things known. The screen is for recalling what the player already knows. Buying stands on Postać, so the same rows do not stand on two screens. Accepted with it: one more screen, and with the discoveries the game has today the collection is short.
@@ -5009,7 +5011,7 @@ In the browser view the role `positive` means that something works, is in order 
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. tests: the fill, the name and the numbers of a met requirement of the solving condition in the header in `positive`, on a track in `highlight`, through the real stylesheet, and a met requirement marked `positive` after a completion; „Odbierz” drawn as the button of the kind `positive`. An agent compares a change with the part no invariant and no test holds:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` at rest and under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
   - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
 - **Origin:** none
 
@@ -5080,20 +5082,20 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39).
+The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, with their text in `danger` at rest, in every layout, and the background `highlight` besides under the pointer, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39).
 
 A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”, as the button „Wciągnij programy z poprzedniego zapisu” reads „Wciąganie…” while its pull waits (D-401). A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
-  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” neutral at rest and in `danger` under the pointer and at focus; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
-  - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” on the background `highlight` under the pointer with their text staying in `danger`, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
+  - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button with a look of its own in the phone layout; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. Red that stands on every button that may drop something is the loudest thing on the screen and speaks louder than the state of the character, so a destructive button shows what it is when the player reaches for it, and red at rest means a threat to a character. A button that ends a map run, deletes a program rule, resets progress on a map, starts the game from zero or discards the unsaved changes of the copy is destructive, in every place it stands. „Zacznij od zera” puts the present game in the place of the previous save, where the next move into that place replaces it. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; red at rest on every destructive button — it drowns out the state of the character, and in the editor a red sign would stand in every row, which is worse than in loop; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake; „Odbierz” in the main look, its frame and text in `positive`, as the old Loop showed „Wejdź” in a green frame (D-274) — against D-274: „Odbierz” sends no form and is no „Wejdź”, and an act of the headquarters takes the plain button; it would change D-274, D-44 and D-39; „Odbierz” as a plain grey button with only the part „wprawa do odebrania: …” in green — no new look, but contrary to „Odbierz” in `positive`, which D-246 gives.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. A destructive button shows what it is at rest, since a player of a phone has no pointer that reaches a button before it is tapped, so a colour that came only under the pointer would show that player nothing; its look is one in every layout, the narrow window of a computer included, and the colour is the text's alone, the background `highlight` under the pointer being what every button takes. A button that ends a map run, deletes a program rule, resets progress on a map, starts the game from zero or discards the unsaved changes of the copy is destructive, in every place it stands. „Zacznij od zera” puts the present game in the place of the previous save, where the next move into that place replaces it. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: red stands at rest on every button that may drop something, which the earlier wording kept off so that red would not drown out the state of the character and would mean a threat to a character alone, and in the editor a red sign stands in every row, a risk to be seen in the game; one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; a look of its own for the destructive button in the phone layout alone — two looks of one control; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake; „Odbierz” in the main look, its frame and text in `positive`, as the old Loop showed „Wejdź” in a green frame (D-274) — against D-274: „Odbierz” sends no form and is no „Wejdź”, and an act of the headquarters takes the plain button; it would change D-274, D-44 and D-39; „Odbierz” as a plain grey button with only the part „wprawa do odebrania: …” in green — no new look, but contrary to „Odbierz” in `positive`, which D-246 gives.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -5506,18 +5508,24 @@ a change of D-40.
 
 ### D-396 — In which browsers and from which window size does the game have to work?
 
-The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311, D-349, D-370 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
+The game works in the current releases of Chrome, Edge and Firefox on a computer and of Chrome on a phone with Android; Safari, on a computer or on a phone, is outside that set. A window whose page area — the area of the page inside the browser's window, not the resolution of the screen — is 1280 px wide or wider shows the computer layout, whose smallest window has a page area of 1280 × 720 px; a narrower window, of a phone or of a computer, shows the phone layout, made for a phone held upright with a page area 360 px wide.
+
+In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame, and everything the game offers is done by touch. Nothing in the phone layout scrolls to the side, in a frame either.
+
+Every control of the phone layout — a button, a cell of a pick, an arrow, an item of a menu — has a touch target at least 48 px high and 48 px wide, a value taken from Android's accessibility guidance. A link inside a running sentence keeps the size of its text; a link that stands by itself as a control holds the minimum.
+
+A fault of the phone layout is fixed where a window of its width that is taller than it is wide shows it; a fault in a window narrower than 360 px, or one seen only in a window wider than it is tall, such as a phone turned sideways, is not fixed, and a fault of the computer layout in a window lower than 720 px is not fixed where no decision defines how the game looks there.
 
 - **Scope:** browser-view, agent-workflow
-- **Based on:** playwright-firefox-webkit-releases
+- **Based on:** playwright-firefox-webkit-releases · android-touch-target-size
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a change that keeps the content of Siedziba as wide as a window 1000 px wide, as D-280 gives it
-  - violates: a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px, which leaves a page area of about 1280 × 600; a change made only to fix a look in a window below the smallest where no decision defines it; a change that drops the 1000 px width of D-280 as outside the set
+- **Verification:** tests: the name of a cell of a pick free, by the stylesheets, to wrap beside its icon and to break where no space helps, in an element of its own between the icon and the reason; the text of a rule's row and of a group's header in an element of its own that takes a click and holds no button, with a gap before the arrows, a gap between two buttons and a spacer between the groups of buttons, each an element of its own that takes a click and holds no button, and the arrows of the row and of the header standing together before its other buttons. An agent compares a change with the part no invariant and no test holds:
+  - complies: a check of a change in Chromium at a page area of 1280 × 720 px and, for the phone layout, at a page area 360 px wide in an upright window; a fix of a name crossing the border of its frame in the phone layout at a page area 1100 px wide; a table of the phone layout laid out to fit the width of its frame at a page area 360 px wide; a button of the phone layout 48 px high and 48 px wide or larger at a page area 360 px wide; a link of the credits inside a running sentence at the size of its text in the phone layout
+  - violates: a screen of the phone layout that scrolls to the side at a page area 360 px wide; a frame of the phone layout whose content scrolls to the side inside it; a control of the phone layout with a touch target smaller than 48 px in height or in width, a link that stands by itself as a control among them; an action of the phone layout done only by dragging with a mouse or by hovering; a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px; a layout of its own for a window narrower than 1280 px and wider than a phone; a change made only to fix a fault seen in a phone turned sideways that a window of the same width taller than it is wide does not show
 - **Origin:** none
 
-*Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
-*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and the Firefox release installed for Playwright on this computer is older than the one Playwright CLI expects, so Firefox would need an installation first; no entry — every remark about Safari and about a narrow window stays without a measure.
+*Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request. The game is to work on a phone, and its author has a phone with Android; a narrow window of a computer is treated as a phone, not as a narrow computer, so the game keeps two layouts rather than three, and a fault found in a narrow window — such as the names of the cells of the pick of actions crossing their frames at a page area 390 px wide, and on the screen of a map run at 1074–1200 px — has a layout that says how it is to look. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and gets the phone layout. Nothing scrolls to the side in the phone layout, in a frame either, because a player who drags a table to the side with a finger scrolls to the side, which a game played on a phone from end to end without scrolling to the side rules out. The touch-target minimum is a requirement of the product, not of WCAG, since D-42 keeps no other criterion of it; Android's guidance recommends 48 dp, and the product holds its controls to that value as a minimum, reading the dp of the guidance as the px of the page, the unit in which the page area is counted. A link inside a running sentence keeps the size of its text, since a target 48 px high on a link inside a line of text breaks that line; D-47 counts every link a control, and such a link is the one control the minimum leaves out. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions; a friend with an iPhone may meet faults nobody checked; a player who turns the phone sideways to see a larger scene meets a layout nobody checked; an agent checks the phone layout in Chromium at the size of a phone, not in Chrome on a phone with Android, so a fault seen only on a real phone can pass until someone plays on one.
+*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and the Firefox release installed for Playwright on this computer is older than the one Playwright CLI expects, so Firefox would need an installation first; Safari on an iPhone in the set — an agent would need another browser engine, whose release installed for Playwright on this computer is also older than the one Playwright CLI expects, and its author has no iPhone to check it by hand; a layout of its own for a narrow window of a computer — "wąskie okno traktujemy jak telefon, nie jak wąski komputer"; a phone 390 px wide as the narrowest one — a narrower phone would be left with faults nobody fixes; both orientations of the phone — about twice the checking of every screen; no entry — every remark about Safari and about a narrow window stays without a measure; scrolling to the side inside a frame allowed while the page does not scroll — no work, but the player drags the table to the side with a finger, which is scrolling to the side; no touch-target minimum, as today — no cost, the risk of mistaken taps on small buttons that stand side by side; a minimum of 24 px of WCAG 2.5.8 — the buttons of today already meet it, so in practice nothing changes.
 
 ## Maps: their content, time and solving
 
@@ -8307,7 +8315,7 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there, the editor standing under the list in the phone layout (D-282, D-396). That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8319,10 +8327,11 @@ The screen Programy holds on the left the list of the player's programs and on t
   alone; the program panel of the screen of a map run showing the copy, its select list holding
   „Kopia w przejściu” at its top and the saved programs below it. For where the list and the editor
   stand on Programy, an agent compares a change with the part no test holds:
-  - complies: the list of programs in the left column of Programy and the program editor in the
-    right one
+  - complies: in the computer layout the list of programs in the left column of Programy and the
+    program editor in the right one; in the phone layout the list of programs with the program
+    editor under it
   - violates: the program editor standing on the left of Programy and the list of programs on its
-    right
+    right in the computer layout
 - **Origin:** none
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
@@ -9341,8 +9350,9 @@ header of the rule group it changes, on both screens, and taking no column of it
 moves on to the next field, conditions, actions and targets stand as cells in groups that the
 keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed
 with its reason. Rules move by a handle with a line showing where they land, by arrows, and between
-groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a
-rule group.
+groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header,
+one place at a time as the arrows of a rule do, in every layout; the drag by a handle is for the
+mouse of a computer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9355,12 +9365,17 @@ rule group.
   columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
   greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
   handle, with the line „tu wyląduje” where they land and no line over their own place, over the
-  panel or after the drag ends; rule groups moved by a handle with such a line, and no arrows in
-  the header of a rule group. For the cells of actions and targets reached by the keyboard, an
-  agent compares a change with the part no invariant and no test holds:
+  panel or after the drag ends; rule groups moved by a handle with such a line; in the header of
+  every rule group „↑” and „↓”, „↓” moving the group one place down and „↑” one place up, the group
+  keeping its rules and its name, „↑” off on the first group and „↓” on the last, on a folded group
+  too, and a group moving by these arrows alone, not by arrow keys on its header. For the cells of
+  actions and targets reached by the keyboard, and for the arrows of a rule group in the phone
+  layout, an agent compares a change with the part no invariant and no test holds:
   - complies: the arrow keys moving among the cells of the action and of its target as they do
-    among the conditions
-  - violates: the cells of the actions reached by the mouse alone
+    among the conditions; in the phone layout at a page area 360 px wide the arrows „↑” and „↓” in
+    the header of every rule group, as in the computer layout
+  - violates: the cells of the actions reached by the mouse alone; the arrows of a rule group
+    present in the computer layout alone
 - **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
@@ -9388,26 +9403,29 @@ of thin air, and users of Unreal who found nodes missing from a filtered menu as
 do not fit to be greyed rather than hidden. The reasons from other games are carried over to this
 one by inference: no source measured how long a rule takes to write or how many clicks it costs in
 any game. Cells give a condition one click and keep one control for
-every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
-Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
-conditions wrap into two lines, rule groups cannot be moved from the keyboard, which the
-accessibility requirements (D-42) do not ask for, and on Programy, where width is not wanting, the
+every pick. Arrows move a single rule up or down, and the same arrows in the header of a rule group
+move the group, one mechanic for rules and groups; dragging is of the mouse alone (D-297), so a
+phone moves a group by its arrows, and the keyboard reaches them too. The handle stays
+for the mouse of a computer, where its line shows where the group lands. Accepted with it: the
+pickers need keyboard handling that native lists gave for free, long names of
+conditions wrap into two lines, a group far from its place takes one press of an arrow for each place
+it moves, and on Programy, where width is not wanting, the
 panel opens in place all the same, so the editor has one way of opening it on both screens.
 *Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
 lists in the header of a rule group — the form stays; the pick in a window in the middle, as in loop
 — it covers the world and the program; hiding what may not be picked — the player asks where it
 went; a select list for conditions in the panel — two
 clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
-second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
-way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
-keyboard handling of its own and one sentence more in the decision; the panel in a column beside the rows on the
+second keyboard handling; a way from the keyboard for rule groups other than arrows in the header,
+such as keys on the handle — keyboard handling of its own and one sentence more in the decision; the panel in a column beside the rows on the
 screen of a map run, with the split of widths unchanged — the program stays narrow, and each new
 line at a rule wraps further; a smaller scene with the split of widths unchanged (D-349) — what was
 wanted was the width of the program as in loop, not a smaller scene; the panel beside the editor on Programy alone — the editor has two
 ways of opening the panel by screen, the player sees the same rule edited beside it once and on the
 list another time, and in a narrow window of Programy the panel still lands under the whole editor;
-the right column wrapped under the world in a narrower window, with the panel opening under the
-whole area of the world — a part of the way that shrinks the scene, which D-349 rejects.
+the right column wrapped under the world in a window of the computer layout, with the panel opening
+under the whole area of the world — a part of the way that shrinks the scene there, which D-349
+rejects.
 
 ### D-292 — How does the program editor number rule groups and program rules?
 
@@ -9508,15 +9526,22 @@ program rule dropped on it lands at its end while the group stays folded.
 ### D-296 — Where does the player change and delete a rule group?
 
 A click on the header of a rule group opens the rule panel with the group's name and condition, and
-the group's „✕” stands in its header.
+the group's „✕” stands in its header. A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** tests: a click on the header of a rule group asking to open the group, on
   Programy and on the screen of a map run, and the panel then standing under that header with the
-  field of the group's name; the panel of a group holding the fields of its name and its condition;
-  „✕” of the group in its header.
+  field of the group's name; a click on the bare header, on a gap between its buttons and on its
+  handle asking once to open the group, and a click on its button asking nothing of it; the header
+  covered outside its buttons by elements that take a click and hold no button; the panel of a group holding the fields of its name and its condition;
+  „✕” of the group in its header. For a tap on the header as a real phone gives it, an agent
+  compares a change with the part no test holds:
+  - complies: in the phone layout at a page area 360 px wide a tap at the centre of a group's
+    header and on its text opening the group and moving no group
+  - violates: a tap at the centre of a group's header in the phone layout landing on its „↑” or
+    „↓” and moving the group
 - **Origin:** none
 
 *Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
@@ -9850,10 +9875,12 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
 as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes
 nothing, and the panel stays open on the same field and goes with the rule to its new group.
 
+A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule.
+
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** tests: a click on a rule's row opening the panel on the condition, and
+- **Verification:** tests: a click on a rule's row opening the panel on the condition, and a click on the bare row, on a gap between its buttons and on its handle asking once to open the rule, the row covered outside its buttons by elements that take a click and hold no button, and
   opening another rule showing that one on its condition; the fields in the order condition,
   number, target of the condition, action, target of the action, each only where the rule has it;
   each pick changing the rule at once and moving on, a pick of the value held too; Enter
@@ -9866,9 +9893,11 @@ nothing, and the panel stays open on the same field and goes with the rule to it
   compares a change with the part no invariant and no test holds:
   - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
     with the mouse, the rule then holding 8; „Usuń” of a rule whose panel stands open closing that
-    panel
+    panel; in the phone layout at a page area 360 px wide a tap at the centre of a rule's row, on its
+    text and on its empty strip opening the rule and moving no rule
   - violates: a number typed and left with no Enter dropped, the rule keeping the number it held;
-    the panel left open on a rule that was deleted
+    the panel left open on a rule that was deleted; a tap at the centre of a rule's row in the phone
+    layout landing on its „↑” and moving the rule
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 szt. ·
@@ -10110,7 +10139,7 @@ map is inactive (D-55) and the player has to go back and end the map run; no but
 
 ### D-325 — What does the screen Mapy show?
 
-The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439).
+The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439), the card standing under the list in the phone layout (D-282, D-396).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10120,11 +10149,14 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
   map the address names, with what it asks, its terrain, what lies there, what lurks there and what
   it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
   and „Puść w pętlę”, and „Oceń na 12 ziarnach” at each character, on a map not yet solved and on a
-  solved one. For the list standing on the left and the card on the right, an agent compares a
-  change with the part no test holds:
-  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
-    the right the card of Las with the section „Kto idzie” under it
-  - violates: the list of the maps standing on the right of the card or under it
+  solved one. For the list standing on the left and the card on the right in the computer layout,
+  and the card under the list in the phone layout, an agent compares a change with the part no test
+  holds:
+  - complies: in the computer layout the screen Mapy at `#/mapy/forest` with the list of the open
+    maps on the left, and on the right the card of Las with the section „Kto idzie” under it; in the
+    phone layout at a page area 360 px wide the list of the open maps with the card of Las under it
+  - violates: the list of the maps standing on the right of the card or under it in the computer
+    layout; the card and the list side by side in the phone layout
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
@@ -10244,12 +10276,12 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 
 ### D-331 — What does the screen Mapy show before a map is picked, and how does a row of the list look?
 
-Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map and, at a solved map, „rozwiązana” in `positive` after it, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left.
+Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right, under the list in the phone layout (D-282, D-396), in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map and, at a solved map, „rozwiązana” in `positive` after it, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-134 · derives from D-281 · derives from D-325
-- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the right area, with no
+- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the area of the card, with no
   card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map and,
   at a solved map, „rozwiązana” after it, and the row of the map the address names the one marked
   as picked. For the roles of the sentence and of „rozwiązana” and for the look of the picked row,
@@ -10312,8 +10344,8 @@ The picture band at the top of Siedziba stands across the content, about 96 px h
 warnings below the menu bar and over the heading „Siedziba”, drawn at twice the pixels of its picture:
 a snow clearing in full light and with no tint, composed of the pictures of the pack Pixel Crawler from
 which the forest of the scene is composed, with a burning campfire in the middle, the chest and the
-characters at the camp, and a window narrower than the picture crops it at the sides around the
-campfire and never scales it down. The characters that stand in it are those at the camp, a
+characters at the camp, and in the phone layout it is cropped at the sides around the
+campfire where the window is narrower than the picture, and never scaled down. The characters that stand in it are those at the camp, a
 character being at the camp where it is neither in a manual map run, going, paused or ended and
 waiting for „Restart” or „Zakończ”, nor in an earning loop: the first of them in the order of
 creation that the band holds at the width of the window, the rest standing in the picture nowhere
@@ -10340,11 +10372,11 @@ the screen, with no text on it or over it.
   holds:
   - complies: the picture band under the row of warnings below the menu bar, with the sentence of the page above
     the screen still above it; the clearing in full light with no tint, composed of the pictures the
-    forest of the scene is composed of; the fire in the middle at every width of the window; in a window
-    400 px wide the clearing cropped at the sides around the fire and as many whole characters as the
+    forest of the scene is composed of; the fire in the middle at every width of the window; in the phone
+    layout at a page area 360 px wide the clearing cropped at the sides around the fire and as many whole characters as the
     band holds; the frames of the fire and of the characters changing at the scene's beat by CSS and
     standing still under the setting for reduced motion
-  - violates: the picture band over the row of warnings; the clearing scaled down in a narrow window; a character
+  - violates: the picture band over the row of warnings; the clearing scaled down in the phone layout; a character
     cut in half at the edge of the band; a loop of drawing that moves the band; a picture band that moves under
     the setting for reduced motion
 - **Origin:** none
@@ -10386,10 +10418,12 @@ The layout of the screen of a map run, its rows and tabs, what pausing and leavi
 
 ### D-19 — How does the player interact with the drawing of the game map?
 
-The drawing of the game map is a picture, not a control: its only interaction is hovering, which
-links a tile with its row in the list of revealed tiles, and the numbers of stock
-stand in that list and in the line under the drawing, which shows the hovered tile or else the
-character's tile, never on the drawing.
+The drawing of the game map is a picture, not a control: its only interactions are hovering a tile
+and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of
+stock stand in that list and in the line under the drawing, which shows the hovered or the tapped
+tile or else the character's tile, never on the drawing. A tap with a finger on a tile keeps its row marked until a
+tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a
+click of a mouse on a tile changes nothing.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10397,22 +10431,32 @@ character's tile, never on the drawing.
 - **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
   changing nothing, and nothing in the drawing a control; hovering a revealed tile marking its row
   in the list of revealed tiles, and hovering a row marking its tile; hovering a tile not revealed
-  marking no row; the numbers of stock standing in the
-  rows of the list and in the line under the drawing, which gives the hovered tile, or the
-  character's tile where none is hovered or the key names no tile. For hovering as a real browser
-  delivers it, and for what the player does on the drawing other than a click, an agent compares a
-  change with the part no invariant and no test holds:
+  marking no row; a tap with a finger on a revealed tile marking its row and the tile, the mark
+  staying after the finger is lifted and the pointer has left, a tap on another tile moving it, and a
+  tap on the header, on the table, on the page and on the drawing beside its tiles taking it off; a
+  finger that only rests on a tile or is taken by a scroll marking nothing, a tap on a tile not
+  revealed marking no row, a click of a mouse marking nothing and a hover of a mouse marking as
+  before; the numbers of stock standing in the rows of the list and in the line under the drawing,
+  which gives the hovered or the tapped tile, or the character's tile where none is marked or the key
+  names no tile. For hovering and for the tap as a real browser delivers them, and for what the
+  player does on the drawing other than a click, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: in a browser, hovering a tile marks its row in the list of revealed tiles, and
     hovering that row marks the tile, while the tab „Teren” of the area under the world on the
-    screen of a map run is picked (D-311)
+    screen of a map run is picked (D-311); in a browser with touch at a page area 360 px wide, a tap
+    with a finger on a revealed tile marking its row in that list and the line under the drawing
+    giving its numbers, and a tap elsewhere taking the mark off
   - violates: a double click or a drag on a tile that sends the character there or changes the
-    program
+    program; a tap on a tile in a browser with touch that leaves its row unmarked, or a mark that
+    stays after a tap elsewhere
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
 a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
-numbers without writing them on it. The drawing shows a resource as an icon with no number, dimmed
+numbers without writing them on it, and on a phone, where nothing hovers, a tap does the same, so
+the player there reads the numbers of a tile as a player with a mouse does; the mark stays after the
+tap, since a finger leaves the screen, and a tap elsewhere takes it off. The drawing shows a resource as an icon with no number, dimmed
 at stock zero, and only draws what it is given. The list stands under a tab of the area under the
 world, which may show the chronicle instead, so the line under the drawing keeps the numbers beside
 the program while the player writes. That area stands under the world, with the drawing of the map
@@ -10516,7 +10560,7 @@ another character, and the code would have to block what the simulation allows.
 
 ### D-311 — How is the screen of a map run laid out?
 
-The screen of a map run has two columns under one header: on the left the world and, under the
+The screen of a map run has two columns under one header in the computer layout: on the left the world and, under the
 drawing of the map and the line of a tile that end it, an area with the tabs „Kronika” and „Teren”
 holding one content at a time, the chronicle or the table of revealed tiles, as the player picks,
 „Kronika” picked when the character is sent to the map; on the right the program, in which the
@@ -10527,6 +10571,8 @@ and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
 „Wznów”, the pace, and after the end of the
 map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”.
+
+In the phone layout (D-396) the screen has one column under the same header, with the world, the program and the area with the tabs „Kronika” and „Teren” one above the other in that order (D-282).
 
 After a character's death or a
 completion that window (D-368) stands in place of this screen, its header included (D-370), under the menu bar and
@@ -10552,11 +10598,13 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   place of the window under the menu bar, an agent compares a change with the part no invariant and
   no test holds:
   - complies: on the screen of a map run of Las in a window 1280 px wide, the world and under it the
-    area with the tabs in the left column and the program in the right column; after a completion
-    the window standing under the menu bar and the row of warnings, the menu bar in sight above it
+    area with the tabs in the left column and the program in the right column; in the phone layout
+    at a page area 360 px wide the world, the program and the area with the tabs in one column, one
+    above the other; after a completion the window standing under the menu bar and the row of
+    warnings, the menu bar in sight above it
   - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
-    the column of the program or in a third column of their own; the window covering the menu bar or
-    the row of warnings
+    the column of the program or in a third column of their own; two columns of the screen in the
+    phone layout; the window covering the menu bar or the row of warnings
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -10582,10 +10630,10 @@ paragraph of the last encounter stands in the chronicle and, at the end, in the 
 area with the tabs stands under the world, so its place does not depend on the length of the
 program and the player sees it beside the program. The header is where the player steers the map
 run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
-the solving condition and three buttons may break in a narrower window; the table of revealed tiles
+the solving condition and three buttons may break in the phone layout; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
-tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in a window narrower than 1074 px, below the smallest window of D-396, the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for a narrower layout; the
-hover over a tile of the drawing links with its row only while the table is picked. The end
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in the phone layout the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for the phone layout; the
+hover over a tile of the drawing and a tap on it (D-19) link with its row only while the table is picked. The end
 of the map run stands in a window over the screen, so no place of the screen moves for it and its
 buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
 (D-208) and a broken game (D-323) are seen while it stands. The window covers the header, so one set
@@ -10626,7 +10674,7 @@ under the lower edge, the kind of place the rejection of loop above names, and i
 fixed before it is known what the end holds and how much room it takes; the end at the top of the
 program column, above the band of a discovery, with its own scrolling — the program moves down by the
 height of the end, the rules that did not fire are read above the program and not beside it, and in
-one column (a window narrower than 1074 px) the end stands under the whole world, in the kind of
+one column (the phone layout) the end stands under the whole world, in the kind of
 place the rejection of loop above names; the same place from the width at which the screen has two columns and above the world in one
 column — in a narrow window the scene and the effect of a solving stand under the end, and the layout
 has one more place; the end in the left column under „Teraz” and „Potem” — in a low window, such as
@@ -10851,28 +10899,41 @@ run stays picked through the whole map run, through leaving its screen and comin
 *Rationale:* the area under the world keeps what the player chose to read through the map run and
 its restarts, so the player does not pick it again at each return to the screen or each „Restart”.
 Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
-tile of the drawing under the pointer marks its row of the table only while „Teren” is picked; a reload of the page loses the pick, and the player picks again.
+tile of the drawing under the pointer or tapped marks its row of the table only while „Teren” is picked; a reload of the page loses the pick, and the player picks again.
 *Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
 is opened; the chronicle and the table one under the other — both shorter, and the area would hold
 two contents at once, against D-311.
 
 ### D-349 — What size is the scene on the screen of a map run?
 
-The scene has one size, 672 × 304 px, twice the size of its picture, and the game keeps no second
-scale of it. Whatever the scene draws is drawn for this size alone.
+The scene has two sizes, one and two times its picture of 336 × 152 px: 672 × 304 px in the
+computer layout, and in the phone layout the larger of the two that the place of the scene holds, a
+classic scrollbar counted in the width of the window, so 336 × 152 px at a page area 360 px wide; the
+game keeps no fractional scale of it. Where a few pixels of the width are missing for the whole
+picture, the sides of the scene are cropped slightly, and the crop hides nothing the player acts
+with, such as a creature or an item.
+
+Whatever the scene draws is drawn for these two sizes, and its small elements, such as the icon on
+the plaque of a discovery and the badge over the mage's head, stay readable at either, drawn at a
+size of their own, independent of the scale of the scene, where shrunk with it they are not.
 
 - **Scope:** browser-view
-- **Based on:** none
+- **Based on:** media-query-width-and-scrollbar
 - **Relations:** derives from D-311 · derives from D-316
 - **Verification:** tests: the scene's picture given 672 × 304 px, twice its picture of 336 × 152,
-  in a narrow window and in a wide one and in another state of the game, the frame sized by its
-  picture alone. For the size the style sheet draws the scene at and what the scene draws, an agent
-  compares a change with the part no invariant and no test holds:
+  in another state of the game, the frame sized by its picture alone and standing alone in a place
+  that gives it no size. For the size the style sheet
+  draws the scene at, the crop and what the scene draws, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: the scene of a map run drawn 672 × 304 px in a window 1280 px wide and in one 1920 px
-    wide; an effect of the scene made for that size
-  - violates: a style rule that draws the scene at a second size, such as 336 × 152 px, or at a
-    fraction of twice its picture, such as one and a half times; an effect of the scene made for a
-    second size of it
+    wide; drawn whole at 336 × 152 px in the phone layout at a page area 360 px wide, its sides
+    cropped slightly only where the place is narrower, the mage standing at the right edge of the
+    forest and a creature at an edge in full sight; the icon on the plaque of a discovery and the badge over the mage's head legible at
+    336 × 152 px, at a size of their own; an effect of the scene made for these two sizes
+  - violates: a style rule that draws the scene at a fraction of its picture, such as one and a half
+    times, or at three times it; the scene at 336 × 152 px in the computer layout; a crop that hides
+    the mage at the edge of the forest or a creature; a small element of the scene shrunk with it to a
+    size that is hard to read; an effect of the scene made for a third size of it
 - **Origin:** none
 
 *Rationale:* what counts is the width of the program of the original loop, not the
@@ -10882,9 +10943,21 @@ the two columns of the screen (D-311), not from a smaller scene, so the scene st
 is; the editing of a rule in place has to be done for a narrow window anyway, as loop does it, and
 done in every window it leaves no need to shrink the scene, only to join two columns into one. A
 pixel picture drawn at twice its size keeps all its pixels equal, and one drawn at a
-fraction of that has unequal pixels and shakes in motion; one size also leaves the effects of the
-scene a single size to be made for.
-*Rejected:* the scene at 336 × 152 px with the split of widths unchanged — the program would have
+fraction of that has unequal pixels and shakes in motion. In the phone layout the width holds the
+picture itself and little more, so the scene keeps the largest whole multiple that fits and loses a
+few pixels at the sides rather than its equal pixels or the scene altogether, the main picture of the
+game; two sizes leave the effects of the scene two sizes to be made for, both whole multiples of the
+same picture. A small element drawn at its own size does not follow the scale of the scene, so it is
+as legible at the smaller scene as at the larger one. Accepted with it: a few pixels of the forest
+at the sides of the scene are cropped in the phone layout, and the scene is drawn smaller there than
+the width of a wide phone layout would allow, since it has two sizes and no more; the place of the
+scene is counted with a classic scrollbar in the width of the window, since the width a media query
+reads includes one, so that no scrollbar crops the larger scene, and a browser that draws none, as a
+phone does, keeps the smaller scene in a band a few pixels wider than the larger one needs.
+*Rejected:* the scene at 672 × 304 px cropped to the width of the screen around the mage — about
+half of the forest shows, a creature at the side or an item at the edge may fall outside the frame,
+and the frame would have to follow the mage, which the game does not do; the scene fitted exactly to
+the width, reduced by a fraction — the pixels are unequal and the mage shakes in motion; no scene in the phone layout — the main picture of the game is gone; the scene at 336 × 152 px with the split of widths unchanged — the program would have
 510 px in a window 1280 px wide and 606 px at the full width of the content, hardly less than the
 526 and 622 px that the large scene gives with the panel in place (computed from the layout, not
 measured; D-288); the
@@ -10896,8 +10969,9 @@ narrower window — a pixel picture at a scale of one and a half or one and six 
 pixels and the mage shakes in motion, in a window 1280 px wide with three columns the program has
 342 px, it changes the limit of the content width of D-280, and the
 panel of a rule then opens under the whole area of the world; a large scene in a wide window and a
-small one in a narrower window — the content is at most 1344 px wide, so with the large scene the
-program never has more than a narrow column, and the way ends in a small scene all the same.
+small one in a narrower window of the computer layout — the content is at most 1344 px wide, so with
+the large scene the program never has more than a narrow column, and the way ends in a small scene
+all the same.
 
 ### D-368 — What does the end-of-run window say, and how does it open and close?
 
@@ -10963,7 +11037,7 @@ A manual map run keeps, in the map run of the game state and so in the saved gam
 
 ### D-370 — How does the end-of-run window cover the screen of a map run, and where does the keyboard go?
 
-While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown, though they stay in the page with their state, and the window stands in their place under the menu bar and the row of warnings, as wide as the content column of the screens (D-280) and as tall as its content up to a part of the height of the browser window, with no backdrop; its heading with „✕” and its buttons stay fixed while its middle part scrolls, and the page is at its top when the window opens, so the menu bar stands above it in sight. The window takes the focus when it opens, Escape is read in the window and not on the document, and nothing traps the focus, so the menu bar above the window stays within the keyboard's reach; „✕” and Escape move the focus to „Koniec przejścia” in the header.
+While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown, though they stay in the page with their state, and the window stands in their place under the menu bar and the row of warnings, as wide as the content column of the screens (D-280), in the computer layout and in the phone layout, and as tall as its content up to a part of the height of the browser window, with no backdrop; its heading with „✕” and its buttons stay fixed while its middle part scrolls, and the page is at its top when the window opens, so the menu bar stands above it in sight. The window takes the focus when it opens, Escape is read in the window and not on the document, and nothing traps the focus, so the menu bar above the window stays within the keyboard's reach; „✕” and Escape move the focus to „Koniec przejścia” in the header.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10976,10 +11050,12 @@ While the end-of-run window (D-368) stands, the header and the three areas of th
   „Koniec przejścia” in the header. For the place, the size and the look of the window, an agent
   compares a change with the part no invariant and no test holds:
   - complies: after a death the window standing under the menu bar and the row of warnings, as wide
-    as the content column of the screens; a window with many rules that never fired as tall as a
+    as the content column of the screens, 1344 px at most in a window 1920 px wide and the width of the
+    window in the phone layout at a page area 360 px wide; a window with many rules that never fired as tall as a
     part of the browser window, its middle part scrolling while „✕”, „Restart” and „Zakończ” stay
     in sight
-  - violates: the window wider or narrower than the content column of the screens; a dimmed
+  - violates: the window wider or narrower than the content column of the screens in either
+    layout; a dimmed
     backdrop; the window taller than the browser window, its buttons below the lower edge; the
     buttons or the heading scrolling away with the sections
 - **Origin:** none
@@ -11948,8 +12024,8 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 
 The scene shows frost on the edges of its frame, never over its whole area (D-317), that follows the
 temperature of the character's body: none at 37 °C, growing in thickness as the body cools to
-35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) at its
-deepest while the character is chilled, and taken back as the character warms at a fire. Its inner
+35 °C, at 36 °C half of its full thickness, 16 pixels of the scene at its deepest while the
+character is chilled, whatever the size of the scene on the screen, and taken back as the character warms at a fire. Its inner
 edge is ragged, so its thickness is the depth of its deepest teeth, and at the first pixel of
 thickness it is the outline alone, the fill coming with the next pixels. The frost lies over the layer of the tint (D-315).
 
@@ -11973,7 +12049,9 @@ it fills the first minutes of a map run; a frost that is full while the
 character is chilled and goes with the warming at a fire shows the race of the fire with the cold,
 which a number in the row of the body leaves unseen. Half of the thickness is half, since the
 colours of the frost keep their opacity. Accepted with it: frost shows worse on white (D-314), and
-snow lies also on a map of 25 °C.
+snow lies also on a map of 25 °C. The thickness is counted in the pixels of the scene alone, so
+it follows the scale of the scene: 32 px on the screen at the larger size of the scene and 16 px at
+the smaller (D-349).
 *Rejected:* frost only below 35 °C — nothing warns before the loss of health and the frost comes at
 once; frost that goes on growing below 35 °C up to a death of cold — the temperature has no lower
 bound, so a temperature at which it is full has to be invented, and it overlaps the effect of a death

@@ -202,7 +202,7 @@ const tileOf = (container, key) =>
 const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
-// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene,
+// Catches a scene whose place is not the first part, „Teraz” and „Potem” anywhere but right under it,
 // a paragraph of the last encounter standing in the world area, which the chronicle holds (D-147), a
 // part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
 // the world area, which the window of the end holds (D-185, D-216, D-311).
@@ -226,7 +226,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     });
     const { container, show } = await draw(document, going);
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -259,7 +259,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     // and the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -284,7 +284,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     assert.equal(usedUp.run.deathSettlement.kind, "progressLost");
     await show(withRun(usedUp, { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
       "body-row",
@@ -369,7 +369,7 @@ test("Teraz and Potem name the action under way with its rule and minutes and th
     assert.equal(rowsOf(container).now, now);
     assert.equal(textsOf(now).right, "reguła 1.1 · zostało 15 z 20 min");
     assert.deepEqual(classesOf(container).slice(0, 3), [
-      "scene",
+      "scene-place",
       "now-row",
       "next-row",
     ]);
@@ -489,18 +489,20 @@ test("a death that used a resurrection shows no line of its settlement and no de
   });
 });
 
-// Catches a second size of the scene (D-349) — one that follows the width of the window or the game
-// state — a size other than 672 × 304 on the background, a text on the picture or a background other
+// Catches a scene whose picture is not given 672 × 304 px (D-349) — a size other than that on the
+// background, a frame sized by anything but its picture, a text on the picture or a background other
 // than the file of the forest. The scene is not one `img`: it is a frame that holds the forest as its
 // background image and the props, the campfire, the mage and the badge over it (D-316, D-320), so
 // the case reads the size and the source from the background and the absence of text from the whole
-// frame. The one size is twice the picture of 336 × 152 (D-349).
-test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
-  // decision: D-349 "The scene has one size, 672 × 304 px, twice the size of its picture"
+// frame. 672 × 304 px is twice the picture of 336 × 152 (D-349). The smaller drawing of the phone
+// layout is a rule of the stylesheet in its `@media` block, which jsdom does not apply, so the
+// attributes stay 672 × 304 here.
+test("the scene is the picture of the forest at 672 × 304 px, with no text inside or over it", async () => {
+  // decision: D-349 "The scene has two sizes, one and two times its picture of 336 × 152 px: 672 × 304 px in the computer layout"
   // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, sent());
-    // The one size holds in a narrow window and in a wide one, and for another state of the game.
+    // The attributes give 672 × 304 px in a narrow window and in a wide one, and for another state of the game.
     for (const [width, state] of [
       [800, completed(sent())],
       [1920, sent()],
@@ -520,10 +522,15 @@ test("the scene is the picture of the forest at the one size of D-349, with no t
         "the frame is sized by its picture alone",
       );
     }
+    // The scene stands alone in its place, the first part of the world area, which clips and centres
+    // it and gives it no size: the frame keeps its picture's (D-349).
     const world = worldOf(container);
-    const scene = world.firstElementChild;
+    const place = world.firstElementChild;
+    assert.equal(place.className, "scene-place");
+    assert.equal(place.children.length, 1);
+    assert.equal(place.getAttribute("style"), null);
+    const scene = place.firstElementChild;
     assert.equal(scene.className, "scene");
-    assert.equal(scene.parentElement, world);
     const background = scene.querySelector(".scene-background");
     assert.equal(background.nodeName, "IMG");
     assert.equal(background.getAttribute("src"), "/sprites/forest-scene.png");
@@ -958,7 +965,7 @@ test("the character's tile and the step's target carry an outline each, the targ
 
 // Catches a drawing that answers a click (D-19), and one that is reached by the keyboard as a control.
 test("the drawing is a picture: a click on a tile changes nothing, and nothing in it is a control", async () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -981,7 +988,7 @@ test("the drawing is a picture: a click on a tile changes nothing, and nothing i
 // not mark its tile, and a line that does not come back to the character's tile (D-19).
 test("a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; with none hovered the line is the character's tile", async () => {
   // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -1076,7 +1083,7 @@ test("a hovered tile marks its row and the line under the drawing shows its numb
 // the player has not seen. The line round a revealed tile is the case above.
 test("a hovered tile not revealed draws no line of link-highlight and marks no row, and the line under the drawing gives its label with nothing of its stock", async () => {
   // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -1234,7 +1241,7 @@ test("the fire cell of a tile with a campfire and a burning stick gives each tex
 // Catches a table that loses a column, a heading or the campfire's cell.
 test("the table has a column per resource of the map, a row per revealed tile with the stock, and the fire cell", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list"
   // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());

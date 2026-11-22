@@ -27,6 +27,7 @@ import { ReactSelectList } from "../../dist/browser/view/controls/react-select-l
 import { ReactNumberField } from "../../dist/browser/view/controls/react-number-field.js";
 import { readNumberField } from "../../dist/browser/view/program-editor.js";
 import { readTripCount } from "../../dist/browser/view/trip-editor.js";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 
 // --- drawing a control -------------------------------------------------------------------------
 
@@ -156,6 +157,43 @@ for (const { name, kind, text, expectedClass } of KIND_CASES) {
     });
   });
 }
+
+// Catches a destructive button neutral at rest, its text `text` until the pointer or the focus comes:
+// the rule that gives its text `danger` must hold at rest, through the stylesheets as the page links
+// them, and a disabled one keeps `text-disabled` as every disabled button does (D-44).
+test("a destructive button has its text in danger at rest, a plain one in text, and a disabled one in text-disabled", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/`"
+  await withPage(async ({ document }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const { getComputedStyle } = document.defaultView;
+    const colour = (element) =>
+      getComputedStyle(element).getPropertyValue("color");
+    const destructive = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "Usuń", kind: "destructive" }),
+      ),
+    );
+    assert.equal(colour(destructive), "var(--danger)");
+    const plain = drawnElement(
+      await drawn(document, createElement(ReactButton, { text: "Anuluj" })),
+    );
+    assert.equal(colour(plain), "var(--text)");
+    const disabled = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          text: "Usuń",
+          kind: "destructive",
+          disabled: true,
+        }),
+      ),
+    );
+    assert.equal(colour(disabled), "var(--text-disabled)");
+  });
+});
 
 test("a button selected in its group carries the class selected and aria-pressed true, and one not selected aria-pressed false", async () => {
   await withPage(async ({ document }) => {
@@ -777,6 +815,84 @@ test("a pick cell with the icon of an action draws it as a hidden mask of that f
       await drawn(document, createElement(ReactPickCell, { text: PICK_TEXT })),
     );
     assert.equal(bare.querySelector(".icon-mask"), null);
+  });
+});
+
+// Breaks: a cell whose name is a bare text node beside the icon cannot drop under the icon when its
+// longest word does not fit beside it, so in a narrow grid the word crosses the cell's frame.
+test("a pick cell holds its name in an element of its own, after the icon and before the reason", async () => {
+  // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame"
+  await withPage(async ({ document }) => {
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, {
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+    assert.deepEqual(
+      [...cell.children].map((child) => child.getAttribute("class")),
+      ["icon-mask", "pick-cell-name", "pick-cell-reason"],
+    );
+    assert.equal(cell.children[1].textContent, PICK_TEXT);
+  });
+});
+
+// Breaks: the rules that let a name wrap and break inside its cell, deleted or overridden, bring
+// back the fault of a name crossing the frame of its cell in a narrow window. jsdom resolves the
+// cascade, not the layout, so the case reads which declarations the real stylesheets give.
+test("the stylesheets let the name of a pick cell wrap beside its icon and break where no space helps", async () => {
+  // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame"
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, { text: PICK_TEXT, icon: PICK_ICON }),
+      ),
+    );
+    const cellStyle = window.getComputedStyle(cell);
+    assert.equal(cellStyle.display, "inline-flex");
+    assert.equal(cellStyle.flexWrap, "wrap");
+    assert.equal(cellStyle.overflowWrap, "break-word");
+    const nameStyle = window.getComputedStyle(
+      cell.querySelector(".pick-cell-name"),
+    );
+    assert.equal(nameStyle.minWidth, "0px");
+    assert.equal(nameStyle.flexShrink, "1");
+  });
+});
+
+// Breaks: the reason of a greyed cell taking the cell's way of breaking a word where no space helps,
+// so „gałąź niewykupiona” breaks inside „niewykupiona” in a narrow cell. jsdom resolves the cascade,
+// not the layout, so the case reads which declaration the real stylesheets give the reason.
+test("the stylesheets let the reason of a greyed pick cell break only between its words", async () => {
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, {
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+    const reasonStyle = window.getComputedStyle(
+      cell.querySelector(".pick-cell-reason"),
+    );
+    assert.equal(reasonStyle.overflowWrap, "normal");
+    assert.equal(reasonStyle.wordBreak, "normal");
   });
 });
 

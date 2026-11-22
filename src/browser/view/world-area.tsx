@@ -7,8 +7,8 @@
  * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
  * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
  * its map run in place, the events of the simulation call that returned it, which it hands to the
- * scene (D-04), and, for the hovered tile, the key and its setter, which it shares with the table of
- * revealed tiles in another area; a click on „Teraz” or „Potem” goes out through `onShowRule` (D-336). It imports the pure functions of the DOM modules and
+ * scene (D-04), and, for the marked tile, hovered or tapped, the key and its two setters, which it
+ * shares with the table of revealed tiles in another area; a click on „Teraz” or „Potem” goes out through `onShowRule` (D-336). It imports the pure functions of the DOM modules and
  * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
  * when the module is imported.
  */
@@ -25,8 +25,10 @@ import { tileLine } from "./tile-list.js";
 import { solvedRunText, tripTexts } from "./trip-lines.js";
 
 /**
- * The one size the scene is drawn at, 672 × 304 pixels, twice its picture of 336 × 152, the forest of
- * D-314 (D-349): a whole multiple, so every pixel of the picture stays equal in size.
+ * The size the scene's picture is given, 672 × 304 pixels, twice its picture of 336 × 152, the forest
+ * of D-314: the larger of the scene's two sizes, the one of the computer layout (D-349). The stylesheet
+ * draws it once its picture, 336 × 152, in a phone layout too narrow for the larger; both are whole
+ * multiples, so every pixel of the picture stays equal in size.
  */
 const SCENE_WIDTH = SCENE.background.width * PICTURE_PIXEL;
 const SCENE_HEIGHT = SCENE.background.height * PICTURE_PIXEL;
@@ -37,10 +39,12 @@ export type WorldAreaProps = {
   state: GameState;
   /** The events of the simulation call that returned `state`, for the scene. */
   events: readonly GameEvent[];
-  /** The key of the hovered tile, „col,row”, or null when none is hovered. */
+  /** The key of the marked tile, hovered or tapped, „col,row”, or null when none is marked. */
   hovered: string | null;
-  /** Called with the key of the tile under the pointer, or null when the pointer is over none. */
+  /** Called with the key of the tile under a mouse or a pen, or null when the pointer is over none. */
   onHover: (key: string | null) => void;
+  /** Called with the key of the tile a finger tapped, or null for a tap on the drawing beside every tile. */
+  onTap: (key: string | null) => void;
   /** Called with the number of the rule a click on „Teraz” or „Potem” names (D-336). */
   onShowRule: (ruleId: RuleId) => void;
   /** Called when the scene's effect of a discovery, a death or a completion has ended (D-322). */
@@ -49,18 +53,22 @@ export type WorldAreaProps = {
 
 /**
  * The world area. The scene is a picture drawn from the game state, with no text on it or over it
- * and nothing in it to take a click or the keyboard (D-272, D-321). The paragraph of the last encounter
+ * and nothing in it to take a click or the keyboard (D-272, D-321). It stands in a place of its own,
+ * which keeps the scene's frame at the size of its picture, so every part placed in it by a
+ * percentage stays where it is, and centres it and crops its sides evenly where the place is a few
+ * pixels narrower than the picture (D-349). The paragraph of the last encounter
  * stands in the chronicle in the area with the tabs, not here (D-311, D-147); the deposit and the
  * settlement of a death stand in the end-of-run window, not here (D-185, D-216). A value of the body
  * row below its threshold stands in `danger`, as do „marznie” and „głoduje” under it (D-39); the other
- * notes stand in `text-secondary`. The line under the drawing gives the hovered tile's numbers, else
- * the character's tile's.
+ * notes stand in `text-secondary`. The line under the drawing gives the marked tile's numbers, hovered
+ * or tapped, else the character's tile's.
  */
 export function WorldArea({
   state,
   events,
   hovered,
   onHover,
+  onTap,
   onShowRule,
   onEffectEnd,
 }: WorldAreaProps) {
@@ -72,13 +80,15 @@ export function WorldArea({
   const line = tileLine(state, hovered);
   return (
     <div className="world-area">
-      <Scene
-        state={state}
-        width={SCENE_WIDTH}
-        height={SCENE_HEIGHT}
-        events={events}
-        onEffectEnd={onEffectEnd}
-      />
+      <div className="scene-place">
+        <Scene
+          state={state}
+          width={SCENE_WIDTH}
+          height={SCENE_HEIGHT}
+          events={events}
+          onEffectEnd={onEffectEnd}
+        />
+      </div>
       <NowRows state={state} onShowRule={onShowRule} />
       <div className="body-row">
         <div className="body-cells">
@@ -115,7 +125,12 @@ export function WorldArea({
         <p className="trip-result">{trip.preview}</p>
       )}
       <div className="world-drawing">
-        <TerrainDrawing state={state} hovered={hovered} onHover={onHover} />
+        <TerrainDrawing
+          state={state}
+          hovered={hovered}
+          onHover={onHover}
+          onTap={onTap}
+        />
       </div>
       {line === null ? null : <p className="tile-line">{line}</p>}
     </div>

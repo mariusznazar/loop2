@@ -229,7 +229,7 @@ test("the mage's two sheets come from the data of its archetype, with the frame 
 
 test("the background is the forest picture, a still frame of 336 × 152 pixels", () => {
   // decision: D-314 "The background of the scene is a still picture of a forest"
-  // decision: D-349 "The scene has one size, 672 × 304 px, twice the size of its picture"
+  // decision: D-349 "The scene has two sizes, one and two times its picture of 336 × 152 px"
   assert.deepEqual(sceneDrawing(sent()).background, {
     href: "/sprites/forest-scene.png",
     width: 336,

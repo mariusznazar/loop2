@@ -203,3 +203,23 @@
 .character-creation-label {
   color: var(--text-label);
 }
+
+/*
+ * The phone layout of Siedziba (D-396, D-282; styleguide rules "Two layouts and one threshold between
+ * them" and "Everything is done by touch, and every control holds the touch target"). The picture band
+ * keeps the rules above: in a window narrower than the clearing it crops the clearing at the sides around
+ * the fire and never scales it down (D-389). The clearing, the sheets of the characters and the row of
+ * cells that did not fit stand in boxes whose overflow is hidden, so the band takes no scrolling to the
+ * side and the measurement of loop2-play lists them as signs only. The name of a character in „Drużyna”
+ * is a link that stands by itself at the head of its row, the way to the screen Postać (D-280), not a link
+ * inside a sentence, so it holds the minimum of the touch target, `--touch-target-min`, high and wide, its
+ * text at the middle of the target; a name that does not fit the row still breaks in it, as above.
+ */
+@media (width < 1280px) {
+  .team-member-name {
+    display: flex;
+    align-items: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}

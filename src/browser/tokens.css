@@ -77,6 +77,9 @@
   --focus-width: 2px; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: an outline of 2 px */
   --focus-offset: 2px; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: the outline set 2 px off the control */
 
+  /* Touch target */
+  --touch-target-min: 48px; /* Source: environment fact android-touch-target-size (foundations/environment_facts.md), Android's developer guidance https://developer.android.com/guide/topics/ui/accessibility/apps § Use large, simple controls, read 2026-11-21: "For touch interfaces, we recommend that each interactive UI element have a focusable area, or touch target size, of at least 48dpx48dp. Larger is even better."; the dp read as the px of the page, as D-396 reads it: the least height and width of a control in the phone layout */
+
   /* Tint of the scene's light and frost on its edges */
   --scene-tint-cool: #6f8f6a; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the cool grey-green of the scene's light at streak 0 */
   --scene-tint-warm: #e8a838; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the warm gold of the scene's light at a completion */

@@ -31,6 +31,17 @@
 }
 
 /*
+ * The phone layout (D-396): the page's side padding is the smaller step `--space-s` there (the shell
+ * block of styles.css), so the screen undoes that step, not the `--space-l` of the computer layout; its
+ * own padding stays, so the card keeps its place.
+ */
+@media (width < 1280px) {
+  .account-card-screen {
+    margin: 0 calc(-1 * var(--space-s));
+  }
+}
+
+/*
  * The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. The panel
  * of the failure, with the sentence alone, stands in its place when React has taken the card down
  * (D-323, D-262).

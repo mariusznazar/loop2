@@ -1,6 +1,6 @@
 ---
 name: loop2-play
-description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the login card, Playwright CLI with Playwright MCP where the CLI fails, reading motion from a stream of frames, showing a screenshot, ending the start. Use to check a screen or a change in the running game or for a question about running it locally.
+description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the login card, Playwright CLI with Playwright MCP where the CLI fails, the phone layout with touch, motion from frames, a screenshot, ending the start. Use to check a screen or a change in the running game or to run it locally.
 ---
 
 # loop2-play
@@ -16,7 +16,9 @@ description of the request as an image (section "Show a screenshot to the human"
 evidence goes into the report.
 
 Run every command below in the repository's root: Playwright CLI finds its setting for the local
-certificate, `.playwright/cli.config.json`, from the directory it is called in.
+certificate, `.playwright/cli.config.json`, from the directory it is called in. The setting of the
+phone layout, `.playwright/cli.phone.config.json`, is named in the command that uses it (section
+"Check the phone layout").
 
 ## Start the game
 
@@ -37,6 +39,25 @@ in use and whose port takes a connection and stays silent counts as running. Two
 stay apart in two browsers or sessions: in one, they share the session cookie, so signing in on one
 signs you out of the other.
 Every account is made through the login card, with a made-up address at `example.test`.
+
+**An account with the owner role.** The owner panel, the list of accounts, is for an account whose role is
+`owner` (D-410), and only a person gives that role, with the command `account-role`. In a local
+start, make the account first, then give the role with that command against the database of the
+start, never by editing the database. The database is
+`.runs/local-start/<process>-<port>-<mark>/accounts.sqlite`, the directory being the one whose port
+is the port of the line `Local game:`. Run from the repository's root while the start runs
+(`npm run local` has built `dist/server/`):
+
+```sh
+LOOP2_DATABASE_PATH=.runs/local-start/<process>-<port>-<mark>/accounts.sqlite node dist/server/account-role.js owner owner@example.test
+```
+
+The command exits 0 when the account has the role. Sign in with that account after it, and the menu
+„Konto” holds the link „Panel właściciela”. To fill the list with several accounts at once, the
+request of the card does it: `POST /api/accounts` with the body `{"email", "password",
+"passwordConfirmation"}` and the header `Origin` set to the address of the start; make the password
+of ASCII letters, since a non-ASCII one sent from a shell of this computer is mangled and the account
+then does not sign in.
 
 ## Operate the game with Playwright CLI
 
@@ -70,6 +91,177 @@ The way into a map run:
    at the pace 1×.
 4. After a reload the same map run comes back paused, with „(pauza)” in that line. Click „Wznów”.
    A map run also stops by itself at a discovery, again with „Wznów”.
+
+## Check the phone layout
+
+A window whose page area is narrower than 1280 px shows the phone layout, made for a phone held
+upright with a page area 360 px wide (D-396). The page area is the area of the page inside the
+window, which `innerWidth` and `document.documentElement.clientWidth` give; it is no screen
+resolution. A fault of the phone layout is checked in Chromium, at a page area 360 px wide in a
+window taller than wide, and with touch. The CLI of this computer, version 0.1.22, has no command
+that taps and no switch for touch on `open`, but `open` takes `--config`, and the context options
+of that file give touch (`playwright-cli open --help` lists the switches). A tap is then made by
+`page.tap` in `run-code`.
+
+**Open it as a phone.** Close any open session, then open the game with the file of the phone. The
+CLI reads it instead of `.playwright/cli.config.json`, so it holds the setting for the local
+certificate too:
+
+```sh
+playwright-cli close
+playwright-cli open --config=.playwright/cli.phone.config.json https://127.0.0.1:53211
+playwright-cli --raw eval "() => ({ width: innerWidth, height: innerHeight, touch: navigator.maxTouchPoints, phone: matchMedia('(width < 1280px)').matches })"
+```
+
+It answers `width` 360, `height` 740, `touch` 1 and `phone` true. The file holds a page area of
+360 × 740 px, `hasTouch` and `isMobile`; the page has a `viewport` meta tag, so `isMobile` makes
+no wider layout viewport than the window.
+
+**Tap, not click.** Operate the page as before (`snapshot`, `fill`, `reload`, `eval`), but tap where
+the player taps. `click` of the CLI is a click of a mouse: the page gets a pointer of the kind `mouse`, and a rule
+that waits for `touch` ignores it. Tap a reference of the last snapshot, or an element by its
+role and name:
+
+```sh
+playwright-cli --raw run-code "async (page) => { await page.locator('aria-ref=e84').tap(); return page.url(); }"
+playwright-cli --raw run-code "async (page) => { await page.getByRole('link', { name: 'Mapy', exact: true }).tap(); return page.url(); }"
+```
+
+`page.touchscreen.tap(x, y)` taps a point of the page, for a tile of a picture that has no
+name. The two commands above answer with the address, which shows whether a tap on a link led
+anywhere; after a tap on a button read the page with `eval` or `snapshot`.
+
+**Tap a tile of the drawing of a map.** The tile is a `<g data-tile="x,y">` of the drawing, and a
+plain `tap` on its polygon waits until it times out, since the icon at the middle of the tile
+intercepts the touch. Force the tap: the touch then reaches the icon, and the drawing finds the
+tile by its `data-tile` ancestor, as it does for a finger. Only a revealed tile marks its row, and
+the row is in the table under the tab „Teren”, so pick that tab first (D-19, D-311):
+
+```sh
+playwright-cli --raw run-code "async (page) => { await page.locator('.terrain-drawing [data-tile=\"1,0\"] polygon').tap({ force: true }); }"
+```
+
+**Measure.** Read that nothing scrolls to the side, no text crosses the border of its frame and no
+control is smaller than the touch target, on every screen and state you changed. This writes the
+measurement into `.playwright-cli/phone-measure.js`; run it on the open page after each change of
+the screen:
+
+```sh
+cat > .playwright-cli/phone-measure.js <<'EOF'
+async (page) => {
+  const min = 48;
+  return page.evaluate((min) => {
+    const root = document.documentElement;
+    const visible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && el.checkVisibility({ visibilityProperty: true });
+    };
+    const name = (el) =>
+      `${el.tagName.toLowerCase()}${el.className ? "." + String(el.className).trim().split(/\s+/)[0] : ""} "${(el.getAttribute("aria-label") || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40)}"`;
+    const all = [...document.body.querySelectorAll("*")].filter(visible);
+    const crossing = all
+      .filter((el) => el.clientWidth > 0 && el.scrollWidth > el.clientWidth)
+      .map((el) => `${name(el)} content ${el.scrollWidth} > box ${el.clientWidth}`);
+    const outside = all
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.right > root.clientWidth + 0.5 || r.left < -0.5;
+      })
+      .map((el) => `${name(el)} spans ${Math.round(el.getBoundingClientRect().left)}..${Math.round(el.getBoundingClientRect().right)}`);
+    const controls = "button, a[href], input, select, textarea, summary, [role=button], [role=menuitem], [role=tab], [tabindex]:not([tabindex='-1'])";
+    const small = [...document.querySelectorAll(controls)]
+      .filter(visible)
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width < min || r.height < min;
+      })
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return `${name(el)} ${Math.round(r.width * 10) / 10} x ${Math.round(r.height * 10) / 10}`;
+      });
+    return {
+      page: `${innerWidth} x ${innerHeight}`,
+      scrollsToTheSide: root.scrollWidth > root.clientWidth,
+      contentWiderThanItsBox: crossing,
+      outsideTheWindow: outside,
+      [`controlsSmallerThan${min}`]: small,
+    };
+  }, min);
+}
+EOF
+playwright-cli --raw run-code --filename .playwright-cli/phone-measure.js
+```
+
+`scrollsToTheSide` is true when the page scrolls to the side. `contentWiderThanItsBox` lists each
+element whose content is wider than its own box, with both widths: text that crosses the border of
+its frame, and the content of a frame that scrolls to the side, which `scrollsToTheSide` does not
+show. `outsideTheWindow` lists each element with a side beyond the window. The three must say
+`false`, an empty list and an empty list. `controlsSmallerThan48` lists each button, link, field,
+cell and item of a menu lower or narrower than 48 px, the touch-target minimum of D-396, with its
+size; change `const min = 48;` for another size. A link inside a running sentence stands on that
+list too, and D-396 exempts it: it keeps the size of its text, while a link that stands by itself as
+a control holds the minimum. A line of the lists is
+a sign, not a verdict: the picture of the scene or a clipped element may show there, and a screenshot
+(section "Show a screenshot to the human") shows whether text crosses a border.
+
+**Take another page area.** `resize` on the open session takes another page area, for instance the
+one of a fault seen at 1100 px; the touch stays and the layout is the phone layout below 1280 px:
+
+```sh
+playwright-cli resize 1100 800
+playwright-cli resize 360 740
+```
+
+**Go back to 1280 × 720 px.** For the page area of 1280 × 720 px, the computer layout, as a mouse
+sees it, close the session and open one with the ordinary setting, which has no touch and a page
+area 1280 × 720 px. `resize 1280 720` alone keeps the touch of the session and is no return.
+
+```sh
+playwright-cli close
+playwright-cli open https://127.0.0.1:53211
+```
+
+Playwright MCP has a way to touch too, and it takes no file of settings, so the phone is made on
+the open tab through the protocol of the browser (the way into the page is the one of section
+"Where the CLI fails: Playwright MCP"). Through `browser_run_code_unsafe`, once for each new tab,
+with the address of the start:
+
+```js
+async (page) => {
+  const session = await page.context().newCDPSession(page);
+  await session.send("Security.setIgnoreCertificateErrors", { ignore: true });
+  await session.send("Emulation.setDeviceMetricsOverride", { width: 360, height: 740, deviceScaleFactor: 1, mobile: true });
+  await session.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+  await page.goto("https://127.0.0.1:53211/");
+}
+```
+
+`page.tap` refuses on such a page, since its context was not made with touch, so a tap is a pair
+of touch events at the middle of the element:
+
+```js
+async (page) => {
+  const box = await page.getByRole("link", { name: "Mapy", exact: true }).boundingBox();
+  const touch = [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }];
+  const session = await page.context().newCDPSession(page);
+  await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: touch });
+  await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  return page.url();
+}
+```
+
+The measurement of step 3 is the same function: give `browser_run_code_unsafe` its code as text.
+`browser_resize` takes another page area. To go back to 1280 × 720 px with no touch, run this on
+the tab:
+
+```js
+async (page) => {
+  const session = await page.context().newCDPSession(page);
+  await session.send("Emulation.clearDeviceMetricsOverride");
+  await session.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+  await page.setViewportSize({ width: 1280, height: 720 });
+}
+```
 
 ## Read the console
 
@@ -144,6 +336,16 @@ playwright-cli --raw run-code --filename .playwright-cli/send-state.js
 The page saves too, so send the document before the page does anything else to the save, and reload
 at once. A document the game refuses to load shows „Zapis był uszkodzony i nie dał się wczytać.” and
 a game that starts anew.
+
+**A character in an earning loop, and the report of a return.** The button „Puść w pętlę” stands
+only on a solved map, and a new account has none, so compose it: add the map to `solvedMaps` of the
+state, then start the loop with `startLoop(state, { mapId, characterId }, realMs)` of
+`src/browser/sim/loop.ts`, which refuses a map not among the solved ones. `loadSavedGame` refuses a
+document whose loop breaks the rules of `earningLoop` in `src/browser/sim/saved-game.ts`: the map must be solved,
+the run going on and the character's own, `completed` below `runNumber`, and `inARow` not above
+`loopRecord`, which is not above `completed`. To get the report „Gdy cię nie było” of a return,
+stamp the document with a time hours back, `savedGame(withSaveTime(state, Date.now() - 6 * 3600 *
+1000))`, send it as above and reload at once.
 
 ## Read motion from a stream of frames
 

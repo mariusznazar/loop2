@@ -389,9 +389,9 @@ test("without a reset state the list has no reset control and no confirmation (D
   }
 });
 
-// Catches a control that is not a destructive button (D-44: neutral at rest, `danger` under the
-// pointer), one that sits in another place than beside the pull, and a press that does more than
-// asking for the confirmation.
+// Catches a control that is not a destructive button (D-44: its text in `danger` at rest), one that
+// sits in another place than beside the pull, and a press that does more than asking for the
+// confirmation.
 test("at rest the reset is an enabled destructive button beside the pull, and a press only asks for the confirmation", async () => {
   // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing"
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"

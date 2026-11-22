@@ -93,7 +93,7 @@ test("rows stand only for revealed tiles, in tile-list order, labelled (col, row
 });
 
 test("each row gives the stock of every resource of the map, „—” where the tile lacks it, 0 when used up", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list"
   const state = withTiles([
     tile(1, 0, true, { [r[0]]: 12, [r[2]]: 6 }),
     tile(0, 1, true, {}),
@@ -110,7 +110,7 @@ test("each row gives the stock of every resource of the map, „—” where the
 });
 
 test("a fresh map run lists nothing; exploring the entrance lists that tile with its stock", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list"
   const start = sent();
   assert.deepEqual(tileList(start).rows, []);
   const explored = advanceMinutes(start, 20).state;
@@ -216,7 +216,7 @@ const LINE_TILES = [
 
 // Catches a line that gives the stock of another tile, or leaves out a resource of the map.
 test("the line of a hovered revealed tile gives its label and the stock of every resource of the map, „—” where it lacks one", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   const state = withTiles(LINE_TILES);
   assert.equal(
     tileLine(state, "1,0"),
@@ -234,7 +234,7 @@ test("the line of a hovered revealed tile gives its label and the stock of every
 
 // Catches a line that shows nothing, or a hovered tile's line, when no tile is hovered.
 test("with no tile hovered the line is the character's tile", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   assert.equal(
     tileLine(withTiles(LINE_TILES), null),
     "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
@@ -247,13 +247,13 @@ test("a hovered tile not revealed gives its label alone, with nothing of its sto
 });
 
 test("the character's tile not yet revealed gives its label alone", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   assert.equal(tileLine(sent(), null), "(1, 1)");
 });
 
 // Catches a line that keeps the stock of the last tile when the key names none, as after a restart.
 test("a key that names no tile of the map run gives the line of the character's tile", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   assert.equal(
     tileLine(withTiles(LINE_TILES), "9,9"),
     "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
@@ -268,7 +268,7 @@ test("without a map run there is no line", () => {
 // The line holds the stock of the tile alone, since D-70 puts the campfire's minutes left in the row of
 // the list of revealed tiles.
 test("the line of a tile with a burning campfire gives its stock and nothing of the fire", () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile and tapping it, each of which marks the tile's row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered or the tapped tile or else the character's tile"
   const [burning] = fireRun(63);
   const state = {
     ...burning,

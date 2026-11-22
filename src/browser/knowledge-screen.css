@@ -8,8 +8,8 @@
 /*
  * The screen Wiedza (D-416, D-281; styleguide rule "The screen Wiedza"): the heading „Wiedza” in
  * `text-strong` as the heading of Siedziba is, over two areas as the columns of Mapy (in styles.css), one
- * under the other in a window under 720 px. The names of the areas and of the groups are names of
- * sections, so `text-label`; the counters are notes, so `text-secondary`; the things stand in `text`
+ * under the other in the phone layout, a window under 1280 px (D-396, D-282). The names of the areas and
+ * of the groups are names of sections, so `text-label`; the counters are notes, so `text-secondary`; the things stand in `text`
  * with their icons drawn as masks in that colour (D-291, D-43). A tree is a shared button that folds
  * and opens it; a branch's name stands in `text-strong`, its number of ranks in `text-label`, its
  * description in `text-secondary` and its prices in `text`. Focus is the one :focus-visible rule

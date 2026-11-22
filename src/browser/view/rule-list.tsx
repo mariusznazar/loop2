@@ -6,8 +6,9 @@
  * header, or a rule just added, is a request to open the panel, handed to `onOpen`. Which groups are
  * folded comes in the props and a change goes out through `onFoldedChange`, so the list holds no
  * memory of its own about it (D-295). Rules move by „↑” and „↓”, across the border of a group too,
- * and rules and whole groups by their handle on the browser's own drag (D-270), a drop line showing
- * where they would land; the drag is the Hook of `rule-drag.ts`. The program panel draws it as
+ * whole groups by „↑” and „↓” in their header (D-288), and rules and whole groups by their handle on
+ * the browser's own drag (D-270), a drop line showing where they would land; the drag is the Hook of
+ * `rule-drag.ts`. The program panel draws it as
  * `RuleListView` in its own tree. Nothing runs when the module is imported.
  *
  * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
@@ -40,8 +41,10 @@ import {
   addGroup,
   addRule,
   countText,
+  groupArrows,
   groupNumber,
   groupSummary,
+  moveGroup,
   moveRule,
   removeGroup,
   removeRule,
@@ -142,17 +145,84 @@ function asksToOpen(event: KeyboardEvent<HTMLElement>): boolean {
   );
 }
 
-/** Whether a click reached the row or header itself or its text, not a button or the handle in it. */
+/**
+ * Whether a click reached the row or header itself or its text, its handle included, not a button in
+ * it. A drag by the handle gives no click, so a click on the handle opens as the text does (D-306, D-296).
+ */
 function clickedBody(event: MouseEvent<HTMLElement>): boolean {
-  return !(
-    event.target instanceof Element &&
-    event.target.closest("button, .drag-handle")
+  return !(event.target instanceof Element && event.target.closest("button"));
+}
+
+/**
+ * Whether a click reached the bare row or header, outside its text and its gaps, which ask for
+ * themselves.
+ */
+function clickedBare(event: MouseEvent<HTMLElement>): boolean {
+  return (
+    clickedBody(event) &&
+    !(
+      event.target instanceof Element &&
+      event.target.closest(".rule-list-body, .rule-list-gap")
+    )
+  );
+}
+
+/**
+ * The text of a row or a header, its handle included, in an element of its own beside the buttons,
+ * which a click on the text asks to open. The element takes the click itself, not the row that also
+ * holds the buttons, because Chromium's touch adjustment gives a tap that lands near a button to that
+ * button unless an element that takes clicks and holds no button lies under the finger, so a tap on
+ * the text beside the buttons of the phone layout opens the rule and moves or deletes nothing
+ * (D-396, D-306, D-296). In the computer layout the stylesheet draws the element as if its parts stood
+ * in the row itself (`display: contents`); in the phone layout it is a box over the whole line of the
+ * text, to its right end.
+ */
+function RowText({
+  onOpen,
+  children,
+}: {
+  onOpen: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className="rule-list-body"
+      onClick={(event) => {
+        if (clickedBody(event)) onOpen();
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * An empty element among the buttons of a row or a header that a click asks to open, for the same
+ * reason as the text (`RowText`): a gap before the arrows and between two buttons, and the spacer
+ * between the arrows and the other buttons, so that in the phone layout no part of the line of the
+ * buttons outside a button is bare row, which Chromium's touch adjustment passes over for a near
+ * button. The stylesheet draws none of them in the computer layout.
+ */
+function Gap({
+  onOpen,
+  spacer = false,
+}: {
+  onOpen: () => void;
+  spacer?: boolean;
+}) {
+  return (
+    <span
+      className={spacer ? "rule-list-gap rule-list-spacer" : "rule-list-gap"}
+      aria-hidden="true"
+      onClick={onOpen}
+    />
   );
 }
 
 /** The edits a row, a header or a group's actions ask of the list. */
 type ListEdits = {
   move: (group: RuleGroup, index: number, offset: -1 | 1) => void;
+  moveGroup: (index: number, offset: -1 | 1) => void;
   remove: (group: RuleGroup, index: number) => void;
   add: (group: RuleGroup) => void;
   toggleFold: (id: GroupId) => void;
@@ -213,6 +283,7 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
   );
   const arrows = ruleArrows(program, group.id, index);
   const isOpen = open?.groupId === group.id && open.ruleId === each.id;
+  const openRule = () => onOpen({ groupId: group.id, ruleId: each.id });
   const target = { over: "row", group, index } as const;
   const judged = signs?.judgement.rules[each.id];
   const standing =
@@ -234,69 +305,77 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
         aria-current={isOpen ? "true" : undefined}
         ref={track(`rule:${each.id}:open`)}
         onClick={(event) => {
-          if (clickedBody(event))
-            onOpen({ groupId: group.id, ruleId: each.id });
+          if (clickedBare(event)) openRule();
         }}
         onKeyDown={(event) => {
           if (!asksToOpen(event)) return;
           event.preventDefault();
-          onOpen({ groupId: group.id, ruleId: each.id });
+          openRule();
         }}
         onDragOver={(event) => drag.dragOver(event, target)}
         onDrop={(event) => drag.drop(event, target)}
       >
-        <span
-          className="drag-handle"
-          draggable
-          aria-hidden="true"
-          title="Przeciągnij regułę"
-          onDragStart={(event) =>
-            drag.startDrag(
-              event,
-              { kind: "rule", id: each.id },
-              event.currentTarget.closest("li"),
-            )
-          }
-        >
-          ⋮⋮
-        </span>
-        <span className="rule-number">{ruleNumber(groupIndex, index)}</span>
-        <span className="rule-condition">{sentence.condition}</span>
-        <span className="rule-arrow">→</span>
-        <span className="rule-action">
+        <RowText onOpen={openRule}>
           <span
-            className="icon-mask"
+            className="drag-handle"
+            draggable
             aria-hidden="true"
-            style={
-              {
-                "--icon": `url("/icons/${ACTIONS[each.action.kind].icon}.svg")`,
-              } as CSSProperties
+            title="Przeciągnij regułę"
+            onDragStart={(event) =>
+              drag.startDrag(
+                event,
+                { kind: "rule", id: each.id },
+                event.currentTarget.closest("li"),
+              )
             }
-          />
-          {sentence.action}
-        </span>
-        {judged?.reason == null ? null : (
-          <span className="rule-reason">{judged.reason}</span>
-        )}
-        {time === null ? null : <span className="rule-time">{time}</span>}
-        {counts === null ? null : (
-          <span className="rule-count">{countText(counts[each.id] ?? 0)}</span>
-        )}
+          >
+            ⋮⋮
+          </span>
+          <span className="rule-number">{ruleNumber(groupIndex, index)}</span>
+          <span className="rule-condition">{sentence.condition}</span>
+          <span className="rule-arrow">→</span>
+          <span className="rule-action">
+            <span
+              className="icon-mask"
+              aria-hidden="true"
+              style={
+                {
+                  "--icon": `url("/icons/${ACTIONS[each.action.kind].icon}.svg")`,
+                } as CSSProperties
+              }
+            />
+            {sentence.action}
+          </span>
+          {judged?.reason == null ? null : (
+            <span className="rule-reason">{judged.reason}</span>
+          )}
+          {time === null ? null : <span className="rule-time">{time}</span>}
+          {counts === null ? null : (
+            <span className="rule-count">
+              {countText(counts[each.id] ?? 0)}
+            </span>
+          )}
+        </RowText>
         <span className="rule-list-controls">
-          <ReactButton
-            text="↑"
-            label="W górę"
-            disabled={!arrows.up}
-            buttonRef={track(`rule:${each.id}:up`)}
-            onClick={() => edits.move(group, index, -1)}
-          />
-          <ReactButton
-            text="↓"
-            label="W dół"
-            disabled={!arrows.down}
-            buttonRef={track(`rule:${each.id}:down`)}
-            onClick={() => edits.move(group, index, 1)}
-          />
+          <Gap onOpen={openRule} />
+          <span className="rule-list-arrows">
+            <ReactButton
+              text="↑"
+              label="W górę"
+              disabled={!arrows.up}
+              buttonRef={track(`rule:${each.id}:up`)}
+              onClick={() => edits.move(group, index, -1)}
+            />
+            <Gap onOpen={openRule} />
+            <ReactButton
+              text="↓"
+              label="W dół"
+              disabled={!arrows.down}
+              buttonRef={track(`rule:${each.id}:down`)}
+              onClick={() => edits.move(group, index, 1)}
+            />
+          </span>
+          <Gap onOpen={openRule} spacer />
           <ReactButton
             text="Usuń"
             kind="destructive"
@@ -323,12 +402,18 @@ type GroupProps = {
   groupIndex: number;
 };
 
-/** The header of a group: its handle, name, condition and counts, and the buttons that fold and remove it. */
+/**
+ * The header of a group: its handle, name, condition and counts, the arrows that move the group one
+ * place (D-288), and the buttons that fold and remove it.
+ */
 function GroupHeader({ parts, group, groupIndex }: GroupProps) {
-  const { counts, folded, open, signs, drag, track, onOpen, edits } = parts;
+  const { program, counts, folded, open, signs, drag, track, onOpen, edits } =
+    parts;
   const summary = groupSummary(group, counts);
+  const arrows = groupArrows(program, groupIndex);
   const isFolded = folded.includes(group.id);
   const isOpen = open?.groupId === group.id && open.ruleId === null;
+  const openGroup = () => onOpen({ groupId: group.id, ruleId: null });
   const bar = signs?.judgement.groups[group.id];
   return (
     <div
@@ -339,43 +424,67 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
       aria-current={isOpen ? "true" : undefined}
       ref={track(`group:${group.id}:open`)}
       onClick={(event) => {
-        if (clickedBody(event)) onOpen({ groupId: group.id, ruleId: null });
+        if (clickedBare(event)) openGroup();
       }}
       onKeyDown={(event) => {
         if (!asksToOpen(event)) return;
         event.preventDefault();
-        onOpen({ groupId: group.id, ruleId: null });
+        openGroup();
       }}
     >
-      <span
-        className="drag-handle"
-        draggable
-        aria-hidden="true"
-        title="Przeciągnij grupę"
-        onDragStart={(event) =>
-          drag.startDrag(
-            event,
-            { kind: "group", id: group.id },
-            event.currentTarget.closest("section"),
-          )
-        }
-      >
-        ⋮⋮
-      </span>
-      <span className="rule-list-number">{groupNumber(groupIndex)}</span>
-      <span className="rule-list-name">{summary.name}</span>
-      <span className="rule-list-condition">{summary.condition}</span>
-      <span className="rule-list-size">{ruleCountText(summary.ruleCount)}</span>
-      {summary.executed === null ? null : (
-        <span className="rule-list-count">{countText(summary.executed)}</span>
-      )}
+      <RowText onOpen={openGroup}>
+        <span
+          className="drag-handle"
+          draggable
+          aria-hidden="true"
+          title="Przeciągnij grupę"
+          onDragStart={(event) =>
+            drag.startDrag(
+              event,
+              { kind: "group", id: group.id },
+              event.currentTarget.closest("section"),
+            )
+          }
+        >
+          ⋮⋮
+        </span>
+        <span className="rule-list-number">{groupNumber(groupIndex)}</span>
+        <span className="rule-list-name">{summary.name}</span>
+        <span className="rule-list-condition">{summary.condition}</span>
+        <span className="rule-list-size">
+          {ruleCountText(summary.ruleCount)}
+        </span>
+        {summary.executed === null ? null : (
+          <span className="rule-list-count">{countText(summary.executed)}</span>
+        )}
+      </RowText>
       <span className="rule-list-controls">
+        <Gap onOpen={openGroup} />
+        <span className="rule-list-arrows">
+          <ReactButton
+            text="↑"
+            label="Grupa w górę"
+            disabled={!arrows.up}
+            buttonRef={track(`group:${group.id}:up`)}
+            onClick={() => edits.moveGroup(groupIndex, -1)}
+          />
+          <Gap onOpen={openGroup} />
+          <ReactButton
+            text="↓"
+            label="Grupa w dół"
+            disabled={!arrows.down}
+            buttonRef={track(`group:${group.id}:down`)}
+            onClick={() => edits.moveGroup(groupIndex, 1)}
+          />
+        </span>
+        <Gap onOpen={openGroup} spacer />
         <ReactButton
           text={isFolded ? "▸" : "▾"}
           label={isFolded ? "Rozwiń grupę" : "Zwiń grupę"}
           expanded={!isFolded}
           onClick={() => edits.toggleFold(group.id)}
         />
+        <Gap onOpen={openGroup} />
         <ReactButton
           text="✕"
           label="Usuń grupę"
@@ -553,6 +662,19 @@ export function RuleListView({
     );
   }
 
+  function moveGroupAt(index: number, offset: -1 | 1): void {
+    const next = moveGroup(program, index, offset);
+    if (next === null) return;
+    const id = program.groups[index].id;
+    const own = offset === 1 ? "down" : "up";
+    const other = offset === 1 ? "up" : "down";
+    commit(
+      next,
+      [`group:${id}:${own}`, `group:${id}:${other}`, `group:${id}:open`],
+      { kind: "group", groupId: id },
+    );
+  }
+
   function remove(group: RuleGroup, index: number): void {
     const next = removeRule(program, group.id, index);
     if (next === null) return;
@@ -599,7 +721,14 @@ export function RuleListView({
     track,
     seatPanel,
     onOpen,
-    edits: { move, remove, add, toggleFold, removeWholeGroup },
+    edits: {
+      move,
+      moveGroup: moveGroupAt,
+      remove,
+      add,
+      toggleFold,
+      removeWholeGroup,
+    },
   };
 
   // The panel is drawn where the open row or header stands, so only where that group is drawn.

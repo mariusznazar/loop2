@@ -173,11 +173,11 @@ const panelOf = (root) => root.querySelector(".rule-panel");
 const rowOf = (root, id) => root.querySelector(`[data-rule="${id}"]`);
 const cellsIn = (element) => [...element.querySelectorAll(".pick-cell")];
 /** The name a cell shows, without the reason drawn inside it. */
-const nameOf = (cell) =>
-  [...cell.childNodes]
-    .filter((node) => node.nodeType === 3)
-    .map((node) => node.textContent)
-    .join("");
+const nameOf = (cell) => {
+  const copy = cell.cloneNode(true);
+  copy.querySelectorAll(".pick-cell-reason").forEach((node) => node.remove());
+  return copy.textContent;
+};
 /** The cell whose name is `name`: a text or, for a name with numbers of the data in it, a shape. */
 const cellNamed = (element, name) =>
   cellsIn(element).find((cell) =>

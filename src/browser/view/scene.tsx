@@ -5,7 +5,9 @@
  * as the mask of `.icon-mask` and under it the bar of the action's progress. Its files, places and
  * frame counts come from `sceneDrawing`, the view names none. A place and a size are percentages of
  * the frame and a frame count a custom property, so the stylesheet holds no length of a sprite and
- * the scene is right at its one size.
+ * the scene is right at either of its two sizes, once and twice its picture (D-349). The small
+ * elements, the badge and the plaques, keep sizes of their own in the stylesheet, which do not follow
+ * the scale of the scene.
  *
  * The scene moves by CSS alone, at a beat apart from the pace, with no interval, timer or animation
  * frame of its own (D-316, D-319): the stylesheet runs the frames of the sheets and of the burning
@@ -90,7 +92,10 @@ import type {
 export type SceneProps = {
   /** The game state the scene draws; it draws nothing while the state holds no map run. */
   state: GameState;
-  /** The size the scene is drawn at, whole multiples of its frame. */
+  /**
+   * The size the scene's picture is given, a whole multiple of its frame: the larger of its two sizes,
+   * which the stylesheet changes to the smaller in a phone layout too narrow for it (D-349).
+   */
   width: number;
   height: number;
   /**
@@ -108,7 +113,7 @@ export type SceneProps = {
 
 /**
  * One scene pixel as a percentage of the frame's width and of its height, with six decimals, so that
- * the frost built of whole pixels keeps to the scene's grid at the scene's one size (D-349).
+ * the frost built of whole pixels keeps to the scene's grid at either size of the scene (D-349).
  */
 function pixel(frame: number): string {
   return `${Number((100 / frame).toFixed(6))}%`;
@@ -511,8 +516,8 @@ function mageBox(drawing: SceneDrawing, shown: Shown): CSSProperties {
 }
 
 /**
- * The ground of the scene, which its memory does not touch: the picture of the forest at the size the
- * scene is drawn at, the props and the campfire, where one stands.
+ * The ground of the scene, which its memory does not touch: the picture of the forest at the size it
+ * is given, which sets the size of the frame, the props and the campfire, where one stands.
  */
 function Ground({
   drawing,

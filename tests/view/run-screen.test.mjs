@@ -515,7 +515,7 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
 // D-19, D-346. Catches the hovered tile kept by the drawing
 // alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
 test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile", async () => {
-  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interactions are hovering a tile"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, withTiles());
     const [world, , area] = areasOf(screen.element);
@@ -545,6 +545,169 @@ test("a hovered tile of the drawing marks its row in the table of the area under
     await inAct(() => fire(cell, "pointerover"));
     assert.deepEqual(markedTiles(), ["0,1"], "a row marks its tile");
     assert.deepEqual(markedRows(), ["0,1"]);
+  });
+});
+
+/**
+ * A pointer event of `type` from a pointer of the `kind` (touch or mouse) on `target`, inside act. The
+ * hover case above sends bare events, as a browser does not; a tap has to be told from a hover by the
+ * kind of the pointer, so these carry one.
+ */
+const pointer = (target, type, kind, init = {}) =>
+  inAct(() => {
+    const { PointerEvent } = target.ownerDocument.defaultView;
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        pointerType: kind,
+        ...init,
+      }),
+    );
+  });
+
+/**
+ * A tap with a finger on `target` in the order a browser sends it: the finger comes down, goes up,
+ * and the pointer leaves, which a touch does after the lift, then the click the tap also makes.
+ */
+async function tapOn(target) {
+  await pointer(target, "pointerover", "touch");
+  await pointer(target, "pointerdown", "touch");
+  await pointer(target, "pointerup", "touch");
+  await pointer(target, "pointerout", "touch", { relatedTarget: null });
+  await press(target);
+}
+
+/** The screen of a map run of three revealed tiles and one not revealed, under „Teren”, with what marks a tile. */
+async function tapScreen(page) {
+  const start = withTiles();
+  const { screen } = await wiredScreen(page, {
+    ...start,
+    run: {
+      ...start.run,
+      tiles: [...start.run.tiles, tile(2, 1, false, {})],
+    },
+  });
+  const [world, , area] = areasOf(screen.element);
+  await press(buttonNamed(area, "Teren"));
+  return {
+    world,
+    area,
+    header: screen.element.querySelector(".run-header"),
+    tile: (key) =>
+      world.querySelector(`.terrain-drawing [data-tile="${key}"] polygon`),
+    markedRows: () =>
+      [...area.querySelectorAll("tbody tr.hovered")].map((row) =>
+        row.getAttribute("data-tile"),
+      ),
+    markedTiles: () =>
+      [...world.querySelectorAll(".terrain-drawing g.hovered")].map((g) =>
+        g.getAttribute("data-tile"),
+      ),
+    line: () => textOf(world, "tile-line"),
+  };
+}
+
+// D-19. Catches a tap that is no hover, so that the pointer leaving after the finger is lifted takes
+// the mark off again, a tap on a tile that leaves its row unmarked or the line on the character's
+// tile, and a mark that stays on the first tile when a second one is tapped.
+test("a tap with a finger on a revealed tile marks its row and the line gives its numbers, the mark stays after the finger is lifted and the pointer has left, and a tap on another tile moves it", async () => {
+  // decision: D-19 "A tap with a finger on a tile keeps its row marked until a tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a click of a mouse on a tile changes nothing"
+  await withPage(async (page) => {
+    const screen = await tapScreen(page);
+    assert.deepEqual(screen.markedRows(), []);
+    assert.equal(
+      screen.line(),
+      "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
+    );
+
+    await tapOn(screen.tile("1,0"));
+    assert.deepEqual(screen.markedRows(), ["1,0"], "its row in the table");
+    assert.deepEqual(screen.markedTiles(), ["1,0"]);
+    assert.equal(
+      screen.line(),
+      "(1, 0): patyk 12 · jagoda — · mech 6 · włókno —",
+    );
+
+    await tapOn(screen.tile("0,1"));
+    assert.deepEqual(screen.markedRows(), ["0,1"], "moved to the second tile");
+    assert.deepEqual(screen.markedTiles(), ["0,1"]);
+    assert.equal(
+      screen.line(),
+      "(0, 1): patyk — · jagoda — · mech — · włókno —",
+    );
+  });
+});
+
+// D-19. Catches a tap that leaves its mark where a tap elsewhere should take it off: a tap on the
+// header, on the table, on the page outside the screen and on the drawing between its tiles.
+test("a tap elsewhere takes the mark off, on the header, on the table, on the page and on the drawing beside its tiles, and the line is the character's tile again", async () => {
+  // decision: D-19 "A tap with a finger on a tile keeps its row marked until a tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a click of a mouse on a tile changes nothing"
+  await withPage(async (page) => {
+    const screen = await tapScreen(page);
+    const elsewhere = [
+      screen.header,
+      screen.area.querySelector("tbody tr td"),
+      page.document.body,
+      screen.world.querySelector(".terrain-drawing"),
+    ];
+    for (const place of elsewhere) {
+      await tapOn(screen.tile("1,0"));
+      assert.deepEqual(screen.markedRows(), ["1,0"], "precondition: marked");
+      await tapOn(place);
+      assert.deepEqual(screen.markedRows(), [], `a tap on ${place.localName}`);
+      assert.deepEqual(screen.markedTiles(), []);
+      assert.equal(
+        screen.line(),
+        "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
+      );
+    }
+  });
+});
+
+// D-19. Catches a finger that only rests on a tile, or starts a scroll over it, marking the tile,
+// and a tap on a tile not revealed marking a row.
+test("a finger that only touches a tile or is taken by a scroll marks nothing, and a tap on a tile not revealed marks no row", async () => {
+  // decision: D-19 "A tap with a finger on a tile keeps its row marked until a tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a click of a mouse on a tile changes nothing"
+  await withPage(async (page) => {
+    const screen = await tapScreen(page);
+    const resting = screen.tile("1,0");
+    await pointer(resting, "pointerover", "touch");
+    await pointer(resting, "pointerdown", "touch");
+    assert.deepEqual(screen.markedRows(), [], "a finger resting on a tile");
+    assert.deepEqual(screen.markedTiles(), []);
+    await pointer(resting, "pointercancel", "touch");
+    await pointer(resting, "pointerout", "touch", { relatedTarget: null });
+    assert.deepEqual(screen.markedRows(), [], "a scroll took the finger");
+    assert.deepEqual(screen.markedTiles(), []);
+
+    await tapOn(screen.tile("2,1"));
+    assert.deepEqual(screen.markedRows(), [], "a tile not revealed has no row");
+    assert.equal(
+      screen.world.querySelector(".terrain-drawing polygon.link-highlight"),
+      null,
+      "and no line round it",
+    );
+  });
+});
+
+// D-19. Catches a click of a mouse, as a pointer of the kind mouse sends it, marking a tile, and the
+// hover of a mouse standing in the way of the tap.
+test("a click of a mouse on a tile changes nothing, and a hover of a mouse still marks its tile", async () => {
+  // decision: D-19 "A tap with a finger on a tile keeps its row marked until a tap elsewhere takes the mark off, hovering with the pointer on a computer stays as it is, and a click of a mouse on a tile changes nothing"
+  await withPage(async (page) => {
+    const screen = await tapScreen(page);
+    const target = screen.tile("1,0");
+    await pointer(target, "pointerdown", "mouse");
+    await pointer(target, "pointerup", "mouse");
+    await press(target);
+    assert.deepEqual(screen.markedRows(), [], "no row marked by a click");
+    assert.deepEqual(screen.markedTiles(), []);
+
+    await pointer(target, "pointerover", "mouse");
+    assert.deepEqual(screen.markedRows(), ["1,0"], "the hover marks as before");
+    await pointer(target, "pointerout", "mouse", { relatedTarget: null });
+    assert.deepEqual(screen.markedRows(), []);
   });
 });
 
