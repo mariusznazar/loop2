@@ -280,9 +280,9 @@ node node_modules/@stryker-mutator/core/bin/stryker.js run --mutate "src/browser
 ```
 
 Zastąp ścieżkę zmienionym plikiem albo listą plików oddzielonych przecinkami;
-zakres wierszy można podać jako `src/browser/sim/hex.ts:10-30`.
+zakres wierszy można dopisać do ścieżki po dwukropku, na przykład `:10-30`.
 `stryker.config.json` ogranicza domyślny zakres do `simulation` i wymienia
-pliki `tests/sim/*.test.mjs` poza `rules.test.mjs`, który sprawdza tekst źródeł.
+pliki `tests/sim/*.test.mjs` poza `tests/sim/rules.test.mjs`, który sprawdza tekst źródeł.
 Wynik w konsoli pokazuje plik i wiersz ocalałej zmiany; raport JSON trafia
 do `.runs/stryker/mutation.json`, a kopie robocze do `.stryker-tmp/`.
 Krok `buildCommand` kompiluje przerobione źródła raz na przebieg.

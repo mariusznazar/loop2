@@ -11,7 +11,7 @@ where the CLI fails (D-417). A check made here touches neither the test server n
 
 This inspection adds to what a person checks and replaces none of it. Nothing of it stays in the
 repository of loop2: no Playwright test, no frame, no snapshot, no screenshot. A screenshot you
-show the human goes to the public repository `mariusznazar/screenshots` and reaches the
+show the human goes to the public repository `github.com/mariusznazar/screenshots` and reaches the
 description of the request as an image (section "Show a screenshot to the human"); the rest of its
 evidence goes into the report.
 
@@ -294,7 +294,7 @@ page itself makes:
    another state, copy it to `.playwright-cli/` as `frames.js` is copied and change what it builds:
    `newGame`, `createCharacter`, `buyBranch`, `send` and `discover` are in `src/browser/sim/`, and
    the document of a state that the game would not load is refused on loading, so check a new state
-   with `loadSavedGame` of `saved-game.js` before sending it.
+   with `loadSavedGame` of `src/browser/sim/saved-game.ts` before sending it.
 3. Start the game, open it and make the account through the login card (step 1 of the way into a
    map run); create no character, since the document brings it.
 4. Send the document from the signed-in page: `GET /api/saved-game` gives the `revision` held, then
@@ -365,8 +365,8 @@ watch something else, copy `frames.js` to `.playwright-cli/` and change what it 
 
 Of what a check makes, only a screenshot reaches the description of the request; describe motion
 in words and keep logs and outputs in the report. A screenshot you show lies in
-`mariusznazar/screenshots`, a public repository that holds only the screenshots of public products,
-in the directory `loop2/` and in it a directory named as your cycle (the name of the cycle's
+`github.com/mariusznazar/screenshots`, a public repository that holds only the screenshots of public products,
+in the directory `loop2` and in it a directory named as your cycle (the name of the cycle's
 directory under `.runs/task-cycles/`), as D-418 settles. The repository is public and keeps its
 history, so look at the screenshot
 before you push it: it may show only the made-up account of this start, an address at
@@ -469,7 +469,7 @@ node .claude/skills/loop2-play/save-frames.mjs .playwright-mcp/frames.json
 The images stand in `.playwright-cli/frames/`, as above. The viewport stays on that tab, so a layout
 judged after this is the one at 1280×720. The MCP server takes a file only under the
 directory it started in, so `browser_run_code_unsafe` gets this code as text, not as a file of a
-worktree, and where the server started elsewhere the path of `frames.json` is that directory's.
+worktree, and where the server started elsewhere the path of `.playwright-mcp/frames.json` is that directory's.
 
 ## End the check
 
