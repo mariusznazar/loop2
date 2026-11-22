@@ -330,7 +330,7 @@ Kontrolki odstępujące od tej listy stanów:
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
   wyszarzona (stan disabled) ma ramkę przerywaną w `text-disabled` — słowo
-  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289);
+  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289), który łamie się tylko między słowami, a nazwa komórki także w słowie, gdy żaden odstęp nie pomaga;
   pod kursorem nie dostaje tła `highlight`; klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
   powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
   wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
@@ -570,7 +570,7 @@ pomiarze.
 
 ### Everything is done by touch, and every control holds the touch target
 
-- **Decision:** D-396 · D-44 · D-19 · D-288 · D-43 · D-47
+- **Decision:** D-396 · D-44 · D-19 · D-288 · D-306 · D-296 · D-43 · D-47
 - **Invariant:** none
 - **Good:** Strzałki „↑” i „↓” w nagłówku grupy reguł w obu układach, uchwyt dla myszy obok; zaznaczenie wiersza tabeli odkrytych kafelków dotknięciem kafelka obok zaznaczenia najechaniem; przycisk niszczący w `danger` już w spoczynku; `min-height: var(--touch-target-min)` w bloku `@media (width < 1280px)` reguły wiersza listy, który jest odnośnikiem.
 - **Bad:** Czynność, którą da się zrobić tylko przeciągnięciem myszą albo tylko po najechaniu kursorem; przycisk niższy albo węższy niż `--touch-target-min` w układzie telefonu; `min-height: 48px` wpisane zamiast tokenu; kontrolka bez swojego celu dotyku tylko dlatego, że jej reguła stoi w arkuszu ekranu, a nie we wspólnym.
@@ -609,6 +609,10 @@ układu komputera zostają takie, jakie są.
   jest kontrolką — cały wiersz nawigacji, pozycja menu, odnośnik stojący osobno jako cel podobny do
   przycisku — trzyma minimum (D-396). To jedyny wyjątek od minimum: D-47 liczy każdy odnośnik jako
   kontrolkę, a cel wysoki na 48 px rozerwałby linię tekstu.
+- Wiersz, który otwiera się dotknięciem, otwiera się dotknięciem w dowolnym miejscu poza
+  swoimi przyciskami, a przyciski nie sięgają nad jego środek: dotknięcie środka wiersza
+  reguły nie trafia w sąsiedni przycisk i nie zmienia programu (D-306, D-296; reguła
+  Program editor).
 
 Przegląd zmiany czyta każdą kontrolkę zmienionego ekranu wobec minimum, w pomiarze z
 `.claude/skills/loop2-play/SKILL.md` (lista `controlsSmallerThan48`), i każdą czynność wobec
@@ -985,10 +989,10 @@ węższym niż 1280 px, lewy stoi nad prawym (D-396).
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310 · D-396
+- **Decision:** D-288 · D-289 · D-290 · D-291 · D-292 · D-293 · D-296 · D-306 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310 · D-396
 - **Invariant:** none
-- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; w nagłówku grupy reguł „↑” i „↓” w obu układach; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
-- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym; strzałki grupy reguł tylko w układzie komputera albo grupa, którą przesuwa wyłącznie przeciąganie uchwytem.
+- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; w nagłówku grupy reguł „↑” i „↓” w obu układach; dotknięcie środka wiersza reguły albo nagłówka grupy, jego tekstu i jego wolnego pasa otwiera je; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
+- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym; strzałki grupy reguł tylko w układzie komputera albo grupa, którą przesuwa wyłącznie przeciąganie uchwytem; przycisk wiersza albo nagłówka stojący pod jego środkiem, tak że dotknięcie środka przesuwa regułę zamiast ją otworzyć; powód wyszarzonej komórki przecięty w środku słowa.
 
 Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
 Wygląd jego części bierze się z ról tabeli Roles i z wartości pliku tokenów;
@@ -1000,7 +1004,9 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
   kolorze tekstu obok (D-291, D-43). Wiersz otwarty stoi na tle `highlight`,
   a wiersz pod kursorem też, o ile nie ma tła stanu, z tekstem w ich własnych
-  rolach (reguła Every background with its text). Liczba z ułamkiem w zdaniu
+  rolach (reguła Every background with its text); w układzie telefonu na urządzeniu,
+  które nie najeżdża, wiersz nieotwarty nie dostaje tła pod kursorem (reguła Two
+  layouts and one threshold between them). Liczba z ułamkiem w zdaniu
   reguły stoi z przecinkiem dziesiętnym, jak temperatura w wierszu ciała
   (D-57): „Temperatura poniżej 36,5 °C”.
 - Znaki stanu (D-308, D-309, D-310) stoją tylko przy kopii przejścia, w
@@ -1024,8 +1030,28 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   żadna czynność nie ma tylko przeciągania (reguła Everything is done by touch,
   and every control holds the touch target). Strzałki są wspólnymi przyciskami i
   trzymają minimum celu dotyku tak samo jak każdy przycisk.
+- Wiersz reguły i nagłówek grupy otwiera dotknięcie albo kliknięcie w dowolnym
+  miejscu poza ich przyciskami (D-306, D-296). Tekst wiersza — uchwyt, numer, warunek,
+  czynność, powód, czas, licznik; w nagłówku uchwyt, numer, nazwa, warunek, liczba
+  reguł, licznik — stoi w elemencie, który sam przyjmuje kliknięcie i nie zawiera
+  przycisku, a przyciski stoją obok niego, strzałki „↑” i „↓” razem, przed
+  pozostałymi (`rule-list-body`, `rule-list-arrows`, `rule-list-controls` w
+  `src/browser/view/rule-list.tsx`). Powód: Chromium oddaje dotknięcie, które ląduje
+  o kilka pikseli od przycisku, temu przyciskowi, o ile pod palcem nie leży element,
+  który przyjmuje kliknięcia i nie ma w sobie przycisku; bez takiego elementu
+  dotknięcie tekstu obok strzałek przesuwałoby regułę zamiast ją otworzyć.
+- W układzie telefonu przyciski wiersza i nagłówka stoją w osobnej linii pod
+  tekstem: strzałki z lewej, pozostałe przyciski z prawej, a środek linii jest
+  wolny, bo dotknięcie najczęściej ląduje w środku wiersza. Każdy przycisk
+  zachowuje cel `--touch-target-min`. Cena: wiersz i nagłówek mają w układzie telefonu
+  dwie linie także przy obszarze strony 720–1279 px, gdzie przyciski zmieściłyby się
+  obok tekstu, bo CSS nie odróżni linii, która się mieści, od zawiniętej.
 - Panel reguły stoi na tle `panel` z ramką w `divider`; podpisy jego pól są
   w `text-label`. Komórki jego wyboru podaje reguła States of shared controls.
+  W układzie telefonu wybór każdego pola stoi w dwóch kolumnach, jak warunki
+  (D-290), bo przy czterech komórka ma około 70 px, za mało na słowo „niewykupiona” w
+  powodzie wyszarzonej komórki; strzałki klawiatury idą po kolumnach, które siatka
+  rysuje, a nie po stałej liczbie (`drawnColumns` w `src/browser/view/rule-panel.tsx`).
 - Linia upuszczenia — linia, która pokazuje, gdzie wyląduje przeciągana reguła
   albo grupa reguł — ma napis „tu wyląduje” w `text-strong`, a sama linia bierze
   kolor tego napisu (D-279, reguła A line at a text takes the colour of that

@@ -4525,7 +4525,7 @@ open while the screens move to React.
 ### D-280 — Which screens does the game have, and how does the player move between them?
 
 The game has the screens Siedziba, Postać, Mapy, Programy, Wiedza and Przejście, all of one content width
-under one menu bar, in the computer layout and in the phone layout (D-396): at most 1344 px, and the full width of a window narrower than that.
+under one menu bar, in the computer layout and in the phone layout (D-396): at most 1344 px, and the width of the window less the page's side padding where that is narrower.
 
 The menu bar holds at
 its left the game's name, which stands alone on the waiting screens (D-262), and over the game the
@@ -4558,11 +4558,12 @@ An account with the owner role (D-410) has one more screen, the list of accounts
   player holding no link, the items of the bar equal for both, and an account with the owner role
   following the link to the screen of the list of accounts. For the width of the content, an agent
   compares a change with the part no test holds:
-  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide, as
-    wide as a window 1280 px wide in the computer layout, and as wide as a window in the phone layout,
-    360 px or 1000 px wide
-  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than a
-    window 1000 px wide in the phone layout
+  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide, 1248 px
+    wide in a window 1280 px wide, where the page's padding is 16 px at each side in the computer
+    layout, and 344 px wide in a window 360 px wide, where it is 8 px at each side in the phone
+    layout, the window's width less that padding in any window between
+  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than the
+    window's width less the page's padding in the phone layout
 - **Origin:** none
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
@@ -5518,7 +5519,7 @@ A fault of the phone layout is fixed where a window of its width that is taller 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-firefox-webkit-releases · android-touch-target-size
 - **Relations:** none
-- **Verification:** tests: the name of a cell of a pick free, by the stylesheets, to wrap beside its icon and to break where no space helps, in an element of its own between the icon and the reason. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** tests: the name of a cell of a pick free, by the stylesheets, to wrap beside its icon and to break where no space helps, in an element of its own between the icon and the reason; the text of a rule's row and of a group's header in an element of its own that takes a click and holds no button, and the arrows of the row and of the header standing together before its other buttons. An agent compares a change with the part no invariant and no test holds:
   - complies: a check of a change in Chromium at a page area of 1280 × 720 px and, for the phone layout, at a page area 360 px wide in an upright window; a fix of a name crossing the border of its frame in the phone layout at a page area 1100 px wide; a table of the phone layout laid out to fit the width of its frame at a page area 360 px wide; a button of the phone layout 48 px high and 48 px wide or larger at a page area 360 px wide; a link of the credits inside a running sentence at the size of its text in the phone layout
   - violates: a screen of the phone layout that scrolls to the side at a page area 360 px wide; a frame of the phone layout whose content scrolls to the side inside it; a control of the phone layout with a touch target smaller than 48 px in height or in width, a link that stands by itself as a control among them; an action of the phone layout done only by dragging with a mouse or by hovering; a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px; a layout of its own for a window narrower than 1280 px and wider than a phone; a change made only to fix a fault seen in a phone turned sideways that a window of the same width taller than it is wide does not show
 - **Origin:** none
@@ -9525,15 +9526,21 @@ program rule dropped on it lands at its end while the group stays folded.
 ### D-296 — Where does the player change and delete a rule group?
 
 A click on the header of a rule group opens the rule panel with the group's name and condition, and
-the group's „✕” stands in its header.
+the group's „✕” stands in its header. A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** tests: a click on the header of a rule group asking to open the group, on
   Programy and on the screen of a map run, and the panel then standing under that header with the
-  field of the group's name; the panel of a group holding the fields of its name and its condition;
-  „✕” of the group in its header.
+  field of the group's name; a click on the bare header, outside its text and its buttons, asking
+  once to open the group; the panel of a group holding the fields of its name and its condition;
+  „✕” of the group in its header. For a tap on the header as a real phone gives it, an agent
+  compares a change with the part no test holds:
+  - complies: in the phone layout at a page area 360 px wide a tap at the centre of a group's
+    header and on its text opening the group and moving no group
+  - violates: a tap at the centre of a group's header in the phone layout landing on its „↑” or
+    „↓” and moving the group
 - **Origin:** none
 
 *Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
@@ -9867,10 +9874,12 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
 as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes
 nothing, and the panel stays open on the same field and goes with the rule to its new group.
 
+A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule.
+
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** tests: a click on a rule's row opening the panel on the condition, and
+- **Verification:** tests: a click on a rule's row opening the panel on the condition, and a click on the bare row, outside its text and its buttons, asking once to open the rule, and
   opening another rule showing that one on its condition; the fields in the order condition,
   number, target of the condition, action, target of the action, each only where the rule has it;
   each pick changing the rule at once and moving on, a pick of the value held too; Enter
@@ -9883,9 +9892,11 @@ nothing, and the panel stays open on the same field and goes with the rule to it
   compares a change with the part no invariant and no test holds:
   - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
     with the mouse, the rule then holding 8; „Usuń” of a rule whose panel stands open closing that
-    panel
+    panel; in the phone layout at a page area 360 px wide a tap at the centre of a rule's row, on its
+    text and on its empty strip opening the rule and moving no rule
   - violates: a number typed and left with no Enter dropped, the rule keeping the number it held;
-    the panel left open on a rule that was deleted
+    the panel left open on a rule that was deleted; a tap at the centre of a rule's row in the phone
+    layout landing on its „↑” and moving the rule
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 szt. ·
