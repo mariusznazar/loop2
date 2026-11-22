@@ -528,8 +528,9 @@ Jak układ telefonu się zapisuje:
 
 Co układ telefonu robi z ekranem:
 
-- Treść ma szerokość okna, a w oknie szerszym niż 1344 px najwyżej 1344 px, jak w układzie
-  komputera (D-280).
+- Treść ma szerokość okna pomniejszoną o boczny odstęp strony, a najwyżej 1344 px, jak w układzie
+  komputera (D-280); odstęp strony w układzie telefonu to 8 px z każdej strony, na którym stoi
+  rachunek rozmiaru sceny (reguła The scene of a map run).
 - Obszary ekranu stoją w jednej kolumnie, jeden pod drugim (D-282): ekran przejścia — świat,
   program i obszar z zakładkami „Kronika” i „Teren”, w tej kolejności (D-311); inny ekran, na
   przykład Mapy, Wiedza albo Postać — w kolejności, w jakiej obszary stoją w układzie komputera, od
@@ -769,8 +770,8 @@ ekranów.
 - **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
 
 Pasek menu stoi u góry każdego ekranu zalogowanego gracza. Treść pod nim ma
-najwyżej 1344 px szerokości, a w węższym oknie całą szerokość okna, w układzie
-komputera i w układzie telefonu (D-280, D-396);
+najwyżej 1344 px szerokości, a tam, gdzie okno pomniejszone o boczny odstęp strony jest węższe,
+tyle, w układzie komputera i w układzie telefonu (D-280, D-396);
 szerokość z maksimum jest wymiarem układu, nie wartością wpisaną zamiast tokenu
 (D-43).
 
