@@ -1032,18 +1032,27 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   and every control holds the touch target). Strzałki są wspólnymi przyciskami i
   trzymają minimum celu dotyku tak samo jak każdy przycisk.
 - Wiersz reguły i nagłówek grupy otwiera dotknięcie albo kliknięcie w dowolnym
-  miejscu poza ich przyciskami (D-306, D-296). Tekst wiersza — uchwyt, numer, warunek,
+  miejscu poza ich przyciskami, także na uchwycie, bo przeciągnięcie uchwytem
+  kliknięcia nie daje (D-306, D-296). Tekst wiersza — uchwyt, numer, warunek,
   czynność, powód, czas, licznik; w nagłówku uchwyt, numer, nazwa, warunek, liczba
   reguł, licznik — stoi w elemencie, który sam przyjmuje kliknięcie i nie zawiera
   przycisku, a przyciski stoją obok niego, strzałki „↑” i „↓” razem, przed
   pozostałymi (`rule-list-body`, `rule-list-arrows`, `rule-list-controls` w
-  `src/browser/view/rule-list.tsx`). Powód: Chromium oddaje dotknięcie, które ląduje
+  `src/browser/view/rule-list.tsx`); przerwa przed strzałkami, przerwa między dwoma
+  przyciskami i odstęp między grupami przycisków to też takie elementy
+  (`rule-list-gap`). Powód: Chromium oddaje dotknięcie, które ląduje
   o kilka pikseli od przycisku, temu przyciskowi, o ile pod palcem nie leży element,
-  który przyjmuje kliknięcia i nie ma w sobie przycisku; bez takiego elementu
-  dotknięcie tekstu obok strzałek przesuwałoby regułę zamiast ją otworzyć.
+  który przyjmuje kliknięcia i nie ma w sobie przycisku, a sam wiersz, w którym stoją
+  przyciski, pomija; bez takiego elementu dotknięcie tekstu obok strzałek przesuwałoby
+  regułę, a dotknięcie wolnego końca linii tekstu nad „Usuń” albo „✕” usuwałoby regułę
+  albo grupę zamiast ją otworzyć.
 - W układzie telefonu przyciski wiersza i nagłówka stoją w osobnej linii pod
   tekstem: strzałki z lewej, pozostałe przyciski z prawej, a środek linii jest
-  wolny, bo dotknięcie najczęściej ląduje w środku wiersza. Każdy przycisk
+  wolny od przycisków, bo dotknięcie najczęściej ląduje w środku wiersza. Żadne miejsce
+  wiersza poza przyciskami nie jest gołym wierszem: tekst jest pudełkiem na całą
+  pierwszą linię, aż do jej prawego końca, jego dopełnienie zastępuje dopełnienie
+  wiersza, a w linii przycisków przerwy i odstęp z `rule-list-gap` zastępują odstępy
+  wiersza i grup (w układzie komputera się ich nie rysuje). Każdy przycisk
   zachowuje cel `--touch-target-min`. Cena: wiersz i nagłówek mają w układzie telefonu
   dwie linie także przy obszarze strony 720–1279 px, gdzie przyciski zmieściłyby się
   obok tekstu, bo CSS nie odróżni linii, która się mieści, od zawiniętej.

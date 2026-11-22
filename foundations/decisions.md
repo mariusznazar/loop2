@@ -5519,7 +5519,7 @@ A fault of the phone layout is fixed where a window of its width that is taller 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-firefox-webkit-releases · android-touch-target-size
 - **Relations:** none
-- **Verification:** tests: the name of a cell of a pick free, by the stylesheets, to wrap beside its icon and to break where no space helps, in an element of its own between the icon and the reason; the text of a rule's row and of a group's header in an element of its own that takes a click and holds no button, and the arrows of the row and of the header standing together before its other buttons. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** tests: the name of a cell of a pick free, by the stylesheets, to wrap beside its icon and to break where no space helps, in an element of its own between the icon and the reason; the text of a rule's row and of a group's header in an element of its own that takes a click and holds no button, with a gap before the arrows, a gap between two buttons and a spacer between the groups of buttons, each an element of its own that takes a click and holds no button, and the arrows of the row and of the header standing together before its other buttons. An agent compares a change with the part no invariant and no test holds:
   - complies: a check of a change in Chromium at a page area of 1280 × 720 px and, for the phone layout, at a page area 360 px wide in an upright window; a fix of a name crossing the border of its frame in the phone layout at a page area 1100 px wide; a table of the phone layout laid out to fit the width of its frame at a page area 360 px wide; a button of the phone layout 48 px high and 48 px wide or larger at a page area 360 px wide; a link of the credits inside a running sentence at the size of its text in the phone layout
   - violates: a screen of the phone layout that scrolls to the side at a page area 360 px wide; a frame of the phone layout whose content scrolls to the side inside it; a control of the phone layout with a touch target smaller than 48 px in height or in width, a link that stands by itself as a control among them; an action of the phone layout done only by dragging with a mouse or by hovering; a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px; a layout of its own for a window narrower than 1280 px and wider than a phone; a change made only to fix a fault seen in a phone turned sideways that a window of the same width taller than it is wide does not show
 - **Origin:** none
@@ -9533,8 +9533,9 @@ the group's „✕” stands in its header. A tap or a click anywhere on the hea
 - **Relations:** derives from D-288
 - **Verification:** tests: a click on the header of a rule group asking to open the group, on
   Programy and on the screen of a map run, and the panel then standing under that header with the
-  field of the group's name; a click on the bare header, outside its text and its buttons, asking
-  once to open the group; the panel of a group holding the fields of its name and its condition;
+  field of the group's name; a click on the bare header, on a gap between its buttons and on its
+  handle asking once to open the group, and a click on its button asking nothing of it; the header
+  covered outside its buttons by elements that take a click and hold no button; the panel of a group holding the fields of its name and its condition;
   „✕” of the group in its header. For a tap on the header as a real phone gives it, an agent
   compares a change with the part no test holds:
   - complies: in the phone layout at a page area 360 px wide a tap at the centre of a group's
@@ -9879,7 +9880,7 @@ A tap or a click anywhere on a program rule's row outside its buttons opens the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** tests: a click on a rule's row opening the panel on the condition, and a click on the bare row, outside its text and its buttons, asking once to open the rule, and
+- **Verification:** tests: a click on a rule's row opening the panel on the condition, and a click on the bare row, on a gap between its buttons and on its handle asking once to open the rule, the row covered outside its buttons by elements that take a click and hold no button, and
   opening another rule showing that one on its condition; the fields in the order condition,
   number, target of the condition, action, target of the action, each only where the rule has it;
   each pick changing the rule at once and moving on, a pick of the value held too; Enter

@@ -145,20 +145,24 @@ function asksToOpen(event: KeyboardEvent<HTMLElement>): boolean {
   );
 }
 
-/** Whether a click reached the row or header itself or its text, not a button or the handle in it. */
+/**
+ * Whether a click reached the row or header itself or its text, its handle included, not a button in
+ * it. A drag by the handle gives no click, so a click on the handle opens as the text does (D-306, D-296).
+ */
 function clickedBody(event: MouseEvent<HTMLElement>): boolean {
-  return !(
-    event.target instanceof Element &&
-    event.target.closest("button, .drag-handle")
-  );
+  return !(event.target instanceof Element && event.target.closest("button"));
 }
 
-/** Whether a click reached the bare row or header, outside its text, which asks for itself. */
+/**
+ * Whether a click reached the bare row or header, outside its text and its gaps, which ask for
+ * themselves.
+ */
 function clickedBare(event: MouseEvent<HTMLElement>): boolean {
   return (
     clickedBody(event) &&
     !(
-      event.target instanceof Element && event.target.closest(".rule-list-body")
+      event.target instanceof Element &&
+      event.target.closest(".rule-list-body, .rule-list-gap")
     )
   );
 }
@@ -168,8 +172,10 @@ function clickedBare(event: MouseEvent<HTMLElement>): boolean {
  * which a click on the text asks to open. The element takes the click itself, not the row that also
  * holds the buttons, because Chromium's touch adjustment gives a tap that lands near a button to that
  * button unless an element that takes clicks and holds no button lies under the finger, so a tap on
- * the text beside the arrows of the phone layout opens the rule and moves nothing (D-396). The
- * stylesheet draws the element as if its parts stood in the row itself (`display: contents`).
+ * the text beside the buttons of the phone layout opens the rule and moves or deletes nothing
+ * (D-396, D-306, D-296). In the computer layout the stylesheet draws the element as if its parts stood
+ * in the row itself (`display: contents`); in the phone layout it is a box over the whole line of the
+ * text, to its right end.
  */
 function RowText({
   onOpen,
@@ -187,6 +193,29 @@ function RowText({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * An empty element among the buttons of a row or a header that a click asks to open, for the same
+ * reason as the text (`RowText`): a gap before the arrows and between two buttons, and the spacer
+ * between the arrows and the other buttons, so that in the phone layout no part of the line of the
+ * buttons outside a button is bare row, which Chromium's touch adjustment passes over for a near
+ * button. The stylesheet draws none of them in the computer layout.
+ */
+function Gap({
+  onOpen,
+  spacer = false,
+}: {
+  onOpen: () => void;
+  spacer?: boolean;
+}) {
+  return (
+    <span
+      className={spacer ? "rule-list-gap rule-list-spacer" : "rule-list-gap"}
+      aria-hidden="true"
+      onClick={onOpen}
+    />
   );
 }
 
@@ -328,6 +357,7 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
           )}
         </RowText>
         <span className="rule-list-controls">
+          <Gap onOpen={openRule} />
           <span className="rule-list-arrows">
             <ReactButton
               text="↑"
@@ -336,6 +366,7 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
               buttonRef={track(`rule:${each.id}:up`)}
               onClick={() => edits.move(group, index, -1)}
             />
+            <Gap onOpen={openRule} />
             <ReactButton
               text="↓"
               label="W dół"
@@ -344,6 +375,7 @@ function RuleRow({ parts, group, groupIndex, index, panelHere }: RowProps) {
               onClick={() => edits.move(group, index, 1)}
             />
           </span>
+          <Gap onOpen={openRule} spacer />
           <ReactButton
             text="Usuń"
             kind="destructive"
@@ -427,6 +459,7 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
         )}
       </RowText>
       <span className="rule-list-controls">
+        <Gap onOpen={openGroup} />
         <span className="rule-list-arrows">
           <ReactButton
             text="↑"
@@ -435,6 +468,7 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
             buttonRef={track(`group:${group.id}:up`)}
             onClick={() => edits.moveGroup(groupIndex, -1)}
           />
+          <Gap onOpen={openGroup} />
           <ReactButton
             text="↓"
             label="Grupa w dół"
@@ -443,12 +477,14 @@ function GroupHeader({ parts, group, groupIndex }: GroupProps) {
             onClick={() => edits.moveGroup(groupIndex, 1)}
           />
         </span>
+        <Gap onOpen={openGroup} spacer />
         <ReactButton
           text={isFolded ? "▸" : "▾"}
           label={isFolded ? "Rozwiń grupę" : "Zwiń grupę"}
           expanded={!isFolded}
           onClick={() => edits.toggleFold(group.id)}
         />
+        <Gap onOpen={openGroup} />
         <ReactButton
           text="✕"
           label="Usuń grupę"

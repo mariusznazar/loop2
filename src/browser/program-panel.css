@@ -353,11 +353,16 @@
 
 /*
  * The text of a row or a header stands in an element of its own (`rule-list-body` in `rule-list.tsx`),
- * which takes a tap on the text apart from the buttons; it draws no box, so its parts stand in the row
- * as items of the row's own line.
+ * which takes a tap on the text apart from the buttons; in the computer layout it draws no box, so its
+ * parts stand in the row as items of the row's own line, and the gaps and the spacer among the buttons
+ * (`rule-list-gap`) are not drawn. The phone layout gives both a box (the block below).
  */
 .rule-list-body {
   display: contents;
+}
+
+.rule-list-gap {
+  display: none;
 }
 
 /* The arrows and „Usuń” of a row, the fold and „✕” of a header, at the end of the line. */
@@ -514,8 +519,13 @@
  * and wide, as the buttons in them do (styles.css). The buttons already make a row higher than the
  * minimum; the rule keeps that so where a row holds none. The buttons stand on a line of their own
  * under the text, the arrows at its left and the other buttons at its right, so the middle of a row,
- * where a tap most often lands, is bare row and opens the rule: Chromium gives a tap that lands a few
- * pixels from a button to that button. Nothing in a row is wider than the row.
+ * where a tap most often lands, is far from every button. Chromium gives a tap that lands a few pixels
+ * from a button to that button unless an element that takes clicks and holds no button lies under the
+ * finger, and passes over the row, which holds the buttons; so no part of a row outside its buttons is
+ * bare row (D-306, D-296): the text is a box over the whole first line, its padding taking the row's
+ * own, and on the line of the buttons a gap before the arrows, a gap between two buttons and the
+ * spacer between the groups (`rule-list-gap`, drawn only here) take the place of the gaps of the flex
+ * rows. Nothing in a row is wider than the row.
  *
  * The pick of the rule panel stands in two columns in every field, as the conditions do (D-290): four
  * to a line leave a cell about 70 px wide at a page area 360 px wide, too narrow for the word
@@ -528,6 +538,24 @@
     box-sizing: border-box;
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
+    padding: 0;
+    row-gap: 0;
+  }
+
+  .rule-list-body {
+    display: flex;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    align-items: center;
+    gap: var(--space-xs) var(--space-s);
+    box-sizing: border-box;
+    min-width: 0;
+    padding: var(--space-2xs) var(--space-xs) var(--space-xs);
+  }
+
+  .rule-list-controls,
+  .rule-list-arrows {
+    gap: 0;
   }
 
   .rule-list-controls {
@@ -535,8 +563,15 @@
     margin-left: 0;
   }
 
-  .rule-list-arrows {
-    margin-right: auto;
+  .rule-list-gap {
+    display: block;
+    flex: none;
+    align-self: stretch;
+    width: var(--space-xs);
+  }
+
+  .rule-list-spacer {
+    flex: 1 1 auto;
   }
 
   .rule-panel-cells {

@@ -357,39 +357,58 @@ test("a click on a row asks to open that rule, on a header that group, and a cli
   });
 });
 
-// Breaks: a click on the bare row, outside its text and its buttons, that asks nothing, or one that
-// asks twice — the strip beside the buttons of the phone layout is the bare row.
-test("a click on the bare row or header, outside its text and buttons, asks once to open it", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-296 "A click on the header of a rule group opens the rule panel"
+// Breaks: a click on the bare row, on a gap between its buttons or on its handle that asks nothing,
+// or one that asks twice; a click on a button that asks to open.
+test("a click anywhere on a row or a header outside its buttons — its bare area, a gap between buttons, its handle — asks once to open it", async () => {
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
-    await press(rowOf(page.root, 2));
-    await press(rowOf(page.root, 2).querySelector(".rule-list-controls"));
-    await press(headerOf(page.root, 2));
+    const row = rowOf(page.root, 2);
+    const header = headerOf(page.root, 2);
+    await press(row);
+    await press(row.querySelector(".rule-list-controls"));
+    await press(row.querySelector(".rule-list-spacer"));
+    await press(row.querySelector(".rule-list-arrows .rule-list-gap"));
+    await press(row.querySelector(".drag-handle"));
+    await press(header);
+    await press(header.querySelector(".rule-list-spacer"));
+    await press(header.querySelector(".drag-handle"));
+    await press(buttonIn(header, "▾"));
     assert.deepEqual(
       calls.filter((call) => call[0] === "open"),
       [
-        ["open", { groupId: 1, ruleId: 2 }],
-        ["open", { groupId: 1, ruleId: 2 }],
-        ["open", { groupId: 2, ruleId: null }],
+        ...Array(5).fill(["open", { groupId: 1, ruleId: 2 }]),
+        ...Array(3).fill(["open", { groupId: 2, ruleId: null }]),
       ],
     );
   });
 });
 
-// Breaks: the text of a row standing straight in the row, beside its buttons, so Chromium's touch
-// adjustment gives a tap on the text near a button to that button; or the arrows not grouped apart
-// from the other buttons, so the phone layout cannot set them at the left and the rest at the right,
-// away from the middle of the row. jsdom lays nothing out: the places of the buttons and the taps are
-// the browser check's (D-88).
-test("the text of a row and of a header stands in an element of its own that takes a click and holds no button, and the arrows stand together before the other buttons", async () => {
+// Breaks: a part of a row outside its buttons that no element of its own covers — the text standing
+// straight in the row, or no element between and around the buttons — so Chromium's touch adjustment
+// gives a tap there to a near button, „Usuń” and „✕” among them; or the arrows not grouped apart from
+// the other buttons. jsdom lays nothing out: where the elements stand and where a tap goes are the
+// browser check's (D-88).
+test("a row and a header are covered outside their buttons by elements that take a click and hold no button: the text, a gap before the arrows and between two buttons, a spacer between the groups", async () => {
   // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame, and everything the game offers is done by touch."
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
   await withPage(async (page) => {
     await mount(page, twoGroups());
+    const partOf = (element) =>
+      element.nodeName === "BUTTON"
+        ? element.textContent
+        : element.classList.contains("rule-list-spacer")
+          ? "spacer"
+          : element.classList.contains("rule-list-gap")
+            ? "gap"
+            : element.className === "rule-list-arrows"
+              ? [...element.children].map(partOf)
+              : element.className;
     for (const [line, rest] of [
       [rowOf(page.root, 1), ["Usuń"]],
-      [headerOf(page.root, 1), ["▾", "✕"]],
+      [headerOf(page.root, 1), ["▾", "gap", "✕"]],
     ]) {
       const parts = [...line.children].map((child) => child.className);
       assert.deepEqual(parts, ["rule-list-body", "rule-list-controls"]);
@@ -399,14 +418,23 @@ test("the text of a row and of a header stands in an element of its own that tak
         body.querySelector(".rule-condition, .rule-list-condition"),
         "the condition stands in the text",
       );
-      // The click listener of its own is what makes the text a target of a tap apart from the row.
-      assert.equal(typeof body.onclick, "function");
-      const controls = [...line.children[1].children].map((child) =>
-        child.className === "rule-list-arrows"
-          ? [...child.children].map((button) => button.textContent)
-          : child.textContent,
+      assert.deepEqual([...line.children[1].children].map(partOf), [
+        "gap",
+        ["↑", "gap", "↓"],
+        "spacer",
+        ...rest,
+      ]);
+      // A click listener of its own on each cover is what makes it a target of a tap apart from the
+      // row, which holds the buttons too.
+      const covers = [body, ...line.querySelectorAll(".rule-list-gap")];
+      assert.ok(
+        covers.every(
+          (cover) =>
+            typeof cover.onclick === "function" &&
+            cover.querySelectorAll("button").length === 0,
+        ),
+        "each cover takes a click and holds no button",
       );
-      assert.deepEqual(controls, [["↑", "↓"], ...rest]);
     }
   });
 });
