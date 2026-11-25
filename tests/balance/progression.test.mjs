@@ -10,7 +10,7 @@ import { buildSkills, seedRange, sweep } from "../../balance/engine.mjs";
 import {
   MAX_STOCK_RUNS,
   PROGRESSION_SEEDS,
-  SOLVABLE_SHARE,
+  SOLVABLE_SEEDS,
   measureProgression,
   neededBranches,
   renderProgression,
@@ -53,11 +53,11 @@ function cellsOf(table) {
     );
 }
 
-test("the measurement's seeds are 1 to 500, and a map counts as solvable from a fifth of them", () => {
+test("the measurement's seeds are 1 to 500, and a map counts as solvable from one of them", () => {
   assert.equal(PROGRESSION_SEEDS.length, 500);
   assert.equal(PROGRESSION_SEEDS[0], 1);
   assert.equal(PROGRESSION_SEEDS.at(-1), 500);
-  assert.equal(SOLVABLE_SHARE, 20);
+  assert.equal(SOLVABLE_SEEDS, 1);
 });
 
 test("a program needs the branch that opens an action it uses, and no other", () => {
@@ -235,6 +235,22 @@ test("a map no program solves is not solvable, whatever it is measured with", ()
   });
   assert.equal(maps[0].bestShare, 0);
   assert.equal(maps[0].solvable, false);
+});
+
+// decision: D-438 "can be solved where its best reference program solves at least one of the seeds"
+test("a map whose best program solves one seed of eight, a share far below a fifth, is solvable", () => {
+  const { rows, maps } = measureProgression({
+    mapIds: ["forest"],
+    seeds: seedRange(9, 16),
+    programIds: ["forestNaive"],
+  });
+  assert.equal(
+    rows[0].solved,
+    1,
+    "precondition: one seed of the eight is solved",
+  );
+  assert.equal(maps[0].bestShare, 12.5);
+  assert.equal(maps[0].solvable, true);
 });
 
 test("the same measurement gives the same result twice", () => {

@@ -37,8 +37,8 @@ import { LOOP_START_MS } from "./loop.mjs";
 export const PROGRESSION_SEEDS = seedRange(1, 500);
 /** The manual runs of solved maps after which the stock of a take list is given up as not gathered. */
 export const MAX_STOCK_RUNS = 100;
-/** The share of the seeds, in percent, from which a map counts as solvable by its best program. */
-export const SOLVABLE_SHARE = 20;
+/** The seeds of the measurement a map's best program solves, at the fewest, for the map to count as solvable (D-438). */
+export const SOLVABLE_SEEDS = 1;
 
 /**
  * The branches a program needs: those whose effect opens an action the program's rules use. A
@@ -222,6 +222,7 @@ function measureProgram({
     programId,
     programLabel: labels[programId],
     runs: summary.runs,
+    solved: summary.solved,
     solvedShare: summary.solvedShare,
     solveMedian: summary.solveMinute?.median ?? null,
     deaths: summary.deaths,
@@ -250,7 +251,7 @@ function measureMap({ mapId, before, programIds, seeds, labels }) {
     bestProgramId: best.programId,
     bestLabel: best.programLabel,
     bestShare: best.solvedShare,
-    solvable: best.solvedShare >= SOLVABLE_SHARE,
+    solvable: best.solved >= SOLVABLE_SEEDS,
     manualRuns: best.stock.runs,
     stockComplete: best.stock.complete,
     practiceIn,
@@ -265,7 +266,7 @@ function measureMap({ mapId, before, programIds, seeds, labels }) {
  * The progression measurement: for each map of `mapIds` (the game's maps, each with the maps that open
  * it measured first) every reference program of `programIds`, on `seeds`, from the state the maps
  * before it give. Gives the `rows` of the requested maps, a row per map and program, and the `maps`
- * with their best program, whether it solves a fifth of the seeds, the manual runs its stock took, and
+ * with their best program, whether it solves one seed or more, the manual runs its stock took, and
  * the practice the map was measured with and its first solving pays. A map the game's data lacks, and
  * a program that is no reference program, are refused before any measurement.
  */
