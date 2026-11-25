@@ -4,6 +4,7 @@
 // simulation has its own cases in tests/sim/rule-signs.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { NEXT_LABEL, nowRows } from "../../dist/browser/view/now-lines.js";
 
 const ALWAYS = { kind: "always" };
@@ -119,6 +120,40 @@ test("Teraz in the minutes of an attack says the fight alone, with the creature 
     role: "text",
     right: null,
   });
+});
+
+// Catches the bear's name read by the rule of the ending „k” (its name ends in „ź”, so that rule gives
+// „niedźwiedź”), or a bear's form written into the view in place of the creature's data.
+test("Teraz in the minutes of an attack by a bear says „Walczy z niedźwiedziem”, the form of its data", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
+  assert.deepEqual(nowOf({ kind: "combat", creatureId: "bear" }), {
+    icon: null,
+    text: "Walczy z niedźwiedziem",
+    role: "text",
+    right: null,
+  });
+});
+
+// Catches a view that keeps the form of the case in its own table, or a rule of the name's ending, in
+// place of the field of the creature's data: the made-up form on the wolf's entry must reach the row,
+// and the entry is put back as it was after the case, also when the row fails.
+test("Teraz in the minutes of an attack takes the form of „z” from the field of the creature's data", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  const before = CREATURES.wolf.nameWith;
+  CREATURES.wolf.nameWith = "zmyślonym";
+  try {
+    assert.equal(
+      nowOf({ kind: "combat", creatureId: "wolf" }).text,
+      "Walczy z zmyślonym",
+    );
+  } finally {
+    CREATURES.wolf.nameWith = before;
+  }
+  assert.equal(
+    nowOf({ kind: "combat", creatureId: "wolf" }).text,
+    "Walczy z wilkiem",
+  );
 });
 
 // Catches a cause worded alike for two deaths, or a cause in a signal role (D-334: not `danger`).
