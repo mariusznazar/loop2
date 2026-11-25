@@ -99,10 +99,11 @@ function CardEntry({
 
 /**
  * The card of a map (D-327): a heading with the map's name, the tag of its state and its opener, and at
- * its right „Wejdź — wybierz postać”, which takes the player to „Kto idzie”; under it the one sentence of
- * the solving condition; then two columns, the tables „Żąda” and „Teren” on the left and „Czyha”, „Leży
- * tu” and „Odbiera” on the right, one under the other in the phone layout. A part the map lacks stands
- * nowhere, and „Czyha” holds the record of D-440 at the creature the map's data name for it.
+ * its right „Wejdź — wybierz postać”, which takes the player to „Kto idzie”; under it the one short
+ * sentence of what the map demands, written by hand in the map's data; then two columns, the tables
+ * „Żąda” and „Teren” on the left, „Żąda” closing with the sentence of the solving condition (D-133), and
+ * „Czyha”, „Leży tu” and „Odbiera” on the right, one under the other in the phone layout. A part the map
+ * lacks stands nowhere, and „Czyha” holds the record of D-440 at the creature the map's data name for it.
  */
 export function MapCard({
   mapId,
