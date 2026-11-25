@@ -350,7 +350,7 @@ const columns = (root) =>
 test("the card of Skraj lasu holds its heading with „otwarta” and the button, the sentence of the condition, the tables „Żąda” and „Teren”, and its sticks and berries alone", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
@@ -392,7 +392,7 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
@@ -444,7 +444,7 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
 test("the card of Las — głębiej names its opener, asks for the attacks to beat, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"

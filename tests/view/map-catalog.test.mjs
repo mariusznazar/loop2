@@ -388,7 +388,7 @@ test("a text that finds nothing gives the sentence naming it, in every view, and
 
 // Catches a picked row that is not marked, two rows marked, and a mark that stays after the pick goes.
 test("the row of the picked map is the one marked, in every view", async () => {
-  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row looks as the picked program on the list of programs does"
+  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row stands filled with `highlight`, its text in `text-strong` and a bar in `positive` at its left"
   await withPage(async (page) => {
     const { draw } = await mount(page, {
       solvedMaps: EDGE,
