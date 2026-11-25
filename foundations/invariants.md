@@ -1227,7 +1227,7 @@ The loop2 container built from the repository serves, at the path `/sprites/<fil
 
 ## rule-state-from-pick
 
-The background, the bar and the reason a program rule or rule group shows, and what „Teraz” and „Potem” name, come from the function of the simulation that picks the rule a character carries out, except that, as D-147 gives, „Teraz” reads „Walczy z wilkiem” in the minutes of an attack and names the cause of the death after a character's death and the map's completion text after a completion.
+The background, the bar and the reason a program rule or rule group shows, and what „Teraz” and „Potem” name, come from the function of the simulation that picks the rule a character carries out, except that, as D-147 gives, „Teraz” reads „Walczy z” and the name of the attacking creature in the minutes of an attack and names the cause of the death after a character's death and the map's completion text after a completion.
 
 - **Method:** review
 - **Rests on:** none
@@ -1310,7 +1310,7 @@ A file git tracks points to a place the author keeps outside the repository only
 The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source, the pack of each file being the one the list of the sprite files in `README.md` names.
 
 - **Method:** test
-- **Rests on:** pixel-crawler-terms · lpc-wolf-licence · lpc-bears-deer-lions-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
+- **Rests on:** pixel-crawler-terms · lpc-wolf-licence · lpc-bears-deer-lions-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy · cc-by-4-credit
 - **Derives from:** D-271
 - **Part:** browser-view
 - **Violated:** no
@@ -1467,7 +1467,7 @@ No file of code in `balance/` reads the system clock or draws a random number fr
 
 ## judging-cache-reading
 
-A value the judging cache of the browser view reads from the browser's lasting storage gives a judging only where it has the form the cache writes and stands under a key of the cache's own version that names the account and the game the cache was opened for, and no value read from that storage, nor an exception of the storage, throws out of the cache.
+A value the judging cache of the browser view reads from the browser's lasting storage gives a judging or a record only where it has the form the cache writes and stands under a key of the version the cache writes that names the account and the game the cache was opened for, and no value read from that storage, nor an exception of the storage, throws out of the cache.
 
 - **Method:** test
 - **Rests on:** none

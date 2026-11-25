@@ -5179,14 +5179,16 @@ and the colour of an effect stands out from the ground it stands on, the outline
 frost by at least 3:1 against the snow it lies on.
 
 - **Scope:** browser-view · build-tools · deployment
-- **Based on:** pixel-crawler-terms · lpc-wolf-licence · lpc-bears-deer-lions-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
+- **Based on:** pixel-crawler-terms · lpc-wolf-licence · lpc-bears-deer-lions-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-4-credit
 - **Relations:** none
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
   the files of the smaller flame, of the mage's death, of the wolf and of the clearing and
   chest of the picture band holding pixels alone; the chest of the picture band one still picture, the same empty and full;
   the figure of a character on the screen Postać drawn from the same idle sheet as that character in
   the picture band; the
-  credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
+  credit line of the pack LPC Wolf naming its licence CC BY 3.0 and the credit line of the pack
+  „[LPC] bears, deer, lions and more” naming its licence CC BY 4.0, its title, its author, its page
+  and how the files differ from it; every picture file of the sprites
   having an assignment to a pack in the table of its test, which does not judge whether the
   assignment is right, and every pack that table assigns a file to, where its licence asks for a
   credit, having a line among the game's credits; the frost's thickness in whole
@@ -5204,8 +5206,7 @@ frost by at least 3:1 against the snow it lies on.
     scuffle is too; the wolf a set of sprite files made from the side views of the pack LPC Wolf,
     every pixel of them moved unchanged into frames of one size; the bear a set of sprite files made
     from the side views of the pack „[LPC] bears, deer, lions and more”, every pixel of them moved
-    unchanged into frames of one size, its standing figure made of a frame of its walk, and credited
-    with the pack's licence CC BY 4.0; the smaller flame of the campfire a
+    unchanged into frames of one size, its standing figure made of a frame of its walk; the smaller flame of the campfire a
     sprite file made from the frames of the pack's fire with the flame cut down by hand; the fall of
     the mage a sprite file made from the pack's death sheet of the mage; the frost on the edges of the
     frame built by CSS of squares of one pixel of the scene on its grid in colours the pictures of the
@@ -5213,7 +5214,7 @@ frost by at least 3:1 against the snow it lies on.
     pack's bonfire, standing out from the open snow they rise over; the tint layer and the cold layer
     in colours the human chose
   - violates: a sprite file no test reads carrying text or metadata chunks; a picture drawn from a
-    pack other than the four named; a bear's picture without the credit line of its pack; the cloud of dust in a colour that does not stand out from the
+    pack other than the four named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; the hooded figure of loop as the character of the scene; a mage, a creature
     or a prop drawn by CSS as a shape; a frost or a speck in a colour no picture of a pack holds; a
     speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour
@@ -5655,13 +5656,13 @@ maps by it (D-325).
   dimensions and cost of a move given to its tiles; the fixed entrance of Las and the entrance of
   Las — głębiej drawn after its resources, other on other seeds; a resource with no time to renew
   in the map's data never renewing; the same seed giving the same tiles and another seed other
-  ones, and a resource of density zero placed on no tile. For the attacking creatures and how often
-  they attack standing in the map's data, an agent compares a change with the part no invariant
-  and no test holds, and for the region of a map standing in its data:
+  ones, and a resource of density zero placed on no tile; the region of each map standing in its
+  data, one of the list of regions. For the attacking creatures and how often they attack standing
+  in the map's data, an agent compares a change with the part no invariant and no test holds:
   - complies: a new game map added as a row of the game maps' data, with the wolf and its chance
-    per game minute among its attackers and its region among its fields
+    per game minute among its attackers
   - violates: the wolf's chance per game minute of attacking written as a number in the code of
-    attacks; the region of a map worked out in the view from the map's name
+    attacks
 - **Origin:** none
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. A resource that
@@ -5920,15 +5921,13 @@ From the first completion of a map by any of the player's characters, the list a
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** tests: the mark „rozwiązana” after the name of each solved map on the list
-  and on its card, and none at an unsolved map; a map staying solved, once, through a restart,
-  „Zakończ”, a send, a later completion and a later death. For the role of the mark on the card
-  and for the state circle of the row, which a test of the same change is to hold, an agent
-  compares a change with the part no test holds:
-  - complies: „rozwiązana” on the card of Las in `positive`; the row of Las with its state circle
-    filled once Las is solved and empty before
-  - violates: „rozwiązana” in `text` or in `text-secondary`; the row of a solved map with its
-    state circle empty, or with „rozwiązana” after its name
+- **Verification:** tests: the mark „rozwiązana” on the card of each solved map and none at an
+  unsolved map, and in the list the state circle of the row of each solved map filled and of an
+  open map empty, with no „rozwiązana” after the name of a map; a map staying solved, once,
+  through a restart, „Zakończ”, a send, a later completion and a later death. For the role of the
+  mark on the card, an agent compares a change with the part no test holds:
+  - complies: „rozwiązana” on the card of Las in `positive`
+  - violates: „rozwiązana” in `text` or in `text-secondary`
 - **Origin:** none
 
 *Rationale:* a solved map stays solved, so the player sees where maps stand which of them a program
@@ -5993,16 +5992,11 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-53
-- **Verification:** tests: a map whose opener is unsolved absent from the list of the screen Mapy
-  and drawing no card where its address names it, and standing on the list with its card once its
-  opener is solved; the availability of the simulation read from the game's solved maps alone,
-  refusing a send to a map whose opener is unsolved and reaching it once that map is solved. For
-  the empty place and the counter, which a test of the same change is to hold, an agent compares
-  a change with the part no test holds:
-  - complies: in a new game the view „Postęp” with the maps of Las that are not yet opened as
-    empty places with no name, and the counter of Las counting them
-  - violates: the name or the row of a map whose opener is unsolved anywhere on the screen Mapy;
-    a counter of a region that counts only the maps open to the player
+- **Verification:** tests: a map whose opener is unsolved absent from the catalog of the screen
+  Mapy and drawing no card where its address names it, and standing in the catalog with its card
+  once its opener is solved; in „Postęp” an empty place with no name for each map not yet opened
+  and the counter of its region counting every map of the region in the data; the availability of the simulation read from the game's solved maps alone, refusing a send
+  to a map whose opener is unsolved and reaching it once that map is solved.
 - **Origin:** none
 
 *Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the end of the map run that opens a map names the way to it. An empty place with no name tells the player how much of a region lies ahead without naming a map before it opens, and the counter of a region counts all its maps in the data for the same reason.
@@ -6146,7 +6140,7 @@ In one map check of the balance instrument a map can be solved where its best re
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** tests: a map reading as solvable in the progression measurement of the balance instrument where its best reference program solves one seed of the measured ones, however small the share. An agent compares a change with the part no test holds:
+- **Verification:** tests: a map reading as solvable in the progression measurement of the balance instrument where its best reference program solves one seed of the measured ones, however small the share; Las — matecznik standing in the game's data with its entry cap of 0, opened by Las — wataha. An agent compares a change with the part no test holds:
   - complies: a new map whose requirement of practice, items and equipment is met by what the first solutions and the manual runs of the maps before it gave, a measurement of the balance instrument showing it with the best reference program and no earning loop; Las — matecznik standing open to entry and to a judging, with the paragraph of its exception in this decision, while no reference program solves a seed of it
   - violates: a new map whose requirement is met only by what an earning loop gathers over hours of real time; a requirement of pace counted in days; a change after which Las — matecznik can be so solved that leaves the paragraph of its exception in place; a map other than Las — matecznik that no reference program solves
 - **Origin:** none
@@ -6184,7 +6178,7 @@ A number of a map is a requirement of the game only where a decision or an invar
 - **Origin:** none
 
 *Rationale:* a map has to stand in an order of growing difficulty and to be solvable, and the numbers that a decision or an invariant names are what tests may expect, as D-388 holds the numbers of Las and Las — głębiej; all other numbers of a map are data of the moment. Tuning the share solved, the resources or the balance of the earning loop of each map while the game has few maps costs work that the maps added later overturn, so the game optimises them when its maps are many. Accepted with it: a map may enter the game hard for the character built from what the maps before it gave, which nothing in the foundation checks and which shows only in play.
-*Rejected:* unknown
+*Rejected:* a share of a map's runs that the map must reach as a requirement, of 90 % of the seeds already, measured with what the game gives when the map enters — each change would tune its map to the items of the day, which later changes alter anyway, and a wall that enters before its thing would have to be easy without it; the resources of Las — wataha fixed as a requirement, its moss absent or present — no cost to the product known.
 
 ## Team, body, death and resurrection
 
@@ -7025,7 +7019,7 @@ The encounter ends immediately when either side reaches zero health: a creature 
 
 From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result. The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too.
 
-„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
+„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”; at another creature it reads „Walczy z” and the form of that creature's name after „z” that its data give, as „Walczy z niedźwiedziem” at the bear.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -7039,7 +7033,8 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
   the turns keeping the attack description with no outcome; the paragraph in a section of its own in
   the end-of-run window, outside „Ostatnie minuty”; „Teraz” reading „Walczy z wilkiem” in every
   minute of an attack, the resolution minute included, death and completion taking precedence, and
-  „Mag zginął w walce” after a death in combat. For the wrapping of the paragraph, the frozen screen
+  „Mag zginął w walce” after a death in combat, and „Walczy z niedźwiedziem” at the bear, the form
+  of the name after „z” read from the creature's data. For the wrapping of the paragraph, the frozen screen
   and the window after a load, an agent compares a change with the part no test and no invariant
   holds:
   - complies: a paragraph longer than the width of the chronicle going on onto further lines; after a
@@ -10202,7 +10197,7 @@ map is inactive (D-55) and the player has to go back and end the map run; no but
 
 The screen Mapy holds on the left the catalog of the game's maps, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź”, „Puść w pętlę” and the judging of their program (D-439), the card standing under the catalog in the phone layout (D-282, D-396).
 
-The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name. A map whose data name a creature for the record shows the number of D-440 in its row.
+The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name. A map whose data name a creature for the record shows the number of D-440 in its row. The view picked, the text typed and the regions unfolded in the catalog end with the screen, which opens on „Dokąd” with no text typed.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10210,19 +10205,20 @@ The catalog groups the maps by their region, each region with a header and a cou
 - **Verification:** tests: the card of the map the address names, with what it asks, its terrain,
   what lies there, what lurks there and what it takes; the section „Kto idzie” with each
   character, its list „Program:”, „Wejdzie: …”, „Wejdź” and „Puść w pętlę”, and „Oceń na 12
-  ziarnach” at each character, on a map not yet solved and on a solved one. For the catalog, its
-  regions and counters, search and views, the number of D-440 in a row, and the catalog standing on
-  the left and the card on the right in the computer layout and the card under the catalog in the
-  phone layout, which a test of the same change is to hold, an agent compares a change with the part
-  no test holds:
+  ziarnach” at each character, on a map not yet solved and on a solved one; the catalog grouping
+  the maps by their region, each region with a header and a counter of its solved maps over all its
+  maps in the data, those not yet opened included, with a search finding the open maps by a
+  fragment of the name of the map or of a resource and the sentence of nothing found, with the three
+  views „Dokąd”, „Co daje” and „Postęp” and, in „Postęp”, an empty place with no name for each map
+  not yet opened; the number of D-440 in the row of a map whose data name a creature for it; the
+  view, the text typed and the regions unfolded ending with the screen. For the
+  catalog standing on the left and the card on the right in the computer layout and the card under
+  the catalog in the phone layout, an agent compares a change with the part no test holds:
   - complies: in the computer layout the screen Mapy at `#/mapy/forest` with the catalog on the
-    left, its group „Las” with a counter such as „Las · 1 z 5” once Skraj lasu is solved, the search
-    above it and the three views, and on the right the card of Las with the section „Kto idzie”
-    under it; in the phone layout at a page area 360 px wide the catalog with the card of Las under
-    it
+    left and on the right the card of Las with the section „Kto idzie” under it; in the phone layout
+    at a page area 360 px wide the catalog with the card of Las under it
   - violates: the catalog standing on the right of the card or under it in the computer layout; the
-    card and the catalog side by side in the phone layout; a counter that counts only the maps open
-    to the player; the name of a map not yet opened anywhere on the catalog
+    card and the catalog side by side in the phone layout
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which, and this game takes that catalogue whole: the screen is to be at least as legible as the predecessor's, and a screen that does less would come out against it in a side-by-side of screenshots. Accepted with it: a region in the data of each map (D-24), three layouts of one list, a search and empty places.
@@ -10262,18 +10258,15 @@ The card of a map follows the card of the predecessor game, loop, with its numbe
   than the usual one, and the minutes without fire with the temperature of the surroundings;
   „Leży tu” with each resource's icon, its approximate number of tiles, its stock and its renewal,
   or „nie odnawia się” marked as a warning; „Czyha” with the creature's icon, health and
-  blow, and one line of the chance, the quiet time and the one total mean gap;
+  blow, and one line of the chance, the quiet time and the one total mean gap, and at the creature
+  a map's data name for the record the number of D-440, on the card of that map alone;
   „Odbiera” with the entry and the exit cap, each marked as a warning, and nothing else; a part the
-  map lacks drawn nowhere. For the colours the marks and the words of the card are drawn in, and
-  for the number of D-440 in „Czyha”, which a test of the same change is to hold, an agent compares
-  a change with the part no test holds:
+  map lacks drawn nowhere. For the colours the marks and the words of the card are drawn in, an
+  agent compares a change with the part no test holds:
   - complies: „rozwiązana” in the heading in `positive`, „odsłania ją Las” and „— drożej niż
-    zwykle” in `text-secondary`, and „nie odnawia się” and „wnosisz najwyżej 5” in `warning`; the
-    card of Las — matecznik, after a judging that took 24 of the bear's 120 health, with „niedźwiedź:
-    24 ze 120” in „Czyha” at the bear's lines, and the card of Las — głębiej with no such number
+    zwykle” in `text-secondary`, and „nie odnawia się” and „wnosisz najwyżej 5” in `warning`
   - violates: „nie odnawia się” or a cap drawn in `text` or `danger`; „rozwiązana” in the heading
-    drawn in `text-secondary`; „odsłania ją {mapa}” drawn in `text-strong`; the number in „Czyha”
-    before the first judging on its map, or as „0”
+    drawn in `text-secondary`; „odsłania ją {mapa}” drawn in `text-strong`
 - **Origin:** none
 
 *Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time, where otherwise the player would find it out by losing progress. The card follows the card of the predecessor game, because the screens and solutions of the predecessor game are the minimum that the screens of this game take and they are departed from only where the result is better, never worse; the numbers come from the data of the map, and a part that the map lacks stands nowhere. The card has no „gasi: {umiejętność}” because the data of the maps hold no field for it. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the card runs to a dozen or so lines; the player knows the health and the blow of the wolf before its first attack.
@@ -10352,16 +10345,15 @@ Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stan
 - **Based on:** none
 - **Relations:** derives from D-134 · derives from D-281 · derives from D-325
 - **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the area of the card, with no
-  card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map, and
-  the row of the map the address names the one marked as picked. For the state circle and the short
-  demand of the row, which a test of the same change is to hold, for the role of the sentence and
-  for the look of the picked row, an agent compares a change with the part no test holds:
+  card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map, the
+  state circle at its left filled at a solved map and empty at an open one, no „rozwiązana” after
+  the name, and the short demand of the map among its facts, and the row of the map the address
+  names the one marked as picked. For the role of the sentence and for the look of the picked row,
+  an agent compares a change with the part no test holds:
   - complies: „Wybierz mapę z listy.” in `text-secondary`; at `#/mapy/forest` the row of Las with
-    its text in `text-strong` and a bar in `selected` at its left, its state circle filled once Las
-    is solved and empty before, and its short demand after its name
+    its text in `text-strong` and a bar in `selected` at its left
   - violates: the picked row marked by a background in `highlight` alone, or by a bar in
-    `positive`; „rozwiązana” after the name of a map in a row of the list; a row with no state
-    circle
+    `positive`
 - **Origin:** none
 
 *Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. The row follows the row of the predecessor game, whose screen this one is to match in legibility: the circle at its left shows which maps are solved down the whole list with no word to read, and the short demand tells what the map asks before it is picked. Accepted with it: one more sentence on the screen.
@@ -10792,7 +10784,7 @@ while the character carries out an action it holds the icon of the action and th
 of its program rule writes it, such as „Zbierz — Patyk”, and at its right the number of the program
 rule the action comes from and the minutes of the action, such as „reguła 2.1 · zostało 3 z 5 min”,
 with no progress bar, and while the character waits „Czeka — żadna reguła nie pasuje”, with no rule
-and no minutes. In the minutes of an attack it holds „Walczy z wilkiem” alone, as D-147 gives, with
+and no minutes. In the minutes of an attack it holds „Walczy z wilkiem” alone, or „Walczy z” and the name of another creature, as D-147 gives, with
 no icon, no number of a rule and no minutes, and after a completion the completion text D-132 gives.
 After a character's death it reads the cause of the death in the role `text`, „Mag zamarzł”, „Mag
 umarł z głodu” or „Mag zginął w walce”, while the clock in the header stands at the game minute of
@@ -10807,7 +10799,7 @@ the death, such as „Minuta 312”.
   of the minutes in all, such as „reguła 2.1 · zostało 3 z 5 min”, following the game minute, paused
   or not, with no progress bar; while the character waits „Czeka — żadna reguła nie pasuje” with no
   rule and no minutes; in every minute of an attack, the minute of its resolution included,
-  „Walczy z wilkiem” alone; after a completion the map's completion text; after a death its cause in
+  „Walczy z wilkiem” alone, and „Walczy z niedźwiedziem” alone at the bear; after a completion the map's completion text; after a death its cause in
   `text`, „Mag zamarzł”, „Mag umarł z głodu” or „Mag zginął w walce”, while the clock in the header
   reads the game minute of the death. For the height of the row and the words it leaves out, an agent
   compares a change with the part no invariant and no test holds:
@@ -12254,16 +12246,15 @@ On a map whose data name a creature for the record, the game remembers in the br
   none of them; the judging of a deleted program standing beside no program; every judging of a character erased, on every map, by a
   death that takes its practice and bought ranks, in a manual map run, in an earning loop and in the
   catch-up, and none by a death a use of the resurrection covers, by a death of a character with no
-  practice or by the purchase of a rank. For the record of the most health a creature lost in one
-  fight, which a test of the same change is to hold, an agent compares a change with the part no
-  test holds:
-  - complies: after a judging on Las — matecznik in which the bear lost 24 of its 120 health in
-    its largest fight, „niedźwiedź: 24 ze 120” in the row of the map and on its card; after a second
-    judging that took 10, the number as it was, and after one that took 30, „niedźwiedź: 30 ze 120”;
-    after a change of the program or the death of the character, the number as it was
-  - violates: the number on a map whose data name no creature for the record; a number or a „0”
-    before the first judging on the map; a number that falls after a change of the program or the
-    death of a character; a record made at other numbers of the creature shown after they changed
+  practice or by the purchase of a rank; a judging giving for each of its twelve seeds the most
+  health the creature of the map lost in one fight, the whole health for a fight won, the health
+  lost for a fight in which the character died, 0 for a seed with no fight or a fight cut off before
+  its turns resolve, and 0 for a map with no creature, and the largest of the twelve counting; the
+  record of that health standing in the row of the map and on its card in „Czyha” at the map whose
+  data name the creature for it alone, never before the first judging on that map, kept through a
+  change of the program and the death of a character, raised by a judging that took more and left
+  as it was by one that took less, and showing nothing where the creature's health or blow differ
+  from those it was made at.
 - **Origin:** none
 
 *Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the badge and the count are missing on another device, in a browser whose data were cleared and, for the game whose save the server refused, in the refused browser, until the next judging there (D-441); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings. The lair stands in the game with a number and not as a wall alone: the most of the bear's health that a program took is a measure of the game's own rules, grows with the player's work and pretends to no level to pass. The record is the most any judging took, so it does not fall when the player changes a program or a character dies, and it is bound to the creature's numbers, so it never stands beside a creature it was not made against. Accepted with it, for the record: it can show the result of a program that no longer exists; another device and a browser whose data were cleared show no number until a judging there (D-441); it does not say what the present program can do, which shows only at its judging in „Kto idzie”.
@@ -12309,15 +12300,15 @@ Beside the judgings the browser keeps the record of D-440 in its lasting storage
   of the content stored with each judging, the same for contents the content revision counts as no
   change and another for each change it counts, a judging standing only beside the content it
   judged, also where another content reaches the same content revision, and a value whose
-  fingerprint is no text of the form of a fingerprint read as a value of another form. For what
-  stays at „Wyloguj” and for the record of D-440, which a test of the same change is to hold, an
-  agent compares a change with the part no invariant and no test holds:
-  - complies: the judgings of the account kept after „Wyloguj” and shown at the next sign-in; the
-    record of the most bear health a judging took on Las — matecznik stored as a value of its own
-    under its own key, beside the judgings, with the bear's health and blow it was made at, and
-    shown by a cache opened anew on the same storage only while the bear's health and blow equal them
-  - violates: the judgings cleared at „Wyloguj”; the record held in the saved game state or inside
-    the value of a judging; a record shown after the bear's health or blow changed
+  fingerprint is no text of the form of a fingerprint read as a value of another form; the record
+  of D-440 stored as one value under a key of its own version for each account, game and map,
+  holding the number and the health and blow of the creature it was made at, read only in that form
+  and version and never lowered by a lower number, a bad value or a refused write, a write the
+  storage refuses leaving the record for the open page and the stored one where it is, and the
+  opening removing the account's records under another game's moment and, after a save refused for
+  another browser's, every record of this game. For what stays at „Wyloguj”, an agent compares a change with the part no invariant and no test holds:
+  - complies: the judgings of the account kept after „Wyloguj” and shown at the next sign-in
+  - violates: the judgings cleared at „Wyloguj”
 - **Origin:** none
 
 *Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. The fingerprint of the content makes a judging stand only beside the content it judged: the content revision tells that a content changed and changed back (D-440), and the fingerprint tells another content that reached the same content revision after a change lost with a refused or an unsent save, which the count alone cannot tell. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number, or under a program or character number the loaded game has not yet given, can come only from a save that never reached the server (the game state holds the next program number and the next character number, so a number it has not yet given is one only a lost save made), so all of them go when the game opens, and a program or a character made later cannot meet a value of the number it takes; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and one more field in each stored value, a fingerprint of a program's content, which must stay the same for every content the content revision counts as no change and differ for every change it counts, but for a chance of a collision of at most one in 2^52, in which a judging of one content stands beside another content with the same fingerprint. The record of D-440 is a value of its own beside the judgings, so that a program's judging and the character's practice never take it along when they go; accepted with it, for the record: a second family of keys with its own version, and a record that can show the result of a program that no longer exists.

@@ -93,6 +93,19 @@ to include a copy of the licence, or its URI, with every copy of the work they d
 
 - **Source:** https://creativecommons.org/licenses/by/3.0/legalcode § 4(a) — "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform."; read 2026-10-13
 
+## cc-by-4-credit
+
+The Creative Commons Attribution 4.0 International Public License requires whoever shares licensed
+material, including in modified form, to retain, where the licensor supplies it with the material,
+the identification of the creator, a copyright notice, a notice that refers to the licence, a notice
+that refers to the disclaimer of warranties and, to the extent reasonably practicable, a URI or
+hyperlink to the material, to indicate if the material was modified, and to indicate that the
+material is licensed under the licence and include the text of, or the URI or hyperlink to, the
+licence, and allows these conditions to be satisfied in any reasonable manner based on the medium,
+means and context of sharing.
+
+- **Source:** https://creativecommons.org/licenses/by/4.0/legalcode § 3(a)(1) — "If You Share the Licensed Material (including in modified form), You must:" · § 3(a)(1)(A) — "retain the following if it is supplied by the Licensor with the Licensed Material:" · "identification of the creator(s) of the Licensed Material and any others designated to receive attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated);" · "a copyright notice;" · "a notice that refers to this Public License;" · "a notice that refers to the disclaimer of warranties;" · "a URI or hyperlink to the Licensed Material to the extent reasonably practicable;" · § 3(a)(1)(B) — "indicate if You modified the Licensed Material and retain an indication of any previous modifications; and" · § 3(a)(1)(C) — "indicate the Licensed Material is licensed under this Public License, and include the text of, or the URI or hyperlink to, this Public License." · § 3(a)(2) — "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material."; read 2026-11-25
+
 ## game-icons-wood-stick-title
 
 The page of Delapouite's icon `wood-stick` on game-icons.net names the icon "Wood stick icon".

@@ -171,6 +171,7 @@ test("a region with no solved map has no fold row", async () => {
 // Catches a view that is lost when the player looks at another, and a view that is kept after the screen is gone (D-325, To do 5).
 test("the unfolded region survives a change of view and ends with the component", async () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name"
+  // decision: D-325 "The view picked, the text typed and the regions unfolded in the catalog end with the screen"
   await withPage(async (page) => {
     const first = await mount(page, { solvedMaps: EDGE, selected: null });
     await press(fold(page.root));
