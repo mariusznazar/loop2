@@ -403,7 +403,7 @@ function Creature({
   const placed: ScenePlacedSprite = {
     ...creature.bite,
     x: place.x,
-    y: SCENE.groundLine,
+    y: SCENE.groundLine + creature.sink,
   };
   const style = {
     ...boxOf(placed, frame),

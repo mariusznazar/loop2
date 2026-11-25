@@ -132,13 +132,21 @@ export const SCENE_CREATURES = {
  * where its frame then lies inside the scene, as it does at every place the mage stands at but the
  * right edge, and on the left where it does not. The cloud of the scuffle, the dust's picture, stands
  * over the gap, its middle on the gap's middle and its bottom edge `cloudUp` pixels above the ground
- * line.
+ * line. `sink` is how many rows below the ground line the bottom edge of a creature's frame stands, so
+ * that its feet stand on the line: the wolf's feet are on the bottom row of its frame, the bear's a few
+ * rows above it in its own sheets.
  */
 export const SCENE_FIGHT = {
   mageFigure: { left: 20, right: 44 },
   gap: 2,
   cloudUp: 3,
-} as const;
+  sink: { wolf: 0, bear: 4 },
+} as const satisfies {
+  mageFigure: { left: number; right: number };
+  gap: number;
+  cloudUp: number;
+  sink: Record<CreatureId, number>;
+};
 
 /**
  * The cloud of dust of a missed gathering and of a scuffle: the eight cells of smoke of the pack Smoke &
