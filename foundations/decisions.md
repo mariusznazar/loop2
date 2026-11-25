@@ -6135,7 +6135,7 @@ The progression never requires the player's absence: time away gives progress an
 
 Las — matecznik is excepted from that rule until the change that sets its numbers, its entry cap included, so that it can be solved with what the maps before it gave, and that change removes this paragraph. Until then it is allowed to stand in the game, open to entry and to a judging, though no program can solve it.
 
-In one map check of the balance instrument a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500, and Las — matecznik passes the check of its exception where no reference program solves one seed of it.
+In one measurement of the balance instrument in its mode `progression`, a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500, and Las — matecznik passes that measurement as its exception asks where no reference program solves one seed of it.
 
 - **Scope:** simulation
 - **Based on:** none
