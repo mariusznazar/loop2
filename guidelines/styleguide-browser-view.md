@@ -837,22 +837,69 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40 · D-282 · D-396
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-332 · D-333 · D-439 · D-440 · D-441 · D-243 · D-134 · D-149 · D-188 · D-217 · D-244 · D-274 · D-276 · D-287 · D-281 · D-39 · D-40 · D-44 · D-282 · D-396
 - **Invariant:** none
-- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
-- **Bad:** Obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
+- **Good:** Wiersz rozwiązanej mapy w katalogu: kółko wypełnione w `positive`, nazwa w `text`, pod nią fakty w `text-secondary`, z „⊘ wnosisz 0” w `warning`; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przy Mateczniku po pierwszej ocenie na końcu wiersza „niedźwiedź: 24 ze 120” w `text`; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
+- **Bad:** Kółko stanu rozwiązanej mapy w `text` albo „rozwiązana” po nazwie wiersza katalogu; liczba niedźwiedzia przy Mateczniku przed pierwszą oceną albo jako „0”; obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
 
 Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: w układzie
-komputera po lewej listę otwartych map, po prawej kartę wybranej mapy, a w układzie
-telefonu karta stoi pod listą (D-282, D-396).
+komputera po lewej katalog map, po prawej kartę wybranej mapy, a w układzie
+telefonu karta stoi pod katalogiem (D-282, D-396).
 
-- Lista: każdy wiersz to odnośnik do `#/mapy/{map}` z nazwą mapy w `text`; przy
-  mapie rozwiązanej po nazwie stoi „rozwiązana” w `positive` (D-134). Wybrany
-  wiersz ma tekst w `text-strong` i belkę w `selected` o grubości `--bar-width`
-  po lewej, jak wybrany program na liście programów (D-331, D-40); niewybrany
-  wygląda jak niewybrany program na tej liście; pod kursorem tło `highlight`.
-  Przed wyborem mapy, pod `#/mapy`, w obszarze karty stoi „Wybierz mapę z listy.” w
-  `text-secondary` (D-331).
+Katalog (D-325) stoi w jednej kolumnie, od góry:
+
+- Pole szukania z napisem „Szukaj mapy albo zasobu” i podpowiedzią „szukaj mapy
+  albo zasobu”. Szuka fragmentu nazwy mapy albo nazwy zasobu bez względu na
+  wielkość liter, po obcięciu spacji na brzegach; polskich liter nie zrównuje,
+  więc „ł” nie znajduje „l”. Gdy nic nie pasuje, stoi „Nic nie pasuje do
+  „{zapytanie}”.” w `text-secondary`.
+- Trzy zakładki „Dokąd”, „Co daje” i „Postęp” w wyglądzie zakładki wspólnego
+  przycisku (reguła Main button, secondary action and tab, D-276); na starcie
+  wybrana jest „Dokąd”. Pod nimi licznik w `text-secondary`: w „Dokąd”
+  „{n} poznanych · {m} rozwiązanych”, w „Co daje” „{n} zasobów w zasięgu”, w
+  „Postęp” „{m} rozwiązanych z {n} poznanych”; liczby mają polską odmianę.
+- Region ma linię `divider` nad nagłówkiem w `text-label` (nazwa sekcji, D-40).
+  W „Dokąd” i „Postęp” nagłówek to nazwa regionu i „{m} z {n}”: m rozwiązanych
+  spośród n wszystkich map regionu w danych gry, także jeszcze nieotwartych
+  (D-325). W „Co daje” nagłówek to ikona zasobu, jego nazwa i z prawej liczba
+  otwartych map, które go dają. Region, w którym nic nie jest otwarte, nie stoi
+  wcale.
+- „Dokąd”: w regionie najpierw otwarte, nierozwiązane mapy, a rozwiązane zwinięte
+  pod jednym wierszem zwijaka — zwykły wspólny przycisk (D-44) „▸ {n} rozwiązane”,
+  po rozwinięciu „▾”, z `aria-expanded`. Zwijak nie stoi, gdy region nie ma
+  rozwiązanej mapy. Gdy wpisany tekst szukania albo wybrana mapa z tego regionu
+  trzyma rozwinięcie, zwijak jest wyłączony i jego tekst stoi w `text-disabled`;
+  rozwinięcie, które gracz wybrał, zostaje, dopóki ekran stoi.
+- „Co daje”: grupy po zasobie, zaczynając od tego, który daje najmniej otwartych
+  map; w grupie najpierw rozwiązane. Wiersz zasobu ma ten sam wygląd co wiersz
+  mapy, a jego fakty to „≈ {n} z {kafelki} · po {zapas}” i „+1 co {min} min”,
+  albo „nie wraca” w `warning`.
+- „Postęp”: w regionie wiersze otwartych map, a za nimi po jednym pustym miejscu
+  na każdą mapę, której gracz jeszcze nie otworzył. Puste miejsce to przerywana
+  kreska w `text-disabled`, bez nazwy, o trzech długościach po kolei; przy
+  szukaniu go nie ma.
+- Wiersz mapy to odnośnik do `#/mapy/{map}` w dwóch liniach. W pierwszej stoi
+  kółko stanu po lewej, nazwa mapy w `text` i po prawej ikony stworzeń, które na
+  mapie napadają, w `text-secondary`. Kółko to „●” w `positive` przy mapie
+  rozwiązanej i „○” w `text-secondary` przy otwartej; czytnik ekranu czyta je jako
+  „Rozwiązana” albo „Otwarta” (D-134). W drugiej linii, pod nazwą, stoją fakty
+  mapy w `text-secondary`, w tej kolejności: czas passy („12 h”, a gdy nie jest
+  pełną liczbą godzin, w minutach), „{n} do pokonania”, „⊘ wnosisz {n}” i
+  „wynosisz {n}” w `warning`, „bez ognia {n} min” oraz „krok {n} min” tylko tam,
+  gdzie krok odstaje od kroku większości map (D-333). Każdy fakt jest osobnym
+  elementem, który się nie łamie w środku; wąski wiersz łamie się między faktami.
+  Wiersz wybranej mapy ma tekst w `text-strong` i belkę w `selected` o grubości
+  `--bar-width` po lewej, jak wybrany program na liście programów (D-331, D-40);
+  pod kursorem tło `highlight`.
+- Rekord niedźwiedzia (D-440) stoi na mapie, której dane nazywają to stworzenie
+  do rekordu (Las — matecznik): po pierwszej ocenie na tej mapie jest ostatnim
+  faktem wiersza, „niedźwiedź: {n} ze {zdrowie}”, w roli `text`. Stoi w „Dokąd”
+  i w „Postęp”, nie w „Co daje”, gdzie wiersz jest wierszem zasobu. Przed pierwszą
+  oceną nie stoi wcale. Zapamiętuje go przeglądarka (D-441).
+- W układzie telefonu wiersz mapy ma co najmniej `--touch-target-min` wysokości
+  i jest celem dotyku (D-396).
+- Widok, wpisany tekst i rozwinięte zwijaki żyją, dopóki ekran stoi: po wyjściu
+  z ekranu katalog zaczyna od „Dokąd” i pustego pola.
 - Karta mapy (D-327): nagłówek z nazwą mapy w `text-strong`, a przy mapie
   rozwiązanej obok „rozwiązana” w `positive`; przy mapie otwieranej przez inną
   mapę „odsłania ją {mapa}” w `text-secondary`. Nazwy części — „Żąda”, „Teren”,
@@ -861,6 +908,9 @@ telefonu karta stoi pod listą (D-282, D-396).
   zwykle” albo „— taniej niż zwykle”, w `text-secondary`; „nie odnawia się” w
   `warning`; „wnosisz najwyżej {n}” i „wynosisz najwyżej {n}” w `warning`.
   Części, której mapa nie ma, nie rysuje się wcale.
+  W „Czyha” mapy, której dane nazywają stworzenie do rekordu, pod wierszem szansy
+  tego stworzenia stoi jego rekord „niedźwiedź: {n} ze {zdrowie}” w roli `text`,
+  jak treść tej części, i dopiero po pierwszej ocenie na tej mapie (D-440).
 - Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`. Przy
   każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
   `text-strong`; wiersz wskrzeszenia w `text-secondary`, a przy zerze użyć
