@@ -237,7 +237,7 @@ test("a map no program solves is not solvable, whatever it is measured with", ()
   assert.equal(maps[0].solvable, false);
 });
 
-// decision: D-438 "can be solved where its best reference program solves at least one of the seeds"
+// decision: D-438 "In one map check of the balance instrument a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500"
 test("a map whose best program solves one seed of eight, a share far below a fifth, is solvable", () => {
   const { rows, maps } = measureProgression({
     mapIds: ["forest"],
