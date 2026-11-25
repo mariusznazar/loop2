@@ -915,19 +915,22 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
 - Widok, wpisany tekst i rozwinięte zwijaki żyją, dopóki ekran stoi: po wyjściu
   z ekranu katalog zaczyna od „Dokąd” i pustego pola.
 - Karta mapy (D-327), jak karta starej gry. U góry nagłówek: nazwa mapy w
-  `text-strong`, w rozmiarze tytułu mapy, obok niej znacznik stanu w rozmiarze
+  `text-strong`, w rozmiarze i wadze tytułu karty mapy starej gry — rozmiar
+  `--font-size-map-card-title`, odczytany z jej strony, i waga tekstu — obok niej znacznik stanu w rozmiarze
   podpisu — „rozwiązana” w `positive` (D-134) albo „otwarta” w `text-secondary` —
   a przy mapie otwieranej przez inną mapę po „ · ” „odsłania ją {mapa}” w
   `text-secondary`; po prawej stronie nagłówka zwykły wspólny przycisk „Wejdź —
   wybierz postać” (D-44), który przenosi fokus na nagłówek „Kto idzie”, a
-  przeglądarka pokazuje go na ekranie. Pod nagłówkiem jedno zdanie warunku
-  rozwiązania z danych mapy, bez nazwy mapy, w `text` (D-133). Pod nim dwie
+  przeglądarka pokazuje go na ekranie. Pod nagłówkiem jedno krótkie zdanie tego,
+  czego mapa żąda, pisane ręcznie w danych mapy, jak w starej grze, w `text`
+  („Osiem godzin bez jednej zmiany programu.”). Pod nim dwie
   kolumny: po lewej „Żąda” i „Teren”, po prawej „Czyha”, „Leży tu” i „Odbiera”;
   w układzie telefonu jedna pod drugą, lewa nad prawą. Każda część ma cienką
   linię `divider` nad nazwą, a nazwy części stoją w `text-label` (nazwy sekcji,
   D-40). „Żąda” i „Teren” to tabele: podpis w `text-secondary` w jednej kolumnie
   i wartość w `text` w następnej — „passa 8 h”, „do pokonania 2” z ikoną
-  stworzenia, które napada; „siatka 4 × 4”, „wejście stałe”, „krok 5 min”, „bez
+  stworzenia, które napada, a pod tabelą „Żąda” zdanie warunku rozwiązania z
+  danych mapy w `text-secondary` w rozmiarze szczegółu (D-133); „siatka 4 × 4”, „wejście stałe”, „krok 5 min”, „bez
   ognia 83 min — otoczenie 25 °C”, gdzie dopisek po wartości, także „— drożej niż
   zwykle” albo „— taniej niż zwykle” przy kroku innym niż zwykły, stoi w
   `text-secondary`. Wiersz „Leży tu” i „Czyha” ma ikonę w osobnej kolumnie, w
