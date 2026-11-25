@@ -523,3 +523,103 @@ test("the act of a judging leaves the very state it got where an earning loop or
   ])
     assert.throws(() => judgeAndRecord(state, ids), ownRefusal, what);
 });
+
+/** The wolf of Las — głębiej has 24 health (D-144). */
+const WOLF_HEALTH = 24;
+/** The game with the maps of Las — głębiej open, as the judgings below ask for them. */
+const openDeep = (program) => ({
+  ...game(program),
+  solvedMaps: ["forestEdge", "forest"],
+});
+/** The damage the character dealt in one fight, summed over its exchanges: what a fight the wolf survives took. */
+const dealtIn = (result) =>
+  result.exchanges.reduce(
+    (sum, exchange) => sum + (exchange.characterAction?.damage ?? 0),
+    0,
+  );
+
+test("a judging gives the most health a fight took from the map's creature in each seed: a fight the character won gives the creature's whole health", () => {
+  // decision: D-440 "On a map whose data name a creature for the record, the game remembers in the browser that made it the record of the most health of that creature that any judging took in one fight, a fight the character won giving the creature's whole health, a fight in which the character died counting as any other and a seed with no fight giving 0, and the largest of the twelve seeds of a judging counting."
+  // decision: D-144 "The wolf has 24 health"
+  const state = openDeep(REFERENCE_PROGRAMS.forestDeepDecent);
+  const ids = asked("forestDeep");
+  const judging = judgeOnSeeds(state, ids);
+  const reference = SEEDS.map((seed) => passed(state, ids, seed));
+  let won = 0;
+  reference.forEach((run, index) => {
+    if (run.lastCombat?.result?.outcome !== "creatureDefeated") return;
+    won += 1;
+    assert.equal(
+      judging.creatureDamage[index],
+      WOLF_HEALTH,
+      `seed ${index + 1}`,
+    );
+  });
+  assert.ok(won > 0, "the case needs seeds the character wins a fight on");
+});
+
+test("a fight in which the character died counts by the health the creature lost, and a seed whose fight took none gives 0", () => {
+  // decision: D-440 "On a map whose data name a creature for the record, the game remembers in the browser that made it the record of the most health of that creature that any judging took in one fight, a fight the character won giving the creature's whole health, a fight in which the character died counting as any other and a seed with no fight giving 0, and the largest of the twelve seeds of a judging counting."
+  const state = openDeep(REFERENCE_PROGRAMS.forestDeepDecent);
+  const ids = asked("forestDeep");
+  const judging = judgeOnSeeds(state, ids);
+  const reference = SEEDS.map((seed) => passed(state, ids, seed));
+  let died = 0;
+  reference.forEach((run, index) => {
+    // Seed 11 fights twice, wins the first and dies in the second; its most is the first fight's, see below.
+    if (index === 10) return;
+    if (run.lastCombat === null) {
+      assert.equal(
+        judging.creatureDamage[index],
+        0,
+        `seed ${index + 1}, no fight`,
+      );
+      return;
+    }
+    if (run.lastCombat.result.outcome !== "characterDied") return;
+    died += 1;
+    assert.equal(
+      judging.creatureDamage[index],
+      dealtIn(run.lastCombat.result),
+      `seed ${index + 1}, a death in a fight`,
+    );
+  });
+  assert.ok(died > 0, "the case needs seeds the character dies in a fight on");
+});
+
+test("a judging gives the largest of the twelve seeds' fights: a seed that wins one fight and dies in a later one gives the whole health of the first", () => {
+  // decision: D-440 "On a map whose data name a creature for the record, the game remembers in the browser that made it the record of the most health of that creature that any judging took in one fight, a fight the character won giving the creature's whole health, a fight in which the character died counting as any other and a seed with no fight giving 0, and the largest of the twelve seeds of a judging counting."
+  // decision: D-144 "The wolf has 24 health"
+  const state = openDeep(REFERENCE_PROGRAMS.forestDeepDecent);
+  const ids = asked("forestDeep");
+  const judging = judgeOnSeeds(state, ids);
+  // Seed 11 ends in a death in its second fight, which took 12 of the wolf's health.
+  assert.equal(
+    passed(state, ids, 11).lastCombat.result.outcome,
+    "characterDied",
+  );
+  assert.equal(judging.creatureDamage[10], WOLF_HEALTH);
+});
+
+test("a fight the judging stops before its turns resolve gives 0 for its seed", () => {
+  // decision: D-440 "On a map whose data name a creature for the record, the game remembers in the browser that made it the record of the most health of that creature that any judging took in one fight, a fight the character won giving the creature's whole health, a fight in which the character died counting as any other and a seed with no fight giving 0, and the largest of the twelve seeds of a judging counting."
+  const state = openDeep(REFERENCE_PROGRAMS.forestDeepDecent);
+  const ids = asked("forestDeep");
+  // Seed 2 wins its only fight, which starts at the attack minute and resolves five minutes later.
+  const attackMinute = passed(state, ids, 2).lastCombat.attackMinute;
+  const cut = withCap(attackMinute + 2, () => judgeOnSeeds(state, ids));
+  assert.equal(cut.results[1].kind, "undecided");
+  assert.equal(cut.creatureDamage[1], 0);
+});
+
+test("a map with no creature gives 0 in every seed", () => {
+  // decision: D-440 "On a map whose data name a creature for the record, the game remembers in the browser that made it the record of the most health of that creature that any judging took in one fight, a fight the character won giving the creature's whole health, a fight in which the character died counting as any other and a seed with no fight giving 0, and the largest of the twelve seeds of a judging counting."
+  const judging = judgeOnSeeds(
+    game(REFERENCE_PROGRAMS.forestBest),
+    asked("forest"),
+  );
+  assert.deepEqual(
+    judging.creatureDamage,
+    SEEDS.map(() => 0),
+  );
+});

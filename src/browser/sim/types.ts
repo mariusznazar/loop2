@@ -387,9 +387,15 @@ export type SeedResult =
 /**
  * A judging of a program on a map (D-439): the result of each of the twelve seeds in the order of the
  * data's seeds, and the equipment every one of the twelve runs entered with: the take list cut by the
- * chest, the carrying capacity and the map's entry cap, none of which leaves the chest.
+ * chest, the carrying capacity and the map's entry cap, none of which leaves the chest. Also, for each
+ * seed in the same order, the most health its runs took from the map's creature in one fight (D-440):
+ * the creature's health before the fight less what it has after, 0 where no fight resolved.
  */
-export type Judging = { results: SeedResult[]; equipment: TripEntry[] };
+export type Judging = {
+  results: SeedResult[];
+  equipment: TripEntry[];
+  creatureDamage: number[];
+};
 
 /**
  * An earning loop of one character (D-241): the content of the program taken at its start, a plain
