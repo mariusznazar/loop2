@@ -4943,7 +4943,9 @@ game-icons.net and its licence, and says how the icon file differs from its sour
 - **Relations:** none
 - **Verification:** invariants: icon-file-content · icon-credits · loop2-container-icons. tests:
   every icon the game's data names, the actions' and the campfires' included, standing as an SVG
-  file in `assets/icons/` with a credit whose page is on game-icons.net; the section of credits a
+  file in `assets/icons/` with a credit whose page is on game-icons.net; the magnifying glass of
+  the search of the catalog of maps, which no thing of the data names, standing as an SVG file in
+  `assets/icons/` with its credit in the same section, after the credits of the data's icons; the section of credits a
   folded `details` whose summary reads „Autorzy grafiki”, standing as the last part of the login
   card in each of its states and as the last part of Siedziba, the game holding that one section.
   For where
@@ -5508,16 +5510,21 @@ save the bar of the picked row of the catalog of maps, which stands in `positive
 - **Relations:** derives from D-40
 - **Verification:** an agent compares a change with the decision:
   - complies: the main button's frame drawn in `currentColor` beside its text in `text-strong`; the
-    bar of the answer in the colour of its sentence
+    bar of the answer in the colour of its sentence; the bar of the picked row of the catalog of
+    maps in `positive`, as D-39 gives it
   - violates: the bar of the answer in `text-secondary` beside its sentence in `text`; the main
-    button's frame in `selected`
+    button's frame in `selected`; the bar of the picked row of the catalog of maps in `selected`,
+    or the frame of a chosen button in `positive`
 - **Origin:** none
 
 *Rationale:* every role of text stands as text, and a frame or a bar in the text's own colour reads
 with that text, as the frame of a field in error reads with its message, so it takes no role and
 gives none a new meaning, and the sentence of D-40 that each of its five roles of text stands as text
 stays true. The bar of the answer takes the colour of its sentence and not `text-secondary`. The text
-of a secondary action in `text-secondary` is a note, as „Autorzy grafiki” on the same card is.
+of a secondary action in `text-secondary` is a note, as „Autorzy grafiki” on the same card is. The bar of
+the picked row of the catalog of maps is the one line that marks the chosen one outside `selected`: D-39 gives
+`positive` that use, as the picked row of the predecessor game has it, and it speaks of the row's card being
+the one open now, not of the text beside it.
 *Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
 a change of D-40.
 
@@ -10249,7 +10256,7 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
 
 ### D-327 — What does the card of a map hold?
 
-The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map in `text-strong` at the size of the title of a map, with the tag of its state beside it, „rozwiązana” in `positive` once it is solved and „otwarta” in `text-secondary` before, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; under the heading stands the one sentence of the map's solving condition (D-133); under it „Żąda” and „Teren” stand as tables of a label and a value in a column on the left, and „Czyha”, „Leży tu” and „Odbiera” in a column on the right, the two columns one under the other in the phone layout (D-396). „Żąda” holds the streak in whole hours and the attacks to beat with the icon of the creature that attacks; „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one (D-333), and the minutes without fire (D-333) with the temperature of the surroundings; „Leży tu” holds each resource with its icon, its name, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its icon, its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`.
+The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map in `text-strong` at the size of the title of a map, with the tag of its state beside it, „rozwiązana” in `positive` once it is solved and „otwarta” in `text-secondary` before, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; under the heading stands the one sentence of the map's solving condition (D-133); under it „Żąda” and „Teren” stand as tables of a label and a value in a column on the left, and „Czyha”, „Leży tu” and „Odbiera” in a column on the right, the two columns one under the other in the phone layout (D-396). „Żąda” holds the streak in hours, or in minutes where it is not a whole number of hours, and the attacks to beat with the icon of the creature that attacks; „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one (D-333), and the minutes without fire (D-333) with the temperature of the surroundings; „Leży tu” holds each resource with its icon, its name, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its icon, its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`.
 
 At the right of the heading stands „Wejdź — wybierz postać”, whose click takes the player to the section „Kto idzie”, where each character has its own „Wejdź” (D-329). It departs from the card of the predecessor game in five things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, „Odbiera” has no „gasi: {umiejętność}”, the sentence under the heading is the sentence of the solving condition from the data, „Czyha” of a map whose data name a creature for the record holds at that creature the number of D-440, and „Wejdź — wybierz postać” takes the player to „Kto idzie” in place of opening a picker of a character.
 
@@ -10261,7 +10268,8 @@ At the right of the heading stands „Wejdź — wybierz postać”, whose click
   „Wejdź — wybierz postać” at the top of the card moving the focus to the heading of „Kto idzie”;
   the one sentence of the solving condition from the data under the heading; „Żąda” and „Teren” in
   the left column and „Czyha”, „Leży tu” and „Odbiera” in the right one; the table „Żąda” with the
-  streak in whole hours and the attacks to beat with the creature's icon; the table „Teren” with the
+  streak in hours, or in minutes where it is not a whole number of hours, and the attacks to beat
+  with the creature's icon; the table „Teren” with the
   grid, the entrance, the step with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other
   than the usual one, and the minutes without fire with the temperature of the surroundings; „Leży
   tu” with each resource's icon, its name, its approximate number of tiles, its stock and its renewal,
@@ -10350,7 +10358,7 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 
 ### D-331 — What does the screen Mapy show before a map is picked, and how does a row of the list look?
 
-Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right, under the list in the phone layout (D-282, D-396), in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row stands filled with `highlight`, its text in `text-strong` and a bar in `positive` at its left, as the picked row of the predecessor game does. The picked row stays seen: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included.
+Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right, under the list in the phone layout (D-282, D-396), in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row stands filled with `highlight`, its text in `text-strong` and a bar in `positive` at its left, as the picked row of the predecessor game does. The picked row is not hidden by a fold: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -10370,7 +10378,7 @@ Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stan
     alone; its bar in `selected` or in the colour of its text
 - **Origin:** none
 
-*Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. The row follows the row of the predecessor game, whose screen this one is to match in legibility: the circle at its left shows which maps are solved down the whole list with no word to read, and the short demand tells what the map asks before it is picked. On a side-by-side of the two screens the predecessor's picked row, filled and with a green bar, stood out more than a row marked by a light bar and a lighter text alone, so the row takes the fill and the green of the predecessor, the bar saying that this map's card is the one open now (D-39). The picked row stays seen without holding its region unfolded, so the row that folds the solved maps keeps working with a map picked and with a search typed. Accepted with it: one more sentence on the screen; the picked row of the catalog looks otherwise than the picked program on the list of programs; a picked solved map moves from above the fold row to its place among the solved maps when the player unfolds them.
+*Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. The row follows the row of the predecessor game, whose screen this one is to match in legibility: the circle at its left shows which maps are solved down the whole list with no word to read, and the short demand tells what the map asks before it is picked. On a side-by-side of the two screens the predecessor's picked row, filled and with a green bar, stood out more than a row marked by a light bar and a lighter text alone, so the row takes the fill and the green of the predecessor, the bar saying that this map's card is the one open now (D-39). The picked row is not hidden by a fold, and its region is not held unfolded for it, so the row that folds the solved maps keeps working with a map picked and with a search typed. Accepted with it: one more sentence on the screen; the picked row of the catalog looks otherwise than the picked program on the list of programs; a picked solved map moves from above the fold row to its place among the solved maps when the player unfolds them.
 *Rejected:* `#/mapy` showing at once the card of the first map of the list — two addresses would show the same, and the row of the first map would not be needed; the gain is two clicks to the first map run; the right area empty, as in the predecessor game — an empty area looks as if it had not loaded, which is why an empty trip plan says „Plan wyprawy: pusty” (D-307); a list as before with the short demand in the row and no regions, counter, search or views — the least work, but on a side-by-side of screenshots the predecessor game easily comes out more legible, and the goal of the screen returns as a remark to the request; the picked row as the picked program on the list of programs, its text in `text-strong` and a bar in `selected`, with no fill — on the side-by-side the predecessor's filled row with its green bar stood out more; the region of the picked map held unfolded, its fold row disabled and dim while a pick or a search holds it open — a control that looks broken, which the player cannot use.
 
 ### D-332 — What does {map} name in `#/mapy/{map}`?

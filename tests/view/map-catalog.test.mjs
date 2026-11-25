@@ -422,7 +422,7 @@ test("the row of the picked map is the one marked, in every view", async () => {
 // Catches a picked solved map hidden under a folded row, or drawn twice, a pick that holds the fold open or
 // disabled so the player cannot fold it, and a pick stored as the player's choice (D-331).
 test("a picked solved map under a folded row stands above it, the fold row works with any pick, and no pick is stored", async () => {
-  // decision: D-331 "The picked row stays seen: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
+  // decision: D-331 "The picked row is not hidden by a fold: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
   await withPage(async (page) => {
     const { draw } = await mount(page, {
       solvedMaps: EDGE,

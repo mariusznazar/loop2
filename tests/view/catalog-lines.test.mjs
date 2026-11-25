@@ -88,7 +88,7 @@ test("the region's counter counts all five maps of the data, and only the open m
 // player then cannot fold, and a picked row hidden under a folded row, or drawn twice.
 test("a solved map folds under one row that counts it, the player folds and unfolds it with or without a search, and a picked solved map stands above the folded row", () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
-  // decision: D-331 "The picked row stays seen: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
+  // decision: D-331 "The picked row is not hidden by a fold: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
   const solvedEdge = { ...edgeRow, solved: true };
   const pickedEdge = { ...solvedEdge, selected: true };
   const pickedForest = { ...forestRow, selected: true };
