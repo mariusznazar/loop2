@@ -1,0 +1,13 @@
+== forestDeepDecent on forestDeep
+1 death:combat@211 most=15 fights=[open characterDied:15]
+2 death:cold@264 most=24 fights=[open creatureDefeated:24]
+3 death:cold@218 most=0 fights=[]
+4 death:cold@264 most=24 fights=[open creatureDefeated:24]
+5 death:combat@253 most=9 fights=[open characterDied:9]
+6 death:combat@401 most=0 fights=[open characterDied:0]
+7 death:combat@276 most=12 fights=[open characterDied:12]
+8 death:combat@223 most=15 fights=[open characterDied:15]
+9 death:cold@245 most=24 fights=[open creatureDefeated:24]
+10 death:cold@264 most=24 fights=[open creatureDefeated:24]
+11 death:combat@451 most=24 fights=[open creatureDefeated:24 open characterDied:12]
+12 death:cold@264 most=24 fights=[open creatureDefeated:24]
