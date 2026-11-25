@@ -51,6 +51,7 @@ function input(overrides) {
     query: "",
     view: "dokad",
     unfolded: [],
+    foldedInSearch: [],
     selected: null,
     recordOf: () => null,
     ...overrides,
@@ -79,49 +80,82 @@ test("the region's counter counts all five maps of the data, and only the open m
   assert.equal(result.none, null);
 });
 
-// D-325, D-331: solved maps fold under one row that counts them, the open unsolved maps stay on top. The
-// fold opens for a search, for a region the player unfolded, and for a picked map that stands among the
-// solved ones, so that its row is seen; a picked open map leaves the fold to the player. Catches a
-// solved map left on top, a fold that counts the wrong maps, a fold that never opens, and a fold held
-// open by an open picked map, which the player then cannot fold.
-test("a solved map folds under one row that counts it, and the fold opens for a search, an unfold or a picked solved map, not for a picked open map", () => {
+// D-325, D-331: solved maps fold under one row that counts them, the open unsolved maps stay on top. With
+// no search the fold opens where the player unfolded the region; with a search typed it stands open, and
+// the player can fold the matches as well. A picked solved map under a folded row stands above that row,
+// so that its row with the bar is seen, and the fold still works. Catches a solved map left on top, a fold
+// that counts the wrong maps, a fold that never opens, a fold held open by a pick or a search, which the
+// player then cannot fold, and a picked row hidden under a folded row, or drawn twice.
+test("a solved map folds under one row that counts it, the player folds and unfolds it with or without a search, and a picked solved map stands above the folded row", () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
+  // decision: D-331 "The picked row stays seen: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
   const solvedEdge = { ...edgeRow, solved: true };
-  const state = (overrides) => {
-    const { expanded, forced } = catalogLines(
-      input({ solvedMaps: ["forestEdge"], ...overrides }),
-    ).regions[0].solved;
-    return { expanded, forced };
-  };
-  const closed = catalogLines(input({ solvedMaps: ["forestEdge"] }));
-  assert.equal(closed.regions[0].header, "Las · 1 z 5");
-  assert.deepEqual(closed.regions[0].rows, [forestRow]);
-  assert.deepEqual(closed.regions[0].solved, {
+  const pickedEdge = { ...solvedEdge, selected: true };
+  const pickedForest = { ...forestRow, selected: true };
+  const region = (overrides) =>
+    catalogLines(input({ solvedMaps: ["forestEdge"], ...overrides }))
+      .regions[0];
+  const closed = region({});
+  assert.equal(closed.header, "Las · 1 z 5");
+  assert.deepEqual(closed.rows, [forestRow]);
+  assert.deepEqual(closed.solved, {
     text: "1 rozwiązana",
     expanded: false,
-    forced: false,
     rows: [solvedEdge],
   });
   assert.deepEqual(
-    state({ selected: "forestEdge" }),
-    { expanded: true, forced: true },
-    "the picked solved map is seen, and the fold cannot hide it",
+    region({ unfolded: ["Las"] }).solved.expanded,
+    true,
+    "a region the player unfolded stands open",
   );
-  assert.deepEqual(state({ query: "las" }), { expanded: true, forced: true });
+  const pickedFolded = region({ selected: "forestEdge" });
   assert.deepEqual(
-    state({ unfolded: ["Las"] }),
-    { expanded: true, forced: false },
-    "a region the player unfolded stands open and can be folded",
+    pickedFolded.rows,
+    [forestRow, pickedEdge],
+    "the picked solved map stands above the folded row",
+  );
+  assert.equal(
+    pickedFolded.solved.expanded,
+    false,
+    "and the pick unfolds nothing",
+  );
+  const pickedUnfolded = region({ selected: "forestEdge", unfolded: ["Las"] });
+  assert.deepEqual(
+    pickedUnfolded.rows,
+    [forestRow],
+    "unfolded, the picked map stands among the solved ones, once",
+  );
+  assert.deepEqual(pickedUnfolded.solved.rows, [pickedEdge]);
+  assert.equal(pickedUnfolded.solved.expanded, true);
+  const pickedOpen = region({ selected: "forest" });
+  assert.deepEqual(pickedOpen.rows, [pickedForest]);
+  assert.equal(pickedOpen.solved.expanded, false);
+  assert.equal(
+    region({ query: "las" }).solved.expanded,
+    true,
+    "a search shows the solved maps that match",
+  );
+  assert.equal(
+    region({ query: "las", foldedInSearch: ["Las"] }).solved.expanded,
+    false,
+    "the player folds the matches of a search",
   );
   assert.deepEqual(
-    state({ selected: "forest" }),
-    { expanded: false, forced: false },
-    "a picked open map of the region leaves the fold to the player",
+    region({ query: "las", foldedInSearch: ["Las"], selected: "forestEdge" })
+      .rows,
+    [forestRow, pickedEdge],
+    "the picked match stands above the folded row of the search",
   );
-  assert.deepEqual(state({ selected: "forest", unfolded: ["Las"] }), {
-    expanded: true,
-    forced: false,
-  });
+  assert.equal(
+    region({ query: "", foldedInSearch: ["Las"] }).solved.expanded,
+    false,
+    "the folding of a search does not reach the list without one",
+  );
+  assert.equal(
+    region({ query: "las", unfolded: [] }).solved.expanded,
+    true,
+    "and the folding without a search does not reach the search",
+  );
 });
 
 // D-325, D-327: the facts of a row in the old game's order — the demand in whole hours, what the map

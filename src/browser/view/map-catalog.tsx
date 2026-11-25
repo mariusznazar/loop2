@@ -7,11 +7,11 @@
  * programs is. In „Dokąd” the solved maps of a region stand folded under one row that unfolds them,
  * and in „Postęp” a map not yet opened stands as an empty place with no name.
  *
- * The view, the typed text and the regions the player unfolded are the state of this component, so
- * they live as long as the screen does and no longer. The solved maps are unfolded in the drawing for a
- * search and for a picked map that stands among them, which the lines decide, and stored nowhere
- * (D-331). The component names no map, resource or creature: every name comes from the lines. Nothing
- * here runs when the module is imported.
+ * The view, the typed text and the regions the player unfolded, and those whose matches of a search the
+ * player folded, are the state of this component, so they live as long as the screen does and no
+ * longer. The fold row always works; a picked solved map under a folded row stands above it, which the
+ * lines decide, and the pick is stored nowhere (D-331). The component names no map, resource or
+ * creature: every name comes from the lines. Nothing here runs when the module is imported.
  */
 import { useState } from "react";
 import type { CSSProperties } from "react";
@@ -161,7 +161,6 @@ function DokadGroup({
               <ReactButton
                 text={`${solved.expanded ? "▾" : "▸"} ${solved.text}`}
                 expanded={solved.expanded}
-                disabled={solved.forced}
                 onClick={() => onToggle(region.region)}
               />
             </li>
@@ -225,16 +224,22 @@ export function MapCatalog({
   const [view, setView] = useState<CatalogView>("dokad");
   const [query, setQuery] = useState("");
   const [unfolded, setUnfolded] = useState<readonly RegionName[]>([]);
+  const [foldedInSearch, setFoldedInSearch] = useState<readonly RegionName[]>(
+    [],
+  );
   const lines = catalogLines({
     solvedMaps,
     query,
     view,
     unfolded,
+    foldedInSearch,
     selected,
     recordOf,
   });
+  // With a search typed the fold row folds and unfolds the matches, and with none the whole group; each
+  // keeps its own state, so clearing the search brings back the folding the player left there.
   const toggle = (name: RegionName) =>
-    setUnfolded((now) =>
+    (query.trim() === "" ? setUnfolded : setFoldedInSearch)((now) =>
       now.includes(name) ? now.filter((each) => each !== name) : [...now, name],
     );
   return (

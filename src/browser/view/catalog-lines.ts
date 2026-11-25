@@ -58,9 +58,10 @@ export type CatalogResourceRow = {
 };
 
 /**
- * A region of „Dokąd”: the region, its header, its open maps, and its solved maps folded under one row.
- * `forced` says the lines hold the solved maps unfolded whatever the player chose, for a search or for
- * a picked map that stands among them; `expanded` is the state to draw (D-325, D-331).
+ * A region of „Dokąd”: the region, its header, the rows above the row that folds the solved maps, and the
+ * solved maps under that row. The rows above it are the open maps and, while the solved maps stand
+ * folded, the picked map where it is one of them, so that its row is seen (D-331); `expanded` is the
+ * state to draw, which the player sets (D-325).
  */
 export type DokadRegion = {
   region: RegionName;
@@ -69,7 +70,6 @@ export type DokadRegion = {
   solved: {
     text: string;
     expanded: boolean;
-    forced: boolean;
     rows: CatalogMapRow[];
   } | null;
 };
@@ -95,9 +95,11 @@ export type CatalogInput = {
   /** The text typed in the search, as the player typed it. */
   query: string;
   view: CatalogView;
-  /** The regions whose solved maps the player unfolded in „Dokąd”. */
+  /** The regions whose solved maps the player unfolded in „Dokąd” while no search is typed. */
   unfolded: readonly RegionName[];
-  /** The picked map, or null before a pick; the solved maps of its region are unfolded where it stands among them. */
+  /** The regions whose solved maps that match the search the player folded in „Dokąd” while a search is typed. */
+  foldedInSearch: readonly RegionName[];
+  /** The picked map, or null before a pick; where it stands among folded solved maps, its row stands above them. */
   selected: MapId | null;
   /**
    * The record of D-440 the browser remembers for a map, or null where none stands; asked only for a map
@@ -267,7 +269,7 @@ function dokadRegion(
   context: Context,
   region: RegionName,
   maps: readonly MapId[],
-  unfolded: readonly RegionName[],
+  folding: Pick<CatalogInput, "unfolded" | "foldedInSearch">,
 ): DokadRegion {
   const open = maps
     .filter((id) => !context.solved.has(id))
@@ -275,20 +277,24 @@ function dokadRegion(
   const solved = maps
     .filter((id) => context.solved.has(id))
     .map((id) => mapRow(context, id));
-  // A search unfolds the solved maps, and so does the picked map where it stands among them, so that
-  // its row with the bar is seen (D-325, D-331); a picked open map leaves the fold to the player.
-  const forced = context.query !== "" || solved.some((row) => row.selected);
+  // The player folds and unfolds the solved maps: with no search they stand folded until unfolded, and
+  // with a search the matches stand unfolded until folded (D-325). A picked solved map under the folded
+  // row stands above it, so that its row with the bar is seen (D-331).
+  const expanded =
+    context.query === ""
+      ? folding.unfolded.includes(region)
+      : !folding.foldedInSearch.includes(region);
+  const pinned = expanded ? [] : solved.filter((row) => row.selected);
   return {
     region,
     header: regionHeader(context, region),
-    rows: open,
+    rows: [...open, ...pinned],
     solved:
       solved.length === 0
         ? null
         : {
             text: countText(solved.length, SOLVED_FORMS),
-            expanded: forced || unfolded.includes(region),
-            forced,
+            expanded,
             rows: solved,
           },
   };
@@ -450,7 +456,7 @@ export function catalogLinesOf(
     };
   }
   const out = byRegion.map(([region, maps]) =>
-    dokadRegion(context, region, maps, input.unfolded),
+    dokadRegion(context, region, maps, input),
   );
   return {
     view: "dokad",

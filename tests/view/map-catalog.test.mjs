@@ -283,9 +283,9 @@ test("„Co daje” groups the open maps by resource, the rarest first, with the
   });
 });
 
-// Catches a search that is case-sensitive or untrimmed, that finds no map by its resource, or that
-// leaves the solved maps folded so the hit is hidden (D-325).
-test("a typed text finds the open maps by the name of the map or of a resource, ignoring case and the spaces around it, and unfolds the solved ones", async () => {
+// Catches a search that is case-sensitive or untrimmed, that finds no map by its resource, that leaves
+// the solved maps folded so the hit is hidden, or whose fold row cannot fold the matches (D-325, D-331).
+test("a typed text finds the open maps by the name of the map or of a resource, ignoring case and the spaces around it, shows the solved ones, and the fold row folds and unfolds them", async () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name"
   await withPage(async (page) => {
     await mount(page, { solvedMaps: FOUR, selected: null });
@@ -304,11 +304,22 @@ test("a typed text finds the open maps by the name of the map or of a resource, 
       "the open map first, then the solved ones, which the text unfolds",
     );
     assert.equal(fold(page.root).getAttribute("aria-expanded"), "true");
-    assert.equal(
-      fold(page.root).disabled,
-      true,
-      "a fold that cannot fold stands disabled",
+    assert.equal(fold(page.root).disabled, false, "the fold row works");
+    await press(fold(page.root));
+    assert.deepEqual(
+      names(page.root),
+      ["Las — matecznik"],
+      "the fold row folds the matches",
     );
+    assert.equal(fold(page.root).getAttribute("aria-expanded"), "false");
+    await press(fold(page.root));
+    assert.deepEqual(names(page.root), [
+      "Las — matecznik",
+      "Skraj lasu",
+      "Las",
+      "Las — głębiej",
+      "Las — wataha",
+    ]);
     await typeInto(field(page.root), "mech");
     assert.equal(
       names(page.root).includes("Las"),
@@ -382,10 +393,10 @@ test("the row of the picked map is the one marked, in every view", async () => {
   });
 });
 
-// Catches a picked solved map whose neighbours stay folded, so its row is not seen, an open picked map that
-// holds the fold open and disabled so the player cannot fold it, and a pick stored as the player's choice (D-331).
-test("a picked solved map unfolds its group so that its row is seen, while a picked open map leaves the fold to the player, and no pick is stored", async () => {
-  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left."
+// Catches a picked solved map hidden under a folded row, or drawn twice, a pick that holds the fold open or
+// disabled so the player cannot fold it, and a pick stored as the player's choice (D-331).
+test("a picked solved map under a folded row stands above it, the fold row works with any pick, and no pick is stored", async () => {
+  // decision: D-331 "The picked row stays seen: where the solved maps of its region stand folded, it stands above the row that folds them, which the player folds and unfolds at any time, a search typed included."
   await withPage(async (page) => {
     const { draw } = await mount(page, {
       solvedMaps: EDGE,
@@ -396,33 +407,46 @@ test("a picked solved map unfolds its group so that its row is seen, while a pic
       ["Las", "Skraj lasu"],
       "the solved picked map is seen",
     );
-    const picked = all(page.root, "[aria-current]");
+    const items = all(page.root, ".maps-list-items > li");
     assert.deepEqual(
-      picked.map((row) => row.querySelector(".maps-catalog-name").textContent),
+      items.map((item) => item.className || "row"),
+      ["row", "row", "maps-catalog-fold"],
+      "the picked row stands above the fold row",
+    );
+    assert.deepEqual(
+      all(page.root, "[aria-current]").map(
+        (row) => row.querySelector(".maps-catalog-name").textContent,
+      ),
       ["Skraj lasu"],
     );
-    assert.equal(fold(page.root).getAttribute("aria-expanded"), "true");
-    assert.equal(
-      fold(page.root).disabled,
-      true,
-      "the fold that would hide the picked row stands disabled",
+    assert.equal(fold(page.root).getAttribute("aria-expanded"), "false");
+    assert.equal(fold(page.root).disabled, false, "the fold works");
+    await press(fold(page.root));
+    assert.deepEqual(
+      names(page.root),
+      ["Las", "Skraj lasu"],
+      "unfolded, the picked map stands among the solved ones, once",
     );
+    assert.equal(
+      all(page.root, ".maps-list-items > li")
+        .at(-1)
+        .querySelector("[aria-current]") !== null,
+      true,
+      "under the fold row",
+    );
+    await press(fold(page.root));
+    assert.deepEqual(names(page.root), ["Las", "Skraj lasu"], "folded again");
     await draw({ solvedMaps: EDGE, selected: "forest" });
     assert.deepEqual(
       names(page.root),
       ["Las"],
       "a picked open map does not unfold the solved ones",
     );
-    assert.equal(fold(page.root).disabled, false, "the fold works");
     await press(fold(page.root));
     assert.deepEqual(names(page.root), ["Las", "Skraj lasu"], "it unfolds");
     await press(fold(page.root));
-    assert.deepEqual(names(page.root), ["Las"], "and folds again");
-    await draw({ solvedMaps: EDGE, selected: "forestEdge" });
-    assert.deepEqual(names(page.root), ["Las", "Skraj lasu"]);
     await draw({ solvedMaps: EDGE, selected: null });
-    assert.deepEqual(names(page.root), ["Las"], "the unfolding was not stored");
-    assert.equal(fold(page.root).disabled, false);
+    assert.deepEqual(names(page.root), ["Las"], "the pick was not stored");
   });
 });
 
@@ -437,6 +461,15 @@ test("every row, of every view, is a link to the address of its map", async () =
         row.tagName,
         row.getAttribute("href"),
       ]);
+    assert.deepEqual(
+      hrefs(),
+      [
+        ["A", "#/mapy/forestLair"],
+        ["A", "#/mapy/forestDeep"],
+      ],
+      "the picked solved map stands above the folded row",
+    );
+    await press(fold(page.root));
     assert.deepEqual(hrefs(), [
       ["A", "#/mapy/forestLair"],
       ["A", "#/mapy/forestEdge"],
