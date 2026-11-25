@@ -193,4 +193,4 @@ two narrowed rows about 6 seconds. Each call also builds the game, so a short me
 two seconds more.
 
 `progression` for the five maps of the game, every reference program on seeds 1-500, takes about a
-minute and a half (92 seconds in the measurement of this change, with the tests running beside it).
+minute and a half.
