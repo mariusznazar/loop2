@@ -37,43 +37,45 @@ test("the nature energy takes the form of its count in a price: 1 energia natury
   assert.equal(countedName(10, NATURE_ENERGY_NAME), "energii natury");
 });
 
-// Catches a „z” that stays „z” before a number spoken with a sibilant cluster („ze stu”, „ze sześciu”), one
-// that turns to „ze” before every number, and a hundred, thousand or teen read by the wrong word.
-test("„z” before a count becomes „ze” where the spoken number begins with s, z or sz, and stays „z” otherwise", () => {
+// Catches a „z” that stays „z” before a number whose first spoken word begins with „sze” or „st” („ze
+// sześciu”, „ze stu”), one that turns to „ze” before a number spoken from „siedem-” („z siedmiu”, „z
+// siedemdziesięciu”, „z siedemnastu”) or before every number, and a hundred, thousand or teen read by the
+// wrong word.
+test("„z” before a count becomes „ze” where the first spoken word of the number begins with „sze” or „st” or is zero, and stays „z” otherwise", () => {
   const expected = [
     [0, "ze"],
     [1, "z"],
-    [5, "z"],
+    [2, "z"],
     [6, "ze"],
-    [7, "ze"],
+    [7, "z"],
     [8, "z"],
+    [12, "z"],
     [16, "ze"],
-    [17, "ze"],
-    [18, "z"],
+    [17, "z"],
     [24, "z"],
     [50, "z"],
-    [59, "z"],
     [60, "ze"],
-    [70, "ze"],
-    [79, "ze"],
-    [80, "z"],
-    [99, "z"],
+    [69, "ze"],
+    [70, "z"],
+    [79, "z"],
     [100, "ze"],
     [120, "ze"],
     [199, "ze"],
     [200, "z"],
-    [599, "z"],
     [600, "ze"],
-    [799, "ze"],
-    [800, "z"],
-    [999, "z"],
+    [699, "ze"],
+    [700, "z"],
+    [799, "z"],
     [1000, "z"],
     [1500, "z"],
-    [2000, "z"],
     [6000, "ze"],
+    [7000, "z"],
     [16000, "ze"],
+    [17000, "z"],
+    [100000, "ze"],
     [1000000, "z"],
     [6000000, "ze"],
+    [7000000, "z"],
   ];
   for (const [count, preposition] of expected)
     assert.equal(withPreposition(count), preposition, String(count));
