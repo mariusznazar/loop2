@@ -1,10 +1,10 @@
 /**
  * The catalog of the maps on the left of the screen Mapy, in React (D-325, D-331, D-134, D-149): the
- * search field above the list, the three views as tabs, and under them the regions with their
- * counters and the rows of the maps, drawn from the pure lines of `catalog-lines.ts`. Each row is a
- * link to `#/mapy/{map}` with the state circle at its left, the name, the facts of the map and the
- * icons of its attackers; the row of the picked map is marked as the picked row of the list of
- * programs is. In „Dokąd” the solved maps of a region stand folded under one row that unfolds them,
+ * search field with its magnifying glass above the list, the three views as buttons selected in their
+ * group, and under them the regions with their counters and the rows of the maps, drawn from the pure
+ * lines of `catalog-lines.ts`. Each row is a link to `#/mapy/{map}` with the state circle at its left,
+ * the name, the facts of the map and the icons of its attackers; the row of the picked map is marked
+ * filled with a bar at its left. In „Dokąd” the solved maps of a region stand folded under one row that unfolds them,
  * and in „Postęp” a map not yet opened stands as an empty place with no name.
  *
  * The view, the typed text and the regions the player unfolded, and those whose matches of a search the
@@ -30,6 +30,7 @@ import type {
 import { CATALOG_VIEWS } from "./catalog-lines.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactTextField } from "./controls/react-text-field.js";
+import { SEARCH_ICON } from "./credits.js";
 import { screenAddress } from "./screen-address.js";
 
 export type MapCatalogProps = {
@@ -42,10 +43,16 @@ export type MapCatalogProps = {
 };
 
 /** An icon of the icon directory drawn as a mask in the colour of the text beside it (D-43). */
-function IconMask({ name }: { name: string }) {
+function IconMask({
+  name,
+  className = "maps-catalog-icon",
+}: {
+  name: string;
+  className?: string;
+}) {
   return (
     <span
-      className="icon-mask maps-catalog-icon"
+      className={`icon-mask ${className}`}
       aria-hidden="true"
       style={{ "--icon": `url("/icons/${name}.svg")` } as CSSProperties}
     />
@@ -244,19 +251,24 @@ export function MapCatalog({
     );
   return (
     <div className="maps-catalog">
-      <ReactTextField
-        label="Szukaj mapy albo zasobu"
-        hint="szukaj mapy albo zasobu"
-        spellCheck={false}
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <div className="maps-catalog-views tabs">
+      <div className="maps-catalog-search">
+        <IconMask
+          name={SEARCH_ICON.icon}
+          className="maps-catalog-search-icon"
+        />
+        <ReactTextField
+          label="Szukaj mapy albo zasobu"
+          hint="szukaj mapy albo zasobu"
+          spellCheck={false}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+      <div className="maps-catalog-views">
         {CATALOG_VIEWS.map((each) => (
           <ReactButton
             key={each.id}
             text={each.label}
-            kind="tab"
             selected={view === each.id}
             onClick={() => setView(each.id)}
           />

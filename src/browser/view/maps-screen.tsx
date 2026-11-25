@@ -17,7 +17,7 @@
  * second click that waits) lives in the screen alone (D-407). Nothing runs when the module is imported.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
@@ -48,11 +48,13 @@ import {
   attackerLines,
   capLines,
   cardHeading,
+  demandRows,
   resourceLines,
   sendMaps,
   solvingSentence,
-  terrainLines,
+  terrainRows,
 } from "./map-lines.js";
+import type { TableRow } from "./map-lines.js";
 import { MapCatalog } from "./map-catalog.js";
 import { screenAddress } from "./screen-address.js";
 import {
@@ -119,6 +121,9 @@ export type MapsScreen = {
   /** Unmounts the screen and takes it out of the page. */
   dispose(): void;
 };
+
+/** The button at the top of the card, which takes the player to „Kto idzie” to pick the character who enters. */
+export const CHOOSE_TEXT = "Wejdź — wybierz postać";
 
 /** A control of a character that the keyboard's focus can be sent to once the screen is drawn. */
 type FocusTarget = "stop" | "enter" | "program" | "judge" | "loop";
@@ -199,15 +204,89 @@ function CardLine({ text, warning }: { text: string; warning: boolean }) {
   return <li className={warning ? "maps-card-warning" : undefined}>{text}</li>;
 }
 
-/** The card of a map: its heading and the parts the map has, the record of D-440 among them (D-327). */
+/** An icon of the icon directory drawn as a mask in the colour of the text beside it (D-43). */
+function CardIcon({ name }: { name: string }) {
+  return (
+    <span
+      className="icon-mask maps-card-icon"
+      aria-hidden="true"
+      style={{ "--icon": `url("/icons/${name}.svg")` } as CSSProperties}
+    />
+  );
+}
+
+/** A part of the card: its name in `text-label` over what it holds (D-327). */
+function CardPart({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <section className="maps-card-part">
+      <h3 className="maps-card-part-name">{name}</h3>
+      {children}
+    </section>
+  );
+}
+
+/** A table of the card, „Żąda” or „Teren”: a label and its value on each row, a note after the value where it has one. */
+function CardTable({ rows }: { rows: readonly TableRow[] }) {
+  return (
+    <dl className="maps-card-table">
+      {rows.map((row) => (
+        <div key={row.label} className="maps-card-row">
+          <dt className="maps-card-label">{row.label}</dt>
+          <dd className="maps-card-value">
+            {row.icons.map((icon) => (
+              <CardIcon key={icon} name={icon} />
+            ))}
+            {row.value}
+            {row.note === null ? null : (
+              <span className="maps-card-note">{row.note}</span>
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** A row of „Leży tu” or „Czyha”: the icon in its column, the head on the first line and the detail under it. */
+function CardEntry({
+  icon,
+  head,
+  children,
+  className,
+}: {
+  icon: string;
+  head: string;
+  children: ReactNode;
+  className: string;
+}) {
+  return (
+    <li className={`maps-card-entry ${className}`}>
+      <CardIcon name={icon} />
+      <div className="maps-card-entry-text">
+        <p className="maps-card-entry-head">{head}</p>
+        {children}
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The card of a map (D-327): a heading with the map's name, the tag of its state and its opener, and at
+ * its right „Wejdź — wybierz postać”, which takes the player to „Kto idzie”; under it the one sentence of
+ * the solving condition; then two columns, the tables „Żąda” and „Teren” on the left and „Czyha”, „Leży
+ * tu” and „Odbiera” on the right, one under the other in the phone layout. A part the map lacks stands
+ * nowhere, and „Czyha” holds the record of D-440 at the creature the map's data name for it.
+ */
 function MapCard({
   mapId,
   solved,
   record,
+  onChoose,
 }: {
   mapId: MapId;
   solved: boolean;
   record: number | null;
+  onChoose: () => void;
 }) {
   const map = MAPS[mapId];
   const heading = cardHeading(map, solved);
@@ -215,104 +294,101 @@ function MapCard({
   const caps = capLines(map);
   return (
     <div className="maps-card">
-      <div className="maps-card-heading">
-        <h2 className="maps-card-name">{heading.name}</h2>
-        {heading.solved === null ? null : (
-          <>
-            <span className="maps-card-sep"> · </span>
-            <span className="maps-card-solved">{heading.solved}</span>
-          </>
-        )}
-        {heading.openedBy === null ? null : (
-          <>
-            <span className="maps-card-sep"> · </span>
-            <span className="maps-card-opened-by">{heading.openedBy}</span>
-          </>
-        )}
+      <div className="maps-card-top">
+        <div className="maps-card-heading">
+          <h2 className="maps-card-name">{heading.name}</h2>
+          <span
+            className={
+              heading.state.solved
+                ? "maps-card-state solved"
+                : "maps-card-state"
+            }
+          >
+            {heading.state.text}
+          </span>
+          {heading.openedBy === null ? null : (
+            <>
+              <span className="maps-card-sep"> · </span>
+              <span className="maps-card-opened-by">{heading.openedBy}</span>
+            </>
+          )}
+        </div>
+        <div className="maps-card-go">
+          <ReactButton text={CHOOSE_TEXT} onClick={onChoose} />
+        </div>
       </div>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Żąda</h3>
-        <p>{solvingSentence(mapId)}</p>
-      </section>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Teren</h3>
-        <ul className="maps-card-lines">
-          {terrainLines(map).map((line) => (
-            <li key={line.text}>
-              {line.text}
-              {line.note === null ? null : (
-                <span className="maps-card-note">{line.note}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Leży tu</h3>
-        <ul className="maps-card-lines">
-          {resourceLines(map).map((resource) => (
-            <li key={resource.id} className="maps-card-resource">
-              <span
-                className="icon-mask maps-card-icon"
-                aria-hidden="true"
-                style={
-                  {
-                    "--icon": `url("/icons/${RESOURCES[resource.id].icon}.svg")`,
-                  } as CSSProperties
-                }
-              />
-              {`${resource.text}, `}
-              <span
-                className={
-                  resource.renewal.warning ? "maps-card-warning" : undefined
-                }
-              >
-                {resource.renewal.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      {attackers.length === 0 ? null : (
-        <section className="maps-card-part">
-          <h3 className="maps-card-part-name">Czyha</h3>
-          <ul className="maps-card-lines">
-            {attackers.map((attacker) => (
-              <li
-                key={`${attacker.head}|${attacker.odds}`}
-                className="maps-card-attacker"
-              >
-                <p className="maps-card-attacker-head">
-                  <span
-                    className="icon-mask maps-card-icon"
-                    aria-hidden="true"
-                    style={
-                      {
-                        "--icon": `url("/icons/${attacker.icon}.svg")`,
-                      } as CSSProperties
-                    }
+      <p className="maps-card-goal">{solvingSentence(mapId)}</p>
+      <div className="maps-card-columns">
+        <div className="maps-card-column">
+          <CardPart name="Żąda">
+            <CardTable rows={demandRows(map)} />
+          </CardPart>
+          <CardPart name="Teren">
+            <CardTable rows={terrainRows(map)} />
+          </CardPart>
+        </div>
+        <div className="maps-card-column">
+          {attackers.length === 0 ? null : (
+            <CardPart name="Czyha">
+              <ul className="maps-card-lines">
+                {attackers.map((attacker) => (
+                  <CardEntry
+                    key={`${attacker.head}|${attacker.odds}`}
+                    icon={attacker.icon}
+                    head={attacker.head}
+                    className="maps-card-attacker"
+                  >
+                    <p className="maps-card-attacker-odds">{attacker.odds}</p>
+                    {attacker.record === undefined ? null : (
+                      <p className="maps-card-attacker-record">
+                        {attacker.record}
+                      </p>
+                    )}
+                  </CardEntry>
+                ))}
+              </ul>
+            </CardPart>
+          )}
+          <CardPart name="Leży tu">
+            <ul className="maps-card-lines">
+              {resourceLines(map).map((resource) => (
+                <CardEntry
+                  key={resource.id}
+                  icon={RESOURCES[resource.id].icon}
+                  head={resource.name}
+                  className="maps-card-resource"
+                >
+                  <p className="maps-card-detail">
+                    {`${resource.spread} · `}
+                    <span
+                      className={
+                        resource.renewal.warning
+                          ? "maps-card-warning"
+                          : undefined
+                      }
+                    >
+                      {resource.renewal.text}
+                    </span>
+                  </p>
+                </CardEntry>
+              ))}
+            </ul>
+          </CardPart>
+          {caps.length === 0 ? null : (
+            <CardPart name="Odbiera">
+              <ul className="maps-card-lines">
+                {caps.map((cap) => (
+                  <CardLine
+                    key={cap.text}
+                    text={cap.text}
+                    warning={cap.warning}
                   />
-                  {attacker.head}
-                </p>
-                <p className="maps-card-attacker-odds">{attacker.odds}</p>
-                {attacker.record === undefined ? null : (
-                  <p className="maps-card-attacker-record">{attacker.record}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {caps.length === 0 ? null : (
-        <section className="maps-card-part">
-          <h3 className="maps-card-part-name">Odbiera</h3>
-          <ul className="maps-card-lines">
-            {caps.map((cap) => (
-              <CardLine key={cap.text} text={cap.text} warning={cap.warning} />
-            ))}
-          </ul>
-        </section>
-      )}
+                ))}
+              </ul>
+            </CardPart>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -563,6 +639,7 @@ function MapsView({
   const [shownOn, setShownOn] = useState(mapId);
   const alive = useRef(false);
   const cardMap = useRef(mapId);
+  const whoHeading = useRef<HTMLHeadingElement>(null);
 
   // Another map of the list is leaving the card: no result of a judging stands past it (D-329).
   if (shownOn !== mapId) {
@@ -701,9 +778,14 @@ function MapsView({
               mapId={open}
               solved={state.solvedMaps.includes(open)}
               record={props.readMapRecord(open)}
+              onChoose={() => whoHeading.current?.focus()}
             />
             <section className="maps-who">
-              <h3 className="maps-who-heading">Kto idzie</h3>
+              {/* The heading takes the focus from „Wejdź — wybierz postać”, which brings it into view, and
+                  stands outside the keyboard's order otherwise. */}
+              <h3 className="maps-who-heading" tabIndex={-1} ref={whoHeading}>
+                Kto idzie
+              </h3>
               {state.team.characters.length === 0 ? (
                 <p className="maps-who-empty">
                   Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.

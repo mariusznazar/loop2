@@ -19,28 +19,46 @@ export function sendMaps(solvedMaps?: readonly MapId[]): MapId[] {
     : maps.filter((mapId) => canSendMap(solvedMaps, mapId));
 }
 
-/** The map's solving condition as a sentence: „{name} — {solvingText}”, both from the map's data. Pure. */
+/**
+ * The map's solving condition as the one sentence under the heading of its card, the solving text of the
+ * map's data alone, since the heading above it names the map (D-133, D-327). Pure.
+ */
 export function solvingSentence(mapId: MapId): string {
-  return `${MAPS[mapId].name} — ${MAPS[mapId].solvingText}`;
+  return MAPS[mapId].solvingText;
 }
 
 /** A line of a card's part that stands in a role of its own, `warning` where `warning` is true (D-327). */
 export type CardLine = { text: string; warning: boolean };
 
-/** The heading of a card: the map's name, and the solved mark and the opener's words where they hold. */
+/**
+ * The heading of a card: the map's name, the tag of its state — „rozwiązana” once it is solved, „otwarta”
+ * before — and the opener's words where another map opens it.
+ */
 export type CardHeading = {
   name: string;
-  solved: string | null;
+  state: { text: string; solved: boolean };
   openedBy: string | null;
 };
 
-/** A line of „Teren”: its text, and the note on the step, which stands apart, where the line has one. */
-export type TerrainLine = { text: string; note: string | null };
+/**
+ * A row of a table of the card, „Żąda” or „Teren”: its label and its value, the note that stands apart
+ * after the value where the row has one, and the icons of the creatures the row names, from the data.
+ */
+export type TableRow = {
+  label: string;
+  value: string;
+  note: string | null;
+  icons: string[];
+};
 
-/** A resource of „Leży tu”: its identifier for the icon, its line, and its renewal, which stands apart. */
+/**
+ * A resource of „Leży tu”: its identifier for the icon, its name, the tiles that hold it with its
+ * stock, and its renewal, which stands apart.
+ */
 export type ResourceLine = {
   id: ResourceId;
-  text: string;
+  name: string;
+  spread: string;
   renewal: CardLine;
 };
 
@@ -57,8 +75,9 @@ export type AttackerLines = {
 };
 
 /**
- * The heading of a card (D-327): the map's name, „rozwiązana” once the map is solved, and
- * „odsłania ją {mapa}” with the opener's name from the data where another map opens this one. Pure.
+ * The heading of a card (D-327): the map's name, the tag of its state — „rozwiązana” once the map is
+ * solved, „otwarta” before — and „odsłania ją {mapa}” with the opener's name from the data where
+ * another map opens this one. Pure.
  */
 export function cardHeading(map: MapDef, solved: boolean): CardHeading {
   const opener =
@@ -67,52 +86,86 @@ export function cardHeading(map: MapDef, solved: boolean): CardHeading {
       : `odsłania ją ${MAPS[map.opensAfter as MapId].name}`;
   return {
     name: map.name,
-    solved: solved ? "rozwiązana" : null,
+    state: { text: solved ? "rozwiązana" : "otwarta", solved },
     openedBy: opener,
   };
 }
 
+/** The streak as whole hours, or in minutes where it is not a whole number of hours (D-325, D-327). Pure. */
+export function streakText(minutes: number): string {
+  return minutes % 60 === 0 ? `${minutes / 60} h` : `${minutes} min`;
+}
+
 /**
- * The lines of „Teren” (D-327): the grid, the entrance, the step with a note where it stands
- * against the usual step, and the minutes without fire with the temperature, left out where the map
- * does not cool the body below the chill threshold. The note comes apart from the step's text, so
+ * The rows of the table „Żąda” (D-327): the streak the map's solving condition asks for, in whole hours
+ * as in the row of the catalog, and the attacks to beat, with the icons of the creatures that attack
+ * there; a requirement the condition lacks gives no row. Pure.
+ */
+export function demandRows(map: MapDef): TableRow[] {
+  const { streak, defeatedAttacks } = map.solving;
+  const rows: TableRow[] = [];
+  if (streak !== undefined)
+    rows.push({
+      label: "passa",
+      value: streakText(streak),
+      note: null,
+      icons: [],
+    });
+  if (defeatedAttacks !== undefined)
+    rows.push({
+      label: "do pokonania",
+      value: `${defeatedAttacks}`,
+      note: null,
+      icons: (map.attackers ?? []).map(
+        (attacker) => CREATURES[attacker.id].icon,
+      ),
+    });
+  return rows;
+}
+
+/**
+ * The rows of the table „Teren” (D-327): the grid, the entrance, the step with a note where it stands
+ * against the usual step, and the minutes without fire with the temperature as their note, left out
+ * where the map does not cool the body below the chill threshold. A note comes apart from the value, so
  * the view draws it in its own role. Pure.
  */
-export function terrainLines(map: MapDef): TerrainLine[] {
+export function terrainRows(map: MapDef): TableRow[] {
   const usual = usualStep(Object.values(MAPS));
   let note: string | null = null;
   if (map.stepMinutes > usual) note = " — drożej niż zwykle";
   else if (map.stepMinutes < usual) note = " — taniej niż zwykle";
   const minutes = minutesWithoutFire(map);
+  const row = (label: string, value: string, rowNote: string | null = null) =>
+    ({ label, value, note: rowNote, icons: [] }) satisfies TableRow;
   return [
-    { text: `siatka ${map.width} × ${map.height}`, note: null },
-    {
-      text: map.entrance === null ? "wejście losowe" : "wejście stałe",
-      note: null,
-    },
-    { text: `krok ${map.stepMinutes} min`, note },
+    row("siatka", `${map.width} × ${map.height}`),
+    row("wejście", map.entrance === null ? "losowe" : "stałe"),
+    row("krok", `${map.stepMinutes} min`, note),
     ...(minutes === null
       ? []
       : [
-          {
-            text: `bez ognia ${minutes} min — otoczenie ${map.ambientTemperature} °C`,
-            note: null,
-          },
+          row(
+            "bez ognia",
+            `${minutes} min`,
+            ` — otoczenie ${map.ambientTemperature} °C`,
+          ),
         ]),
   ];
 }
 
 /**
- * The lines of „Leży tu” (D-327): each resource of the map with its identifier for its icon, its
- * tiles that hold it, its stock, and its renewal, which reads „nie odnawia się” in `warning` where
- * the resource does not renew. The view writes the renewal after the text, with ", " between. Pure.
+ * The lines of „Leży tu” (D-327): each resource of the map with its identifier for its icon, its name,
+ * the tiles that hold it and its stock, and its renewal, which reads „nie odnawia się” in `warning`
+ * where the resource does not renew. The view writes the renewal after the tiles, with " · " between.
+ * Pure.
  */
 export function resourceLines(map: MapDef): ResourceLine[] {
   return map.resources.map((resource) => {
     const { holding, tiles } = expectedTiles(map, resource);
     return {
       id: resource.id,
-      text: `${RESOURCES[resource.id].name} — ≈ ${holding} z ${tiles} kafelków, po ${resource.stock}`,
+      name: RESOURCES[resource.id].name,
+      spread: `≈ ${holding} z ${tiles} kafelków · po ${resource.stock}`,
       renewal:
         resource.renewMinutes === undefined
           ? { text: "nie odnawia się", warning: true }

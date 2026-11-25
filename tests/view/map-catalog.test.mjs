@@ -46,8 +46,9 @@ async function mount({ root }, props) {
   };
 }
 
-// Catches a catalog that opens on another view, or tabs that do not say which one is picked (D-325).
-test("the catalog opens on „Dokąd” among three tabs, with the search above them and the counter of the view under them", async () => {
+// Catches a catalog that opens on another view, views that do not say which one is picked or stand as
+// underlined tabs in place of buttons, and a search field without its magnifying glass (D-325).
+test("the catalog opens on „Dokąd” among three buttons of a group, with the search and its magnifying glass above them and the counter of the view under them", async () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name"
   await withPage(async (page) => {
     await mount(page, { solvedMaps: FOUR, selected: null });
@@ -55,12 +56,31 @@ test("the catalog opens on „Dokąd” among three tabs, with the search above 
     assert.deepEqual(
       [...catalog.children].map((child) => child.className.split(" ")[0]),
       [
-        "input-field",
+        "maps-catalog-search",
         "maps-catalog-views",
         "maps-catalog-counter",
         "maps-catalog-region",
       ],
-      "the search, the tabs, the counter, then the regions",
+      "the search, the views, the counter, then the regions",
+    );
+    const search = page.root.querySelector(".maps-catalog-search");
+    assert.deepEqual(
+      [...search.children].map((child) => child.className),
+      ["icon-mask maps-catalog-search-icon", "input-field"],
+      "the magnifying glass stands before the field",
+    );
+    assert.equal(
+      search
+        .querySelector(".maps-catalog-search-icon")
+        .style.getPropertyValue("--icon"),
+      'url("/icons/magnifying-glass.svg")',
+    );
+    assert.equal(
+      search
+        .querySelector(".maps-catalog-search-icon")
+        .getAttribute("aria-hidden"),
+      "true",
+      "the glass is no text for a reader of the screen; the field keeps its name",
     );
     assert.deepEqual(texts(page.root, ".maps-catalog-views button"), [
       "Dokąd",
@@ -74,10 +94,16 @@ test("the catalog opens on „Dokąd” among three tabs, with the search above 
       ["true", "false", "false"],
       "„Dokąd” is the one picked",
     );
+    assert.deepEqual(
+      all(page.root, ".maps-catalog-views button").map(
+        (button) => button.className,
+      ),
+      ["button selected", "button", "button"],
+      "the views are buttons selected in their group, framed, and no tabs",
+    );
     assert.equal(
       page.root.querySelector(".maps-catalog-views").classList.contains("tabs"),
-      true,
-      "the tabs stand in the container of the class tabs",
+      false,
     );
     assert.equal(field(page.root).value, "", "the search opens empty");
     assert.equal(

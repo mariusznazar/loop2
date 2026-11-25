@@ -173,7 +173,7 @@ test("a record of 24 of the bear's 120 stands in the row of Las — matecznik am
     assert.deepEqual(cardRecord(page.root), ["niedźwiedź: 24 ze 120"]);
     const bear = part(page.root, "Czyha").querySelector(".maps-card-attacker");
     assert.equal(
-      text(bear, ".maps-card-attacker-head"),
+      text(bear, ".maps-card-entry-head"),
       "niedźwiedź · 120 zdrowia · cios 20",
       "the number stands at the bear's lines",
     );
@@ -183,8 +183,13 @@ test("a record of 24 of the bear's 120 stands in the row of Las — matecznik am
     );
     assert.equal(
       colour(bear.querySelector(".maps-card-attacker-record")),
+      "var(--text)",
+      "the number on the card stands in the role text, as the content of the part",
+    );
+    assert.equal(
       colour(bear.querySelector(".maps-card-attacker-odds")),
-      "the card's lines stand in the card's text role, as its other lines",
+      "var(--text-secondary)",
+      "while the detail of the attack above it is a description",
     );
   });
 });

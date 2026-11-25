@@ -8,9 +8,9 @@
 /*
  * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
  * columns of Programy (in styles.css), one under the other in the phone layout, a window under 1280 px
- * (D-396, D-282). The left one holds the catalog of the maps (D-325): the search field, the three views
- * as the shared tabs, the counter of the view, and under it the regions or the resources, each a header
- * over its rows. The catalog is a column that leaves no room to the side: every item of it shrinks to
+ * (D-396, D-282). The left one holds the catalog of the maps (D-325): the search field with its
+ * magnifying glass, the three views as shared buttons selected in their group, the counter of the view,
+ * and under it the regions or the resources, each a header over its rows. The catalog is a column that leaves no room to the side: every item of it shrinks to
  * the width of the area and breaks its text there.
  */
 .maps-catalog {
@@ -19,7 +19,24 @@
   gap: var(--space-s);
 }
 
-/* The search field takes the width of the area; the shared field is as wide as its text otherwise. */
+/*
+ * The search field takes the width of the area; the shared field is as wide as its text otherwise. The
+ * magnifying glass (D-27) stands inside the frame of the field at its left, in `text-label`, the role of
+ * the hint beside it, and lets a click through to the field; the text of the field begins after it.
+ */
+.maps-catalog-search {
+  position: relative;
+}
+
+.maps-catalog-search-icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-m);
+  translate: 0 -50%;
+  color: var(--text-label);
+  pointer-events: none;
+}
+
 .maps-catalog .input-field {
   display: flex;
 }
@@ -27,10 +44,16 @@
 .maps-catalog .input-field input {
   box-sizing: border-box;
   width: 100%;
-  padding: var(--space-s) var(--space-m);
+  padding: var(--space-s) var(--space-m) var(--space-s)
+    calc(var(--space-m) + var(--space-s) + 1lh);
   font-size: var(--font-size-body);
 }
 
+/*
+ * The three views are shared buttons selected in their group (D-44, D-40), framed as the buttons of a
+ * group are, so that they read as buttons at once; the picked one has its frame in `selected` and its
+ * text in `text-strong`, from styles.css.
+ */
 .maps-catalog-views {
   display: flex;
   flex-wrap: wrap;
@@ -84,9 +107,9 @@
  * the right, the icons of the creatures that attack on the map; on the second, under the name, the
  * facts of the map in `text-secondary`, which wrap where the area is narrow. The row is a grid of three
  * columns so that the names of all rows begin on one line whatever the circle is. The row is a link in
- * `text`, the picked one in `text-strong` with a bar in `selected` at its left, a row under the pointer
- * on `highlight`, as the list of programs is drawn (D-331, D-40). Focus is the one :focus-visible rule
- * of styles.css.
+ * `text`, a row under the pointer on `highlight`; the picked one stands filled with `highlight`, its
+ * text in `text-strong` and a bar in `positive` at its left, as the picked row of the predecessor game
+ * does (D-331, D-39, D-40). Focus is the one :focus-visible rule of styles.css.
  */
 .maps-list-item {
   display: grid;
@@ -102,7 +125,8 @@
 
 .maps-list-item[aria-current="page"] {
   color: var(--text-strong);
-  border-left-color: var(--selected);
+  background: var(--highlight);
+  border-left-color: var(--positive);
 }
 
 .maps-list-item:hover {
@@ -153,8 +177,8 @@
 
 /*
  * The row that folds the solved maps of a region and unfolds them is the shared plain button (D-44),
- * set under the open rows. It is disabled while the lines hold the group open, a search typed or the
- * picked map in its region, and shows `text-disabled` then.
+ * set under the open rows and the picked solved map that stands above it while it is folded (D-331). It
+ * works always, with a search typed or a map picked.
  */
 .maps-catalog-fold {
   padding: var(--space-xs) var(--space-s) var(--space-xs)
@@ -195,17 +219,31 @@
 }
 
 /*
- * The card of a map: the name in `text-strong`, „rozwiązana” in `positive` and „odsłania ją {mapa}”
- * in `text-secondary` beside it, each after a „ · ” in `text-secondary` (D-327); the names of its parts in `text-label`, their content in
- * `text`. A step note is a note, so `text-secondary`; „nie odnawia się” and the caps are what the
- * player must not miss, so `warning` (D-39).
+ * The card of a map (D-327). At the top the heading — the name in `text-strong`, at the size of the title
+ * of a map, the tag of its state beside it, „rozwiązana” in `positive` (D-134) or „otwarta” in
+ * `text-secondary`, and „odsłania ją {mapa}” in `text-secondary` after a „ · ” — and at the right of the
+ * heading the plain shared button „Wejdź — wybierz postać”. Under it the one sentence of the solving
+ * condition in `text`. Then two columns, „Żąda” and „Teren” on the left and „Czyha”, „Leży tu” and
+ * „Odbiera” on the right, each part with its name in `text-label` (D-40) over a thin `divider` line.
+ * „Żąda” and „Teren” are tables: the labels in `text-secondary` in one column, the values in `text` in
+ * the next, a note after a value in `text-secondary`. A row of „Leży tu” and „Czyha” has its icon in a
+ * column of its own and its head in `text` over its detail in `text-secondary`; „nie odnawia się” and
+ * the caps are what the player must not miss, so `warning` (D-39).
  */
+.maps-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-s) var(--space-l);
+}
+
 .maps-card-heading {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-s);
+  min-width: 0;
 }
 
 .maps-card-name {
@@ -215,17 +253,31 @@
   color: var(--text-strong);
 }
 
-.maps-card-solved {
-  color: var(--positive);
-}
-
+.maps-card-state,
 .maps-card-sep,
 .maps-card-opened-by {
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
 }
 
+.maps-card-state.solved {
+  color: var(--positive);
+}
+
+.maps-card-goal {
+  margin: var(--space-s) 0 var(--space-m);
+  color: var(--text);
+}
+
+.maps-card-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-xl);
+}
+
 .maps-card-part {
-  margin-bottom: var(--space-s);
+  border-top: var(--frame-width) solid var(--divider);
+  padding: var(--space-s) 0 var(--space-m);
 }
 
 .maps-card-part p {
@@ -233,16 +285,58 @@
 }
 
 .maps-card-part-name {
-  margin: 0 0 var(--space-2xs);
+  margin: 0 0 var(--space-s);
   font-size: var(--font-size-label);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-label);
+}
+
+.maps-card-table {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-xs) var(--space-l);
+  margin: 0;
+}
+
+.maps-card-row {
+  display: contents;
+}
+
+.maps-card-label {
+  color: var(--text-secondary);
+}
+
+.maps-card-value {
+  margin: 0;
+  color: var(--text);
 }
 
 .maps-card-lines {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.maps-card-entry {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-s);
+  padding-bottom: var(--space-xs);
+}
+
+.maps-card-entry-head {
+  color: var(--text);
+}
+
+.maps-card-detail,
+.maps-card-attacker-odds {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+/* The record of D-440 under the creature's lines, in the role `text`, as the content of the part. */
+.maps-card-attacker-record {
+  color: var(--text);
 }
 
 .maps-card-note {
@@ -253,11 +347,15 @@
   color: var(--warning);
 }
 
-/* A resource's icon, in the colour of the text it stands in and as tall as the line, as the trip plan's icons are. */
+/* An icon of the card, in the colour of the text it stands beside and as tall as its line. */
 .maps-card-icon {
   display: inline-block;
   vertical-align: bottom;
   margin-right: var(--space-xs);
+}
+
+.maps-card-entry > .maps-card-icon {
+  margin-right: 0;
 }
 
 /*
@@ -454,7 +552,7 @@
 
 /*
  * The phone layout of Mapy (D-396; styleguide rule "Everything is done by touch, and every control holds
- * the touch target"). Two links of this screen are controls by themselves and hold the minimum of the touch
+ * the touch target"). The card stands in one column. Two links of this screen are controls by themselves and hold the minimum of the touch
  * target, `--touch-target-min`, high and wide: a row of the catalog, a whole-row link to the card of a
  * map, and the name of a character in „Kto idzie”, which stands alone at the head of its lines as the
  * way to the screen Postać (D-329). The two lines of a row stand at the middle of its target; a long name
@@ -466,6 +564,11 @@
   .maps-list-item {
     box-sizing: border-box;
     min-height: var(--touch-target-min);
+  }
+
+  /* The two columns of the card stand one under the other, the tables first, as on the left. */
+  .maps-card-columns {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .maps-who-name {
@@ -480,10 +583,10 @@
  * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
  * threshold between them"): a browser of touch keeps `:hover` on the row of the map last tapped, so in
  * the phone layout on a device whose pointer cannot hover the row keeps its background of rest; the
- * picked map is told by its text and its bar, which stay.
+ * picked map keeps its fill, its text and its bar.
  */
 @media (width < 1280px) and (hover: none) {
-  .maps-list-item:hover {
+  .maps-list-item:hover:not([aria-current="page"]) {
     background: transparent;
   }
 }

@@ -18,7 +18,12 @@ import {
 } from "../sim/map-card.js";
 import type { MapId } from "../sim/types.js";
 import { countedName } from "./counted-name.js";
-import { recordCreatureOf, recordLine, sendMaps } from "./map-lines.js";
+import {
+  recordCreatureOf,
+  recordLine,
+  sendMaps,
+  streakText,
+} from "./map-lines.js";
 
 /** The three views of one list, in the order the screen shows them (D-325). */
 export type CatalogView = "dokad" | "coDaje" | "postep";
@@ -178,11 +183,6 @@ const ALL_RESOURCES = Object.keys(RESOURCES) as ResourceId[];
 /** A count with its noun in the form Polish gives it, as „1 mapa”, „2 mapy”, „5 map”. */
 function countText(count: number, forms: Forms): string {
   return `${count} ${countedName(count, forms)}`;
-}
-
-/** The streak as whole hours, or in minutes where it is not a whole number of hours (D-325, D-327). */
-function streakText(minutes: number): string {
-  return minutes % 60 === 0 ? `${minutes / 60} h` : `${minutes} min`;
 }
 
 /**

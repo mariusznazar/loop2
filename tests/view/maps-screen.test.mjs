@@ -326,36 +326,63 @@ test("a map named whose opener is unsolved draws no card", async () => {
 
 // --- the card ------------------------------------------------------------------------------
 
-// D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: no
-// opener, no „Czyha”, no „Odbiera”.
-test("the card of Skraj lasu holds its heading, what it asks, its terrain and its sticks and berries alone", async () => {
+/** The rows of a table of the card as [label, value], the value with its note. */
+const tableRows = (root) =>
+  all(root, ".maps-card-row").map((row) => [
+    text(row, ".maps-card-label"),
+    text(row, ".maps-card-value"),
+  ]);
+/** The rows of „Leży tu” or „Czyha” as [head, detail]. */
+const entries = (root) =>
+  all(root, ".maps-card-entry").map((entry) => [
+    text(entry, ".maps-card-entry-head"),
+    texts(entry, ".maps-card-entry-text > p").slice(1).join(" | "),
+  ]);
+/** The names of the parts of each of the two columns of the card. */
+const columns = (root) =>
+  all(root, ".maps-card-column").map((column) =>
+    texts(column, ".maps-card-part-name"),
+  );
+
+// D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: the name
+// with the tag „otwarta”, no opener, the button at the top, the one sentence of the condition, the
+// tables „Żąda” and „Teren” on the left and „Leży tu” alone on the right.
+test("the card of Skraj lasu holds its heading with „otwarta” and the button, the sentence of the condition, the tables „Żąda” and „Teren”, and its sticks and berries alone", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game in four things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(newTeamOf("Ala"), "forestEdge"));
     assert.equal(text(page.root, ".maps-card-name"), "Skraj lasu");
-    assert.equal(page.root.querySelector(".maps-card-solved"), null);
+    assert.equal(text(page.root, ".maps-card-state"), "otwarta");
+    assert.equal(
+      page.root.querySelector(".maps-card-state").classList.contains("solved"),
+      false,
+    );
     assert.equal(page.root.querySelector(".maps-card-opened-by"), null);
-    assert.deepEqual(texts(page.root, ".maps-card-part-name"), [
-      "Żąda",
-      "Teren",
-      "Leży tu",
+    assert.deepEqual(
+      texts(page.root, ".maps-card-go button"),
+      ["Wejdź — wybierz postać"],
+      "the button stands at the top of the card",
+    );
+    assert.equal(
+      text(page.root, ".maps-card-goal"),
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+      "the one sentence of the condition from the data, under the heading that names the map",
+    );
+    assert.deepEqual(columns(page.root), [["Żąda", "Teren"], ["Leży tu"]]);
+    assert.deepEqual(tableRows(part(page.root, "Żąda")), [["passa", "8 h"]]);
+    assert.deepEqual(tableRows(part(page.root, "Teren")), [
+      ["siatka", "4 × 4"],
+      ["wejście", "stałe"],
+      ["krok", "5 min"],
+      ["bez ognia", "83 min — otoczenie 25 °C"],
     ]);
-    assert.deepEqual(texts(part(page.root, "Żąda"), "p"), [
-      "Skraj lasu — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
-    ]);
-    assert.deepEqual(texts(part(page.root, "Teren"), "li"), [
-      "siatka 4 × 4",
-      "wejście stałe",
-      "krok 5 min",
-      "bez ognia 83 min — otoczenie 25 °C",
-    ]);
-    assert.deepEqual(texts(part(page.root, "Leży tu"), "li"), [
-      "patyk — ≈ 16 z 16 kafelków, po 12, +1 co 30 min",
-      "jagoda — ≈ 16 z 16 kafelków, po 8, +1 co 40 min",
+    assert.deepEqual(entries(part(page.root, "Leży tu")), [
+      ["patyk", "≈ 16 z 16 kafelków · po 12 · +1 co 30 min"],
+      ["jagoda", "≈ 16 z 16 kafelków · po 8 · +1 co 40 min"],
     ]);
   });
 });
@@ -365,37 +392,34 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game in four things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
-    assert.equal(page.root.querySelector(".maps-card-solved"), null);
+    assert.equal(text(page.root, ".maps-card-state"), "otwarta");
     assert.equal(
       text(page.root, ".maps-card-opened-by"),
       "odsłania ją Skraj lasu",
     );
-    assert.deepEqual(texts(page.root, ".maps-card-part-name"), [
-      "Żąda",
-      "Teren",
-      "Leży tu",
-    ]);
-    assert.deepEqual(texts(part(page.root, "Żąda"), "p"), [
-      "Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
-    ]);
-    assert.deepEqual(texts(part(page.root, "Teren"), "li"), [
-      "siatka 4 × 4",
-      "wejście stałe",
-      "krok 5 min",
-      "bez ognia 83 min — otoczenie 25 °C",
+    assert.deepEqual(columns(page.root), [["Żąda", "Teren"], ["Leży tu"]]);
+    assert.equal(
+      text(page.root, ".maps-card-goal"),
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    );
+    assert.deepEqual(tableRows(part(page.root, "Teren")), [
+      ["siatka", "4 × 4"],
+      ["wejście", "stałe"],
+      ["krok", "5 min"],
+      ["bez ognia", "83 min — otoczenie 25 °C"],
     ]);
     const lying = part(page.root, "Leży tu");
-    assert.deepEqual(texts(lying, "li"), [
-      "patyk — ≈ 11 z 16 kafelków, po 12, +1 co 30 min",
-      "jagoda — ≈ 8 z 16 kafelków, po 8, +1 co 40 min",
-      "mech — ≈ 6 z 16 kafelków, po 6, +1 co 60 min",
-      "włókno — ≈ 6 z 16 kafelków, po 6, +1 co 60 min",
+    assert.deepEqual(entries(lying), [
+      ["patyk", "≈ 11 z 16 kafelków · po 12 · +1 co 30 min"],
+      ["jagoda", "≈ 8 z 16 kafelków · po 8 · +1 co 40 min"],
+      ["mech", "≈ 6 z 16 kafelków · po 6 · +1 co 60 min"],
+      ["włókno", "≈ 6 z 16 kafelków · po 6 · +1 co 60 min"],
     ]);
     // Each resource has the icon its data names, drawn as the mask of the file at the icons'
     // address, in the colour of the text beside it, and as no picture of the file.
@@ -414,12 +438,13 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
   });
 });
 
-// D-327, D-328: a solved Las shows the mark, and Las — głębiej shows its opener, the wolf and the
-// one total number, to a player whose Understanding holds no wolf.
-test("the card of Las — głębiej names its opener, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
+// D-327, D-328: a solved Las shows the tag „rozwiązana”, and Las — głębiej shows its opener, the attacks
+// to beat with the wolf's icon, the wolf and the one total number, to a player whose Understanding holds
+// no wolf.
+test("the card of Las — głębiej names its opener, asks for the attacks to beat, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game in four things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
@@ -427,45 +452,57 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
     const state = solved(teamOf("Ala"));
     const understanding = JSON.stringify(state.understanding);
     const { screen } = await mount(page, propsOf(state, "forest"));
-    assert.equal(text(page.root, ".maps-card-solved"), "rozwiązana");
-    // The marks follow the name joined by „ · ” (D-327), as the old Loop joins them.
+    assert.equal(text(page.root, ".maps-card-state"), "rozwiązana");
+    assert.equal(
+      page.root.querySelector(".maps-card-state").classList.contains("solved"),
+      true,
+      "the tag of a solved map stands in its role",
+    );
+    // The tag follows the name, and the opener follows the tag after „ · ”, as the old Loop has them.
     assert.equal(
       text(page.root, ".maps-card-heading"),
-      "Las · rozwiązana · odsłania ją Skraj lasu",
+      "Lasrozwiązana · odsłania ją Skraj lasu",
     );
     await inAct(() => screen.update(propsOf(state, "forestDeep")));
     assert.equal(text(page.root, ".maps-card-name"), "Las — głębiej");
     assert.equal(
       text(page.root, ".maps-card-heading"),
-      "Las — głębiej · odsłania ją Las",
+      "Las — głębiejotwarta · odsłania ją Las",
     );
     assert.equal(text(page.root, ".maps-card-opened-by"), "odsłania ją Las");
-    assert.equal(page.root.querySelector(".maps-card-solved"), null);
-    assert.deepEqual(texts(page.root, ".maps-card-part-name"), [
-      "Żąda",
-      "Teren",
-      "Leży tu",
-      "Czyha",
+    assert.deepEqual(columns(page.root), [
+      ["Żąda", "Teren"],
+      ["Czyha", "Leży tu"],
     ]);
-    assert.deepEqual(texts(part(page.root, "Teren"), "li"), [
-      "siatka 5 × 5",
-      "wejście losowe",
-      "krok 5 min",
-      "bez ognia 33 min — otoczenie 7 °C",
+    const asks = part(page.root, "Żąda");
+    assert.deepEqual(tableRows(asks), [
+      ["passa", "9 h"],
+      ["do pokonania", "2"],
     ]);
-    assert.equal(
-      texts(part(page.root, "Leży tu"), "li")[0],
-      "patyk — ≈ 18 z 25 kafelków, po 12, +1 co 30 min",
+    assert.deepEqual(
+      all(asks, ".icon-mask").map((icon) =>
+        icon.style.getPropertyValue("--icon"),
+      ),
+      ['url("/icons/wolf-head.svg")'],
+      "the attacks to beat stand with the icon of the creature that attacks",
     );
+    assert.deepEqual(tableRows(part(page.root, "Teren")), [
+      ["siatka", "5 × 5"],
+      ["wejście", "losowe"],
+      ["krok", "5 min"],
+      ["bez ognia", "33 min — otoczenie 7 °C"],
+    ]);
+    assert.deepEqual(entries(part(page.root, "Leży tu"))[0], [
+      "patyk",
+      "≈ 18 z 25 kafelków · po 12 · +1 co 30 min",
+    ]);
     const lurking = part(page.root, "Czyha");
-    assert.equal(
-      text(lurking, ".maps-card-attacker-head"),
-      "wilk · 24 zdrowia · cios 7",
-    );
-    assert.equal(
-      text(lurking, ".maps-card-attacker-odds"),
-      "1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min",
-    );
+    assert.deepEqual(entries(lurking), [
+      [
+        "wilk · 24 zdrowia · cios 7",
+        "1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min",
+      ],
+    ]);
     // The creature stands with the icon its data names, drawn as a mask like a resource's icon.
     assert.deepEqual(
       all(lurking, ".icon-mask").map((icon) =>
@@ -479,6 +516,20 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
       understanding,
       "drawing the card writes nothing into the Understanding",
     );
+  });
+});
+
+// D-327: the button at the top of the card takes the player to „Kto idzie”: its click moves the focus to
+// the heading of the section, which a browser brings into view. Catches a button that does nothing, and
+// a heading that stands in the keyboard's order.
+test("„Wejdź — wybierz postać” at the top of the card moves the focus to the heading of „Kto idzie”, which stands outside the keyboard's order", async () => {
+  // decision: D-327 "At the right of the heading stands „Wejdź — wybierz postać”, whose click takes the player to the section „Kto idzie”"
+  await withPage(async (page) => {
+    await mount(page, propsOf(teamOf("Ala", "Ola"), "forest"));
+    const heading = page.root.querySelector(".maps-who-heading");
+    assert.equal(heading.getAttribute("tabindex"), "-1");
+    await press(page.root.querySelector(".maps-card-go button"));
+    assert.equal(page.document.activeElement, heading);
   });
 });
 
@@ -502,20 +553,21 @@ test("a step other than the usual one, a resource that does not renew and the en
         page,
         propsOf(solved(teamOf("Ala")), "forest"),
       );
-      const renewal = all(part(page.root, "Leży tu"), "li")[0];
-      assert.equal(
-        renewal.textContent,
-        "patyk — ≈ 11 z 16 kafelków, po 12, nie odnawia się",
+      const [sticks, berries] = all(
+        part(page.root, "Leży tu"),
+        ".maps-card-entry",
       );
       assert.equal(
-        renewal.querySelector(".maps-card-warning").textContent,
+        text(sticks, ".maps-card-detail"),
+        "≈ 11 z 16 kafelków · po 12 · nie odnawia się",
+      );
+      assert.equal(
+        sticks.querySelector(".maps-card-warning").textContent,
         "nie odnawia się",
         "the words that say it does not renew stand in the element of the role warning",
       );
       assert.equal(
-        all(part(page.root, "Leży tu"), "li")[1].querySelector(
-          ".maps-card-warning",
-        ),
+        berries.querySelector(".maps-card-warning"),
         null,
         "a resource that renews has no such element",
       );
@@ -526,8 +578,11 @@ test("a step other than the usual one, a resource that does not renew and the en
       await inAct(() =>
         screen.update(propsOf(solved(teamOf("Ala")), "forestDeep")),
       );
-      const step = all(part(page.root, "Teren"), "li")[2];
-      assert.equal(step.textContent, "krok 10 min — drożej niż zwykle");
+      const step = all(part(page.root, "Teren"), ".maps-card-row")[2];
+      assert.equal(
+        text(step, ".maps-card-value"),
+        "10 min — drożej niż zwykle",
+      );
       assert.equal(
         step.querySelector(".maps-card-note").textContent,
         " — drożej niż zwykle",
