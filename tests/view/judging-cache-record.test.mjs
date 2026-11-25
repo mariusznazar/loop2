@@ -509,6 +509,7 @@ for (const [name, creature, damage] of BAD_OFFERS) {
 
 test("a write the storage refuses leaves the record for the open page, leaves the stored record where it is, and throws nothing", () => {
   // invariant: judging-cache-reading
+  // decision: D-441 "A record the storage refuses stays for the open page, and the stored one is left, since the record never falls."
   // decision: D-441 "Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323)."
   const storage = refusingStorage({ [KEY]: stored(24) });
   const cache = open(storage);

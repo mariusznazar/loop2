@@ -6146,7 +6146,7 @@ In one map check of the balance instrument a map can be solved where its best re
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a map reading as solvable in the progression measurement of the balance instrument where its best reference program solves one seed of the measured ones, however small the share. An agent compares a change with the part no test holds:
   - complies: a new map whose requirement of practice, items and equipment is met by what the first solutions and the manual runs of the maps before it gave, a measurement of the balance instrument showing it with the best reference program and no earning loop; Las — matecznik standing open to entry and to a judging, with the paragraph of its exception in this decision, while no reference program solves a seed of it
   - violates: a new map whose requirement is met only by what an earning loop gathers over hours of real time; a requirement of pace counted in days; a change after which Las — matecznik can be so solved that leaves the paragraph of its exception in place; a map other than Las — matecznik that no reference program solves
 - **Origin:** none
@@ -12277,9 +12277,9 @@ A remembered judging stands beside the list „Program:” only while its charac
 
 Where the browser refuses its lasting storage, or refuses to write a value, the judging stands for the open page alone, the stored value of its triple being removed where the browser allows it, and no exception of the storage reaches the screen or the handling of an error no code of the game handled (D-323). When the page opens the remembered judgings of a game, it removes the values of the same account under the moment of another game and those of this game whose content revision or generation number stands above that of its program or character in the loaded game or whose program number or character number is not below the number the loaded game gives to its next program or character, and, where it builds the game after the server refused its save for another browser's (D-209), every value of this game, leaving the values of other accounts. Another device, or a browser whose data were cleared, shows no remembered judging until a judging is made there.
 
-The unsaved game state stays out of the browser's lasting storage as D-211 gives, and the remembered judgings stay there after „Wyloguj”, holding the account's identifier, numbers of characters and programs, identifiers of maps, kinds of results and items with their counts, and no email address, no name and nothing the game loads.
+The unsaved game state stays out of the browser's lasting storage as D-211 gives, and the remembered judgings stay there after „Wyloguj”, holding no email address, no name and nothing the game loads.
 
-Beside the judgings the browser keeps the record of D-440 in its lasting storage, one value under a key of its own with its own version for each account, game and map, holding the number and the creature's numbers it was made at. It is read only in that form and version and, on opening and at a refusing storage, treated as the judgings are.
+Beside the judgings the browser keeps the record of D-440 in its lasting storage, one value under a key of its own with its own version for each account, game and map, holding the number and the creature's numbers it was made at. It is read only in that form and version and, on opening and at a refusing storage, treated as the judgings are. A record the storage refuses stays for the open page, and the stored one is left, since the record never falls.
 
 - **Scope:** browser-view · simulation
 - **Based on:** local-storage-lasting · storage-set-item-refusal

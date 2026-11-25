@@ -274,6 +274,9 @@ function readRecordValue(value: unknown): StoredRecord | null {
     (typeof RECORD_FIELDS)[number],
     unknown
   >;
+  // The parse has already turned a number written by hand as `-0` or `2.4e1` into the number it denotes,
+  // 0 or 24, which is read as that number, as the reading of the judgings does: the value is the player's
+  // own, and a hand-written one that denotes a number the game can give harms nothing.
   if (
     !isCount(damage, 0) ||
     !isCount(health, 1) ||
