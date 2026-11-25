@@ -857,7 +857,10 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
   przycisku (reguła Main button, secondary action and tab, D-276); na starcie
   wybrana jest „Dokąd”. Pod nimi licznik w `text-secondary`: w „Dokąd”
   „{n} poznanych · {m} rozwiązanych”, w „Co daje” „{n} zasobów w zasięgu”, w
-  „Postęp” „{m} rozwiązanych z {n} poznanych”; liczby mają polską odmianę.
+  „Postęp” „{m} rozwiązanych z {n} poznanych”; liczby mają polską odmianę, więc
+  nowa gra czyta „1 poznana · 0 rozwiązanych”, a dalej „2 poznane · 1 rozwiązana”,
+  „5 poznanych · 4 rozwiązane”, „0 rozwiązanych z 1 poznanej”, „1 rozwiązana z 2
+  poznanych” (po „z” stoi dopełniacz, więc „z 1 poznanej”).
 - Region ma linię `divider` nad nagłówkiem w `text-label` (nazwa sekcji, D-40).
   W „Dokąd” i „Postęp” nagłówek to nazwa regionu i „{m} z {n}”: m rozwiązanych
   spośród n wszystkich map regionu w danych gry, także jeszcze nieotwartych
@@ -867,9 +870,12 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
 - „Dokąd”: w regionie najpierw otwarte, nierozwiązane mapy, a rozwiązane zwinięte
   pod jednym wierszem zwijaka — zwykły wspólny przycisk (D-44) „▸ {n} rozwiązane”,
   po rozwinięciu „▾”, z `aria-expanded`. Zwijak nie stoi, gdy region nie ma
-  rozwiązanej mapy. Gdy wpisany tekst szukania albo wybrana mapa z tego regionu
-  trzyma rozwinięcie, zwijak jest wyłączony i jego tekst stoi w `text-disabled`;
-  rozwinięcie, które gracz wybrał, zostaje, dopóki ekran stoi.
+  rozwiązanej mapy. Gdy wpisany tekst szukania albo wybrana mapa, która sama stoi
+  wśród rozwiązanych pod tym zwijakiem, trzyma rozwinięcie, zwijak jest wyłączony
+  i jego tekst stoi w `text-disabled`, żeby wybrany wiersz z belką był widać.
+  Wybrana mapa otwarta niczego nie rozwija: zwijak regionu działa i można
+  rozwiązane zwinąć i rozwinąć. Rozwinięcie, które gracz wybrał, zostaje, dopóki
+  ekran stoi.
 - „Co daje”: grupy po zasobie, zaczynając od tego, który daje najmniej otwartych
   map; w grupie najpierw rozwiązane. Wiersz zasobu ma ten sam wygląd co wiersz
   mapy, a jego fakty to „≈ {n} z {kafelki} · po {zapas}” i „+1 co {min} min”,
@@ -893,7 +899,8 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
   pod kursorem tło `highlight`.
 - Rekord niedźwiedzia (D-440) stoi na mapie, której dane nazywają to stworzenie
   do rekordu (Las — matecznik): po pierwszej ocenie na tej mapie jest ostatnim
-  faktem wiersza, „niedźwiedź: {n} ze {zdrowie}”, w roli `text`. Stoi w „Dokąd”
+  faktem wiersza, „niedźwiedź: {n} z {zdrowie}”, w roli `text`, z „ze” zamiast „z”
+  przed liczbą, którą mówi się od s, z albo sz („ze 120”, ale „z 24”). Stoi w „Dokąd”
   i w „Postęp”, nie w „Co daje”, gdzie wiersz jest wierszem zasobu. Przed pierwszą
   oceną nie stoi wcale. Zapamiętuje go przeglądarka (D-441).
 - W układzie telefonu wiersz mapy ma co najmniej `--touch-target-min` wysokości
@@ -909,8 +916,8 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
   `warning`; „wnosisz najwyżej {n}” i „wynosisz najwyżej {n}” w `warning`.
   Części, której mapa nie ma, nie rysuje się wcale.
   W „Czyha” mapy, której dane nazywają stworzenie do rekordu, pod wierszem szansy
-  tego stworzenia stoi jego rekord „niedźwiedź: {n} ze {zdrowie}” w roli `text`,
-  jak treść tej części, i dopiero po pierwszej ocenie na tej mapie (D-440).
+  tego stworzenia stoi jego rekord „niedźwiedź: {n} z {zdrowie}”, pisany jak w
+  wierszu katalogu („ze 120”, „z 24”), w roli `text`, jak treść tej części, i dopiero po pierwszej ocenie na tej mapie (D-440).
 - Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`. Przy
   każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
   `text-strong`; wiersz wskrzeszenia w `text-secondary`, a przy zerze użyć
@@ -1126,7 +1133,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi; wilk w walce stoi obok maga, a między nimi leży mały obłok kurzu; scena 672 × 304 px w układzie komputera i 336 × 152 px w układzie telefonu przy 360 px, z bokami lekko przyciętymi tylko tam, gdzie szerokości brakuje, a plakietka nad głową czytelna w obu rozmiarach.
 - **Bad:** Scena rysowana w ułamku obrazu, na przykład półtora raza, albo w trzykrotności; scena 336 × 152 px w układzie komputera; przycięcie sceny, które chowa maga przy brzegu lasu albo stwora; plakietka nad głową zmniejszona razem ze sceną do rozmiaru trudnego do odczytania; efekt sceny zrobiony dla trzeciego rozmiaru; pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
 
-Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
+Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, stworzeniem, które napada: wilkiem albo niedźwiedziem. Stoi
 w `src/browser/view/scene.tsx`, `src/browser/view/scene-memory.ts` i
 `src/browser/view/scene-picture.ts`, a jej ruch i szarości w `src/browser/run-screen.css`; nazwy plików obrazków postaci,
 stworzeń i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
@@ -1242,10 +1249,15 @@ kadr, po lewej, odbity. Mag obraca się ku niemu i zostaje tak zwrócony po star
 a obłok szamotaniny nad nim, w tej samej kolejności warstw co wyżej. Jego arkusze — stanie, bieg, gryzienie
 i śmierć — to klatki 64 × 32 z paczki LPC Wolf, przeniesione bez zmiany pikseli, z łapami w dolnym rzędzie
 każdej klatki, więc bieg, gryzienie i śmierć nie podskakują przy zmianie animacji; patrzą w lewo,
-a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Kłąb szamotaniny to ten
+a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Niedźwiedź z mapy
+Las — matecznik stoi w scenie tak samo, w tym samym miejscu i w tej samej kolejności warstw co wilk, bo scena
+bierze arkusze i położenie stworzenia z jego identyfikatora w danych, ale ma własne arkusze, klatki
+64 × 64, a jego łapy nie stoją w dolnym rzędzie klatki, tylko kilka rzędów wyżej. Scena obniża więc jego
+klatkę o `SCENE_FIGHT.sink`, liczbę rzędów z danych sceny, różną dla każdego stworzenia (wilk 0, niedźwiedź 4),
+tak że łapy niedźwiedzia stoją na linii gruntu, jak wilka; bez tego unosiłyby się nad nią. Kłąb szamotaniny to ten
 sam plik kurzu co chybienie, osiem klatek w pętli w takcie klatek sceny, między wilkiem a magiem; jest mały,
 nie zakrywa żadnego z nich i nie błyska. Plik wilka i miejsce kłębu stoją w danych sceny, a czasy w regułach
-sceny w `src/browser/run-screen.css`; kod widoku nie nazywa żadnego pliku wilka.
+sceny w `src/browser/run-screen.css`; kod widoku nie nazywa żadnego pliku stworzenia.
 
 Bieg wilka z prawego brzegu kadru na jego miejsce to efekt zwykłego zdarzenia (D-317): trwa 300 ms przy
 każdym tempie, pięć klatek biegu raz, i scena zaczyna go w odczycie, którego zdarzenia niosą napaść, tylko
