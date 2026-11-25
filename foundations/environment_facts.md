@@ -238,6 +238,12 @@ The page of Lorc's icon `cultist` on game-icons.net names the icon "Cultist icon
 
 - **Source:** https://game-icons.net/1x1/lorc/cultist.html (archived: https://web.archive.org/web/20261114052730/https://game-icons.net/1x1/lorc/cultist.html, 2026-11-14) § heading — "Cultist icon"; read 2026-11-21
 
+## game-icons-magnifying-glass-title
+
+The page of Lorc's icon `magnifying-glass` on game-icons.net names the icon "Magnifying glass icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/magnifying-glass.html (archived: https://web.archive.org/web/20260906164312/https://game-icons.net/1x1/lorc/magnifying-glass.html, 2026-09-06) § heading — "Magnifying glass icon"; read 2026-11-25
+
 ## eslint-recommended-rules
 
 The `recommended` set in @eslint/js 10.0.1 contains the following rules, each at `error` with no configured options: `constructor-super`, `for-direction`, `getter-return`, `no-async-promise-executor`, `no-case-declarations`, `no-class-assign`, `no-compare-neg-zero`, `no-cond-assign`, `no-const-assign`, `no-constant-binary-expression`, `no-constant-condition`, `no-control-regex`, `no-debugger`, `no-delete-var`, `no-dupe-args`, `no-dupe-class-members`, `no-dupe-else-if`, `no-dupe-keys`, `no-duplicate-case`, `no-empty`, `no-empty-character-class`, `no-empty-pattern`, `no-empty-static-block`, `no-ex-assign`, `no-extra-boolean-cast`, `no-fallthrough`, `no-func-assign`, `no-global-assign`, `no-import-assign`, `no-invalid-regexp`, `no-irregular-whitespace`, `no-loss-of-precision`, `no-misleading-character-class`, `no-new-native-nonconstructor`, `no-nonoctal-decimal-escape`, `no-obj-calls`, `no-octal`, `no-prototype-builtins`, `no-redeclare`, `no-regex-spaces`, `no-self-assign`, `no-setter-return`, `no-shadow-restricted-names`, `no-sparse-arrays`, `no-this-before-super`, `no-unassigned-vars`, `no-undef`, `no-unexpected-multiline`, `no-unreachable`, `no-unsafe-finally`, `no-unsafe-negation`, `no-unsafe-optional-chaining`, `no-unused-labels`, `no-unused-private-class-members`, `no-unused-vars`, `no-useless-assignment`, `no-useless-backreference`, `no-useless-catch`, `no-useless-escape`, `no-with`, `preserve-caught-error`, `require-yield`, `use-isnan`, `valid-typeof`.

@@ -197,4 +197,25 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/lorc/cultist.html",
     changes: CHANGES,
   },
+  "magnifying-glass": {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/magnifying-glass.html",
+    changes: CHANGES,
+  },
 };
+
+/**
+ * An icon of the interface that stands for no thing of the game's data: what it stands for, as the line
+ * of credits names it, its file and its title, as its page on game-icons.net gives it.
+ */
+export type InterfaceIcon = { name: string; icon: string; iconTitle: string };
+
+/** The magnifying glass in the search field of the catalog of maps (D-325). */
+export const SEARCH_ICON: InterfaceIcon = {
+  name: "szukanie mapy albo zasobu",
+  icon: "magnifying-glass",
+  iconTitle: "Magnifying glass icon",
+};
+
+/** The icons of the interface, credited after the icons of the game's data, in this order. */
+export const INTERFACE_ICONS: readonly InterfaceIcon[] = [SEARCH_ICON];

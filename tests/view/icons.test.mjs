@@ -9,6 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   ICON_CREDITS,
   ICON_SOURCE_COMMIT,
+  SEARCH_ICON,
 } from "../../dist/browser/view/credits.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
@@ -178,6 +179,7 @@ const TITLES = {
   "bandage-roll": "Bandage roll icon",
   "first-aid-kit": "First aid kit icon",
   cultist: "Cultist icon",
+  "magnifying-glass": "Magnifying glass icon",
 };
 
 /**
@@ -227,8 +229,16 @@ const CREATURE_ICONS = [
 const ARCHETYPE_ICONS = [{ name: "Mag żywiołów", icon: "cultist" }];
 
 /**
- * Everything the data gives an icon, in the section's order: the items, the campfire, the
- * extinguished campfire, the actions, the creatures, the archetypes.
+ * The icons of the interface, which stand for no thing of the game's data, one line each after the
+ * archetypes': the magnifying glass of the search field of the catalog of maps.
+ */
+const INTERFACE_ICONS = [
+  { name: "szukanie mapy albo zasobu", icon: "magnifying-glass" },
+];
+
+/**
+ * Every icon the section credits, in its order: the items, the campfire, the extinguished campfire, the
+ * actions, the creatures, the archetypes, then the icons of the interface.
  */
 const NAMED = [
   ...ITEM_ICONS,
@@ -237,6 +247,7 @@ const NAMED = [
   ...ACTION_ICONS,
   ...CREATURE_ICONS,
   ...ARCHETYPE_ICONS,
+  ...INTERFACE_ICONS,
 ];
 
 // The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
@@ -365,7 +376,7 @@ test("the section credits the bear's icon, by Delapouite, after the wolf's and b
   assert.match(textOfMarkup(items[at + 1]), /^Mag żywiołów: /);
 });
 
-test("the section credits the elemental mage's icon, the cultist by Lorc, after the wolf's and before the packs", () => {
+test("the section credits the elemental mage's icon, the cultist by Lorc, after the creatures' and before the icons of the interface", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names"
   const items = itemsOf(sectionMarkup());
@@ -378,7 +389,33 @@ test("the section credits the elemental mage's icon, the cultist by Lorc, after 
     linksOf(items[at])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/cultist\.html"/,
   );
+  assert.match(textOfMarkup(items[at + 1]), /^szukanie mapy albo zasobu: /);
+});
+
+test("the section credits the magnifying glass of the search field, by Lorc, after the archetype's and before the packs", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at =
+    ACTIONS_AT +
+    ACTION_ICONS.length +
+    CREATURE_ICONS.length +
+    ARCHETYPE_ICONS.length;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "szukanie mapy albo zasobu: „Magnifying glass icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/magnifying-glass\.html"/,
+  );
   assert.match(textOfMarkup(items[at + 1]), /^Kurz i obłok walki: /);
+});
+
+test("the search field's icon names the file magnifying-glass.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  assert.equal(SEARCH_ICON.icon, "magnifying-glass");
+  assert.equal(SEARCH_ICON.iconTitle, "Magnifying glass icon");
+  assert.ok(existsSync(`${ICONS}magnifying-glass.svg`));
 });
 
 test("the elemental mage's data names the icon file cultist.svg and its title on game-icons.net, and the file exists", () => {

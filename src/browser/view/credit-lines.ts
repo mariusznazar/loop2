@@ -3,13 +3,18 @@ import { ARCHETYPES } from "../sim/data/archetypes.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
-import { ICON_CREDITS, ICON_LICENCE, PACK_CREDITS } from "./credits.js";
+import {
+  ICON_CREDITS,
+  ICON_LICENCE,
+  INTERFACE_ICONS,
+  PACK_CREDITS,
+} from "./credits.js";
 
 const SOURCE_SITE = "game-icons.net";
 
 /** One line of the section of credits: the credit of the icon of something the data names, or of a pack of the scene. */
 export type CreditLine = {
-  /** Name of what the icon shows, from the data. */
+  /** Name of what the icon shows, from the data, or of the place of an icon of the interface. */
   name: string;
   /** Title of the icon, as its page on game-icons.net gives it, or of the pack; from the data. */
   title: string;
@@ -52,7 +57,7 @@ function actionIcons(): WithIcon[] {
 /**
  * Everything the data gives an icon, in the section's order: the items (the resources among them),
  * then the campfire and the extinguished campfire, then the actions, then the creatures, then the
- * archetypes.
+ * archetypes; and after them the icons of the interface, which stand for no thing of the data.
  */
 const WITH_ICONS: readonly WithIcon[] = [
   ...Object.values(ITEMS),
@@ -61,6 +66,7 @@ const WITH_ICONS: readonly WithIcon[] = [
   ...actionIcons(),
   ...Object.values(CREATURES),
   ...Object.values(ARCHETYPES),
+  ...INTERFACE_ICONS,
 ];
 
 /** The credits, one per icon the data names in the order of WITH_ICONS, then one per pack of the scene. Pure. */
