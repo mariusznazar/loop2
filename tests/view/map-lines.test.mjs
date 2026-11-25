@@ -8,6 +8,7 @@ import {
   cardHeading,
   capLines,
   demandRows,
+  goalSentence,
   resourceLines,
   sendMaps,
   solvingSentence,
@@ -30,7 +31,28 @@ test("importing the map lines touches no DOM: Node has no document and the impor
   assert.equal(typeof sendMaps, "function");
 });
 
-test("the condition sentence is the solving text of the map's data alone, since the heading above it names the map", () => {
+// D-327: the short sentence under the heading of the card is written by hand in each map's data, and it
+// gives the hours of the streak and the attacks to beat of the map's own solving condition: 480 minutes are
+// eight hours, 540 nine and 600 ten; Las — głębiej asks two beaten attacks of the wolf, Las — wataha six and
+// Las — matecznik one of the bear. Catches a sentence taken from another map, and the long solving text in
+// its place.
+test("the short sentence of each map's demand comes from its data and gives the hours and the attacks of its condition", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  assert.deepEqual(
+    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"].map(
+      goalSentence,
+    ),
+    [
+      "Osiem godzin bez jednej zmiany programu.",
+      "Osiem godzin bez jednej zmiany programu.",
+      "Dziewięć godzin bez zmiany programu i dwa pokonane wilki.",
+      "Dziewięć godzin bez zmiany programu i sześć pokonanych wilków.",
+      "Dziesięć godzin bez zmiany programu i jeden pokonany niedźwiedź.",
+    ],
+  );
+});
+
+test("the condition sentence is the solving text of the map's data alone, since the heading of the card names the map", () => {
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.equal(
     solvingSentence("forest"),
@@ -97,11 +119,11 @@ test("the heading names the map, with the tag of its state and the opener's name
   });
 });
 
-// D-327: „Żąda” is a table of what the solving condition asks: the streak in whole hours (480 minutes
-// are 8 h, 540 are 9 h, and 90 stay 90 min), and the attacks to beat with the icon of the creature
+// D-327: „Żąda” is a table of what the solving condition asks: the streak in hours, or in minutes where it
+// is not a whole number of hours (480 minutes are 8 h, 540 are 9 h, and 90 stay 90 min), and the attacks to beat with the icon of the creature
 // that attacks. Catches a streak in the wrong unit, a row for a requirement the condition lacks, and
 // the attacks without the creature's icon.
-test("the table „Żąda” gives the streak in whole hours and the attacks to beat with the creature's icon", () => {
+test("the table „Żąda” gives the streak in hours, or in minutes where it is no whole hour, and the attacks to beat with the creature's icon", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   assert.deepEqual(demandRows(forest), [row("passa", "8 h")]);
   assert.deepEqual(demandRows(forestDeep), [
@@ -247,7 +269,7 @@ test("a resource that does not renew says so apart, in warning, in place of its 
 // and a mean gap that counts the chance alone.
 test("an attacker gives its icon, name, health and blow, and its chance, quiet time and mean gap", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(attackerLines(forestDeep), [
     {
@@ -286,7 +308,7 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   assert.deepEqual(capLines(forest), []);
   assert.deepEqual(capLines({ ...forest, carryIn: 0, carryOut: 12 }), [
     { text: "wnosisz najwyżej 0", warning: true },

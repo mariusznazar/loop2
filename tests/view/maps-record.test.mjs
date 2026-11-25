@@ -227,7 +227,7 @@ test("a record offered lower leaves the number, one offered higher raises it, in
 // nothing leaving no number.
 test("nothing stands in the row or on the card before the first judging on the map, and a first judging that took nothing stands as 0", async () => {
   // decision: D-440 "The record stays through a change of the program and the death of a character, a judging that took more raises it, it stands in the row of the map in the catalog and on its card from the first judging on that map and never before it, and after a change of the numbers of that creature the record made at its former numbers shows nothing (D-441)."
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   await withPage(async (page) => {
     const state = gameWith(REFERENCE_PROGRAMS.emptyProgram);
     const cache = cacheOn(mapStorage(), state);
@@ -460,7 +460,7 @@ test("a screen built anew on the same storage shows the record again, and a stor
 // data, one drawn where the map names no creature, one drawn with no record, and a record line on the
 // attacker the map does not name for it.
 test("the line of the record takes the creature's name and health from the data, and stands at the named attacker alone", () => {
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   const { forestLair, forestDeep } = MAPS;
   assert.equal(recordLine(forestLair, 24), "niedźwiedź: 24 ze 120");
   assert.equal(recordLine(forestLair, 0), "niedźwiedź: 0 ze 120");

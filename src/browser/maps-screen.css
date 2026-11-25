@@ -220,10 +220,11 @@
 
 /*
  * The card of a map (D-327). At the top the heading — the name in `text-strong`, at the size of the title
- * of a map, the tag of its state beside it, „rozwiązana” in `positive` (D-134) or „otwarta” in
+ * of the predecessor's card of a map and at the body weight, as that title is, the tag of its state beside it, „rozwiązana” in `positive` (D-134) or „otwarta” in
  * `text-secondary`, and „odsłania ją {mapa}” in `text-secondary` after a „ · ” — and at the right of the
- * heading the plain shared button „Wejdź — wybierz postać”. Under it the one sentence of the solving
- * condition in `text`. Then two columns, „Żąda” and „Teren” on the left and „Czyha”, „Leży tu” and
+ * heading the plain shared button „Wejdź — wybierz postać”. Under it the one short sentence of what the
+ * map demands, written by hand in its data, in `text`; the whole sentence of the solving condition closes
+ * „Żąda”, under its table, in `text-secondary` at the size of a detail. Then two columns, „Żąda” and „Teren” on the left and „Czyha”, „Leży tu” and
  * „Odbiera” on the right, each part with its name in `text-label` (D-40) over a thin `divider` line.
  * „Żąda” and „Teren” are tables: the labels in `text-secondary` in one column, the values in `text` in
  * the next, a note after a value in `text-secondary`. A row of „Leży tu” and „Czyha” has its icon in a
@@ -248,8 +249,8 @@
 
 .maps-card-name {
   margin: 0;
-  font-size: var(--font-size-map-title);
-  font-weight: var(--font-weight-emphasis);
+  font-size: var(--font-size-map-card-title);
+  font-weight: var(--font-weight-body);
   color: var(--text-strong);
 }
 
@@ -291,6 +292,10 @@
   color: var(--text-label);
 }
 
+.maps-card-part .maps-card-condition {
+  margin-top: var(--space-s);
+}
+
 .maps-card-table {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -329,6 +334,7 @@
 }
 
 .maps-card-detail,
+.maps-card-condition,
 .maps-card-attacker-odds {
   font-size: var(--font-size-detail);
   color: var(--text-secondary);

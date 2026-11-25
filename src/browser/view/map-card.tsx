@@ -1,7 +1,8 @@
 /**
  * The card of a map on the right of the screen Mapy (D-327, D-328): its heading with the name, the tag of
  * the state and the opener, the button that takes the player to „Kto idzie”, the one short sentence of
- * what the map demands, and the parts the map has in two columns, drawn from the pure lines of
+ * what the map demands, and the parts the map has in two columns, „Żąda” closing with the whole sentence
+ * of the solving condition, drawn from the pure lines of
  * `map-lines.ts`. It names no map, resource or creature: every name comes from the data. Nothing here runs
  * when the module is imported.
  */
@@ -15,6 +16,7 @@ import {
   capLines,
   cardHeading,
   demandRows,
+  goalSentence,
   resourceLines,
   solvingSentence,
   terrainRows,
@@ -142,11 +144,12 @@ export function MapCard({
           <ReactButton text={CHOOSE_TEXT} onClick={onChoose} />
         </div>
       </div>
-      <p className="maps-card-goal">{solvingSentence(mapId)}</p>
+      <p className="maps-card-goal">{goalSentence(mapId)}</p>
       <div className="maps-card-columns">
         <div className="maps-card-column">
           <CardPart name="Żąda">
             <CardTable rows={demandRows(map)} />
+            <p className="maps-card-condition">{solvingSentence(mapId)}</p>
           </CardPart>
           <CardPart name="Teren">
             <CardTable rows={terrainRows(map)} />

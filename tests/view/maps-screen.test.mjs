@@ -345,12 +345,13 @@ const columns = (root) =>
   );
 
 // D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: the name
-// with the tag „otwarta”, no opener, the button at the top, the one sentence of the condition, the
-// tables „Żąda” and „Teren” on the left and „Leży tu” alone on the right.
-test("the card of Skraj lasu holds its heading with „otwarta” and the button, the sentence of the condition, the tables „Żąda” and „Teren”, and its sticks and berries alone", async () => {
+// with the tag „otwarta”, no opener, the button at the top, the one short sentence of the demand, the
+// tables „Żąda” and „Teren” on the left, „Żąda” closing with the whole sentence of the condition, and
+// „Leży tu” alone on the right.
+test("the card of Skraj lasu holds its heading with „otwarta” and the button, the short sentence of the demand, the tables „Żąda” with the condition and „Teren”, and its sticks and berries alone", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
@@ -369,11 +370,16 @@ test("the card of Skraj lasu holds its heading with „otwarta” and the button
     );
     assert.equal(
       text(page.root, ".maps-card-goal"),
-      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
-      "the one sentence of the condition from the data, under the heading that names the map",
+      "Osiem godzin bez jednej zmiany programu.",
+      "the short sentence of the map's data under the heading",
     );
     assert.deepEqual(columns(page.root), [["Żąda", "Teren"], ["Leży tu"]]);
     assert.deepEqual(tableRows(part(page.root, "Żąda")), [["passa", "8 h"]]);
+    assert.equal(
+      text(part(page.root, "Żąda"), ".maps-card-condition"),
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+      "the whole sentence of the condition from the data closes „Żąda”",
+    );
     assert.deepEqual(tableRows(part(page.root, "Teren")), [
       ["siatka", "4 × 4"],
       ["wejście", "stałe"],
@@ -392,7 +398,7 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
@@ -406,6 +412,10 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
     assert.deepEqual(columns(page.root), [["Żąda", "Teren"], ["Leży tu"]]);
     assert.equal(
       text(page.root, ".maps-card-goal"),
+      "Osiem godzin bez jednej zmiany programu.",
+    );
+    assert.equal(
+      text(part(page.root, "Żąda"), ".maps-card-condition"),
       "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
     );
     assert.deepEqual(tableRows(part(page.root, "Teren")), [
@@ -444,7 +454,7 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
 test("the card of Las — głębiej names its opener, asks for the attacks to beat, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
   // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
@@ -458,16 +468,29 @@ test("the card of Las — głębiej names its opener, asks for the attacks to be
       true,
       "the tag of a solved map stands in its role",
     );
-    // The tag follows the name, and the opener follows the tag after „ · ”, as the old Loop has them.
+    // The name, the tag and the opener stand in the heading in that order, as the old Loop has them.
+    assert.deepEqual(
+      [...page.root.querySelector(".maps-card-heading").children].map(
+        (child) => child.className,
+      ),
+      [
+        "maps-card-name",
+        "maps-card-state solved",
+        "maps-card-sep",
+        "maps-card-opened-by",
+      ],
+    );
+    assert.equal(text(page.root, ".maps-card-name"), "Las");
     assert.equal(
-      text(page.root, ".maps-card-heading"),
-      "Lasrozwiązana · odsłania ją Skraj lasu",
+      text(page.root, ".maps-card-opened-by"),
+      "odsłania ją Skraj lasu",
     );
     await inAct(() => screen.update(propsOf(state, "forestDeep")));
     assert.equal(text(page.root, ".maps-card-name"), "Las — głębiej");
+    assert.equal(text(page.root, ".maps-card-state"), "otwarta");
     assert.equal(
-      text(page.root, ".maps-card-heading"),
-      "Las — głębiejotwarta · odsłania ją Las",
+      text(page.root, ".maps-card-goal"),
+      "Dziewięć godzin bez zmiany programu i dwa pokonane wilki.",
     );
     assert.equal(text(page.root, ".maps-card-opened-by"), "odsłania ją Las");
     assert.deepEqual(columns(page.root), [

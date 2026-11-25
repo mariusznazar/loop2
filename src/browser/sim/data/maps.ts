@@ -59,8 +59,14 @@ export type MapDef = {
   attackers?: MapAttackerDef[];
   /** The solving condition of the map. */
   solving: SolvingDef;
-  /** The condition as a sentence without the map's name; the card of the map shows it after the name (D-133). */
+  /** The condition as a sentence without the map's name; the card of the map shows it in its part „Żąda” (D-133). */
   solvingText: string;
+  /**
+   * The one short sentence of what the map demands, written by hand as the predecessor game writes it, with
+   * the hours and the attacks to beat of the map's solving condition; the card shows it under its heading
+   * (D-327).
+   */
+  goalText: string;
   /** The whole text „Teraz” shows after a completion, agreeing with the name. */
   completionText: string;
   /** The map that must be solved before this one can be sent to. */
@@ -85,6 +91,7 @@ export const MAPS = {
     solving: { streak: 480 },
     solvingText:
       "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    goalText: "Osiem godzin bez jednej zmiany programu.",
     completionText: "Skraj lasu rozwiązany",
   },
   forest: {
@@ -104,6 +111,7 @@ export const MAPS = {
     solving: { streak: 480 },
     solvingText:
       "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    goalText: "Osiem godzin bez jednej zmiany programu.",
     completionText: "Las rozwiązany",
     opensAfter: "forestEdge",
   },
@@ -125,6 +133,7 @@ export const MAPS = {
     solving: { streak: 540, defeatedAttacks: 2 },
     solvingText:
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",
+    goalText: "Dziewięć godzin bez zmiany programu i dwa pokonane wilki.",
     completionText: "Las — głębiej rozwiązany",
     opensAfter: "forest",
   },
@@ -146,6 +155,7 @@ export const MAPS = {
     solving: { streak: 540, defeatedAttacks: 6 },
     solvingText:
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz sześć pokonanych napaści wilka",
+    goalText: "Dziewięć godzin bez zmiany programu i sześć pokonanych wilków.",
     completionText: "Las — wataha rozwiązany",
     opensAfter: "forestDeep",
   },
@@ -168,6 +178,8 @@ export const MAPS = {
     solving: { streak: 600, defeatedAttacks: 1 },
     solvingText:
       "600 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz jedna pokonana napaść niedźwiedzia",
+    goalText:
+      "Dziesięć godzin bez zmiany programu i jeden pokonany niedźwiedź.",
     completionText: "Las — matecznik rozwiązany",
     opensAfter: "forestPack",
     recordCreature: "bear",

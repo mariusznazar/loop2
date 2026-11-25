@@ -56,6 +56,7 @@
   --font-size-body: 13px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the menu and content text */
   --font-size-heading: 14px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: names and the headings of panels */
   --font-size-map-title: 15px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the title of the map */
+  --font-size-map-card-title: 22px; /* Source: loop, https://kantarion.bieda.it/ read 2026-11-26 from the rendered page: the title of the card of a map, the element h1 „Skraj lasu” at /mapy/forestEdge, its computed font-size 22px */
   --font-size-game-title: 16px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the name of the game */
 
   /* Spacing scale */

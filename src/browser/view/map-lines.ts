@@ -20,11 +20,19 @@ export function sendMaps(solvedMaps?: readonly MapId[]): MapId[] {
 }
 
 /**
- * The map's solving condition as the one sentence under the heading of its card, the solving text of the
- * map's data alone, since the heading above it names the map (D-133, D-327). Pure.
+ * The map's solving condition as a sentence, the solving text of the map's data alone, which the card
+ * writes in its part „Żąda” under the table, since the heading of the card names the map (D-133). Pure.
  */
 export function solvingSentence(mapId: MapId): string {
   return MAPS[mapId].solvingText;
+}
+
+/**
+ * The one short sentence of what the map demands, written by hand in the map's data, which the card
+ * shows under its heading (D-327). Pure.
+ */
+export function goalSentence(mapId: MapId): string {
+  return MAPS[mapId].goalText;
 }
 
 /** A line of a card's part that stands in a role of its own, `warning` where `warning` is true (D-327). */
@@ -97,9 +105,9 @@ export function streakText(minutes: number): string {
 }
 
 /**
- * The rows of the table „Żąda” (D-327): the streak the map's solving condition asks for, in whole hours
- * as in the row of the catalog, and the attacks to beat, with the icons of the creatures that attack
- * there; a requirement the condition lacks gives no row. Pure.
+ * The rows of the table „Żąda” (D-327): the streak the map's solving condition asks for, in hours, or in
+ * minutes where it is not a whole number of hours, as in the row of the catalog, and the attacks to beat,
+ * with the icons of the creatures that attack there; a requirement the condition lacks gives no row. Pure.
  */
 export function demandRows(map: MapDef): TableRow[] {
   const { streak, defeatedAttacks } = map.solving;

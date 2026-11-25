@@ -55,6 +55,7 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
     solving: { streak: 480 },
     solvingText:
       "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    goalText: "Osiem godzin bez jednej zmiany programu.",
     completionText: "Skraj lasu rozwiązany",
   });
   assert.equal(MAPS.forest.opensAfter, "forestEdge");
@@ -81,6 +82,7 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
     solving: { streak: 540, defeatedAttacks: 2 },
     solvingText:
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",
+    goalText: "Dziewięć godzin bez zmiany programu i dwa pokonane wilki.",
     completionText: "Las — głębiej rozwiązany",
     opensAfter: "forest",
   });
