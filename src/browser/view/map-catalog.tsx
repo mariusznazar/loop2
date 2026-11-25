@@ -54,11 +54,26 @@ function IconMask({ name }: { name: string }) {
 function StateCircle({ solved }: { solved: boolean }) {
   return (
     <span
-      className="maps-catalog-state"
+      className={solved ? "maps-catalog-state solved" : "maps-catalog-state"}
       role="img"
       aria-label={solved ? "Rozwiązana" : "Otwarta"}
     >
       {solved ? "●" : "○"}
+    </span>
+  );
+}
+
+/** One fact of a row; it is an element of its own so that a narrow row breaks between facts, never inside one. */
+function Fact({ fact }: { fact: CatalogFact }) {
+  return (
+    <span
+      className={
+        fact.warning
+          ? "maps-catalog-fact maps-card-warning"
+          : "maps-catalog-fact"
+      }
+    >
+      {fact.text}
     </span>
   );
 }
@@ -70,9 +85,7 @@ function Facts({ facts }: { facts: readonly CatalogFact[] }) {
       {facts.map((fact, index) => (
         <span key={fact.text}>
           {index === 0 ? "" : " · "}
-          <span className={fact.warning ? "maps-card-warning" : undefined}>
-            {fact.text}
-          </span>
+          <Fact fact={fact} />
         </span>
       ))}
     </span>
@@ -116,12 +129,9 @@ function ResourceRowItem({ row }: { row: CatalogResourceRow }) {
         <span className="maps-catalog-main">
           <span className="maps-catalog-name">{row.name}</span>{" "}
           <span className="maps-catalog-facts">
-            {`${row.spread} · `}
-            <span
-              className={row.renewal.warning ? "maps-card-warning" : undefined}
-            >
-              {row.renewal.text}
-            </span>
+            <Fact fact={{ text: row.spread, warning: false }} />
+            {" · "}
+            <Fact fact={row.renewal} />
           </span>
         </span>
       </a>

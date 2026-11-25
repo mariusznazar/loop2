@@ -112,6 +112,16 @@ test("a row holds the state circle, the name, the facts in their roles and the i
       "what the map takes stands in the element of the role warning",
     );
     assert.deepEqual(
+      texts(lair, ".maps-catalog-fact"),
+      ["10 h", "1 do pokonania", "⊘ wnosisz 0", "bez ognia 33 min"],
+      "each fact is an element of its own, the separators outside, so a narrow row breaks between facts and never inside one",
+    );
+    assert.equal(
+      lair.querySelector(".maps-catalog-state").classList.contains("solved"),
+      false,
+      "the circle of an open map is not marked solved",
+    );
+    assert.deepEqual(
       all(lair, ".icon-mask").map((icon) =>
         icon.style.getPropertyValue("--icon"),
       ),
@@ -248,6 +258,16 @@ test("„Co daje” groups the open maps by resource, the rarest first, with the
     const [, , stick] = all(page.root, ".maps-catalog-region");
     assert.deepEqual(texts(stick, ".maps-catalog-name"), ["Skraj lasu", "Las"]);
     assert.deepEqual(texts(stick, ".maps-catalog-state"), ["●", "○"]);
+    assert.deepEqual(
+      texts(stick, ".maps-catalog-state.solved"),
+      ["●"],
+      "only the filled circle is marked solved",
+    );
+    assert.deepEqual(
+      texts(all(stick, ".maps-list-item")[0], ".maps-catalog-fact"),
+      ["≈ 16 z 16 · po 12", "+1 co 30 min"],
+      "the stock of the resource at the map and its renewal are two facts of the row",
+    );
     await typeInto(field(page.root), "mech");
     assert.deepEqual(
       texts(page.root, ".maps-catalog-group-name"),
