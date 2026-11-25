@@ -31,7 +31,13 @@ test("the condition sentence is the map's name, a dash and the solving text of i
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
-  assert.deepEqual(sendMaps(), ["forestEdge", "forest", "forestDeep"]);
+  assert.deepEqual(sendMaps(), [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+    "forestPack",
+    "forestLair",
+  ]);
   assert.deepEqual(sendMaps([]), ["forestEdge"]);
   assert.deepEqual(sendMaps(["forestEdge"]), ["forestEdge", "forest"]);
   assert.deepEqual(sendMaps(["forestEdge", "forest"]), [
@@ -39,6 +45,16 @@ test("the list of maps hides maps until their prerequisites are solved; the edit
     "forest",
     "forestDeep",
   ]);
+  assert.deepEqual(sendMaps(["forestEdge", "forest", "forestDeep"]), [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+    "forestPack",
+  ]);
+  assert.deepEqual(
+    sendMaps(["forestEdge", "forest", "forestDeep", "forestPack"]),
+    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"],
+  );
 });
 
 // D-327: the heading names the map, says „rozwiązana” once it is solved, and says „odsłania ją”
@@ -195,7 +211,7 @@ test("a resource that does not renew says so apart, in warning, in place of its 
 // and a mean gap that counts the chance alone.
 test("an attacker gives its icon, name, health and blow, and its chance, quiet time and mean gap", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(attackerLines(forestDeep), [
     {
@@ -234,7 +250,7 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   assert.deepEqual(capLines(forest), []);
   assert.deepEqual(capLines({ ...forest, carryIn: 0, carryOut: 12 }), [
     { text: "wnosisz najwyżej 0", warning: true },
