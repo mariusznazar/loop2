@@ -4241,11 +4241,8 @@ test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none
         item.querySelector(".maps-catalog-name").textContent,
         item.getAttribute("aria-current"),
       ]),
-      [
-        ["Las", "page"],
-        ["Skraj lasu", null],
-      ],
-      "the open map first, then the solved one, unfolded with the region of the picked map",
+      [["Las", "page"]],
+      "the picked open map is the marked row, and the solved one stays folded",
     );
     const names = byClass(root, "maps-who-name");
     assert.deepEqual(

@@ -272,7 +272,12 @@ test("a row is a link to the map's address, its circle says whether the map is s
       page,
       propsOf(solved(teamOf("Ala")), "forestDeep"),
     );
-    // The region of the picked map stands unfolded: the open map first, then the solved ones.
+    // The picked map is an open one, so it leaves the solved maps folded; the player unfolds them.
+    assert.deepEqual(
+      all(page.root, ".maps-list-item").map((row) => row.getAttribute("href")),
+      ["#/mapy/forestDeep"],
+    );
+    await press(page.root.querySelector(".maps-catalog-fold button"));
     const rows = all(page.root, ".maps-list-item");
     assert.deepEqual(
       rows.map((row) => row.getAttribute("href")),

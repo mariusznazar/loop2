@@ -467,7 +467,7 @@ test("the line of the record takes the creature's name and health from the data,
   );
   assert.equal(
     recordLine({ ...forestLair, recordCreature: "wolf" }, 7),
-    "wilk: 7 ze 24",
+    "wilk: 7 z 24",
   );
   const [bear] = attackerLines(forestLair, 24);
   assert.equal(bear.record, "niedźwiedź: 24 ze 120");

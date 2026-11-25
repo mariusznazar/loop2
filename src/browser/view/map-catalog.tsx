@@ -8,13 +8,13 @@
  * and in „Postęp” a map not yet opened stands as an empty place with no name.
  *
  * The view, the typed text and the regions the player unfolded are the state of this component, so
- * they live as long as the screen does and no longer. The group of the picked map is unfolded in the
- * drawing and stored nowhere (D-331). The component names no map, resource or creature: every name
- * comes from the lines. Nothing here runs when the module is imported.
+ * they live as long as the screen does and no longer. The solved maps are unfolded in the drawing for a
+ * search and for a picked map that stands among them, which the lines decide, and stored nowhere
+ * (D-331). The component names no map, resource or creature: every name comes from the lines. Nothing
+ * here runs when the module is imported.
  */
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { REGIONS } from "../sim/data/maps.js";
 import type { RegionName } from "../sim/data/maps.js";
 import type { MapId } from "../sim/types.js";
 import { catalogLines } from "./catalog-lines.js";
@@ -139,23 +139,14 @@ function ResourceRowItem({ row }: { row: CatalogResourceRow }) {
   );
 }
 
-/** The name of the region a header of the lines stands for: the header opens with it and „ · ”. */
-function regionOf(header: string): RegionName | null {
-  return REGIONS.find((name) => header.startsWith(`${name} · `)) ?? null;
-}
-
 /** A region of „Dokąd”: the open maps, then the solved ones folded under one row that unfolds them. */
 function DokadGroup({
   region,
-  forced,
   onToggle,
 }: {
   region: DokadRegion;
-  /** Whether the lines hold the solved maps open whatever the player chose: a search or a pick. */
-  forced: boolean;
   onToggle: (name: RegionName) => void;
 }) {
-  const name = regionOf(region.header);
   const { solved } = region;
   return (
     <section className="maps-catalog-region">
@@ -170,10 +161,8 @@ function DokadGroup({
               <ReactButton
                 text={`${solved.expanded ? "▾" : "▸"} ${solved.text}`}
                 expanded={solved.expanded}
-                disabled={forced || name === null}
-                onClick={() => {
-                  if (name !== null) onToggle(name);
-                }}
+                disabled={solved.forced}
+                onClick={() => onToggle(region.region)}
               />
             </li>
             {solved.expanded
@@ -244,7 +233,6 @@ export function MapCatalog({
     selected,
     recordOf,
   });
-  const searching = query.trim() !== "";
   const toggle = (name: RegionName) =>
     setUnfolded((now) =>
       now.includes(name) ? now.filter((each) => each !== name) : [...now, name],
@@ -275,16 +263,7 @@ export function MapCatalog({
       )}
       {lines.view === "dokad"
         ? lines.regions.map((region) => (
-            <DokadGroup
-              key={region.header}
-              region={region}
-              forced={
-                searching ||
-                region.rows.some((row) => row.selected) ||
-                (region.solved?.rows.some((row) => row.selected) ?? false)
-              }
-              onToggle={toggle}
-            />
+            <DokadGroup key={region.region} region={region} onToggle={toggle} />
           ))
         : null}
       {lines.view === "postep"

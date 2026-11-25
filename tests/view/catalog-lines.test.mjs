@@ -3,10 +3,11 @@
 // rules they follow; a made-up case changes one field of a map that keeps its identifier.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { MAPS, REGIONS } from "../../dist/browser/sim/data/maps.js";
 import {
   CATALOG_VIEWS,
   catalogLines,
+  catalogLinesOf,
 } from "../../dist/browser/view/catalog-lines.js";
 
 const plain = (text) => ({ text, warning: false });
@@ -71,34 +72,56 @@ test("the region's counter counts all five maps of the data, and only the open m
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
   const result = catalogLines(input({ solvedMaps: [] }));
   assert.equal(result.view, "dokad");
-  assert.equal(result.counter, "1 poznanych · 0 rozwiązanych");
+  assert.equal(result.counter, "1 poznana · 0 rozwiązanych");
   assert.deepEqual(result.regions, [
-    { header: "Las · 0 z 5", rows: [edgeRow], solved: null },
+    { region: "Las", header: "Las · 0 z 5", rows: [edgeRow], solved: null },
   ]);
   assert.equal(result.none, null);
 });
 
-// D-325: solved maps fold under one row that counts them, the open unsolved maps stay on top. The
-// fold opens for the region of the picked map, for a search and for a region the player unfolded.
-// Catches a solved map left on top, a fold that counts the wrong maps, and a fold that never opens.
-test("a solved map folds under one row that counts it, and the fold opens for the picked map, a search or an unfold", () => {
+// D-325, D-331: solved maps fold under one row that counts them, the open unsolved maps stay on top. The
+// fold opens for a search, for a region the player unfolded, and for a picked map that stands among the
+// solved ones, so that its row is seen; a picked open map leaves the fold to the player. Catches a
+// solved map left on top, a fold that counts the wrong maps, a fold that never opens, and a fold held
+// open by an open picked map, which the player then cannot fold.
+test("a solved map folds under one row that counts it, and the fold opens for a search, an unfold or a picked solved map, not for a picked open map", () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
   const solvedEdge = { ...edgeRow, solved: true };
-  const folded = (expanded, overrides) =>
-    catalogLines(input({ solvedMaps: ["forestEdge"], ...overrides })).regions[0]
-      .solved.expanded === expanded;
+  const state = (overrides) => {
+    const { expanded, forced } = catalogLines(
+      input({ solvedMaps: ["forestEdge"], ...overrides }),
+    ).regions[0].solved;
+    return { expanded, forced };
+  };
   const closed = catalogLines(input({ solvedMaps: ["forestEdge"] }));
   assert.equal(closed.regions[0].header, "Las · 1 z 5");
   assert.deepEqual(closed.regions[0].rows, [forestRow]);
   assert.deepEqual(closed.regions[0].solved, {
     text: "1 rozwiązana",
     expanded: false,
+    forced: false,
     rows: [solvedEdge],
   });
-  assert.equal(folded(true, { selected: "forestEdge" }), true);
-  assert.equal(folded(true, { unfolded: ["Las"] }), true);
-  assert.equal(folded(true, { query: "las" }), true);
-  assert.equal(folded(false, { unfolded: [] }), true);
+  assert.deepEqual(
+    state({ selected: "forestEdge" }),
+    { expanded: true, forced: true },
+    "the picked solved map is seen, and the fold cannot hide it",
+  );
+  assert.deepEqual(state({ query: "las" }), { expanded: true, forced: true });
+  assert.deepEqual(
+    state({ unfolded: ["Las"] }),
+    { expanded: true, forced: false },
+    "a region the player unfolded stands open and can be folded",
+  );
+  assert.deepEqual(
+    state({ selected: "forest" }),
+    { expanded: false, forced: false },
+    "a picked open map of the region leaves the fold to the player",
+  );
+  assert.deepEqual(state({ selected: "forest", unfolded: ["Las"] }), {
+    expanded: true,
+    forced: false,
+  });
 });
 
 // D-325, D-327: the facts of a row in the old game's order — the demand in whole hours, what the map
@@ -132,7 +155,7 @@ test("a streak that is no whole number of hours reads in minutes, and a step tha
     ...MAPS,
     forestEdge: { ...MAPS.forestEdge, solving: { streak: 90 }, stepMinutes: 9 },
   };
-  const result = catalogLines(input({ solvedMaps: [] }), data);
+  const result = catalogLinesOf(data, REGIONS, input({ solvedMaps: [] }));
   assert.deepEqual(result.regions[0].rows[0].facts, [
     plain("90 min"),
     plain("bez ognia 83 min"),
@@ -152,7 +175,7 @@ test("„Co daje” gives the tiles that hold a resource, its stock, and „nie 
       resources: [{ id: "stick", density: 0.7, stock: 12 }],
     },
   };
-  const result = catalogLines(input({ view: "coDaje" }), data);
+  const result = catalogLinesOf(data, REGIONS, input({ view: "coDaje" }));
   assert.deepEqual(result.groups, [
     {
       resource: "stick",
@@ -258,7 +281,7 @@ test("„Postęp” gives an empty place for each map not yet opened, and none w
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
   // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy"
   const result = catalogLines(input({ view: "postep", solvedMaps: [] }));
-  assert.equal(result.counter, "0 rozwiązanych z 1 poznanych");
+  assert.equal(result.counter, "0 rozwiązanych z 1 poznanej");
   assert.deepEqual(result.regions, [
     { header: "Las · 0 z 5", rows: [edgeRow], empty: 4 },
   ]);
@@ -274,10 +297,10 @@ test("„Postęp” gives an empty place for each map not yet opened, and none w
 // Catches a region with nothing open drawn as a header, and the mark given to every row.
 test("a region with no shown map stands nowhere, and only the picked row is marked", () => {
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data"
-  const result = catalogLines(
-    input({ view: "postep", solvedMaps: ["forestEdge"], selected: "forest" }),
+  const result = catalogLinesOf(
     MAPS,
     ["Las", "Inne"],
+    input({ view: "postep", solvedMaps: ["forestEdge"], selected: "forest" }),
   );
   assert.equal(result.regions.length, 1);
   assert.deepEqual(
@@ -290,7 +313,7 @@ test("a region with no shown map stands nowhere, and only the picked row is mark
 });
 
 // D-325, D-440: the record stands among the facts of the row of the map whose data name a creature for
-// it, last, as „{creature}: {n} ze {health}” in the role text, and nowhere before it exists. Catches a
+// it, last, as „{creature}: {n} z(e) {health}” in the role text, and nowhere before it exists. Catches a
 // record in another place of the facts, one with no role of its own, and one drawn as „0” where none
 // stands.
 test("the record stands last among the facts of the row of the map that names a creature for it, with the creature's name and health from the data", () => {
@@ -320,9 +343,10 @@ test("the record stands last among the facts of the row of the map that names a 
     forestLair: { ...MAPS.forestLair, recordCreature: "wolf" },
   };
   assert.equal(
-    lairOf(catalogLines({ ...open, recordOf: () => 7 }, wolfData)).facts.at(-1)
-      .text,
-    "wilk: 7 ze 24",
+    lairOf(
+      catalogLinesOf(wolfData, REGIONS, { ...open, recordOf: () => 7 }),
+    ).facts.at(-1).text,
+    "wilk: 7 z 24",
   );
 });
 
@@ -350,6 +374,43 @@ test("the record is asked for only the map whose data name a creature for it, an
     ...MAPS,
     forestLair: { ...MAPS.forestLair, recordCreature: undefined },
   };
-  const unnamed = catalogLines({ ...open, recordOf: () => 24 }, none);
+  const unnamed = catalogLinesOf(none, REGIONS, {
+    ...open,
+    recordOf: () => 24,
+  });
   assert.deepEqual(unnamed.regions[0].rows[0].facts, lairRow.facts);
+});
+
+// D-325: the counters decline by their number, as the counters of the screen Wiedza do (D-416): the open
+// maps are „1 poznana”, „2 poznane”, „5 poznanych”, and after „z” the genitive, „z 1 poznanej”. The five
+// maps give one to five open maps; the rule for 12 and 22 is the shared one, tested in counted-name.test.mjs.
+// Catches a „1 poznanych” and a „z 1 poznanych”.
+test("the counters of „Dokąd” and „Postęp” decline the open maps and the solved ones by their number", () => {
+  // decision: D-416 "The counters of the screen decline by the number, as in loop: „1 poznana rzecz”, „3 poznane rzeczy”"
+  const cases = [
+    [[], "1 poznana · 0 rozwiązanych", "0 rozwiązanych z 1 poznanej"],
+    [["forestEdge"], "2 poznane · 1 rozwiązana", "1 rozwiązana z 2 poznanych"],
+    [
+      ["forestEdge", "forest"],
+      "3 poznane · 2 rozwiązane",
+      "2 rozwiązane z 3 poznanych",
+    ],
+    [
+      ["forestEdge", "forest", "forestDeep"],
+      "4 poznane · 3 rozwiązane",
+      "3 rozwiązane z 4 poznanych",
+    ],
+    [
+      ["forestEdge", "forest", "forestDeep", "forestPack"],
+      "5 poznanych · 4 rozwiązane",
+      "4 rozwiązane z 5 poznanych",
+    ],
+  ];
+  for (const [solvedMaps, dokad, postep] of cases) {
+    assert.equal(catalogLines(input({ solvedMaps })).counter, dokad);
+    assert.equal(
+      catalogLines(input({ solvedMaps, view: "postep" })).counter,
+      postep,
+    );
+  }
 });

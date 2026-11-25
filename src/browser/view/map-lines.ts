@@ -9,6 +9,7 @@ import {
   usualStep,
 } from "../sim/map-card.js";
 import type { MapId } from "../sim/types.js";
+import { withPreposition } from "./counted-name.js";
 
 /** The maps a character can be sent to, in the data's order. Pure. */
 export function sendMaps(solvedMaps?: readonly MapId[]): MapId[] {
@@ -139,14 +140,15 @@ export function recordCreatureOf(map: MapDef): CreatureDef | null {
 }
 
 /**
- * The record of D-440 as a line, „{creature}: {number} ze {health}”, with the name and the health from the
- * data of the creature the map names for it; null where the map names none or no record stands, so there
- * is no line before the first judging on the map. Pure.
+ * The record of D-440 as a line, „{creature}: {number} z {health}”, the „z” as Polish says it before the
+ * health („ze 120”, „z 24”), with the name and the health from the data of the creature the map names
+ * for it; null where the map names none or no record stands, so there is no line before the first
+ * judging on the map. Pure.
  */
 export function recordLine(map: MapDef, record: number | null): string | null {
   const creature = recordCreatureOf(map);
   if (creature === null || record === null) return null;
-  return `${creature.name}: ${record} ze ${creature.health}`;
+  return `${creature.name}: ${record} ${withPreposition(creature.health)} ${creature.health}`;
 }
 
 /**

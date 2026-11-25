@@ -57,11 +57,21 @@ export type CatalogResourceRow = {
   renewal: CatalogFact;
 };
 
-/** A region of „Dokąd”: its header, its open maps, and its solved maps folded under one row. */
+/**
+ * A region of „Dokąd”: the region, its header, its open maps, and its solved maps folded under one row.
+ * `forced` says the lines hold the solved maps unfolded whatever the player chose, for a search or for
+ * a picked map that stands among them; `expanded` is the state to draw (D-325, D-331).
+ */
 export type DokadRegion = {
+  region: RegionName;
   header: string;
   rows: CatalogMapRow[];
-  solved: { text: string; expanded: boolean; rows: CatalogMapRow[] } | null;
+  solved: {
+    text: string;
+    expanded: boolean;
+    forced: boolean;
+    rows: CatalogMapRow[];
+  } | null;
 };
 
 /** A region of „Postęp”: its header, its maps, and one empty place without a name per map not yet opened. */
@@ -87,7 +97,7 @@ export type CatalogInput = {
   view: CatalogView;
   /** The regions whose solved maps the player unfolded in „Dokąd”. */
   unfolded: readonly RegionName[];
-  /** The picked map, or null before a pick; its region's solved maps are always unfolded. */
+  /** The picked map, or null before a pick; the solved maps of its region are unfolded where it stands among them. */
   selected: MapId | null;
   /**
    * The record of D-440 the browser remembers for a map, or null where none stands; asked only for a map
@@ -117,7 +127,7 @@ export type CatalogLines =
       none: string | null;
     };
 
-/** The map data the lines read; the default is the game's data, a test may give other numbers for the same maps. */
+/** The map data the lines read: the game's data, or, in a test, other numbers for the same maps. */
 export type CatalogData = Readonly<Record<string, MapDef>>;
 
 type Forms = { one: string; few: string; many: string };
@@ -129,6 +139,17 @@ const SOLVED_FORMS: Forms = {
 };
 const RESOURCE_FORMS: Forms = { one: "zasób", few: "zasoby", many: "zasobów" };
 const MAP_FORMS: Forms = { one: "mapa", few: "mapy", many: "map" };
+const KNOWN_FORMS: Forms = {
+  one: "poznana",
+  few: "poznane",
+  many: "poznanych",
+};
+/** „poznanych” after „z”, which takes the genitive: „z 1 poznanej”, „z 2 poznanych”. */
+const KNOWN_AFTER_Z_FORMS: Forms = {
+  one: "poznanej",
+  few: "poznanych",
+  many: "poznanych",
+};
 
 /** Everything one drawing of the catalog reads: the data, the open and solved maps, the search, the pick. */
 type Context = {
@@ -254,14 +275,11 @@ function dokadRegion(
   const solved = maps
     .filter((id) => context.solved.has(id))
     .map((id) => mapRow(context, id));
-  // A search and the region of the picked map always unfold the solved maps (D-325, D-331).
-  const pickedRegion =
-    context.selected === null ? null : context.maps[context.selected].region;
-  const expanded =
-    context.query !== "" ||
-    unfolded.includes(region) ||
-    pickedRegion === region;
+  // A search unfolds the solved maps, and so does the picked map where it stands among them, so that
+  // its row with the bar is seen (D-325, D-331); a picked open map leaves the fold to the player.
+  const forced = context.query !== "" || solved.some((row) => row.selected);
   return {
+    region,
     header: regionHeader(context, region),
     rows: open,
     solved:
@@ -269,7 +287,8 @@ function dokadRegion(
         ? null
         : {
             text: countText(solved.length, SOLVED_FORMS),
-            expanded,
+            expanded: forced || unfolded.includes(region),
+            forced,
             rows: solved,
           },
   };
@@ -369,23 +388,29 @@ function counterText(
 ): string {
   const solved = open.filter((id) => context.solved.has(id)).length;
   if (view === "dokad")
-    return `${open.length} poznanych · ${countText(solved, SOLVED_FORMS)}`;
+    return `${countText(open.length, KNOWN_FORMS)} · ${countText(solved, SOLVED_FORMS)}`;
   if (view === "coDaje") {
     const reach = holdingsByResource(context, open).size;
     return `${countText(reach, RESOURCE_FORMS)} w zasięgu`;
   }
-  return `${countText(solved, SOLVED_FORMS)} z ${open.length} poznanych`;
+  return `${countText(solved, SOLVED_FORMS)} z ${open.length} ${countedName(open.length, KNOWN_AFTER_Z_FORMS)}`;
+}
+
+/** The catalog's lines for one view, of the game's maps and regions (D-325). Pure. */
+export function catalogLines(input: CatalogInput): CatalogLines {
+  return catalogLinesOf(MAPS, REGIONS, input);
 }
 
 /**
- * The catalog's lines for one view (D-325). The maps are open where the simulation admits them
- * (D-149); the search finds the open ones; the regions are those given, in their order, and a
- * region with no shown map stands nowhere. Pure.
+ * The catalog's lines for one view of the maps `data` and the regions `regions` (D-325). The maps are
+ * open where the simulation admits them (D-149); the search finds the open ones; the regions are those
+ * given, in their order, and a region with no shown map stands nowhere. It is the lines of the game
+ * where it is given the game's data; a test gives it numbers or a region the five maps do not have. Pure.
  */
-export function catalogLines(
+export function catalogLinesOf(
+  data: CatalogData,
+  regions: readonly RegionName[],
   input: CatalogInput,
-  data: CatalogData = MAPS,
-  regions: readonly RegionName[] = REGIONS,
 ): CatalogLines {
   const open = sendMaps(input.solvedMaps);
   const typed = input.query.trim();

@@ -381,8 +381,9 @@ test("the row of the picked map is the one marked, in every view", async () => {
   });
 });
 
-// Catches a picked map whose solved neighbours stay folded, so its row is not seen, and a pick that is stored as the player's choice (D-331).
-test("the group of the picked map is unfolded so that its row is seen, and stays folded for the player once the pick goes", async () => {
+// Catches a picked solved map whose neighbours stay folded, so its row is not seen, an open picked map that
+// holds the fold open and disabled so the player cannot fold it, and a pick stored as the player's choice (D-331).
+test("a picked solved map unfolds its group so that its row is seen, while a picked open map leaves the fold to the player, and no pick is stored", async () => {
   // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map, the state circle of the map at its left, filled at a solved map and empty at an open one, and the short demand of the map, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left."
   await withPage(async (page) => {
     const { draw } = await mount(page, {
@@ -408,9 +409,16 @@ test("the group of the picked map is unfolded so that its row is seen, and stays
     await draw({ solvedMaps: EDGE, selected: "forest" });
     assert.deepEqual(
       names(page.root),
-      ["Las", "Skraj lasu"],
-      "the picked map of the region unfolds it, an open one too",
+      ["Las"],
+      "a picked open map does not unfold the solved ones",
     );
+    assert.equal(fold(page.root).disabled, false, "the fold works");
+    await press(fold(page.root));
+    assert.deepEqual(names(page.root), ["Las", "Skraj lasu"], "it unfolds");
+    await press(fold(page.root));
+    assert.deepEqual(names(page.root), ["Las"], "and folds again");
+    await draw({ solvedMaps: EDGE, selected: "forestEdge" });
+    assert.deepEqual(names(page.root), ["Las", "Skraj lasu"]);
     await draw({ solvedMaps: EDGE, selected: null });
     assert.deepEqual(names(page.root), ["Las"], "the unfolding was not stored");
     assert.equal(fold(page.root).disabled, false);
