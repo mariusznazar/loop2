@@ -1,0 +1,82 @@
+diff --git a/src/browser/sim/data/scene.ts b/src/browser/sim/data/scene.ts
+index 472f632f..9c55c703 100644
+--- a/src/browser/sim/data/scene.ts
++++ b/src/browser/sim/data/scene.ts
+@@ -132,13 +132,21 @@ export const SCENE_CREATURES = {
+  * where its frame then lies inside the scene, as it does at every place the mage stands at but the
+  * right edge, and on the left where it does not. The cloud of the scuffle, the dust's picture, stands
+  * over the gap, its middle on the gap's middle and its bottom edge `cloudUp` pixels above the ground
+- * line.
++ * line. `sink` is how many rows below the ground line the bottom edge of a creature's frame stands, so
++ * that its feet stand on the line: the wolf's feet are on the bottom row of its frame, the bear's a few
++ * rows above it in its own sheets.
+  */
+ export const SCENE_FIGHT = {
+   mageFigure: { left: 20, right: 44 },
+   gap: 2,
+   cloudUp: 3,
+-} as const;
++  sink: { wolf: 0, bear: 4 },
++} as const satisfies {
++  mageFigure: { left: number; right: number };
++  gap: number;
++  cloudUp: number;
++  sink: Record<CreatureId, number>;
++};
+ 
+ /**
+  * The cloud of dust of a missed gathering and of a scuffle: the eight cells of smoke of the pack Smoke &
+diff --git a/src/browser/view/scene-picture.ts b/src/browser/view/scene-picture.ts
+index 45ed5278..8b7c59aa 100644
+--- a/src/browser/view/scene-picture.ts
++++ b/src/browser/view/scene-picture.ts
+@@ -91,6 +91,8 @@ export type SceneCreature = {
+   bite: SceneSprite;
+   death: SceneSprite;
+   cloud: SceneSprite;
++  /** Rows below the ground line the bottom edge of its frame stands (`SCENE_FIGHT.sink`). */
++  sink: number;
+ };
+ 
+ /** The scene of the map run as plain data for drawing; pure, no DOM, no URL built from a name. */
+@@ -254,6 +256,7 @@ function drawnCreature(
+     bite: spriteOf(sheets.bite),
+     death: spriteOf(sheets.death),
+     cloud: spriteOf(SCENE_DUST),
++    sink: SCENE_FIGHT.sink[creature.id],
+   };
+ }
+ 
+@@ -739,13 +742,17 @@ export function creatureEffect(
+       sprite: {
+         ...spriteOf(sheets.death),
+         x: place.x,
+-        y: SCENE.groundLine,
++        y: SCENE.groundLine + SCENE_FIGHT.sink[was.activeCombat.creatureId],
+       },
+       faces,
+     };
+   return {
+     kind: "creatureOut",
+-    sprite: { ...spriteOf(sheets.run), x: place.x, y: SCENE.groundLine },
++    sprite: {
++      ...spriteOf(sheets.run),
++      x: place.x,
++      y: SCENE.groundLine + SCENE_FIGHT.sink[was.activeCombat.creatureId],
++    },
+     faces: "right",
+     run: sceneWidth - place.x,
+   };
+diff --git a/src/browser/view/scene.tsx b/src/browser/view/scene.tsx
+index 08fd68d3..e97ca572 100644
+--- a/src/browser/view/scene.tsx
++++ b/src/browser/view/scene.tsx
+@@ -403,7 +403,7 @@ function Creature({
+   const placed: ScenePlacedSprite = {
+     ...creature.bite,
+     x: place.x,
+-    y: SCENE.groundLine,
++    y: SCENE.groundLine + creature.sink,
+   };
+   const style = {
+     ...boxOf(placed, frame),
