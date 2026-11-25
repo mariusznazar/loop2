@@ -33,7 +33,11 @@ async function mount({ root }, props) {
   const reactRoot = createRoot(host);
   const draw = (next) =>
     inAct(() =>
-      flushSync(() => reactRoot.render(createElement(MapCatalog, next))),
+      flushSync(() =>
+        reactRoot.render(
+          createElement(MapCatalog, { recordOf: () => null, ...next }),
+        ),
+      ),
     );
   await draw(props);
   return {
@@ -450,5 +454,41 @@ test("every row, of every view, is a link to the address of its map", async () =
       ),
     );
     assert.ok(hrefs().length > 5, "a map stands under each resource it holds");
+  });
+});
+
+// D-325, D-440: the row of the lair draws the record as a fact of its own in the role text, in „Dokąd”
+// and „Postęp”, and the rows of „Co daje” draw none; a new record shows at the next draw. Catches a
+// record drawn in the wrong view, outside the facts' element, or in no element of its own.
+test("the record is drawn among the facts of the lair's row in „Dokąd” and „Postęp”, in an element of its own, and not in „Co daje”; a new number shows at the next draw", async () => {
+  // decision: D-325 "A map whose data name a creature for the record shows the number of D-440 in its row."
+  await withPage(async (page) => {
+    let held = 24;
+    const props = { solvedMaps: FOUR, selected: null };
+    const { draw } = await mount(page, { ...props, recordOf: () => held });
+    const records = () => texts(page.root, ".maps-catalog-record");
+    const lair = () => all(page.root, ".maps-list-item")[0];
+    assert.deepEqual(records(), ["niedźwiedź: 24 ze 120"]);
+    assert.deepEqual(
+      texts(lair(), ".maps-catalog-fact").at(-1),
+      "niedźwiedź: 24 ze 120",
+      "the last fact of the row, in the facts' element",
+    );
+    assert.equal(
+      lair().querySelector(".maps-catalog-record").parentElement.parentElement
+        .className,
+      "maps-catalog-facts",
+    );
+    held = 30;
+    await draw({ ...props, recordOf: () => held });
+    assert.deepEqual(records(), ["niedźwiedź: 30 ze 120"]);
+    await press(tab(page.root, "Postęp"));
+    assert.deepEqual(records(), ["niedźwiedź: 30 ze 120"]);
+    await press(tab(page.root, "Co daje"));
+    assert.deepEqual(records(), [], "the rows of „Co daje” hold no record");
+    held = null;
+    await draw({ ...props, recordOf: () => held });
+    await press(tab(page.root, "Dokąd"));
+    assert.deepEqual(records(), []);
   });
 });

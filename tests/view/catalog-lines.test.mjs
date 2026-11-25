@@ -51,6 +51,7 @@ function input(overrides) {
     view: "dokad",
     unfolded: [],
     selected: null,
+    recordOf: () => null,
     ...overrides,
   };
 }
@@ -286,4 +287,69 @@ test("a region with no shown map stands nowhere, and only the picked row is mark
       ["forest", true],
     ],
   );
+});
+
+// D-325, D-440: the record stands among the facts of the row of the map whose data name a creature for
+// it, last, as „{creature}: {n} ze {health}” in the role text, and nowhere before it exists. Catches a
+// record in another place of the facts, one with no role of its own, and one drawn as „0” where none
+// stands.
+test("the record stands last among the facts of the row of the map that names a creature for it, with the creature's name and health from the data", () => {
+  // decision: D-325 "A map whose data name a creature for the record shows the number of D-440 in its row."
+  const open = input({
+    solvedMaps: ["forestEdge", "forest", "forestDeep", "forestPack"],
+  });
+  const lairOf = (result) => result.regions[0].rows[0];
+  const withRecord = lairOf(catalogLines({ ...open, recordOf: () => 24 }));
+  assert.deepEqual(withRecord.facts, [
+    ...lairRow.facts,
+    { text: "niedźwiedź: 24 ze 120", warning: false, role: "text" },
+  ]);
+  assert.deepEqual(
+    lairOf(catalogLines({ ...open, recordOf: () => 0 })).facts.at(-1),
+    { text: "niedźwiedź: 0 ze 120", warning: false, role: "text" },
+    "a record of 0 after a judging that took nothing stands",
+  );
+  assert.deepEqual(
+    lairOf(catalogLines(open)).facts,
+    lairRow.facts,
+    "no record, no fact and no „0”",
+  );
+  // A made-up creature for the record gives its own name and health, whatever the bear's are.
+  const wolfData = {
+    ...MAPS,
+    forestLair: { ...MAPS.forestLair, recordCreature: "wolf" },
+  };
+  assert.equal(
+    lairOf(catalogLines({ ...open, recordOf: () => 7 }, wolfData)).facts.at(-1)
+      .text,
+    "wilk: 7 ze 24",
+  );
+});
+
+// D-325, D-440: the catalog asks for the record of a map only where its data name a creature for it, so
+// no other row can show a number the cache holds under another map. Catches a row that shows a record
+// for every map, and a lair whose data name no creature that shows one all the same.
+test("the record is asked for only the map whose data name a creature for it, and a map that names none shows none", () => {
+  // decision: D-325 "A map whose data name a creature for the record shows the number of D-440 in its row."
+  const open = input({
+    solvedMaps: ["forestEdge", "forest", "forestDeep", "forestPack"],
+  });
+  const asked = [];
+  const everywhere = (mapId) => {
+    asked.push(mapId);
+    return 24;
+  };
+  const result = catalogLines({ ...open, recordOf: everywhere });
+  const rows = [...result.regions[0].rows, ...result.regions[0].solved.rows];
+  assert.deepEqual(asked, ["forestLair"]);
+  assert.deepEqual(
+    rows.filter((row) => row.facts.some((fact) => fact.role === "text")),
+    [rows[0]],
+  );
+  const none = {
+    ...MAPS,
+    forestLair: { ...MAPS.forestLair, recordCreature: undefined },
+  };
+  const unnamed = catalogLines({ ...open, recordOf: () => 24 }, none);
+  assert.deepEqual(unnamed.regions[0].rows[0].facts, lairRow.facts);
 });

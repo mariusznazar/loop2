@@ -76,6 +76,12 @@ export type MapsScreenProps = {
    * screen reads it at each draw, so a judging made in another tab shows at the next one (D-441).
    */
   readRecord(ids: JudgingIds): JudgingRecord | null;
+  /**
+   * The record of the most health the creature of a map lost in one fight of any judging, or null where the
+   * map's data name no creature for it or none stands (D-440, D-441). The screen reads it at each draw, for
+   * the row of the map in the catalog and for its card, as it reads the record of a judging.
+   */
+  readMapRecord(mapId: MapId): number | null;
 };
 
 /** What the screen asks of the page; the page turns each into a call of the simulation. */
@@ -193,11 +199,19 @@ function CardLine({ text, warning }: { text: string; warning: boolean }) {
   return <li className={warning ? "maps-card-warning" : undefined}>{text}</li>;
 }
 
-/** The card of a map: its heading and the parts the map has (D-327). */
-function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
+/** The card of a map: its heading and the parts the map has, the record of D-440 among them (D-327). */
+function MapCard({
+  mapId,
+  solved,
+  record,
+}: {
+  mapId: MapId;
+  solved: boolean;
+  record: number | null;
+}) {
   const map = MAPS[mapId];
   const heading = cardHeading(map, solved);
-  const attackers = attackerLines(map);
+  const attackers = attackerLines(map, record);
   const caps = capLines(map);
   return (
     <div className="maps-card">
@@ -281,6 +295,9 @@ function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
                   {attacker.head}
                 </p>
                 <p className="maps-card-attacker-odds">{attacker.odds}</p>
+                {attacker.record === undefined ? null : (
+                  <p className="maps-card-attacker-record">{attacker.record}</p>
+                )}
               </li>
             ))}
           </ul>
@@ -669,14 +686,22 @@ function MapsView({
   return (
     <div className="screen maps-screen">
       <section className="screen-area maps-list-area">
-        <MapCatalog solvedMaps={state.solvedMaps} selected={open} />
+        <MapCatalog
+          solvedMaps={state.solvedMaps}
+          selected={open}
+          recordOf={(forMap) => props.readMapRecord(forMap)}
+        />
       </section>
       <section className="screen-area maps-card-area">
         {open === null ? (
           <p className="maps-card-empty">Wybierz mapę z listy.</p>
         ) : (
           <>
-            <MapCard mapId={open} solved={state.solvedMaps.includes(open)} />
+            <MapCard
+              mapId={open}
+              solved={state.solvedMaps.includes(open)}
+              record={props.readMapRecord(open)}
+            />
             <section className="maps-who">
               <h3 className="maps-who-heading">Kto idzie</h3>
               {state.team.characters.length === 0 ? (

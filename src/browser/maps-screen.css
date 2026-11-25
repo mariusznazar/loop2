@@ -139,6 +139,11 @@
   white-space: nowrap;
 }
 
+/* The record of D-440 stands among the facts in the role `text`, as the mark „{n} z 12” beside the list „Program:” does. */
+.maps-catalog-record {
+  color: var(--text);
+}
+
 /* The icons of the attackers, in the colour of the text they stand beside and as tall as the line of the name. */
 .maps-catalog-icons {
   display: flex;

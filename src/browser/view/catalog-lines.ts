@@ -18,7 +18,7 @@ import {
 } from "../sim/map-card.js";
 import type { MapId } from "../sim/types.js";
 import { countedName } from "./counted-name.js";
-import { sendMaps } from "./map-lines.js";
+import { recordCreatureOf, recordLine, sendMaps } from "./map-lines.js";
 
 /** The three views of one list, in the order the screen shows them (D-325). */
 export type CatalogView = "dokad" | "coDaje" | "postep";
@@ -29,8 +29,11 @@ export const CATALOG_VIEWS: readonly { id: CatalogView; label: string }[] = [
   { id: "postep", label: "Postęp" },
 ];
 
-/** A fact of a row: its text, and whether it is a warning (the role `warning`). */
-export type CatalogFact = { text: string; warning: boolean };
+/**
+ * A fact of a row: its text, and whether it is a warning (the role `warning`). The other facts stand in
+ * the facts' own role; `role` is set to "text" where a fact stands in the role `text` (the record, D-440).
+ */
+export type CatalogFact = { text: string; warning: boolean; role?: "text" };
 
 /** A row of a map: its state, its name, its facts in the old game's order, and its attackers' icons. */
 export type CatalogMapRow = {
@@ -86,6 +89,11 @@ export type CatalogInput = {
   unfolded: readonly RegionName[];
   /** The picked map, or null before a pick; its region's solved maps are always unfolded. */
   selected: MapId | null;
+  /**
+   * The record of D-440 the browser remembers for a map, or null where none stands; asked only for a map
+   * whose data name a creature for the record, and each time the lines are made.
+   */
+  recordOf: (mapId: MapId) => number | null;
 };
 
 /** The lines of the catalog for one view; `none` is the sentence where nothing fits the search. */
@@ -136,6 +144,7 @@ type Context = {
   /** The search as trimmed, for the sentence where nothing fits. */
   typed: string;
   selected: MapId | null;
+  recordOf: (mapId: MapId) => number | null;
 };
 
 /** A map's holding of one resource: the map, and its entry for the resource in the data. */
@@ -154,11 +163,15 @@ function streakText(minutes: number): string {
 }
 
 /**
- * The facts of a row in the old game's order (D-325): the demand, what the map takes, the terrain.
- * The mark „⊘” stands on the first of what the map takes only; the step is named only where it
- * differs from the usual one (D-333).
+ * The facts of a row in the old game's order (D-325): the demand, what the map takes, the terrain,
+ * and last the record of D-440 in the role `text` where one stands. The mark „⊘” stands on the first
+ * of what the map takes only; the step is named only where it differs from the usual one (D-333).
  */
-function rowFacts(map: MapDef, usual: number): CatalogFact[] {
+function rowFacts(
+  map: MapDef,
+  usual: number,
+  record: number | null,
+): CatalogFact[] {
   const facts: CatalogFact[] = [];
   const { streak, defeatedAttacks } = map.solving;
   if (streak !== undefined)
@@ -177,18 +190,22 @@ function rowFacts(map: MapDef, usual: number): CatalogFact[] {
     facts.push({ text: `bez ognia ${minutes} min`, warning: false });
   if (map.stepMinutes !== usual)
     facts.push({ text: `krok ${map.stepMinutes} min`, warning: false });
+  const line = recordLine(map, record);
+  if (line !== null) facts.push({ text: line, warning: false, role: "text" });
   return facts;
 }
 
 function mapRow(context: Context, id: MapId): CatalogMapRow {
   const map = context.maps[id];
+  // The record is asked for only where the map's data name a creature for it.
+  const record = recordCreatureOf(map) === null ? null : context.recordOf(id);
   return {
     id,
     name: map.name,
     solved: context.solved.has(id),
     selected: context.selected === id,
     icons: (map.attackers ?? []).map((attacker) => CREATURES[attacker.id].icon),
-    facts: rowFacts(map, context.usual),
+    facts: rowFacts(map, context.usual, record),
   };
 }
 
@@ -381,6 +398,7 @@ export function catalogLines(
     query: typed.toLowerCase(),
     typed,
     selected: input.selected,
+    recordOf: input.recordOf,
   };
   const shown = open.filter((id) => matches(context, id));
   const byRegion = shownByRegion(context, regions, shown);

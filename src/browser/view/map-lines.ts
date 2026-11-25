@@ -1,4 +1,4 @@
-import { CREATURES } from "../sim/data/creatures.js";
+import { CREATURES, type CreatureDef } from "../sim/data/creatures.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES, type ResourceId } from "../sim/data/resources.js";
 import { canSendMap } from "../sim/game.js";
@@ -47,7 +47,13 @@ export type ResourceLine = {
  * An attacker of „Czyha”: its icon file from the data, its name, health and blow, and its chance,
  * quiet time and mean gap.
  */
-export type AttackerLines = { icon: string; head: string; odds: string };
+export type AttackerLines = {
+  icon: string;
+  head: string;
+  odds: string;
+  /** The record of D-440 as a line, set at the creature the map's data name for it where a record stands. */
+  record?: string;
+};
 
 /**
  * The heading of a card (D-327): the map's name, „rozwiązana” once the map is solved, and
@@ -125,17 +131,43 @@ function percentText(chancePerMinute: number): string {
   return decimal === 0 ? `${whole}` : `${whole},${decimal}`;
 }
 
+/** The creature whose record the map's data show (D-440), or null where the data name none. Pure. */
+export function recordCreatureOf(map: MapDef): CreatureDef | null {
+  return map.recordCreature === undefined
+    ? null
+    : CREATURES[map.recordCreature];
+}
+
+/**
+ * The record of D-440 as a line, „{creature}: {number} ze {health}”, with the name and the health from the
+ * data of the creature the map names for it; null where the map names none or no record stands, so there
+ * is no line before the first judging on the map. Pure.
+ */
+export function recordLine(map: MapDef, record: number | null): string | null {
+  const creature = recordCreatureOf(map);
+  if (creature === null || record === null) return null;
+  return `${creature.name}: ${record} ze ${creature.health}`;
+}
+
 /**
  * The lines of „Czyha” (D-327, D-142): for each attacker, its creature's icon, name, health and blow,
- * and its chance per minute, its quiet time and its mean gap in one number. Pure.
+ * and its chance per minute, its quiet time and its mean gap in one number; at the creature the map's data
+ * name for the record, the line of the record where one stands (D-440). Pure.
  */
-export function attackerLines(map: MapDef): AttackerLines[] {
+export function attackerLines(
+  map: MapDef,
+  record: number | null = null,
+): AttackerLines[] {
+  const line = recordLine(map, record);
   return (map.attackers ?? []).map((attacker) => {
     const creature = CREATURES[attacker.id];
     return {
       icon: creature.icon,
       head: `${creature.name} · ${creature.health} zdrowia · cios ${creature.strikeDamage}`,
       odds: `${percentText(attacker.chancePerMinute)} % szansy na minutę, ${attacker.cooldownMinutes} min spokoju od wejścia i po każdej walce — średnio co ≈ ${meanAttackGap(attacker)} min`,
+      ...(line !== null && attacker.id === map.recordCreature
+        ? { record: line }
+        : {}),
     };
   });
 }

@@ -96,6 +96,7 @@ const propsOf = (state, mapId = null, nowMs = NOW, cache = null) => ({
   nowMs,
   mapId,
   readRecord: (ids) => cache?.read(ids) ?? null,
+  readMapRecord: () => null,
 });
 
 const ACCOUNT = "acct-1";

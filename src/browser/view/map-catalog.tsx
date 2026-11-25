@@ -37,6 +37,8 @@ export type MapCatalogProps = {
   solvedMaps: readonly MapId[];
   /** The map the address names, or null where none is picked. */
   selected: MapId | null;
+  /** The record of D-440 for a map, or null; the catalog asks at each draw, so a new record shows at once. */
+  recordOf: (mapId: MapId) => number | null;
 };
 
 /** An icon of the icon directory drawn as a mask in the colour of the text beside it (D-43). */
@@ -63,19 +65,17 @@ function StateCircle({ solved }: { solved: boolean }) {
   );
 }
 
+/** The class of a fact by its role: `warning`, `text` where the fact says so (the record, D-440), else the facts' own. */
+function factClass(fact: CatalogFact): string {
+  if (fact.warning) return "maps-catalog-fact maps-card-warning";
+  return fact.role === "text"
+    ? "maps-catalog-fact maps-catalog-record"
+    : "maps-catalog-fact";
+}
+
 /** One fact of a row; it is an element of its own so that a narrow row breaks between facts, never inside one. */
 function Fact({ fact }: { fact: CatalogFact }) {
-  return (
-    <span
-      className={
-        fact.warning
-          ? "maps-catalog-fact maps-card-warning"
-          : "maps-catalog-fact"
-      }
-    >
-      {fact.text}
-    </span>
-  );
+  return <span className={factClass(fact)}>{fact.text}</span>;
 }
 
 /** Facts joined by „ · ”, each one in the role `warning` where it is a warning. */
@@ -228,11 +228,22 @@ function ResourceGroupItem({ group }: { group: ResourceGroup }) {
 }
 
 /** The catalog: search, the three views and the list of the picked view (D-325). */
-export function MapCatalog({ solvedMaps, selected }: MapCatalogProps) {
+export function MapCatalog({
+  solvedMaps,
+  selected,
+  recordOf,
+}: MapCatalogProps) {
   const [view, setView] = useState<CatalogView>("dokad");
   const [query, setQuery] = useState("");
   const [unfolded, setUnfolded] = useState<readonly RegionName[]>([]);
-  const lines = catalogLines({ solvedMaps, query, view, unfolded, selected });
+  const lines = catalogLines({
+    solvedMaps,
+    query,
+    view,
+    unfolded,
+    selected,
+    recordOf,
+  });
   const searching = query.trim() !== "";
   const toggle = (name: RegionName) =>
     setUnfolded((now) =>
