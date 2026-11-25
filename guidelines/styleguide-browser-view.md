@@ -416,7 +416,8 @@ później: grubością belki i linii zakładki (2026-11-02), wyglądem sceny
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
-  z elementem, z którego wartość wzięto;
+  a dla rozmiaru tytułu karty mapy (`--font-size-map-card-title`, D-327)
+  2026-11-26, z elementem, z którego wartość wzięto;
 - dla wartości zmienionej wobec loop — próg kontrastu z D-42, który ją
   wyznaczył;
 - dla wartości, których loop nie pokazała — kafelek odsłonięty, podświetlenie
