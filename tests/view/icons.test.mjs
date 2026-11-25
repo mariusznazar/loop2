@@ -238,17 +238,24 @@ const NAMED = [
 // The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
 // `sprite-credits`): what the pack is for, the title, author and licence the pack's page on OpenGameArt
 // gives, and the change the files of the game made to it, with its page and its licence linked. The
-// dust is the pack Smoke & Fire Animated Particle [16x16] and the wolf the pack LPC Wolf, whose files
-// are frames cut from its sheet.
+// dust is the pack Smoke & Fire Animated Particle [16x16], the wolf the pack LPC Wolf and the bear the
+// pack [LPC] bears, deer, lions and more, whose files are frames cut from its sheets.
 const PACK_LINES = [
   "Kurz i obłok walki: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)",
   "Wilk: „[LPC] Wolf Animation”, Stephen „Redshrike” Challener (grafika), William.Thompsonj (współtwórca), opengameart.org, CC BY 3.0, zmienione (wycięte klatki)",
+  "Niedźwiedź: „[LPC] bears, deer, lions and more”, tapatilorenzo, opengameart.org, CC BY 4.0, zmienione (wycięte klatki)",
 ];
 const PACK_PAGES = [
   "https://opengameart.org/content/smoke-fire-animated-particle-16x16",
   "https://opengameart.org/content/lpc-wolf-animation",
+  "https://opengameart.org/content/lpc-bears-deer-lions-and-more",
 ];
-const PACK_LICENCE = "http://creativecommons.org/licenses/by/3.0/";
+// The licence of each pack's line, as its link's text and its address.
+const PACK_LICENCES = [
+  { name: "CC BY 3.0", url: "http://creativecommons.org/licenses/by/3.0/" },
+  { name: "CC BY 3.0", url: "http://creativecommons.org/licenses/by/3.0/" },
+  { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+];
 
 test("the section credits the campfire's icon, by Lorc, after the five items' icons", () => {
   const items = itemsOf(sectionMarkup());
@@ -438,8 +445,8 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
 });
 
 // invariant: sprite-credits
-test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
-  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+test("the section's last three lines credit the packs of the dust, of the wolf and of the bear: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked, the bear's pack under CC BY 4.0", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, the bear's pictures come from the pack „[LPC] bears, deer, lions and more”, which the game takes under its licence CC BY 4.0 and credits"
   const items = itemsOf(sectionMarkup()).slice(NAMED.length);
   assert.equal(items.length, PACK_LINES.length);
   items.forEach((item, i) => {
@@ -454,8 +461,8 @@ test("the section's last two lines credit the packs of the dust and of the wolf:
           "opengameart.org",
         ],
         [
-          `href="${PACK_LICENCE}" target="_blank" rel="noopener noreferrer"`,
-          "CC BY 3.0",
+          `href="${PACK_LICENCES[i].url}" target="_blank" rel="noopener noreferrer"`,
+          PACK_LICENCES[i].name,
         ],
       ],
     );
@@ -469,14 +476,16 @@ const SPRITES = fileURLToPath(
 );
 
 /**
- * The three packs the scene's pictures come from (D-271) and whether the licence of each asks for a
+ * The four packs the scene's pictures come from (D-271) and whether the licence of each asks for a
  * credit: Pixel Crawler asks for none but of a project with a saxophone solo, which the game has not
- * (environment fact pixel-crawler-terms), the other two are under CC BY 3.0 (lpc-wolf-licence,
- * smoke-fire-particle-licence).
+ * (environment fact pixel-crawler-terms), the wolf's and the dust's are under CC BY 3.0
+ * (lpc-wolf-licence, smoke-fire-particle-licence) and the bear's under CC BY 4.0
+ * (lpc-bears-deer-lions-licence).
  */
 const SPRITE_PACKS = {
   "Pixel Crawler": { asksForCredit: false },
   "[LPC] Wolf Animation": { asksForCredit: true },
+  "[LPC] bears, deer, lions and more": { asksForCredit: true },
   "Smoke & Fire Animated Particle [16x16]": { asksForCredit: true },
 };
 
@@ -485,6 +494,10 @@ const SPRITE_PACKS = {
  * it was made from, which is how the credits come to be asked about it.
  */
 const PACK_OF_SPRITE = {
+  "bear-bite.png": "[LPC] bears, deer, lions and more",
+  "bear-death.png": "[LPC] bears, deer, lions and more",
+  "bear-idle.png": "[LPC] bears, deer, lions and more",
+  "bear-run.png": "[LPC] bears, deer, lions and more",
   "berry-bush.png": "Pixel Crawler",
   "camp-clearing.png": "Pixel Crawler",
   "chest.png": "Pixel Crawler",
@@ -527,7 +540,7 @@ function packOfSpriteInReadme() {
   );
   const packs = {};
   for (const sentence of point[0].split(
-    /(?=The second pack is |The third is )/,
+    /(?=The second pack is |The third is |The fourth is )/,
   )) {
     const named = Object.keys(SPRITE_PACKS).filter((pack) =>
       sentence.includes(pack),
@@ -542,8 +555,8 @@ function packOfSpriteInReadme() {
 }
 
 // invariant: sprite-credits
-test("each PNG file directly in assets/sprites is assigned to one of the three packs, a file with no assignment fails naming it, and README.md names for each file the pack assigned to it", () => {
-  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+test("each PNG file directly in assets/sprites is assigned to one of the four packs, a file with no assignment fails naming it, and README.md names for each file the pack assigned to it", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, the bear's pictures come from the pack „[LPC] bears, deer, lions and more”, which the game takes under its licence CC BY 4.0 and credits"
   assert.ok(spriteFiles.length > 0, "no sprite files found");
   assert.deepEqual(
     spriteFiles.filter((name) => !Object.hasOwn(PACK_OF_SPRITE, name)),
@@ -562,11 +575,12 @@ test("each PNG file directly in assets/sprites is assigned to one of the three p
 // invariant: sprite-credits
 test("each pack with a file in assets/sprites whose licence asks for a credit has a line among the credits of the section, and a pack without one fails by name", () => {
   // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
-  // Precondition: both credited packs have files, so the check below has something to ask about.
+  // Precondition: the three credited packs have files, so the check below has something to ask about.
   const packsInUse = new Set(
     spriteFiles.map((name) => PACK_OF_SPRITE[name]).filter(Boolean),
   );
   assert.ok(packsInUse.has("[LPC] Wolf Animation"));
+  assert.ok(packsInUse.has("[LPC] bears, deer, lions and more"));
   assert.ok(packsInUse.has("Smoke & Fire Animated Particle [16x16]"));
   // React writes the ampersand of a title as an entity, as markup does.
   const lines = itemsOf(sectionMarkup()).map((item) =>

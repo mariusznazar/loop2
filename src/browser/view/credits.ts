@@ -46,8 +46,9 @@ export type PackCredit = {
 
 /**
  * The packs of the scene's pictures that ask for a credit: the cloud of dust of a miss and of a scuffle
- * is from the first, the wolf from the second. The wolf's files are frames cut from the pack's sheet,
- * its pixels moved unchanged, none mirrored.
+ * is from the first, the wolf from the second, the bear from the third. The wolf's and the bear's files
+ * are frames cut from the pack's sheets, their pixels moved unchanged, none mirrored; the bear's
+ * standing figure is one frame of its walk.
  */
 export const PACK_CREDITS: readonly PackCredit[] = [
   {
@@ -70,6 +71,16 @@ export const PACK_CREDITS: readonly PackCredit[] = [
     sourceUrl: "https://opengameart.org/content/lpc-wolf-animation",
     licenceName: "CC BY 3.0",
     licenceUrl: "http://creativecommons.org/licenses/by/3.0/",
+    changes: "zmienione (wycięte klatki)",
+  },
+  {
+    name: "Niedźwiedź",
+    title: "[LPC] bears, deer, lions and more",
+    author: "tapatilorenzo",
+    sourceSite: "opengameart.org",
+    sourceUrl: "https://opengameart.org/content/lpc-bears-deer-lions-and-more",
+    licenceName: "CC BY 4.0",
+    licenceUrl: "https://creativecommons.org/licenses/by/4.0/",
     changes: "zmienione (wycięte klatki)",
   },
 ];
