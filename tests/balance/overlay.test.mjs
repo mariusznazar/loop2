@@ -43,7 +43,6 @@ const TABLES = {
 };
 
 const OVERLAY_FILES = {
-  forestPack: "../../balance/overlays/forest-pack.json",
   wasteland: "../../balance/overlays/wasteland.json",
   deadZone: "../../balance/overlays/dead-zone.json",
 };
@@ -85,16 +84,12 @@ test("a changed number of a map reaches the map runs of the engine, and the rest
 
 test("a map the overlay adds can be swept, after the map it opens after", () => {
   const restore = applyOverlay(
-    readOverlay(overlayFile(OVERLAY_FILES.forestPack)),
+    readOverlay(overlayFile(OVERLAY_FILES.wasteland)),
   );
   try {
-    assert.deepEqual(prerequisitesOf("forestPack"), [
-      "forestEdge",
-      "forest",
-      "forestDeep",
-    ]);
+    assert.deepEqual(prerequisitesOf("wasteland"), ["forestEdge", "forest"]);
     const { summary } = sweep({
-      mapId: "forestPack",
+      mapId: "wasteland",
       program: forestBest,
       seeds: seedRange(1, 5),
     });
@@ -107,7 +102,7 @@ test("a map the overlay adds can be swept, after the map it opens after", () => 
   } finally {
     restore();
   }
-  assert.equal(Object.hasOwn(MAPS, "forestPack"), false);
+  assert.equal(Object.hasOwn(MAPS, "wasteland"), false);
 });
 
 test("the restore leaves every table deep-equal to what it was, and removes a map the overlay added", () => {
@@ -115,19 +110,19 @@ test("the restore leaves every table deep-equal to what it was, and removes a ma
   const restore = applyOverlay({
     MAPS: {
       forest: { ambientTemperature: 3, resources: [] },
-      forestPack: structuredClone(MAPS.forestDeep),
+      madeUpMap: structuredClone(MAPS.forestDeep),
     },
     BALANCE: { gatherChance: 0.5 },
   });
   assert.equal(MAPS.forest.ambientTemperature, 3);
-  assert.equal(Object.hasOwn(MAPS, "forestPack"), true);
+  assert.equal(Object.hasOwn(MAPS, "madeUpMap"), true);
 
   restore();
 
   for (const [name, table] of Object.entries(TABLES)) {
     assert.deepEqual(table, before[name], `table ${name} after the restore`);
   }
-  assert.equal(Object.hasOwn(MAPS, "forestPack"), false);
+  assert.equal(Object.hasOwn(MAPS, "madeUpMap"), false);
 });
 
 test("an overlay naming a table the instrument does not change is refused, and nothing of it is laid", () => {
