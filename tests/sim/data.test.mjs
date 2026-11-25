@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { MAPS, REGIONS } from "../../dist/browser/sim/data/maps.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
@@ -42,6 +42,7 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
+    region: "Las",
     width: 4,
     height: 4,
     entrance: { col: 1, row: 1 },
@@ -69,6 +70,7 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
   // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
+    region: "Las",
     width: 5,
     height: 5,
     entrance: null,
@@ -82,6 +84,84 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
     completionText: "Las — głębiej rozwiązany",
     opensAfter: "forest",
   });
+});
+
+test("each map's data name its region, and the region stands in the list of regions", () => {
+  // decision: D-24 "The region a map belongs to stands in the map's data"
+  const regionOf = Object.fromEntries(
+    Object.entries(MAPS).map(([id, map]) => [id, map.region]),
+  );
+  assert.deepEqual(regionOf, {
+    forestEdge: "Las",
+    forest: "Las",
+    forestDeep: "Las",
+    forestPack: "Las",
+    forestLair: "Las",
+  });
+  for (const region of Object.values(regionOf)) {
+    assert.ok(REGIONS.includes(region), region);
+  }
+});
+
+test("the maps stand in the order of the chain, each one opened by the one before it", () => {
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  const ids = Object.keys(MAPS);
+  assert.deepEqual(ids, [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+    "forestPack",
+    "forestLair",
+  ]);
+  assert.equal(MAPS.forestEdge.opensAfter, undefined);
+  for (let at = 1; at < ids.length; at += 1) {
+    assert.equal(MAPS[ids[at]].opensAfter, ids[at - 1], ids[at]);
+  }
+});
+
+test("Las — wataha is a map of wolf attacks that Las — głębiej opens and a streak with beaten attacks solves", () => {
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —, cost of a move, attacking creatures with how often they attack, and resources stand in the map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together"
+  const pack = MAPS.forestPack;
+  assert.equal(pack.name, "Las — wataha");
+  assert.equal(pack.opensAfter, "forestDeep");
+  assert.deepEqual(
+    pack.attackers.map((attacker) => attacker.id),
+    ["wolf"],
+  );
+  assert.ok(pack.solving.streak > 0, "a streak");
+  assert.ok(pack.solving.defeatedAttacks > 0, "attacks to beat");
+  assert.equal(pack.completionText, "Las — wataha rozwiązany");
+});
+
+test("Las — matecznik is a map of the bear with an entry cap of 0, that Las — wataha opens, and its data name the bear for the record of damage", () => {
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —, cost of a move, attacking creatures with how often they attack, and resources stand in the map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together"
+  // decision: D-438 "Las — matecznik is excepted from that rule until the change that sets its numbers, its entry cap included"
+  const lair = MAPS.forestLair;
+  assert.equal(lair.name, "Las — matecznik");
+  assert.equal(lair.opensAfter, "forestPack");
+  assert.equal(lair.carryIn, 0);
+  assert.deepEqual(
+    lair.attackers.map((attacker) => attacker.id),
+    ["bear"],
+  );
+  assert.ok(lair.solving.streak > 0, "a streak");
+  assert.ok(lair.solving.defeatedAttacks > 0, "attacks to beat");
+  assert.equal(lair.completionText, "Las — matecznik rozwiązany");
+  assert.equal(lair.recordCreature, "bear");
+});
+
+test("a map that names a creature for the record of damage has that creature among its attackers", () => {
+  const named = Object.entries(MAPS).filter(([, map]) => map.recordCreature);
+  assert.ok(named.length > 0, "precondition: a map names one");
+  for (const [id, map] of named) {
+    assert.ok(
+      map.attackers.some((attacker) => attacker.id === map.recordCreature),
+      id,
+    );
+    assert.ok(map.recordCreature in CREATURES, id);
+  }
 });
 
 test("every resource of the map is defined in the resource data, with name and icon", () => {

@@ -1,6 +1,14 @@
 import type { ResourceId } from "./resources.js";
 import type { CreatureId } from "./creatures.js";
 
+/**
+ * The regions of the maps, in the order the catalog shows them. A map names its region in its data,
+ * so a typo is a type error and a region the list lacks cannot be named.
+ */
+export const REGIONS = ["Las"] as const;
+
+export type RegionName = (typeof REGIONS)[number];
+
 export type MapResourceDef = {
   id: ResourceId;
   /** Chance that a tile holds the resource. */
@@ -32,6 +40,8 @@ export type MapAttackerDef = {
 
 export type MapDef = {
   name: string;
+  /** The region whose group the map stands in, in the catalog of maps. */
+  region: RegionName;
   /** Optional whole-piece budgets at entry and completion, including zero. */
   carryIn?: number;
   carryOut?: number;
@@ -55,11 +65,14 @@ export type MapDef = {
   completionText: string;
   /** The map that must be solved before this one can be sent to. */
   opensAfter?: string;
+  /** The creature whose health the record of the damage shows for the map; left out, the map shows no such record. */
+  recordCreature?: CreatureId;
 };
 
 export const MAPS = {
   forestEdge: {
     name: "Skraj lasu",
+    region: "Las",
     width: 4,
     height: 4,
     entrance: { col: 1, row: 1 },
@@ -76,6 +89,7 @@ export const MAPS = {
   },
   forest: {
     name: "Las",
+    region: "Las",
     width: 4,
     height: 4,
     entrance: { col: 1, row: 1 },
@@ -95,6 +109,7 @@ export const MAPS = {
   },
   forestDeep: {
     name: "Las — głębiej",
+    region: "Las",
     width: 5,
     height: 5,
     entrance: null,
@@ -112,6 +127,50 @@ export const MAPS = {
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",
     completionText: "Las — głębiej rozwiązany",
     opensAfter: "forest",
+  },
+  forestPack: {
+    name: "Las — wataha",
+    region: "Las",
+    width: 5,
+    height: 5,
+    entrance: null,
+    ambientTemperature: 7,
+    stepMinutes: 5,
+    resources: [
+      { id: "stick", density: 0.7, stock: 12, renewMinutes: 30 },
+      { id: "berry", density: 0.5, stock: 8, renewMinutes: 40 },
+      { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
+      { id: "fiber", density: 0.4, stock: 6, renewMinutes: 60 },
+    ],
+    attackers: [{ id: "wolf", chancePerMinute: 0.015, cooldownMinutes: 90 }],
+    solving: { streak: 540, defeatedAttacks: 6 },
+    solvingText:
+      "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz sześć pokonanych napaści wilka",
+    completionText: "Las — wataha rozwiązany",
+    opensAfter: "forestDeep",
+  },
+  forestLair: {
+    name: "Las — matecznik",
+    region: "Las",
+    carryIn: 0,
+    width: 6,
+    height: 6,
+    entrance: null,
+    ambientTemperature: 7,
+    stepMinutes: 5,
+    resources: [
+      { id: "stick", density: 0.5, stock: 12, renewMinutes: 30 },
+      { id: "berry", density: 0.4, stock: 8, renewMinutes: 40 },
+      { id: "moss", density: 0.3, stock: 6, renewMinutes: 60 },
+      { id: "fiber", density: 0.3, stock: 6, renewMinutes: 60 },
+    ],
+    attackers: [{ id: "bear", chancePerMinute: 0.01, cooldownMinutes: 180 }],
+    solving: { streak: 600, defeatedAttacks: 1 },
+    solvingText:
+      "600 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz jedna pokonana napaść niedźwiedzia",
+    completionText: "Las — matecznik rozwiązany",
+    opensAfter: "forestPack",
+    recordCreature: "bear",
   },
 } as const satisfies Record<string, MapDef>;
 

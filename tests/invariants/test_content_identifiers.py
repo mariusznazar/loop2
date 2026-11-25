@@ -52,6 +52,8 @@ ENTRIES = (
     {"kind": "map", "id": "forestEdge", "name": "Skraj lasu"},
     {"kind": "map", "id": "forest", "name": "Las"},
     {"kind": "map", "id": "forestDeep", "name": "Las — głębiej"},
+    {"kind": "map", "id": "forestPack", "name": "Las — wataha"},
+    {"kind": "map", "id": "forestLair", "name": "Las — matecznik"},
     {"kind": "resource", "id": "stick", "name": "patyk"},
     {"kind": "resource", "id": "berry", "name": "jagoda"},
     {"kind": "resource", "id": "moss", "name": "mech"},
