@@ -843,6 +843,12 @@ The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj
 
 - **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-14
 
+## lpc-bears-deer-lions-licence
+
+The page of the pack [LPC] bears, deer, lions and more on OpenGameArt gives tapatilorenzo as its author, offers the pack under the licence CC-BY 4.0, the name of the licence linking to the Creative Commons Attribution 4.0 licence at https://creativecommons.org/licenses/by/4.0/, lists among its sprites bears of 64 × 64 pixels, grizzly, black and polar, and says in its notice that the pack is adapted from work by Sevarihk — the shiba dog, shark, giant rat, walking mushroom and underwater tile sprites — under CC-BY 4.0, while saying that any work not derived from his may be used explicitly under CC0, no attribution required.
+
+- **Source:** https://opengameart.org/content/lpc-bears-deer-lions-and-more (archived: https://web.archive.org/web/20260412212533/https://opengameart.org/content/lpc-bears-deer-lions-and-more, 2026-04-12) § Author — "tapatilorenzo" · § License(s) — "CC-BY 4.0", a link to https://creativecommons.org/licenses/by/4.0/ · § Sprite Info — "Bear sprites (64x64). Grizzly, black bear, polar bear. Each has the same animations." · § License — "Note that any work which isn't derivative of Sevarihk's work may be used explicitly under CC0, no attribution required. I also don't require attribution for my adaptations of Sevarihk's work (though attribution to him is still required when using derivative work)." · § Copyright/Attribution Notice — "Adapted from work by Sevarihk under CC-BY 4.0 license, including the shiba dog, shark, giant rat, walking mushroom, and underwater tile sprites."; read 2026-11-25
+
 ## docker-desktop-start-detach
 
 `docker desktop start` starts Docker Desktop, and with the option `--detach` it does not synchronously wait for the requested operation to complete.

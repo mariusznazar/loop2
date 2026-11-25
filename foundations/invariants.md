@@ -1310,7 +1310,7 @@ A file git tracks points to a place the author keeps outside the repository only
 The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source, the pack of each file being the one the list of the sprite files in `README.md` names.
 
 - **Method:** test
-- **Rests on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
+- **Rests on:** pixel-crawler-terms · lpc-wolf-licence · lpc-bears-deer-lions-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
 - **Derives from:** D-271
 - **Part:** browser-view
 - **Violated:** no
