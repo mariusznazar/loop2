@@ -201,6 +201,12 @@ The page of Lorc's icon `wolf-head` on game-icons.net names the icon "Wolf head 
 
 - **Source:** https://game-icons.net/1x1/lorc/wolf-head.html (archived: https://web.archive.org/web/20261011095410/https://game-icons.net/1x1/lorc/wolf-head.html, 2026-10-11) § heading — "Wolf head icon"; read 2026-11-16
 
+## game-icons-bear-head-title
+
+The page of Delapouite's icon `bear-head` on game-icons.net names the icon "Bear head icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/bear-head.html (archived: https://web.archive.org/web/20260217055608/https://game-icons.net/1x1/delapouite/bear-head.html, 2026-02-17) § heading — "Bear head icon"; read 2026-11-25
+
 ## game-icons-bandage-roll-title
 
 The page of Lorc's icon `bandage-roll` on game-icons.net names the icon "Bandage roll icon".

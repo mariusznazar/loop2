@@ -335,7 +335,7 @@ that names the icon's title as its page on game-icons.net gives it, the icon's a
 and the licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** test
-- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title · game-icons-wolf-head-title · game-icons-bandage-roll-title · game-icons-first-aid-kit-title · game-icons-cultist-title
+- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title · game-icons-wolf-head-title · game-icons-bear-head-title · game-icons-bandage-roll-title · game-icons-first-aid-kit-title · game-icons-cultist-title
 - **Derives from:** D-27
 - **Part:** browser-view · simulation
 - **Violated:** no
