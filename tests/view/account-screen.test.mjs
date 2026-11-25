@@ -4226,7 +4226,7 @@ test("the item Wiedza of the bar opens the screen Wiedza, which the bar marks an
 test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none, and the name of a character is a link to its screen Postać", async () => {
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   // decision: D-281 "An address names a screen in the fragment after `#`"
-  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
   // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map"
@@ -4238,13 +4238,14 @@ test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none
     assert.equal(byClass(root, "maps-card-name")[0].textContent, "Las");
     assert.deepEqual(
       byClass(root, "maps-list-item").map((item) => [
-        item.textContent,
+        item.querySelector(".maps-catalog-name").textContent,
         item.getAttribute("aria-current"),
       ]),
       [
-        ["Skraj lasurozwiązana", null],
         ["Las", "page"],
+        ["Skraj lasu", null],
       ],
+      "the open map first, then the solved one, unfolded with the region of the picked map",
     );
     const names = byClass(root, "maps-who-name");
     assert.deepEqual(
@@ -4485,7 +4486,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
 // `follow` on the address the link itself holds.
 test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu and „Wejdź” to the screen of the map run in three clicks", async () => {
   // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”"
-  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-325 "The screen Mapy holds on the left the catalog of the game's maps"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
@@ -4517,7 +4518,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
     // Second click: the row of Skraj lasu, the one map the list holds.
     const rows = byClass(root, "maps-list-item");
     assert.deepEqual(
-      rows.map((item) => item.textContent),
+      rows.map((item) => item.querySelector(".maps-catalog-name").textContent),
       ["Skraj lasu"],
     );
     await follow(address, rows[0].getAttribute("href"));

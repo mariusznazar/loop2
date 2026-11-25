@@ -425,7 +425,7 @@ test("the trip rows give what the character entered with, the revealed terrain a
 
 // Catches a button after a death, a button for a map that the completed map does not open, or a missing
 // button after the completion of Las (D-132, D-53, D-149).
-test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens", () => {
+test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of a map that opens none", () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
   // decision: D-368 "The window scrolls in itself while its buttons"
@@ -434,7 +434,12 @@ test("the way-on buttons after a completion of Las name the map it opens, and no
   ]);
   assert.deepEqual(
     wayOnButtons(runOf({ mapId: "forestDeep", completion: { minute: 540 } })),
+    [{ mapId: "forestPack", text: "Otwarte: Las — wataha →" }],
+  );
+  assert.deepEqual(
+    wayOnButtons(runOf({ mapId: "forestLair", completion: { minute: 600 } })),
     [],
+    "the last map of the data opens none",
   );
   assert.deepEqual(
     wayOnButtons(runOf({ death: { minute: 312, cause: "cold" } })),

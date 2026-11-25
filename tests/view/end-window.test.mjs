@@ -567,7 +567,7 @@ test("the last minutes come from the entries the screen gives and stand only wit
 // Catches buttons in the scrolling part, a button of the wrong kind or in the wrong order, a
 // missing „Otwarte: …” after a completion of Las and one after a death or a completion of the map
 // it opens (D-368, D-44, D-132, D-188).
-test("the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map", async () => {
+test("the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion of a map that opens another", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-368 "The window scrolls in itself while its buttons"
@@ -607,7 +607,18 @@ test("the buttons stand after the scrolling part, outside it: „Restart” and 
     assert.equal(kinds("Otwarte: Las — głębiej →"), "button");
     const deep = withRun(SOLVED, { mapId: "forestDeep" });
     await show(deep);
-    assert.deepEqual(labels(buttonsOf(container)), ["Restart", "Zakończ"]);
+    assert.deepEqual(labels(buttonsOf(container)), [
+      "Restart",
+      "Zakończ",
+      "Otwarte: Las — wataha →",
+    ]);
+    const last = withRun(SOLVED, { mapId: "forestLair" });
+    await show(last);
+    assert.deepEqual(
+      labels(buttonsOf(container)),
+      ["Restart", "Zakończ"],
+      "the last map of the data opens none",
+    );
   });
 });
 

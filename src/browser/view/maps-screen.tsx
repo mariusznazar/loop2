@@ -1,6 +1,6 @@
 /**
  * The screen Mapy (D-325, D-331, D-282; `#/mapy` and `#/mapy/{map}`): two areas of their own, on the
- * left the list of the maps open to the player and on the right the card of the map the address
+ * left the catalog of the maps (`map-catalog.tsx`) and on the right the card of the map the address
  * names with, under it, the section „Kto idzie”. Before a map is named the right area says to pick
  * one. The card is drawn from the map's data (D-327, D-328); under it each character of the team
  * stands with its lines, the two buttons that send it and the button of a judging of its program, whose
@@ -53,6 +53,7 @@ import {
   solvingSentence,
   terrainLines,
 } from "./map-lines.js";
+import { MapCatalog } from "./map-catalog.js";
 import { screenAddress } from "./screen-address.js";
 import {
   loopLine,
@@ -186,28 +187,6 @@ type FocusPlumbing = {
   /** Records the move to owe before the page is called, so the commit of its answer makes it. */
   owe: (owed: OwedFocus) => void;
 };
-
-/** The list of the maps open to the player, the map named marked. */
-function MapList({ state, mapId }: { state: GameState; mapId: MapId | null }) {
-  return (
-    <ul className="maps-list-items" aria-label="Mapy">
-      {sendMaps(state.solvedMaps).map((id) => (
-        <li key={id}>
-          <a
-            className="maps-list-item"
-            href={screenAddress({ kind: "map", mapId: id })}
-            aria-current={id === mapId ? "page" : undefined}
-          >
-            {MAPS[id].name}
-            {state.solvedMaps.includes(id) ? (
-              <span className="maps-list-solved">rozwiązana</span>
-            ) : null}
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 /** One line of a part of the card, `warning` where the lines say so. */
 function CardLine({ text, warning }: { text: string; warning: boolean }) {
@@ -551,7 +530,7 @@ function resultKept(
   return without(now, characterId);
 }
 
-/** The screen: the list of open maps and the right area with the card and „Kto idzie”, or the sentence to pick. */
+/** The screen: the catalog of maps and the right area with the card and „Kto idzie”, or the sentence to pick. */
 function MapsView({
   controls,
   props,
@@ -690,7 +669,7 @@ function MapsView({
   return (
     <div className="screen maps-screen">
       <section className="screen-area maps-list-area">
-        <MapList state={state} mapId={open} />
+        <MapCatalog solvedMaps={state.solvedMaps} selected={open} />
       </section>
       <section className="screen-area maps-card-area">
         {open === null ? (
