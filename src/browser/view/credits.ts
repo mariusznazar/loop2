@@ -177,6 +177,11 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/lorc/wolf-head.html",
     changes: CHANGES,
   },
+  "bear-head": {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/bear-head.html",
+    changes: CHANGES,
+  },
   "bandage-roll": {
     author: "Lorc",
     sourceUrl: "https://game-icons.net/1x1/lorc/bandage-roll.html",

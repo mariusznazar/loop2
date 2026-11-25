@@ -92,8 +92,9 @@ export const SCENE_MAGES = {
 
 /**
  * The sheets of a creature that attacks, by its id: standing, running, biting and dying, each in its
- * frame size, which is common to all of them and has the creature's feet on its bottom row. The pictures
- * are the pack LPC Wolf's own side views of the wolf in the frames of the scene, facing left (D-271):
+ * frame size, which is common to all four of them. The scene places a creature by its frame's bottom
+ * edge; the wolf's feet stand on that edge, the bear's stand a few rows above it in its own sheets. The
+ * pictures are the pack LPC Wolf's own side views of the wolf in the frames of the scene, facing left (D-271):
  * the idle sheet is the standing frame of its walk, the run sheet serves the creature that runs in and
  * runs off, the bite sheet loops while the creature fights and starts on the frame the idle sheet is,
  * and the death sheet is the four frames in which it falls and lies, the last frame the creature lying
@@ -114,6 +115,12 @@ export const SCENE_CREATURES = {
     run: { file: "wolf-run.png", width: 64, height: 32, frames: 5 },
     bite: { file: "wolf-bite.png", width: 64, height: 32, frames: 5 },
     death: { file: "wolf-death.png", width: 64, height: 32, frames: 4 },
+  },
+  bear: {
+    idle: { file: "bear-idle.png", width: 64, height: 64, frames: 1 },
+    run: { file: "bear-run.png", width: 64, height: 64, frames: 5 },
+    bite: { file: "bear-bite.png", width: 64, height: 64, frames: 3 },
+    death: { file: "bear-death.png", width: 64, height: 64, frames: 4 },
   },
 } as const satisfies Record<CreatureId, SceneCreatureSheets>;
 

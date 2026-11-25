@@ -174,6 +174,7 @@ const TITLES = {
   dodge: "Dodge icon",
   "wood-pile": "Wood Pile icon",
   "wolf-head": "Wolf head icon",
+  "bear-head": "Bear head icon",
   "bandage-roll": "Bandage roll icon",
   "first-aid-kit": "First aid kit icon",
   cultist: "Cultist icon",
@@ -216,8 +217,11 @@ const ACTION_ICONS = [
   { name: "Odskocz", icon: "dodge" },
 ];
 
-/** The icon of the creatures, one line after the actions' (creatures.ts). */
-const CREATURE_ICONS = [{ name: "wilk", icon: "wolf-head" }];
+/** The icons of the creatures, one line each after the actions' and in the order of the data: the wolf's, then the bear's (creatures.ts). */
+const CREATURE_ICONS = [
+  { name: "wilk", icon: "wolf-head" },
+  { name: "niedźwiedź", icon: "bear-head" },
+];
 
 /** The icon of the archetypes, one line after the creatures' (archetypes.ts). */
 const ARCHETYPE_ICONS = [{ name: "Mag żywiołów", icon: "cultist" }];
@@ -331,7 +335,7 @@ test("the section credits the actions' icons after the two campfires', one line 
   );
 });
 
-test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the archetype's", () => {
+test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the bear's", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   const items = itemsOf(sectionMarkup());
   const at = ACTIONS_AT + ACTION_ICONS.length;
@@ -342,6 +346,21 @@ test("the section credits the wolf's icon, by Lorc, after the actions' icons and
   assert.match(
     linksOf(items[at])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/wolf-head\.html"/,
+  );
+  assert.match(textOfMarkup(items[at + 1]), /^niedźwiedź: /);
+});
+
+test("the section credits the bear's icon, by Delapouite, after the wolf's and before the archetype's", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at = ACTIONS_AT + ACTION_ICONS.length + 1;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "niedźwiedź: „Bear head icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/delapouite\/bear-head\.html"/,
   );
   assert.match(textOfMarkup(items[at + 1]), /^Mag żywiołów: /);
 });
@@ -376,6 +395,14 @@ test("the wolf's data names the icon file wolf-head.svg and its title on game-ic
   assert.equal(CREATURES.wolf.icon, "wolf-head");
   assert.equal(CREATURES.wolf.iconTitle, "Wolf head icon");
   assert.ok(existsSync(`${ICONS}wolf-head.svg`));
+});
+
+test("the bear's data names the icon file bear-head.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
+  assert.equal(CREATURES.bear.icon, "bear-head");
+  assert.equal(CREATURES.bear.iconTitle, "Bear head icon");
+  assert.ok(existsSync(`${ICONS}bear-head.svg`));
 });
 
 test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {

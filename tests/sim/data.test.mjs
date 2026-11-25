@@ -185,6 +185,7 @@ test("the wolf has its icon, 24 health, bites for 7 and keeps its ordered combat
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
+    nameWith: "wilkiem",
     icon: "wolf-head",
     iconTitle: "Wolf head icon",
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -197,6 +198,22 @@ test("the wolf has its icon, 24 health, bites for 7 and keeps its ordered combat
       },
       { condition: { kind: "always" }, action: { kind: "strike" } },
     ],
+  });
+});
+
+test("the bear has its icon, 120 health, strikes for 20 and keeps one rule, a strike", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
+  assert.deepEqual(CREATURES.bear, {
+    name: "niedźwiedź",
+    nameWith: "niedźwiedziem",
+    icon: "bear-head",
+    iconTitle: "Bear head icon",
+    revealedBy: { kind: "attacked", creature: "bear" },
+    health: 120,
+    strikeDamage: 20,
+    rules: [{ condition: { kind: "always" }, action: { kind: "strike" } }],
   });
 });
 

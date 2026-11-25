@@ -9,6 +9,8 @@ export type CreatureRule = {
 
 export type CreatureDef = {
   name: string;
+  /** The name after the preposition „z” („with”), in the form a sentence of the game gives it: „wilkiem”. */
+  nameWith: string;
   /** File name in assets/icons, without the extension. */
   icon: string;
   /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
@@ -24,6 +26,7 @@ export type CreatureDef = {
 export const CREATURES = {
   wolf: {
     name: "wilk",
+    nameWith: "wilkiem",
     icon: "wolf-head",
     iconTitle: "Wolf head icon",
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -36,6 +39,17 @@ export const CREATURES = {
       },
       { condition: { kind: "always" }, action: { kind: "strike" } },
     ],
+  },
+  bear: {
+    name: "niedźwiedź",
+    nameWith: "niedźwiedziem",
+    icon: "bear-head",
+    iconTitle: "Bear head icon",
+    revealedBy: { kind: "attacked", creature: "bear" },
+    health: 120,
+    strikeDamage: 20,
+    // The bear has one rule, a strike: its only lever against the character is its numbers.
+    rules: [{ condition: { kind: "always" }, action: { kind: "strike" } }],
   },
 } as const satisfies Record<string, CreatureDef>;
 
