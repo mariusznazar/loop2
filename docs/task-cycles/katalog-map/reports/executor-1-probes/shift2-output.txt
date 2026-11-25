@@ -1,5 +1,0 @@
-walk frame 0 best diff 546 at dy 3
-walk frame 1 best diff 423 at dy 3
-walk frame 2 best diff 504 at dy 3
-walk frame 3 best diff 518 at dy 2
-walk frame 4 best diff 115 at dy 2
