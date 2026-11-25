@@ -31,12 +31,36 @@ export type JudgingCacheOpening = {
   storage: JudgingStorage | null;
 };
 
-/** The judgings of one game of one account that the browser remembers (D-441). */
+/**
+ * The judgings of one game of one account that the browser remembers, and beside them the record of the
+ * most health the creature of a map lost in one fight of any judging (D-441, D-440).
+ */
 export type JudgingCache = {
   /** The record stored for the triple, or null where none is stored or the stored value is not one the cache wrote. */
   read(ids: JudgingIds): JudgingRecord | null;
   /** Stores the record for the triple; where the storage refuses it, the open page still reads it. */
   remember(ids: JudgingIds, record: JudgingRecord): void;
+  /**
+   * The record of the map, or null where none is stored, the stored value is not one the cache wrote, or
+   * the record was made at other numbers of the creature than those given: it shows nothing then.
+   */
+  readRecord(mapId: string, creature: RecordCreature): number | null;
+  /**
+   * Offers the most health a judging took from the creature of the map in one fight. The record takes it
+   * only where it is higher than the record read for these creature numbers, or where none is read; a
+   * number the game cannot give (no whole number from 0 to the creature's health) is not taken. Where the
+   * storage refuses the write, the open page still reads it.
+   */
+  offerRecord(mapId: string, creature: RecordCreature, damage: number): void;
+};
+
+/**
+ * The numbers of a creature a record is bound to (D-441): its health and its blow, as the game's data
+ * give them. A creature of the data (`CreatureDef`) is one.
+ */
+export type RecordCreature = {
+  readonly health: number;
+  readonly strikeDamage: number;
 };
 
 // The stored form is version 2; the key names it. A key of another version never matches the prefix,
@@ -53,6 +77,10 @@ const FIELDS = [
   "fingerprint",
   "generation",
 ] as const;
+// The record is a second family of keys with a version of its own (D-441): the version stands in the key,
+// right before the separator, so a key of another version or of the judgings never matches the prefix.
+const RECORD_KEY_PREFIX = "loop2-judging-record-1|";
+const RECORD_FIELDS = ["damage", "health", "strikeDamage"] as const;
 
 const LETTER_OF: Record<SeedResult["kind"], string> = {
   solved: "s",
@@ -95,10 +123,10 @@ function isCount(value: unknown, min: number): value is number {
   );
 }
 
-function hasOnlyFields(value: object): boolean {
+function hasOnlyFields(value: object, fields: readonly string[]): boolean {
   return (
-    Object.getOwnPropertyNames(value).length === FIELDS.length &&
-    FIELDS.every((field) => Object.hasOwn(value, field))
+    Object.getOwnPropertyNames(value).length === fields.length &&
+    fields.every((field) => Object.hasOwn(value, field))
   );
 }
 
@@ -154,7 +182,7 @@ function readValue(value: unknown): JudgingRecord | null {
     typeof parsed !== "object" ||
     parsed === null ||
     Array.isArray(parsed) ||
-    !hasOnlyFields(parsed)
+    !hasOnlyFields(parsed, FIELDS)
   )
     return null;
   const held = parsed as Record<(typeof FIELDS)[number], unknown>;
@@ -199,6 +227,82 @@ function copyOf(record: JudgingRecord): JudgingRecord {
     contentFingerprint: record.contentFingerprint,
     generation: record.generation,
   };
+}
+
+/** What a record holds: the number and the two numbers of the creature it was made at (D-441). */
+type StoredRecord = { damage: number; health: number; strikeDamage: number };
+
+function recordGamePrefix(accountId: string, madeAtMs: number): string {
+  return `${RECORD_KEY_PREFIX}${part(accountId)}${SEPARATOR}${part(madeAtMs)}${SEPARATOR}`;
+}
+
+function recordKeyOf(
+  accountId: string,
+  madeAtMs: number,
+  mapId: string,
+): string {
+  return `${recordGamePrefix(accountId, madeAtMs)}${part(mapId)}`;
+}
+
+/** Whether the creature's numbers are ones the game's data can give: a health from 1 and a blow from 0. */
+function isCreatureNumbers(creature: RecordCreature): boolean {
+  return isCount(creature.health, 1) && isCount(creature.strikeDamage, 0);
+}
+
+/**
+ * The record a stored value holds, or null where the value is not the form the cache writes: too long, no
+ * JSON, not an object of exactly the three fields, a number that is no safe integer from 0, a health that
+ * is none from 1, a blow that is none from 0, or a number above the creature's whole health, which no
+ * fight can take. Everything it returns is built here; nothing the parse made is handed on.
+ */
+function readRecordValue(value: unknown): StoredRecord | null {
+  if (typeof value !== "string" || value.length > MAX_VALUE_LENGTH) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return null;
+  }
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    Array.isArray(parsed) ||
+    !hasOnlyFields(parsed, RECORD_FIELDS)
+  )
+    return null;
+  const { damage, health, strikeDamage } = parsed as Record<
+    (typeof RECORD_FIELDS)[number],
+    unknown
+  >;
+  if (
+    !isCount(damage, 0) ||
+    !isCount(health, 1) ||
+    !isCount(strikeDamage, 0) ||
+    damage > health
+  )
+    return null;
+  return { damage, health, strikeDamage };
+}
+
+function writeRecordValue({
+  damage,
+  health,
+  strikeDamage,
+}: StoredRecord): string {
+  return JSON.stringify({ damage, health, strikeDamage });
+}
+
+/** Whether the record was made at the creature's numbers given. */
+function isMadeAt(
+  record: StoredRecord | null | undefined,
+  creature: RecordCreature,
+): record is StoredRecord {
+  return (
+    record !== null &&
+    record !== undefined &&
+    record.health === creature.health &&
+    record.strikeDamage === creature.strikeDamage
+  );
 }
 
 /** The keys of the storage, or none where the storage refuses to list them. */
@@ -292,13 +396,14 @@ function isAboveLoaded(
  * the server, or all of them where the page built the game after the server refused its save. Values of
  * other accounts and keys of another version of the stored form are left.
  */
-function tidyStorage(
+function tidyJudgings(
   storage: JudgingStorage,
+  keys: readonly string[],
   opening: JudgingCacheOpening,
 ): void {
   const accountPrefix = `${KEY_PREFIX}${part(opening.accountId)}${SEPARATOR}`;
   const gameOwn = gamePrefix(opening.accountId, opening.state.madeAtMs);
-  for (const key of keysOf(storage)) {
+  for (const key of keys) {
     if (!key.startsWith(accountPrefix)) continue;
     if (
       !key.startsWith(gameOwn) ||
@@ -314,17 +419,67 @@ function tidyStorage(
 }
 
 /**
+ * Removes, best effort, the records of the account under the moment of another game and, where the page
+ * built the game after the server refused its save, those of this game too (D-441), as the judgings are.
+ * A record holds no program and no character, so nothing else of the loaded game removes one. Records of
+ * other accounts and keys of another version of the record's form are left.
+ */
+function tidyRecords(
+  storage: JudgingStorage,
+  keys: readonly string[],
+  opening: JudgingCacheOpening,
+): void {
+  const accountPrefix = `${RECORD_KEY_PREFIX}${part(opening.accountId)}${SEPARATOR}`;
+  const gameOwn = recordGamePrefix(opening.accountId, opening.state.madeAtMs);
+  for (const key of keys)
+    if (
+      key.startsWith(accountPrefix) &&
+      (!key.startsWith(gameOwn) || opening.afterRefusedSave)
+    )
+      removeFrom(storage, key);
+}
+
+function tidyStorage(
+  storage: JudgingStorage,
+  opening: JudgingCacheOpening,
+): void {
+  const keys = keysOf(storage);
+  tidyJudgings(storage, keys, opening);
+  tidyRecords(storage, keys, opening);
+}
+
+/**
  * Opens the cache of one game of one account (D-441): one stored value for each character, program and
- * map. Where the storage is none or refuses a write, the record stays for the open page alone and the
- * stored value of its triple is removed where the browser allows it, so no older stored judging stands
- * against the newer one. No exception of the storage leaves the cache, and nothing here reaches a window.
+ * map, and one for the record of each map. Where the storage is none or refuses a write, the record stays
+ * for the open page alone and the stored value of its triple is removed where the browser allows it, so no
+ * older stored judging stands against the newer one; the stored record of the map is not removed, since a
+ * lower record that was made stands against no higher one and the record never falls. No exception of the
+ * storage leaves the cache, and nothing here reaches a window.
  */
 export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
   const { accountId, storage } = opening;
   const { madeAtMs } = opening.state;
   // Only the records whose write the storage refused; a write that succeeds takes its triple out.
   const memory = new Map<string, JudgingRecord>();
+  // The same for the records of the maps, whose write the storage refused.
+  const recordMemory = new Map<string, StoredRecord>();
   if (storage !== null) tidyStorage(storage, opening);
+  /**
+   * The highest number of the record under `key` made at the creature's numbers given, from the storage
+   * and from the page's memory of a refused write alike, or null where neither holds one.
+   */
+  function currentRecord(key: string, creature: RecordCreature): number | null {
+    const stored =
+      storage === null ? null : readRecordValue(readFrom(storage, key));
+    let highest: number | null = null;
+    for (const held of [stored, recordMemory.get(key)])
+      if (
+        isMadeAt(held, creature) &&
+        (highest === null || held.damage > highest)
+      )
+        highest = held.damage;
+    return highest;
+  }
   return {
     read(ids) {
       const key = keyOf(accountId, madeAtMs, ids);
@@ -340,6 +495,27 @@ export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
       }
       memory.set(key, copyOf(record));
       if (storage !== null) removeFrom(storage, key);
+    },
+    readRecord(mapId, creature) {
+      return currentRecord(recordKeyOf(accountId, madeAtMs, mapId), creature);
+    },
+    offerRecord(mapId, creature, damage) {
+      const { health, strikeDamage } = creature;
+      if (
+        !isCreatureNumbers(creature) ||
+        !isCount(damage, 0) ||
+        damage > health
+      )
+        return;
+      const key = recordKeyOf(accountId, madeAtMs, mapId);
+      const current = currentRecord(key, creature);
+      if (current !== null && current >= damage) return;
+      const record = { damage, health, strikeDamage };
+      if (storage !== null && writeTo(storage, key, writeRecordValue(record))) {
+        recordMemory.delete(key);
+        return;
+      }
+      recordMemory.set(key, record);
     },
   };
 }
