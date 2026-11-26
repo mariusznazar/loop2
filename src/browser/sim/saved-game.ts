@@ -13,10 +13,16 @@ import {
   type BranchId,
   type SkillId,
 } from "./data/skills.js";
-import { fitsSlot, gearSlots } from "./character.js";
+import {
+  backpackCap,
+  backpackCount,
+  fitsSlot,
+  gearSlots,
+} from "./character.js";
 import { GEAR_SLOTS } from "./data/gear.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
+import { combatItem } from "./program.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
 import { MINUTE_KINDS } from "./run-record.js";
@@ -734,19 +740,27 @@ const CREATURE_ACTIONS: {
   },
 };
 
+/**
+ * A character's action of a combat record: a combat action, with the mark of a refill, which only an
+ * action that uses an item makes (D-457).
+ */
 function characterAction(value: unknown): CombatCharacterAction {
   const read = fields(value, [
     "ruleId",
     "action",
+    "refill",
     "damage",
     "creatureHealth",
     "characterHealth",
   ]);
   const acted = action(read.action);
   if (!isCombatAction(acted)) refuse();
+  const refill = flag(read.refill);
+  if (refill && combatItem(acted.kind) === null) refuse();
   return {
     ruleId: identity(read.ruleId),
     action: acted,
+    refill,
     damage: finite(read.damage, 0),
     creatureHealth: finite(read.creatureHealth, 0),
     characterHealth: finite(read.characterHealth, 0),
@@ -768,7 +782,11 @@ function exchange(value: unknown): CombatExchange {
   };
 }
 
-function combatResult(value: unknown): CombatResult {
+/**
+ * The result of an encounter, with the gear and the backpack its turns left: a gear as any gear is
+ * read, and a backpack within the carrying capacity of the map run's character, `capacity`.
+ */
+function combatResult(value: unknown, capacity: number): CombatResult {
   const read = fields(value, [
     "practice",
     "characterHealth",
@@ -776,7 +794,11 @@ function combatResult(value: unknown): CombatResult {
     "outcome",
     "exchanges",
     "ruleStarts",
+    "gear",
+    "backpack",
   ]);
+  const left = backpack(read.backpack);
+  if (backpackCount(left) > capacity) refuse();
   return {
     practice: practice(read.practice),
     characterHealth: finite(read.characterHealth, 0),
@@ -784,14 +806,20 @@ function combatResult(value: unknown): CombatResult {
     outcome: oneOf(read.outcome, COMBAT_OUTCOMES),
     exchanges: list(read.exchanges).map(exchange),
     ruleStarts: ruleCounts(read.ruleStarts),
+    gear: gear(read.gear),
+    backpack: left,
   };
 }
 
-function lastCombat(value: unknown, minute: number): LastCombat {
+function lastCombat(
+  value: unknown,
+  minute: number,
+  capacity: number,
+): LastCombat {
   const read = fields(value, [...COMBAT_KEYS, "result"]);
   return {
     ...attack(read, minute),
-    result: read.result === null ? null : combatResult(read.result),
+    result: read.result === null ? null : combatResult(read.result, capacity),
   };
 }
 
@@ -1070,7 +1098,9 @@ function plainMapRun(
     current,
     activeCombat,
     lastCombat:
-      read.lastCombat === null ? null : lastCombat(read.lastCombat, minute),
+      read.lastCombat === null
+        ? null
+        : lastCombat(read.lastCombat, minute, backpackCap(character)),
     attackRandom: uint32(read.attackRandom),
     attackCooldownStart,
     wanderRandom: uint32(read.wanderRandom),

@@ -1,9 +1,11 @@
 /**
- * The row of a place of the gear: the name the player reads for a slot of that place, and the words
+ * The row of a place of the gear: the name the player reads for a slot of that place, the words
  * that name the place in the line of gear on the screen of a map run, absent where no item of the
- * data fits the place yet.
+ * data fits the place yet, and the words of an action that takes a piece from the backpack into an
+ * empty slot of the place when it uses it (D-457), after the name of the one who acts, absent where
+ * no action of the data takes a piece from the place yet.
  */
-type PlaceRow = { name: string; line?: string };
+type PlaceRow = { name: string; line?: string; refill?: string };
 
 /**
  * The places of the gear (D-456): what a character wields in its main hand and its second hand, what
@@ -11,7 +13,11 @@ type PlaceRow = { name: string; line?: string };
  * of an item names the one place it fits (`fits` in items.ts).
  */
 export const GEAR_PLACES = {
-  mainHand: { name: "Ręka główna", line: "w ręku" },
+  mainHand: {
+    name: "Ręka główna",
+    line: "w ręku",
+    refill: "bierze patyk z plecaka do ręki",
+  },
   secondHand: { name: "Druga ręka" },
   head: { name: "Głowa" },
   torso: { name: "Tułów" },
@@ -21,6 +27,12 @@ export const GEAR_PLACES = {
 
 /** A place of the gear: a key of `GEAR_PLACES`. */
 export type GearPlace = keyof typeof GEAR_PLACES;
+
+/**
+ * The slot a combat action that uses an item, „Uderz — patyk”, takes its piece from, and no other
+ * (D-456): the main hand.
+ */
+export const WIELDING_SLOT = "mainHand" satisfies GearSlot;
 
 /** The pockets of the belt, each a slot of the place „Kieszeń” holding one piece (D-456). */
 export const POCKETS = 3;

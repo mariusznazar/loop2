@@ -746,6 +746,12 @@ export function finishMinute(
     const result = resolveCombat(run, combat.creatureId, program);
     run = {
       ...run,
+      // The gear and the backpack as the turns left them (D-457).
+      character: {
+        ...run.character,
+        gear: { ...result.gear },
+        backpack: { ...result.backpack },
+      },
       body: { ...run.body, health: result.characterHealth },
       practice: sumPractice(run.practice, result.practice),
       activeCombat: null,

@@ -3,6 +3,7 @@ import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
+import { WIELDING_SLOT } from "./data/gear.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import { RESOURCES } from "./data/resources.js";
@@ -29,6 +30,7 @@ import type {
   ProgramRule,
   ResourceId,
   RuleId,
+  RunCharacter,
   Tile,
 } from "./types.js";
 
@@ -408,18 +410,37 @@ export function actionFeasible(run: RunView, action: Action): boolean {
 }
 
 /**
+ * Where a combat action that uses `item` takes its piece from (D-144, D-456, D-457): `held` where the
+ * main hand holds the item, `refill` where the hand is empty and the backpack holds a piece of it,
+ * which the action takes into the hand before it acts, in the same turn, and null where neither is so:
+ * no other slot gives the piece.
+ */
+export function combatPiece(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): "held" | "refill" | null {
+  const held = character.gear[WIELDING_SLOT];
+  if (held === item) return "held";
+  if (held === null && character.backpack[item] > 0) return "refill";
+  return null;
+}
+
+/** The item a combat action uses, from the actions' data; null for one that uses none. */
+export function combatItem(kind: Action["kind"]): ItemId | null {
+  const effect = (ACTIONS[kind] as ActionDef).combat;
+  return effect && "item" in effect && effect.item ? effect.item : null;
+}
+
+/**
  * Why a rule's action cannot be carried out in combat: null where it can. Only a combat action can,
- * and one that uses an item needs a piece of it in the backpack.
+ * and one that uses an item needs a piece of it in the main hand or, where the hand is empty, in the
+ * backpack (D-380).
  */
 function combatRefusal(run: RunView, action: Action): string | null {
-  const effect = (ACTIONS[action.kind] as ActionDef).combat;
-  if (!effect) return "trwa walka";
-  if (
-    "item" in effect &&
-    effect.item &&
-    run.character.backpack[effect.item] < 1
-  )
-    return lacking(run.character.backpack, { item: effect.item, count: 1 });
+  if (!(ACTIONS[action.kind] as ActionDef).combat) return "trwa walka";
+  const item = combatItem(action.kind);
+  if (item !== null && combatPiece(run.character, item) === null)
+    return `brakuje 1 × ${itemName(item)}`;
   return null;
 }
 

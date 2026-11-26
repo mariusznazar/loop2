@@ -41,9 +41,9 @@ function runWithProgram(program, backpack = {}) {
 test("four stick strikes defeat the wolf after three bites, leaving 79 health", () => {
   // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
   // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
-  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
-  // decision: D-145 "A stick stays in the backpack after a strike"
+  // decision: D-145 "A stick stays in the main hand after a strike, with its condition unchanged."
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
   // decision: D-151 "A side chooses its rule immediately before its action, with the creature using its ordered data pairs and the character using the ordered groups and repertoire of its program"
   const { run, program } = encounter("strikeWithStick", { stick: 1 });
@@ -58,6 +58,9 @@ test("four stick strikes defeat the wolf after three bites, leaving 79 health", 
   assert.equal(result.exchanges.length, 4);
   assert.equal(result.exchanges[3].creatureAction.kind, "dodge");
   assert.equal(result.ruleStarts[1], 4);
+  // The empty main hand takes the one stick at the first strike, and the stick stays in the hand.
+  assert.equal(result.gear.mainHand, "stick");
+  assert.equal(result.backpack.stick, 0);
   assert.equal(run.body.health, 100);
   assert.equal(run.character.backpack.stick, 1);
   assert.deepEqual(run, runBefore);
@@ -69,7 +72,7 @@ test("four stick strikes defeat the wolf after three bites, leaving 79 health", 
 test("eight kicks defeat the wolf after six bites, leaving 58 health", () => {
   // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
   // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
-  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
   const { run, program } = encounter("kick");
@@ -115,7 +118,7 @@ test("a lethal opening strike ends the exchange before the character can act", (
 
 test("forty dodges use one refreshed reduction and leave the wolf at 15 health", () => {
   // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
-  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // decision: D-144 "Another dodge refreshes that reduction"
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   // decision: D-146 "The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten"
@@ -136,7 +139,7 @@ test("forty dodges use one refreshed reduction and leave the wolf at 15 health",
 
 test("a stick strike without a stick is skipped in favor of the next combat rule", () => {
   // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
-  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   const program = programFromRules(
     { condition: { kind: "always" }, action: { kind: "strikeWithStick" } },
     { condition: { kind: "always" }, action: { kind: "kick" } },
@@ -146,6 +149,7 @@ test("a stick strike without a stick is skipped in favor of the next combat rule
   assert.deepEqual(result.exchanges[0].characterAction, {
     ruleId: 2,
     action: { kind: "kick" },
+    refill: false,
     damage: 3,
     creatureHealth: 21,
     characterHealth: 93,

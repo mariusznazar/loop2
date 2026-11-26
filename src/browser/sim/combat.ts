@@ -1,7 +1,14 @@
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import { CREATURES, type CreatureAction } from "./data/creatures.js";
-import { conditionHolds, chooseCombatRule } from "./program.js";
+import { WIELDING_SLOT } from "./data/gear.js";
+import {
+  chooseCombatRule,
+  combatItem,
+  combatPiece,
+  conditionHolds,
+  type RunView,
+} from "./program.js";
 import { practiced, skillBonus } from "./skills.js";
 import type {
   CombatCharacterAction,
@@ -12,10 +19,11 @@ import type {
   MapRun,
   Program,
   Practice,
+  RunCharacter,
 } from "./types.js";
 
 function chooseCreatureAction(
-  run: MapRun,
+  run: RunView,
   creatureId: CreatureId,
   health: number,
   opponentHealth: number,
@@ -30,7 +38,33 @@ function chooseCreatureAction(
   return selected.action;
 }
 
-/** Resolves one encounter without changing the run, program or creature data. */
+/**
+ * The character before an action of `kind`: where the action uses an item and the main hand is empty,
+ * with one piece of it taken from the backpack into the hand (D-457), and whether it was; otherwise
+ * the very character. The piece in the hand stays there after the action (D-145).
+ */
+function wielding(
+  character: RunCharacter,
+  kind: CombatCharacterAction["action"]["kind"],
+): { character: RunCharacter; refill: boolean } {
+  const item = combatItem(kind);
+  if (item === null || combatPiece(character, item) !== "refill")
+    return { character, refill: false };
+  return {
+    character: {
+      ...character,
+      backpack: { ...character.backpack, [item]: character.backpack[item] - 1 },
+      gear: { ...character.gear, [WIELDING_SLOT]: item },
+    },
+    refill: true,
+  };
+}
+
+/**
+ * Resolves one encounter without changing the run, program or creature data. The turns read the
+ * character's gear and backpack as the turns before left them, and the result gives both after the
+ * fight.
+ */
 export function resolveCombat(
   run: MapRun,
   creatureId: CreatureId,
@@ -41,6 +75,7 @@ export function resolveCombat(
   let creatureHealth: number = creature.health;
   let pendingReduction = 0;
   let practice: Practice = {};
+  let character: RunCharacter = run.character;
   const exchanges: CombatExchange[] = [];
   const ruleStarts: Record<number, number> = {};
 
@@ -49,8 +84,9 @@ export function resolveCombat(
     turn < BALANCE.combatTurns && characterHealth > 0 && creatureHealth > 0;
     turn += 1
   ) {
+    const view: RunView = { ...run, character };
     const enemyAction = chooseCreatureAction(
-      run,
+      view,
       creatureId,
       creatureHealth,
       characterHealth,
@@ -73,7 +109,7 @@ export function resolveCombat(
     }
 
     const rule = chooseCombatRule(
-      run,
+      view,
       program,
       characterHealth,
       creatureHealth,
@@ -87,6 +123,9 @@ export function resolveCombat(
     const effect = (ACTIONS[rule.action.kind] as ActionDef).combat;
     if (!effect)
       throw new Error("combat: selected action has no combat effect");
+    const action = { ...rule.action } as CombatCharacterAction["action"];
+    const armed = wielding(character, action.kind);
+    character = armed.character;
 
     let damage = 0;
     if ("damage" in effect) {
@@ -102,7 +141,8 @@ export function resolveCombat(
     }
     const characterAction: CombatCharacterAction = {
       ruleId: rule.id,
-      action: { ...rule.action } as CombatCharacterAction["action"],
+      action,
+      refill: armed.refill,
       damage,
       creatureHealth,
       characterHealth,
@@ -123,5 +163,7 @@ export function resolveCombat(
     exchanges,
     ruleStarts,
     practice,
+    gear: { ...character.gear },
+    backpack: { ...character.backpack },
   };
 }

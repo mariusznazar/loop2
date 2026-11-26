@@ -141,6 +141,11 @@ export type CombatCreatureAction =
 export type CombatCharacterAction = {
   ruleId: RuleId;
   action: Extract<Action, { kind: "strikeWithStick" | "kick" | "dodge" }>;
+  /**
+   * Whether the action first took a piece from the backpack into the empty slot it uses, in the same
+   * turn (D-457): the strike taking a stick into an empty main hand.
+   */
+  refill: boolean;
   damage: number;
   creatureHealth: number;
   characterHealth: number;
@@ -151,6 +156,11 @@ export type CombatExchange = {
   characterAction: CombatCharacterAction | null;
 };
 
+/**
+ * What an encounter gave: besides the health of both sides, the exchanges and the starts of rules,
+ * the gear and the backpack of the character as its turns left them, which the map run takes when the
+ * turns resolve.
+ */
 export type CombatResult = {
   practice: Practice;
   characterHealth: number;
@@ -158,6 +168,8 @@ export type CombatResult = {
   outcome: CombatOutcome;
   exchanges: CombatExchange[];
   ruleStarts: Record<RuleId, number>;
+  gear: Gear;
+  backpack: Backpack;
 };
 
 export type ActiveCombat = {

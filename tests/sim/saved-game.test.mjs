@@ -82,10 +82,16 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // The document of the current version, version 11, is that of version 10 with the gear of each
 // character (D-451, D-452, D-456, D-460, D-463, D-206): each character of the team holds its gear, the
 // slots the player changed since the start of the map run going on of its earning loop and the count
-// of its gear changes, and the character of each map run holds the gear of that map run. It fills
+// of its gear changes, and the character of each map run holds the gear of that map run. The result
+// of an encounter holds the gear and the backpack its turns left, and each action of the character in
+// it the mark of a refill, which says whether the action took its piece from the backpack into the
+// empty main hand first (D-144, D-457). This document was rewritten with the result's gear, backpack
+// and mark without raising the version, since no saved game state of version 11 exists anywhere yet:
+// the change that brought version 11 has reached no server. It fills
 // every optional branch of the game state, the new ones among them: a character holding a stick in
 // its main hand and a bandage in a pocket, a character of an earning loop with a changed slot, a
-// character with an empty gear, and map runs whose gear differs from their character's. It also
+// character with an empty gear, map runs whose gear differs from their character's, and a combat
+// record whose first strike took a stick into the hand and whose later ones did not. It also
 // fills the others: the chest, the Understanding, the report's chest and the trip lists naming the
 // bandage, programs of content revision 0 and above, an earning loop whose two counts stand above 0
 // with the run below the longest, a map run with a campfire, a burning item, a combat record, a copy
@@ -958,11 +964,40 @@ const runGeared = (run, gear) => ({
 });
 
 /**
+ * The last combat of the map run of the current version: that of version 10, whose first strike took
+ * a stick from the backpack into the empty main hand and whose three later strikes took none, with
+ * the gear and the backpack the turns left: the stick in the hand, the bandages in two pockets, and
+ * six pieces in the backpack, within the carrying capacity of 15.
+ */
+const COMBAT_V10 = DOCUMENT_V10.game.run.lastCombat;
+const LAST_COMBAT = {
+  ...COMBAT_V10,
+  result: {
+    ...COMBAT_V10.result,
+    exchanges: COMBAT_V10.result.exchanges.map((exchange, index) => ({
+      ...exchange,
+      characterAction: exchange.characterAction && {
+        ...exchange.characterAction,
+        refill: index === 0,
+      },
+    })),
+    gear: {
+      ...EMPTY_GEAR,
+      mainHand: "stick",
+      pocket1: "bandage",
+      pocket2: "bandage",
+    },
+    backpack: { stick: 3, berry: 2, moss: 1, fiber: 0, bandage: 0 },
+  },
+};
+
+/**
  * The document of the current version, version 11: version 10 with the gear. Ala, the character of
  * the manual map run, holds a stick in her main hand and a bandage in her second pocket, put on in
  * three changes, and her map run holds a bandage in her first pocket too; Ola, in an earning loop,
  * holds a stick for her next map run in the main hand she changed, her one change, while the map run
- * going on holds nothing; Ewa holds an empty gear and has made no change.
+ * going on holds nothing; Ewa holds an empty gear and has made no change. The last combat of the map
+ * run is `LAST_COMBAT`.
  */
 const [ALA_V10, OLA_V10, EWA_V10] = DOCUMENT_V10.game.team.characters;
 const DOCUMENT = {
@@ -982,12 +1017,15 @@ const DOCUMENT = {
         geared(EWA_V10, EMPTY_GEAR, [], 0),
       ],
     },
-    run: runGeared(DOCUMENT_V10.game.run, {
-      ...EMPTY_GEAR,
-      mainHand: "stick",
-      pocket1: "bandage",
-      pocket2: "bandage",
-    }),
+    run: {
+      ...runGeared(DOCUMENT_V10.game.run, {
+        ...EMPTY_GEAR,
+        mainHand: "stick",
+        pocket1: "bandage",
+        pocket2: "bandage",
+      }),
+      lastCombat: LAST_COMBAT,
+    },
     loops: {
       2: {
         ...DOCUMENT_V10.game.loops[2],
@@ -2911,7 +2949,12 @@ const GEAR_PLACES_OF = {
   "a character's gear": (document) => ala(document).gear,
   "the map run's gear": (document) => document.game.run.character.gear,
   "an earning loop's gear": (document) => olaLoop(document).run.character.gear,
+  "a combat result's gear": (document) =>
+    document.game.run.lastCombat.result.gear,
 };
+
+/** The result of the last combat of the manual map run. */
+const fought = (document) => document.game.run.lastCombat.result;
 
 /**
  * What no gear holds (D-456): a piece in a slot whose place it does not fit, an item the data lack, a
@@ -3025,6 +3068,59 @@ Object.assign(CRAFTED, {
     (ala(document).gearChanges = Infinity),
   "a count of gear changes beyond the safe integers": (document) =>
     (ala(document).gearChanges = 2 ** 53),
+  // The gear and the backpack a combat result holds (D-457): a gear as any gear, a backpack of the
+  // data's items within the carrying capacity of the map run's character, 15.
+  "a combat result without its gear": (document) =>
+    delete fought(document).gear,
+  "a combat result without its backpack": (document) =>
+    delete fought(document).backpack,
+  "a combat result's gear of none": (document) =>
+    (fought(document).gear = null),
+  "a combat result whose backpack holds 16 pieces, over the carrying capacity":
+    (document) =>
+      (fought(document).backpack = {
+        stick: 10,
+        berry: 3,
+        moss: 1,
+        fiber: 1,
+        bandage: 1,
+      }),
+  "a combat result whose backpack holds 16 sticks": (document) =>
+    (fought(document).backpack.stick = 16),
+  "a combat result's backpack with a count below 0": (document) =>
+    (fought(document).backpack.moss = -1),
+  "a combat result's backpack with a fractional count": (document) =>
+    (fought(document).backpack.stick = 2.5),
+  "a combat result's backpack without an item of the data": (document) =>
+    delete fought(document).backpack.bandage,
+  "a combat result's backpack with an item the data lack": (document) =>
+    (fought(document).backpack.sword = 0),
+  "a combat result's backpack as a list": (document) =>
+    (fought(document).backpack = [3, 2, 1, 0, 0]),
+  // The mark of a refill: a truth value at each action of the character, true only where the
+  // action uses an item, as the strike its stick.
+  "an action of a combat record without its refill mark": (document) =>
+    delete fought(document).exchanges[0].characterAction.refill,
+  "a refill mark as text": (document) =>
+    (fought(document).exchanges[0].characterAction.refill = "true"),
+  "a refill mark as a number": (document) =>
+    (fought(document).exchanges[2].characterAction.refill = 0),
+  "a refill mark of none": (document) =>
+    (fought(document).exchanges[0].characterAction.refill = null),
+  "a refill marked on a kick": (document) =>
+    (fought(document).exchanges[2].characterAction = {
+      ...fought(document).exchanges[2].characterAction,
+      action: { kind: "kick" },
+      refill: true,
+    }),
+  "a refill marked on a dodge": (document) =>
+    (fought(document).exchanges[3].characterAction = {
+      ...fought(document).exchanges[3].characterAction,
+      action: { kind: "dodge" },
+      refill: true,
+    }),
+  "a refill mark on an exchange with no action of the character": (document) =>
+    (fought(document).exchanges[1].refill = true),
 });
 
 /**
@@ -3143,6 +3239,7 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included"
   // decision: D-456 "The gear has eight slots, each holding one piece: „Ręka główna”, „Druga ręka”, „Głowa”, „Tułów”, „Nogi” and three pockets of the belt, each slot being of one place, the three pockets of the place „Kieszeń”."
   // decision: D-456 "The data of each item name the place it fits: the stick fits the main hand and the bandage a pocket."
+  // decision: D-457 "That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });
@@ -3177,6 +3274,20 @@ test("a document at the edges of what the gear admits loads", () => {
       (ewa(document).gearChanges = Number.MAX_SAFE_INTEGER),
     "a count of gear changes of 0 beside a held gear": (document) =>
       (ala(document).gearChanges = 0),
+    "a combat result whose backpack holds the whole carrying capacity": (
+      document,
+    ) =>
+      (fought(document).backpack = {
+        stick: 12,
+        berry: 2,
+        moss: 1,
+        fiber: 0,
+        bandage: 0,
+      }),
+    "a combat result with an empty gear and no refill": (document) => {
+      fought(document).gear = { ...EMPTY_GEAR };
+      fought(document).exchanges[0].characterAction.refill = false;
+    },
   };
   for (const [name, change] of Object.entries(edges)) {
     const document = changed(change);
