@@ -960,6 +960,269 @@ test("the cell that is no button stands in the same parts as the button of a cel
   });
 });
 
+// --- the tile of a slot of the gear ------------------------------------------------------------
+
+// Made-up faces, as a screen gives them: the icon of a piece with the piece's name, and the name of a
+// slot that holds none. The button knows no screen and no game state (D-395).
+const TILE_WITH_ICON = { icon: "stick", name: "Patyk" };
+const TILE_EMPTY = { slotName: "Ręka główna" };
+
+// Breaks: a tile whose icon is not drawn as a mask of the file named, whose accessible name is not the
+// piece's name, or that shows the piece's name as text beside its icon, which the tile leaves to the
+// reader of the screen.
+test("a tile with an item's icon draws the icon as a mask of its file, hidden from a reader of the screen, and names the button by the item's name", async () => {
+  // decision: D-44 "The screens build the tile of a slot of the gear (D-461) from the shared controls as well: a square button that carries the icon of the piece its slot holds, or the pale name of the slot where it holds none, and that is selected in its group while the pick of the slot stands open under it."
+  await withPage(async ({ document }) => {
+    const tile = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "tile", tile: TILE_WITH_ICON }),
+      ),
+    );
+    assert.equal(tile.nodeName, "BUTTON");
+    assert.deepEqual(attributesOf(tile), {
+      type: "button",
+      class: "button tile",
+      "aria-label": "Patyk",
+    });
+    assert.equal(tile.children.length, 1);
+    const icon = tile.firstElementChild;
+    assert.equal(icon.getAttribute("class"), "icon-mask");
+    assert.equal(icon.getAttribute("aria-hidden"), "true");
+    assert.equal(
+      icon.style.getPropertyValue("--icon"),
+      'url("/icons/stick.svg")',
+    );
+    assert.equal(tile.textContent, "", "no text beside the icon");
+  });
+});
+
+// Breaks: a tile of an empty slot that shows an icon, or whose name stays out of its text, which is
+// then no name for a reader of the screen; one that sets an aria-label of its own over the text.
+test("a tile of an empty slot shows the slot's name as its text, with no icon and no label of its own", async () => {
+  // decision: D-44 "The screens build the tile of a slot of the gear (D-461) from the shared controls as well: a square button that carries the icon of the piece its slot holds, or the pale name of the slot where it holds none, and that is selected in its group while the pick of the slot stands open under it."
+  await withPage(async ({ document }) => {
+    const tile = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "tile", tile: TILE_EMPTY }),
+      ),
+    );
+    assert.deepEqual(attributesOf(tile), {
+      type: "button",
+      class: "button tile",
+    });
+    assert.equal(tile.children.length, 1);
+    const name = tile.firstElementChild;
+    assert.equal(name.getAttribute("class"), "tile-slot-name");
+    assert.equal(name.textContent, "Ręka główna");
+    assert.equal(tile.querySelector(".icon-mask"), null);
+  });
+});
+
+// Breaks: a tile that says nothing of selection, one that marks the chosen tile by the class alone
+// with no aria-pressed, or one that marks its neighbour too.
+test("a tile chosen in its group carries the class selected and aria-pressed true, one not chosen aria-pressed false, and one of no group none", async () => {
+  // decision: D-44 "The screens build the tile of a slot of the gear (D-461) from the shared controls as well: a square button that carries the icon of the piece its slot holds, or the pale name of the slot where it holds none, and that is selected in its group while the pick of the slot stands open under it."
+  await withPage(async ({ document }) => {
+    const chosen = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "tile",
+          tile: TILE_WITH_ICON,
+          selected: true,
+        }),
+      ),
+    );
+    assert.deepEqual(attributesOf(chosen), {
+      type: "button",
+      class: "button tile selected",
+      "aria-label": "Patyk",
+      "aria-pressed": "true",
+    });
+    const notChosen = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "tile",
+          tile: TILE_EMPTY,
+          selected: false,
+        }),
+      ),
+    );
+    assert.equal(notChosen.getAttribute("class"), "button tile");
+    assert.equal(notChosen.getAttribute("aria-pressed"), "false");
+    const alone = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "tile", tile: TILE_EMPTY }),
+      ),
+    );
+    assert.equal(alone.hasAttribute("aria-pressed"), false);
+  });
+});
+
+// Breaks: a tile that ignores `onClick`, or one that stays clickable while it is disabled.
+test("a click on a tile reaches the screen's handler, and a disabled tile gives none and is disabled for the reader of the screen too", async () => {
+  // decision: D-265 "Each shared control in `src/browser/view/controls/` has one form, a React component, and `src/browser/styles.css` stays the one place of the look of the controls."
+  await withPage(async ({ document }) => {
+    const clicks = [];
+    const onClick = () => clicks.push("click");
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        kind: "tile",
+        tile: TILE_WITH_ICON,
+        onClick,
+      }),
+    );
+    const tile = drawnElement(drawing);
+    await press(tile);
+    assert.deepEqual(clicks, ["click"]);
+    await inAct(() =>
+      drawing.root.render(
+        createElement(ReactButton, {
+          kind: "tile",
+          tile: TILE_WITH_ICON,
+          onClick,
+          disabled: true,
+        }),
+      ),
+    );
+    assert.equal(tile.hasAttribute("disabled"), true);
+    await press(tile);
+    assert.deepEqual(clicks, ["click"], "a disabled tile is not clicked");
+  });
+});
+
+// Breaks: an icon in a colour of its own rather than `text-strong` where no text stands beside it; a
+// pale name in another role than `text-label`; a disabled tile whose icon or name keeps its colour;
+// a chosen tile whose content changes its role (the frame alone changes); a tile that takes no
+// `highlight` under the pointer; a tile without a frame in `control-border` at rest; one that is
+// not square.
+test("the stylesheets draw a tile square with its icon in text-strong and its pale name in text-label, a chosen one with the frame in selected, a disabled one in text-disabled", async () => {
+  // decision: D-44 "The screens build the tile of a slot of the gear (D-461) from the shared controls as well: a square button that carries the icon of the piece its slot holds, or the pale name of the slot where it holds none, and that is selected in its group while the pick of the slot stands open under it."
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = stylesheetWithPointerClass();
+    document.head.append(style);
+    const computed = (element, property) =>
+      window.getComputedStyle(element).getPropertyValue(property);
+    const draw = async (props) =>
+      drawnElement(
+        await drawn(
+          document,
+          createElement(ReactButton, { kind: "tile", ...props }),
+        ),
+      );
+    const withIcon = await draw({ tile: TILE_WITH_ICON });
+    const empty = await draw({ tile: TILE_EMPTY });
+    assert.equal(
+      lastDeclared(
+        document,
+        withIcon.querySelector(".icon-mask"),
+        "background-color",
+      ),
+      "currentcolor",
+      "the icon is a mask in the colour of the tile's text",
+    );
+    assert.equal(
+      computed(withIcon, "color"),
+      "var(--text-strong)",
+      "the icon's colour",
+    );
+    assert.equal(
+      computed(empty.querySelector(".tile-slot-name"), "color"),
+      "var(--text-label)",
+      "the pale name",
+    );
+    assert.equal(
+      lastDeclared(document, withIcon, "border-color", "border"),
+      "var(--frame-width) solid var(--control-border)",
+    );
+    assert.equal(lastDeclared(document, withIcon, "aspect-ratio"), "1 / 1");
+
+    const chosen = await draw({ tile: TILE_WITH_ICON, selected: true });
+    assert.equal(
+      lastDeclared(document, chosen, "border-color"),
+      "var(--selected)",
+    );
+    assert.equal(
+      computed(chosen, "color"),
+      "var(--text-strong)",
+      "a chosen tile's content",
+    );
+    const chosenEmpty = await draw({ tile: TILE_EMPTY, selected: true });
+    assert.equal(
+      computed(chosenEmpty.querySelector(".tile-slot-name"), "color"),
+      "var(--text-label)",
+      "the pale name of a chosen tile",
+    );
+
+    withIcon.classList.add("is-hovered");
+    assert.equal(
+      lastDeclared(document, withIcon, "background-color", "background"),
+      "var(--highlight)",
+    );
+
+    const locked = await draw({ tile: TILE_WITH_ICON, disabled: true });
+    assert.equal(
+      computed(locked, "color"),
+      "var(--text-disabled)",
+      "a disabled icon",
+    );
+    const lockedEmpty = await draw({ tile: TILE_EMPTY, disabled: true });
+    assert.equal(
+      computed(lockedEmpty.querySelector(".tile-slot-name"), "color"),
+      "var(--text-disabled)",
+      "a disabled pale name",
+    );
+    assert.equal(
+      lastDeclared(document, locked, "border-color", "border"),
+      "var(--frame-width) solid var(--control-border)",
+    );
+  });
+});
+
+// Breaks: a tile whose touch target the phone layout leaves out: its rule must give the tile's
+// minimum width and height `--touch-target-min` in the block of the phone layout, as it does every button.
+test("in the phone layout a tile is at least --touch-target-min wide and high", async () => {
+  await withPage(async ({ document }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const tile = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "tile", tile: TILE_WITH_ICON }),
+      ),
+    );
+    const held = { "min-width": null, "min-height": null };
+    let found = false;
+    for (const rule of document.styleSheets[0].cssRules) {
+      if (rule.media?.mediaText !== "(width < 1280px)") continue;
+      found = true;
+      for (const inner of rule.cssRules) {
+        if (
+          inner.selectorText === undefined ||
+          !tile.matches(inner.selectorText)
+        )
+          continue;
+        for (const property of Object.keys(held)) {
+          const value = inner.style.getPropertyValue(property);
+          if (value !== "") held[property] = value;
+        }
+      }
+    }
+    assert.ok(found, "a block of the phone layout");
+    assert.deepEqual(held, {
+      "min-width": "var(--touch-target-min)",
+      "min-height": "var(--touch-target-min)",
+    });
+  });
+});
+
 // --- the text field and the password field -----------------------------------------------------
 
 test("a text field with a hidden label names its input by aria-label and draws no label element", async () => {
