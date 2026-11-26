@@ -16,7 +16,7 @@ const KEY = "loop2-judging-record-1|acct-1|1000|forestLair";
 // The numbers of the creature of the map as the data give them (the bear of Las — matecznik: 120 and 20).
 const BEAR = { health: 120, strikeDamage: 20 };
 const JUDGING_IDS = { characterId: 1, programId: 1, mapId: MAP };
-const JUDGING_KEY = "loop2-judging-2|acct-1|1000|1|1|forestLair";
+const JUDGING_KEY = "loop2-judging-3|acct-1|1000|1|1|forestLair";
 const FINGERPRINT = "0123456789abcdef";
 const JUDGING_VALUE = JSON.stringify({
   results: "sssssssssssd",
@@ -24,6 +24,7 @@ const JUDGING_VALUE = JSON.stringify({
   revision: 0,
   fingerprint: FINGERPRINT,
   generation: 1,
+  gearChanges: 0,
 });
 
 /** The stored value of a record, in the form of version 1, whatever its fields. */
@@ -231,6 +232,7 @@ test("the record stays where the judgings of its map go: a judging remembered ab
       revision: 3,
       fingerprint: FINGERPRINT,
       generation: 2,
+      gearChanges: 0,
     }),
   });
   const cache = open(storage, {
@@ -609,7 +611,7 @@ test("opening a game removes the records of the same account under the moment of
     "loop2-judging-record-1|acct-2|1000|forestLair": value,
     "loop2-judging-record-2|acct-1|999|forestLair": value,
     [JUDGING_KEY]: JUDGING_VALUE,
-    "loop2-judging-2|acct-1|999|1|1|forestLair": JUDGING_VALUE,
+    "loop2-judging-3|acct-1|999|1|1|forestLair": JUDGING_VALUE,
     "unrelated key": "x",
   });
   open(storage);

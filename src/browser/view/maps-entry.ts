@@ -56,7 +56,7 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
         state: store.get(),
         nowMs: store.moment(),
         mapId,
-        readRecord: (ids: JudgingIds) => judgingCache.read(ids),
+        readRecord: (ids: JudgingIds) => judgingCache.read(ids, store.get()),
         readMapRecord,
       });
 
@@ -138,18 +138,20 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
           // The judging is an act of the store, so the time is counted first and the state the
           // judging reads is the one the click met (D-409). Inside the act, before the screen's one
           // draw, its record replaces the judging the cache holds for its character, program and
-          // map, and the most health it took from the map's creature in one fight is offered to the
-          // record of the map (D-440, D-441), unless the store has halted (D-323). The act takes no result into the
-          // store, which saves nothing for it (D-170); the judging is given back for the screen to
-          // show, with the cause and the minute of each death the cache does not keep.
+          // map, stored with the count of the character's gear changes in the state it read (D-463),
+          // and the most health it took from the map's creature in one fight is offered to the
+          // record of the map (D-440, D-441), unless the store has halted (D-323). The act takes no
+          // result into the store, which saves nothing for it (D-170); the judging is given back for
+          // the screen to show, with the cause and the minute of each death the cache does not keep.
           judge(characterId, judged, programId) {
             const made: Judging[] = [];
             mapsAct(() =>
               store.act(() => {
                 const ids = { mapId: judged, characterId, programId };
-                const done = judgeAndRecord(store.get(), ids);
+                const read = store.get();
+                const done = judgeAndRecord(read, ids);
                 if (!store.halted()) {
-                  judgingCache.remember(ids, done.record);
+                  judgingCache.remember(ids, done.record, read);
                   offerDamage(judged, done.judging);
                 }
                 made.push(done.judging);
