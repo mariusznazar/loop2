@@ -3,6 +3,7 @@
  * taken down on leaving, built anew where the address names another character. A new screen copies
  * this entry. Nothing here runs when the module is imported.
  */
+import { putOnPiece, takeOffPiece } from "../sim/gear.js";
 import { stopLoop } from "../sim/loop.js";
 import { buyBranch } from "../sim/skills.js";
 import { createCharacterScreen } from "./character-screen.js";
@@ -44,6 +45,18 @@ export function createCharacterEntry(
         },
         onStop() {
           store.act((take) => take(stopLoop(store.get(), characterId)));
+        },
+        // A change of the gear depends on the time passed, since a death in it may settle the gear, so the
+        // store counts the time first and the body reads the state after that (D-409).
+        onPutOn(slot, item) {
+          store.act((take) =>
+            take(putOnPiece(store.get(), characterId, slot, item)),
+          );
+        },
+        onTakeOff(slot) {
+          store.act((take) =>
+            take(takeOffPiece(store.get(), characterId, slot)),
+          );
         },
         props: props(),
       });

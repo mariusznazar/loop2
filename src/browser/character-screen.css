@@ -1,7 +1,7 @@
 /*
  * The stylesheet of the screen Postać (D-421): its two areas, the name and the facts of a character with
  * its resurrection line, the frame of what the character does, the section „Wyposażenie” with the
- * figure and the tiles of its slots, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
+ * figure and the tiles of its slots and the pick under them, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
  * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
@@ -88,6 +88,43 @@
   display: flex;
   justify-content: center;
   gap: var(--space-s);
+}
+
+/*
+ * The pick under the chosen tile (D-461): its heading „{miejsce}: {rzecz}” or „{miejsce}: nic” in
+ * `text-strong`, the name to look at first (D-40), and under it the cells of the pick, the shared pick
+ * cells of the rule panel, two to a line in both layouts as the rule panel's pick stands in the phone
+ * layout (program-panel.css): the left area is a quarter of the width in the computer layout and the
+ * page's width in the phone layout, and two cells fit it either way where the word of a cell's reason
+ * does not fit a third column. A sentence of a chest with nothing that fits stands in `text-secondary`,
+ * as the sentences of the section do (D-40). The columns may shrink below their cells (`minmax(0, 1fr)`),
+ * so nothing in the pick widens the area.
+ */
+.character-gear-pick {
+  margin-top: var(--space-s);
+}
+
+.character-gear-pick-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+
+.character-gear-pick-empty {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.character-gear-pick-cells {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.character-gear-pick-cells > .pick-cell {
+  width: 100%;
 }
 
 /*

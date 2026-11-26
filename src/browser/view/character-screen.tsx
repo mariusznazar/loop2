@@ -9,13 +9,17 @@
  * right area holds the section „Umiejętności” once a tree is known. The page holds the screen behind one
  * boundary, `createCharacterScreen` (D-36): an element of its own for the page to place, a first render
  * that is synchronous, `update(props)` and `dispose()`. The page calls them from an event handler or the
- * continuation of an answer, never from render or an effect. The two acts of the screen, a purchase and a
- * stop, go to the page through `onBuy` and `onStop`. Nothing runs when the module is imported.
+ * continuation of an answer, never from render or an effect. Its acts go to the page through `onBuy` for a
+ * purchase, `onStop` for a stop, and, for the gear, `onPutOn` and `onTakeOff`:
+ * putting a piece of the chest on a slot and taking the piece of a slot off (D-461). Nothing runs when the
+ * module is imported.
  */
 import { useRef, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ARCHETYPES } from "../sim/data/archetypes.js";
+import type { GearSlot } from "../sim/data/gear.js";
+import type { ItemId } from "../sim/data/items.js";
 import { SKILLS, type BranchId, type SkillId } from "../sim/data/skills.js";
 import { waitingPractice } from "../sim/loop.js";
 import type { CharacterId, GameState } from "../sim/types.js";
@@ -45,6 +49,10 @@ export type CharacterScreenOptions = {
   onBuy: (branch: BranchId) => void;
   /** Called when the player stops the character's earning loop. */
   onStop: () => void;
+  /** Called when the player picks an item of the chest for a slot of the character's gear (D-461). */
+  onPutOn: (slot: GearSlot, item: ItemId) => void;
+  /** Called when the player takes the piece of a slot of the character's gear off (D-461). */
+  onTakeOff: (slot: GearSlot) => void;
   props: CharacterScreenProps;
 };
 
@@ -64,7 +72,13 @@ type CharacterViewProps = Omit<CharacterScreenOptions, "props"> & {
 };
 
 /** The screen: the character's facts, frame and gear section with its figure on the left, its skills on the right. */
-function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
+function CharacterView({
+  onBuy,
+  onStop,
+  onPutOn,
+  onTakeOff,
+  props,
+}: CharacterViewProps) {
   const { state, nowMs, characterId } = props;
   const name = useRef<HTMLHeadingElement>(null);
   const stop = useRef<HTMLButtonElement>(null);
@@ -154,8 +168,10 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
           </div>
           <CharacterGear
             character={character}
-            run={state.run}
+            state={state}
             inLoop={loop !== undefined}
+            onPutOn={onPutOn}
+            onTakeOff={onTakeOff}
           />
         </section>
         {trees.length === 0 ? null : (
@@ -192,6 +208,8 @@ export function createCharacterScreen(
         <CharacterView
           onBuy={options.onBuy}
           onStop={options.onStop}
+          onPutOn={options.onPutOn}
+          onTakeOff={options.onTakeOff}
           props={props}
         />,
       );
