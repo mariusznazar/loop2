@@ -48,6 +48,19 @@
   color: var(--danger);
 }
 
+/*
+ * The sample of the button of a cell under the pointer takes no background `highlight`, since the
+ * track of its bar stands in that colour, and its name lightens to `text-strong`, as styles.css draws
+ * `.button.value-cell:hover` (D-450); the rule above would give it the background it must not have.
+ */
+.sample-hover .button.value-cell {
+  background: transparent;
+}
+
+.sample-hover .button.value-cell .value-cell-name {
+  color: var(--text-strong);
+}
+
 /* A section may be narrower than its table, which then scrolls inside its panel. */
 .sample-section {
   min-width: 0;

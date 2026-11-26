@@ -10,7 +10,10 @@ import { createRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { ConditionNumber } from "../sim/program.js";
 import { ReactButton } from "../view/controls/react-button.js";
-import type { ReactButtonProps } from "../view/controls/react-button.js";
+import type {
+  CellParts,
+  ReactButtonKind,
+} from "../view/controls/react-button.js";
 import { ReactNumberField } from "../view/controls/react-number-field.js";
 import type { NumberRule } from "../view/controls/react-number-field.js";
 import { ReactPickCell } from "../view/controls/react-pick-cell.js";
@@ -68,7 +71,11 @@ const NOT_APPLYING = {
 type Loading = string | readonly [string, string | null];
 
 /** The kinds and flags that make a button the kind a row of the page shows. */
-type ButtonLook = Pick<ReactButtonProps, "kind" | "submit" | "selected">;
+type ButtonLook = {
+  kind?: Exclude<ReactButtonKind, "value-cell">;
+  submit?: boolean;
+  selected?: boolean;
+};
 
 /**
  * A button of the given look in each state. A tab is shown as a group of its kind sets it, selected
@@ -100,6 +107,34 @@ function buttonSample(text: string, look: ButtonLook, loading: Loading) {
       </Forced>
     );
   };
+}
+
+/** The made-up cell of the body row that the samples of the button of a cell draw. */
+const SAMPLE_CELL: CellParts = {
+  name: "Sytość",
+  number: "70",
+  bar: { share: 0.7, fillRole: "satiety-fill" },
+  note: "Dopisek",
+};
+
+/**
+ * The button of a cell of the body row in each state (D-44, D-450). A cell holds a value, never an
+ * entry, and waits for no server, so the states error, empty and loading do not apply to it; the
+ * reasons are those of the plain button, which the same facts make.
+ */
+function cellSample(state: State): ReactNode {
+  if (state === "error") return reason(NOT_APPLYING.buttonError);
+  if (state === "empty") return reason(NOT_APPLYING.buttonEmpty);
+  if (state === "loading") return reason(NOT_APPLYING.buttonLoading);
+  return (
+    <Forced state={state}>
+      <ReactButton
+        kind="value-cell"
+        cell={SAMPLE_CELL}
+        disabled={state === "disabled"}
+      />
+    </Forced>
+  );
 }
 
 /**
@@ -306,6 +341,7 @@ const CONTROLS: readonly (readonly [string, (state: State) => ReactNode])[] = [
   ],
   ["Komórka wyboru", pickCellSample(false)],
   ["Komórka wyboru wybrana", pickCellSample(true)],
+  ["Komórka wiersza ciała", cellSample],
   ["Lista wyboru", selectListSample],
   [
     "Pole liczby",
