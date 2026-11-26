@@ -573,10 +573,13 @@ Jak układ telefonu się zapisuje:
   kontrolkom, których tło w spoczynku jest przezroczyste, i wierszom: wierszowi reguły i nagłówkowi
   grupy w edytorze programu, „Teraz” i „Potem”, wierszowi listy map i listy programów. Wiersz
   otwarty zostaje na `highlight`, a wiersz reguły, która wygrywa albo której czynność trwa, na
-  `rule-winning` albo `rule-running`. Powód: przeglądarka dotyku trzyma `:hover` na ostatnio
+  `rule-winning` albo `rule-running`. Tak samo przycisk komórki wiersza ciała, który pod kursorem
+  zamiast tła rozjaśnia nazwę, zostaje w takim bloku z nazwą w `text-label`, chyba że jego
+  objaśnienie stoi otwarte. Powód: przeglądarka dotyku trzyma `:hover` na ostatnio
   dotkniętym elemencie, także na wierszu wokół dotkniętego przycisku, aż do następnego dotknięcia,
-  więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym, a na wierszu reguły
-  udawałoby regułę wybraną; mysz, także w wąskim oknie komputera, widzi tło pod kursorem jak dotąd.
+  więc tło zostałoby na dotkniętej kontrolce, także na przycisku niszczącym, na wierszu reguły
+  udawałoby regułę wybraną, a jasna nazwa komórki zamkniętej dotknięciem udawałaby komórkę otwartą;
+  mysz, także w wąskim oknie komputera, widzi tło i nazwę pod kursorem jak dotąd.
 - Reguła układu telefonu nie jest sprawdzana testem, bo jsdom jej nie stosuje; sprawdza ją
   agent w przeglądarce (reguła A change is checked in both layouts). To granica testów, nie
   usterka: zielony test mówi o układzie komputera i o logice, nie o układzie telefonu.

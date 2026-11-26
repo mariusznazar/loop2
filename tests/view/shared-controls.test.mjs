@@ -757,6 +757,75 @@ test("under the pointer a button of a cell keeps its background and lightens its
   });
 });
 
+/** The condition of the blocks of the phone layout on a device whose pointer cannot hover (D-396). */
+const TOUCH = "(width < 1280px) and (hover: none)";
+
+/**
+ * The colour of the name of `cell` that the rules give it on a device whose pointer cannot hover: the
+ * last of the plain rules and of the rules of the blocks `TOUCH` that match the name, in the order the
+ * cascade reads them. jsdom applies no block of a media feature, so the case reads the rules themselves;
+ * of two rules of the cell's name that match, the later has the greater specificity.
+ */
+function nameColourOnTouch(document, cell) {
+  const name = cell.querySelector(".value-cell-name");
+  const media = [];
+  let last = null;
+  for (const rule of document.styleSheets[0].cssRules) {
+    if (rule.media !== undefined) media.push(rule.media.mediaText);
+    const held =
+      rule.selectorText !== undefined
+        ? [rule]
+        : rule.media?.mediaText === TOUCH
+          ? [...rule.cssRules]
+          : [];
+    for (const inner of held) {
+      if (!name.matches(inner.selectorText)) continue;
+      const colour = inner.style.getPropertyValue("color");
+      if (colour !== "") last = colour;
+    }
+  }
+  assert.ok(
+    media.includes(TOUCH),
+    `a block ${TOUCH} among ${media.join("; ")}`,
+  );
+  return last;
+}
+
+// Breaks: a browser of touch keeps `:hover` on the cell last tapped, so a cell closed by a tap would keep
+// the lit name of an open one until the next tap elsewhere; the open cell must keep its lit name there.
+test("on a device whose pointer cannot hover a closed cell under the pointer keeps its grey name, and an open one its lit name", async () => {
+  // decision: D-40 "The button of a cell of the body row (D-44) takes no background `highlight` under the pointer, since the track of its bar stands in that colour, and its name stands in `text-strong` under the pointer and while its explanation stands open."
+  await withPage(async ({ document }) => {
+    const style = document.createElement("style");
+    style.textContent = stylesheetWithPointerClass();
+    document.head.append(style);
+    const tapped = async (expanded) => {
+      const cell = drawnElement(
+        await drawn(
+          document,
+          createElement(ReactButton, {
+            kind: "value-cell",
+            cell: CELL,
+            expanded,
+          }),
+        ),
+      );
+      cell.classList.add("is-hovered");
+      return cell;
+    };
+    assert.equal(
+      nameColourOnTouch(document, await tapped(false)),
+      "var(--text-label)",
+      "closed",
+    );
+    assert.equal(
+      nameColourOnTouch(document, await tapped(true)),
+      "var(--text-strong)",
+      "open",
+    );
+  });
+});
+
 // Breaks: a bar whose track is not `highlight` or is not twice `--bar-width` thick, a fill that does not
 // follow the share the screen gives or takes another role than the one it is given, and a disabled cell
 // whose name stays grey beside the disabled text of every other control.

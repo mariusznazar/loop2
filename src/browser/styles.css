@@ -727,8 +727,10 @@ header .failure-line {
  * one threshold between them"): a browser of touch keeps `:hover` on the element last tapped until the
  * next tap, so the background `highlight` would stay on the tapped control, a destructive button among
  * them. In the phone layout on a device whose pointer cannot hover, the controls of this file whose
- * background at rest is transparent keep it; a mouse, in a narrow window too, sees the rules above.
- * The media feature `hover` is no threshold of width and makes no layout of its own.
+ * background at rest is transparent keep it, and the button of a cell of the body row keeps its name
+ * in `text-label` unless its explanation stands open, so a cell closed by a tap does not look open (D-40);
+ * a mouse, in a narrow window too, sees the rules above. The media feature `hover` is no threshold of
+ * width and makes no layout of its own.
  */
 @media (width < 1280px) and (hover: none) {
   .menu-bar-item:hover,
@@ -737,6 +739,11 @@ header .failure-line {
   .select-list:hover:not(:disabled),
   .input-field input:hover:not(:disabled) {
     background: transparent;
+  }
+
+  .button.value-cell:hover:not(:disabled):not([aria-expanded="true"])
+    .value-cell-name {
+    color: var(--text-label);
   }
 }
 
