@@ -7237,8 +7237,8 @@ the explanation of the energy (D-450).
 - **Relations:** derives from D-125 · derives from D-337
 - **Verification:** tests: the body row ending with „Energia natury {n}”, from game minute zero,
   before „Energia natury poniżej” is discovered; the energy cut down to a whole number, 89.5 shown
-  as „Energia natury 89”; the number of the energy in `text` at 0 and 90 and never in `danger` at 0,
-  90 and 100; its cell standing as the other cells do, its name at the left and its number at its right, under
+  as „Energia natury 89”; the number of the energy in `text` at 0, 90 and 100, never in `danger`;
+  its cell standing as the other cells do, its name at the left and its number at its right, under
   them a bar in `text-strong` filled to its share of the cap, and a click on it opening the
   explanation of the energy.
 - **Origin:** none
@@ -11324,7 +11324,8 @@ setting for reduced motion the cell does not shake and the text stands still and
 - **Based on:** none
 - **Relations:** derives from D-337 · derives from D-04
 - **Verification:** tests: a click on the cell of temperature, satiety or nature energy opening
-  between the four cells and the backpack the explanation of its value, with its threshold, what
+  between the four cells and the backpack, in the flow of the row so that it moves the backpack
+  down, the explanation of its value, with its threshold, what
   happens below it and how fast the value changes, from the game's data, a second click on that cell
   closing it, a click on another of those cells switching to its explanation, never two open at once,
   and the health cell opening none; for a combat the one marker „−{n} · {stworzenie}” in the health
