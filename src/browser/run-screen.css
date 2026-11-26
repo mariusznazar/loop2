@@ -776,6 +776,134 @@
 }
 
 /*
+ * The motion of the body row (D-337, D-450, D-42), after the pattern of the scene's rules of motion,
+ * reduced motion and standing below; it is CSS alone, and TypeScript only marks the row and the health
+ * cell. The scene's rules stand under `.scene`, so none of them reaches the row.
+ *
+ * - The alarm's pulse: below its threshold the fill of satiety and of health, and on the scale the
+ *   marker together with the zone it stands in (`holds-marker`, under `alarm`), go from full opacity to
+ *   `--alarm-pulse-dim-opacity` and back in 1.1 s, smoothly, with no end (task paski-parametrow, To do 3,
+ *   the pulse of the alarm of loop, @keyframes alarm in src/app/globals.css of branch origin/test 715026e
+ *   of the repository loop; the time is the task's). The marker and the zone start together, as the
+ *   class `alarm` comes to their cell, so they move together. Only where the system asks for no less
+ *   motion; the red number and the note carry the alarm otherwise. A pulse of one cycle in 1.1 s is
+ *   under three a second and moves a strip of a few pixels, so it is far under the threshold of 2.3.1
+ *   (D-42). The pulse goes on while game time stands (D-337): the stop below names the shake and the
+ *   text of a blow alone.
+ * - A creature's blow (D-450): the health cell, marked `data-blow`, shakes once in 340 ms and its text,
+ *   `.body-blow-text`, rises and fades once in 1.3 s (task paski-parametrow, Context, --animate-shake and
+ *   --animate-rise in src/app/globals.css of branch origin/test 715026e of the repository loop). A new
+ *   blow changes the mark between `odd` and `even`, which names the keyframes of the shake anew, so the
+ *   shake starts again on the same element, and its text is a new element. Under reduced motion the cell
+ *   does not shake and the text, outside the block below, stands still for the same 1.3 s and goes at
+ *   its end: its keyframes change only its opacity, in a step at the end. The end of the text's
+ *   animation, or its cancelling where the screen is hidden, ends the marker (body-row-cells.tsx).
+ * - While game time stands, the shake and the text stand where they reached and go on when it goes on:
+ *   the row's `data-standing` is the scene's (`standingOf`), so one that is not `going` is the player's
+ *   pause, a discovery, a death, a completion or the screen after the end of a map run. A marker that
+ *   comes then stands at its first frame, the text whole and the cell not yet shaken.
+ */
+.body-cells .value-cell-static {
+  position: relative;
+}
+
+.body-blow-text {
+  position: absolute;
+  right: var(--space-s);
+  bottom: 100%;
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
+  color: var(--danger);
+  white-space: nowrap;
+  pointer-events: none;
+  animation-name: body-blow-text-still;
+  animation-duration: 1.3s;
+  animation-timing-function: step-end;
+  animation-fill-mode: both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .body-cells .alarm .value-cell-fill,
+  .body-cells .alarm .body-scale-marker,
+  .body-cells .alarm .body-scale-zone.holds-marker {
+    animation-name: body-alarm-pulse;
+    animation-duration: 1.1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .body-cells .value-cell-static[data-blow] {
+    animation-duration: 340ms;
+    animation-timing-function: linear;
+  }
+
+  .body-cells .value-cell-static[data-blow="odd"] {
+    animation-name: body-blow-shake-odd;
+  }
+
+  .body-cells .value-cell-static[data-blow="even"] {
+    animation-name: body-blow-shake-even;
+  }
+
+  .body-blow-text {
+    animation-name: body-blow-text-rise;
+    animation-timing-function: ease-out;
+  }
+}
+
+.body-row:not([data-standing="going"]) .body-blow-text,
+.body-row:not([data-standing="going"]) .value-cell-static[data-blow] {
+  animation-play-state: paused;
+}
+
+/* The pulse: the element's own opacity is full at both ends of the cycle, so the keyframes name the dim phase alone. */
+@keyframes body-alarm-pulse {
+  50% {
+    opacity: var(--alarm-pulse-dim-opacity);
+  }
+}
+
+/* The shake: left, right, left, right and back, by the step of the spacing scale; two names with one body, for the restart. */
+@keyframes body-blow-shake-odd {
+  20%,
+  60% {
+    translate: calc(-1 * var(--space-xs)) 0;
+  }
+
+  40%,
+  80% {
+    translate: var(--space-xs) 0;
+  }
+}
+
+@keyframes body-blow-shake-even {
+  20%,
+  60% {
+    translate: calc(-1 * var(--space-xs)) 0;
+  }
+
+  40%,
+  80% {
+    translate: var(--space-xs) 0;
+  }
+}
+
+/* The text rises and fades out. */
+@keyframes body-blow-text-rise {
+  to {
+    translate: 0 calc(-1 * var(--space-m));
+    opacity: 0;
+  }
+}
+
+/* The text under reduced motion: it stands, and goes in one step at the end of its time. */
+@keyframes body-blow-text-still {
+  to {
+    opacity: 0;
+  }
+}
+
+/*
  * The world area of the screen of a map run (D-311): the scene at the top, a picture drawn
  * pixel-sharp with nothing in it the keyboard or a click reaches and no text on it or over it
  * (D-272, D-321); under the lines the drawing of the map and the line of a tile under it, in `text` as
