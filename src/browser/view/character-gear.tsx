@@ -117,7 +117,7 @@ function GearPickCells({
           {pick.options.map(({ item, count }) => (
             <ReactPickCell
               key={item}
-              text={`${ITEMS[item].name} × ${count}`}
+              text={`${count} × ${ITEMS[item].name}`}
               icon={ITEMS[item].icon}
               onPick={() => onPick(item)}
             />

@@ -3164,8 +3164,13 @@ Object.assign(CRAFTED, {
       action: { kind: "dodge" },
       refill: true,
     }),
+  // The document of the current version has no turn with no action of the character, so the case makes
+  // one first; such a turn alone loads, as „a combat turn with no action of the character” below shows.
   "a refill mark on an exchange with no action of the character": (document) =>
-    (fought(document).exchanges[1].refill = true),
+    Object.assign(fought(document).exchanges[1], {
+      characterAction: null,
+      refill: true,
+    }),
   // „Załóż” in a turn of a combat record: its item a stick or a bandage as in any program, no refill
   // and no damage, since it takes a piece from the backpack into a slot and deals nothing.
   "a turn of „Załóż” with a refill mark": (document) =>
@@ -3379,6 +3384,8 @@ test("a document at the edges of what the gear admits loads", () => {
       fought(document).gear = { ...EMPTY_GEAR };
       fought(document).exchanges[0].characterAction.refill = false;
     },
+    "a combat turn with no action of the character": (document) =>
+      (fought(document).exchanges[1].characterAction = null),
   };
   for (const [name, change] of Object.entries(edges)) {
     const document = changed(change);

@@ -126,7 +126,7 @@ test("a touch of the tile of a held slot opens the pick of the chest's items tha
     assert.equal(headingOf(page.root), "Ręka główna: patyk");
     assert.deepEqual(facesOf(page.root), [
       {
-        name: "patyk × 2",
+        name: "2 × patyk",
         icon: iconOf("wood-stick"),
         reason: null,
         greyed: false,
@@ -144,7 +144,7 @@ test("a touch of the tile of a held slot opens the pick of the chest's items tha
     assert.equal(headingOf(page.root), "Kieszeń: nic");
     assert.deepEqual(facesOf(page.root), [
       {
-        name: "opatrunek × 3",
+        name: "3 × opatrunek",
         icon: iconOf("first-aid-kit"),
         reason: null,
         greyed: false,
@@ -246,7 +246,7 @@ test("a cell of an item sends the act of putting it on that slot and a „Zdejmi
 
     await press(tile(page.root, "mainHand"));
     const faces = facesOf(page.root).map((face) => face.name);
-    assert.deepEqual(faces, ["patyk × 1", "Zdejmij"]);
+    assert.deepEqual(faces, ["1 × patyk", "Zdejmij"]);
     await press(cellsOf(page.root)[1]);
     assert.deepEqual(sent.at(-1), ["takeOff", "mainHand"]);
     assert.equal(sent.length, 2);
@@ -300,7 +300,7 @@ test("the pick follows the state the screen is drawn from: a chest that changes 
     await press(tile(page.root, "mainHand"));
     assert.deepEqual(
       facesOf(page.root).map((face) => face.name),
-      ["patyk × 1", "Zdejmij"],
+      ["1 × patyk", "Zdejmij"],
     );
     const more = {
       ...state,
@@ -309,7 +309,7 @@ test("the pick follows the state the screen is drawn from: a chest that changes 
     await inAct(() => screen.update(propsOf(more, NOW + 60_000)));
     assert.deepEqual(
       facesOf(page.root).map((face) => face.name),
-      ["patyk × 5", "Zdejmij"],
+      ["5 × patyk", "Zdejmij"],
       "the pieces of the new chest, and the pick still open",
     );
     const none = {

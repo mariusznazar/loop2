@@ -152,6 +152,27 @@ test("with no stick in the main hand or the backpack the strike is passed over w
   }
 });
 
+// Catches a strike that refills a main hand that holds a piece of another item, and one that takes its
+// stick from the backpack past that piece. No item of the data but the stick fits the main hand, so the
+// hand here holds a bandage, which the data refuse it, to stand for such an item.
+test("a strike takes a stick from the backpack only into an empty main hand: a hand holding another item keeps it and the strike is passed over", () => {
+  // decision: D-457 "An empty slot of the gear stays empty until a rule puts something on it or the character uses an action that takes a piece from that slot."
+  // decision: D-456 "„Uderz — patyk” takes its stick from the main hand and from no other slot."
+  const program = programFromRules(
+    { condition: ALWAYS, action: STRIKE },
+    { condition: ALWAYS, action: KICK },
+  );
+  const otherInHand = { ...EMPTY_GEAR, mainHand: "bandage" };
+  const run = carrying(program, 2, otherInHand);
+  const fight = { combat: { health: 100, opponentHealth: 24 } };
+  assert.equal(judgeProgram(run, program, fight).rules[1].bar, "blocked");
+  const result = resolveCombat(run, "wolf", program);
+  assert.equal(result.exchanges[0].characterAction.action.kind, "kick");
+  assert.equal(refills(result), 0);
+  assert.deepEqual(result.gear, otherInHand);
+  assert.deepEqual(result.backpack, { ...NO_PIECES, stick: 2 });
+});
+
 test("outside combat the strike stays refused with „tylko w walce”, a stick in the main hand or not", () => {
   // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it, but for „Załóż” (D-458)."
   for (const [gear, sticks] of [
