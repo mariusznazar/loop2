@@ -1,13 +1,32 @@
 /**
- * The body row of the screen of a map run (D-337, D-311, D-178): the four values of the body, each in
- * a cell of its own with its note under temperature and satiety, and the line of the backpack under
- * them. It draws from the map run it is given, the map's data included, and holds no state of its own.
- * The world area draws it between „Potem” and the lines below the backpack. Nothing runs when the
- * module is imported.
+ * The body row of the screen of a map run (D-337, D-311, D-178, D-39, D-40, D-44): the four values of
+ * the body, each in a cell of its own — its name at the left and its number at the right, under them a
+ * bar, or for temperature the scale with its marker, and under the bar the note of temperature and of
+ * satiety — and the line of the backpack under them. The cells of temperature, satiety and nature
+ * energy are the shared button of a cell; health is no button and stands in the same parts. The cells
+ * stand in two pairs, so that a row too narrow for four breaks into two rows of two (run-screen.css).
+ * It draws from the map run it is given, the map's data included, and holds no state of its own. The
+ * world area draws it between „Potem” and the lines below the backpack. Nothing runs when the module
+ * is imported.
  */
+import type { CSSProperties } from "react";
 import { MAPS } from "../sim/data/maps.js";
 import type { MapRun } from "../sim/types.js";
-import { backpackText, bodyCells } from "./body-row.js";
+import {
+  backpackText,
+  bodyRowCells,
+  temperatureZones,
+  type BodyCellId,
+  type BodyMeter,
+  type BodyRowCell,
+} from "./body-row.js";
+import {
+  ReactButton,
+  ValueCellParts,
+  type CellBar,
+  type CellFillRole,
+  type CellParts,
+} from "./controls/react-button.js";
 
 /** What the world area gives the body row: the map run on the screen, whatever its game minute. */
 export type BodyRowCellsProps = {
@@ -15,23 +34,95 @@ export type BodyRowCellsProps = {
   run: MapRun;
 };
 
-/** The body row: its cells, each with its value and, under temperature and satiety, its note, and the backpack. */
+/** The role of the fill of each value that stands on a bar: the colour of the value (D-39, D-40). */
+const FILL_ROLES: Record<Exclude<BodyCellId, "temperature">, CellFillRole> = {
+  satiety: "satiety-fill",
+  health: "positive",
+  natureEnergy: "text-strong",
+};
+
+/**
+ * The scale of temperature (D-337, D-40): its three zones, each as wide as its share of the scale,
+ * and the marker at the temperature now, `--share` of the way from the left end. The zone the marker
+ * stands in is named `holds-marker`, for the alarm that goes with the marker.
+ */
+function TemperatureScale({ meter }: { meter: BodyMeter }) {
+  const held = meter.kind === "scale" ? meter.zone : null;
+  return (
+    <span
+      className="body-scale"
+      style={{ "--share": meter.share / 100 } as CSSProperties}
+    >
+      {temperatureZones().map(({ zone, share }) => (
+        <span
+          key={zone}
+          className={
+            zone === held
+              ? `body-scale-zone ${zone} holds-marker`
+              : `body-scale-zone ${zone}`
+          }
+          style={{ "--zone-share": share } as CSSProperties}
+        />
+      ))}
+      <span className="body-scale-marker" />
+    </span>
+  );
+}
+
+/** What stands under a cell's name and number: the scale of temperature, or a bar in the value's colour. */
+function cellBar(id: BodyCellId, meter: BodyMeter): CellBar {
+  return meter.kind === "scale" || id === "temperature"
+    ? { scale: <TemperatureScale meter={meter} /> }
+    : { share: meter.share / 100, fillRole: FILL_ROLES[id] };
+}
+
+/**
+ * The parts of a cell as the shared control draws them, with its states as marks for run-screen.css:
+ * `alarm` for a value below its threshold, `note-danger` for „marznie” and „głoduje”, and
+ * `frame-warming` or `frame-cooling` for the frame of the temperature cell (D-337, D-39).
+ */
+function cellParts(cell: BodyRowCell): CellParts {
+  const marks = [
+    cell.alarm ? "alarm" : null,
+    cell.note?.danger ? "note-danger" : null,
+    cell.frame === "warming" || cell.frame === "cooling"
+      ? `frame-${cell.frame}`
+      : null,
+  ].filter((mark): mark is string => mark !== null);
+  return {
+    name: cell.name,
+    number: cell.number,
+    bar: cellBar(cell.id, cell.meter),
+    note: cell.note === null ? null : cell.note.text,
+    marks,
+  };
+}
+
+/** One cell: the shared button of a cell, or for health, which is no button, the same parts in a block. */
+function BodyCell({ cell }: { cell: BodyRowCell }) {
+  const parts = cellParts(cell);
+  if (cell.id === "health") {
+    return (
+      <div className={["value-cell-static", ...(parts.marks ?? [])].join(" ")}>
+        <ValueCellParts cell={parts} />
+      </div>
+    );
+  }
+  return <ReactButton kind="value-cell" cell={parts} />;
+}
+
+/** The body row: its cells in two pairs, then the line of the backpack. */
 export function BodyRowCells({ run }: BodyRowCellsProps) {
+  const cells = bodyRowCells(run, MAPS[run.mapId]);
+  const pairs = [cells.slice(0, 2), cells.slice(2)];
   return (
     <div className="body-row">
       <div className="body-cells">
-        {bodyCells(run, MAPS[run.mapId]).map((cell, index) => (
-          <div key={index} className="body-cell">
-            <span className={cell.danger ? "body-value danger" : "body-value"}>
-              {cell.text}
-            </span>
-            {cell.note === null ? null : (
-              <span
-                className={cell.note.danger ? "body-note danger" : "body-note"}
-              >
-                {cell.note.text}
-              </span>
-            )}
+        {pairs.map((pair, index) => (
+          <div key={index} className="body-cell-pair">
+            {pair.map((cell) => (
+              <BodyCell key={cell.id} cell={cell} />
+            ))}
           </div>
         ))}
       </div>

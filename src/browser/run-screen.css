@@ -630,44 +630,134 @@
 }
 
 /*
- * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
- * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
- * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
- * (D-337, D-39, D-40).
+ * The row of the body under the rows „Teraz” and „Potem” (D-337, D-311, D-39, D-40, D-42, D-44): the
+ * four cells, then the line of the backpack under them, with no bar. Each cell is the shared button of
+ * a cell, or for health the same parts with no button, whose look stands in styles.css: the name at
+ * the left and the number at the right on one line, the bar under them and the note under the bar,
+ * which says the minutes a need lasts, in `text-secondary`.
+ *
+ * The four cells stand in two pairs, temperature with satiety and health with nature energy. A cell is
+ * never narrower than its parts laid out each on one line, the whole name and the number side by
+ * side, so no text crosses its frame, and a pair never narrower than its two cells; where both pairs
+ * do not fit side by side the second drops under the first and the row stands as two rows of two,
+ * and where they fit, the four cells share the row evenly. No threshold of width decides it, so it
+ * holds in both layouts, and the phone layout needs no rule of its own here: the touch target of the
+ * three buttons is the one every `.button` holds there (D-396).
  */
 .body-row {
   display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--space-l);
+  flex-direction: column;
+  gap: var(--space-xs);
   margin-top: var(--space-xs);
 }
 
 .body-cells {
   display: flex;
   flex-wrap: wrap;
-  column-gap: var(--space-l);
+  gap: var(--space-s);
 }
 
-.body-cell {
+.body-cell-pair {
   display: flex;
-  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--space-s);
 }
 
-.body-cells,
+.body-cell-pair > * {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
 .backpack-text {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.body-note {
-  font-size: var(--font-size-detail);
-  color: var(--text-secondary);
+/*
+ * A value below its threshold — temperature below 35 °C, satiety below 30 and health below 35 — has its
+ * number in `danger`, and „marznie” and „głoduje” stand in `danger` too: the character may be lost
+ * (D-337, D-39). The fill keeps the colour of its value.
+ */
+.body-cells .alarm .value-cell-number,
+.body-cells .note-danger .value-cell-note {
+  color: var(--danger);
 }
 
-/* A value below the threshold of chill or hunger: the character may be lost (D-39). */
-.body-value.danger,
-.body-note.danger {
-  color: var(--danger);
+/*
+ * The frame of the button of the temperature cell says what acts on the character (D-337, D-39): in
+ * `warming-frame` while something burns on the character's tile, in `chill-zone` while nothing warms
+ * the character and the map is colder than its body, and otherwise the plain frame of the button in
+ * `control-border`. It has the width of the button's frame, so it tells from the focus outline, which
+ * is thicker and stands apart from the cell (D-47).
+ */
+.body-cells .button.value-cell.frame-warming {
+  border-color: var(--warming-frame);
+}
+
+.body-cells .button.value-cell.frame-cooling {
+  border-color: var(--chill-zone);
+}
+
+/*
+ * The scale of temperature in place of a bar (D-337, D-40, D-42): from 30 °C at its left end to 41 °C
+ * at its right, its track three zones in `chill-zone`, `safe-zone` and `danger`, each as wide as its
+ * share of the scale, which TypeScript gives in `--zone-share` from the zones of the body row, with a
+ * gap of `--frame-width` between two, through which the `panel` of the area shows, so that a zone
+ * touches only the background and the marker. The marker of the temperature now, in `scale-marker`,
+ * is `--bar-width` wide and as high as the scale, which is the height of a bar; it stands `--share` of
+ * the way along the scale less its own width, so at the right end it does not cross the scale.
+ */
+.body-scale {
+  position: relative;
+  display: flex;
+  gap: var(--frame-width);
+  height: 100%;
+}
+
+.body-scale-zone {
+  flex-grow: var(--zone-share);
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 0;
+}
+
+.body-scale-zone.chill {
+  background-color: var(--chill-zone);
+}
+
+.body-scale-zone.safe {
+  background-color: var(--safe-zone);
+}
+
+.body-scale-zone.overheating {
+  background-color: var(--danger);
+}
+
+.body-scale-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--share) * (100% - var(--bar-width)));
+  width: var(--bar-width);
+  background-color: var(--scale-marker);
+}
+
+/*
+ * The length of a fill and the place of the marker change smoothly, over 500 ms, the half second over
+ * which a bar of loop changes its length (task paski-parametrow, Context, from
+ * src/components/probe/RunWorld.tsx of branch origin/test 715026e of the repository loop); the curve
+ * `ease` is the agent's choice. A transition runs only from a value already drawn, so at the first
+ * draw of the row the length stands at once, and under the system's setting for reduced motion it
+ * stands at once at every change.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .body-cells .value-cell-fill {
+    transition: width 500ms ease;
+  }
+
+  .body-scale-marker {
+    transition: left 500ms ease;
+  }
 }
 
 /*
