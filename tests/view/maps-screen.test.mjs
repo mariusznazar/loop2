@@ -1127,6 +1127,25 @@ async function until(done) {
   assert.ok(done(), "the awaited moment came");
 }
 
+/**
+ * Holds the animation frames of the page's window until the returned `release` runs them and lets the
+ * page's timers run for 80 ms, inside one act. The screen asks the page to judge only after the browser has
+ * painted the waiting button, a frame and then a task, and the frames come from the browser's clock, not
+ * the game's: holding them makes a judging not yet made a state the case sets, which a slow run cannot
+ * pass before the case acts (a frame of jsdom comes every 16 ms of real time).
+ */
+function holdFrames(window) {
+  const held = [];
+  const own = window.requestAnimationFrame;
+  window.requestAnimationFrame = (callback) => held.push(callback);
+  return () =>
+    inAct(async () => {
+      window.requestAnimationFrame = own;
+      for (const callback of held.splice(0)) callback(window.performance.now());
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+}
+
 // D-329, D-439, D-325: the button of a judging stands beside „Wejdź” at each character, on a map
 // not yet solved and on a solved one, as the plain shared button.
 test("„Oceń na 12 ziarnach” stands beside „Wejdź” at each character on a map not yet solved and on a solved one, as the plain shared button", async () => {
@@ -1559,11 +1578,10 @@ test("a screen taken down while its button waits never asks the page to judge", 
       propsOf(solved(teamOf("Ala")), "forest"),
       { judge: () => MIXED },
     );
+    const release = holdFrames(page.window);
     await press(judgeButton(members(page.root)[0]));
     await inAct(() => screen.dispose());
-    await inAct(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 80));
-    });
+    await release();
     assert.deepEqual(calls, []);
   });
 });
@@ -2263,11 +2281,10 @@ test("a screen taken down while „Puść w pętlę” judges never asks the pag
       propsOf(solved(teamOf("Ala")), "forest"),
       { judge: () => judgedOf() },
     );
+    const release = holdFrames(page.window);
     await press(loopButton(members(page.root)[0]));
     await inAct(() => screen.dispose());
-    await inAct(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 80));
-    });
+    await release();
     assert.deepEqual(calls, []);
   });
 });
@@ -2283,12 +2300,11 @@ test("a click whose judging is not yet made when another map of the list opens a
       judge: () => judgedOf(),
     });
     const ala = members(page.root)[0];
+    const release = holdFrames(page.window);
     await press(loopButton(ala));
     await press(judgeButton(ala));
     await inAct(() => screen.update(propsOf(state, "forestEdge")));
-    await inAct(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 80));
-    });
+    await release();
     assert.deepEqual(calls, []);
     const onEdge = members(page.root)[0];
     assert.deepEqual(loopStand(onEdge), ORDINARY);
