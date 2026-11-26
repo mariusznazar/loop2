@@ -299,7 +299,7 @@ Kontrolki odstępujące od tej listy stanów:
   zostaje w `danger`, przy fokusie rysuje się obwódka z reguły Visible focus (D-44, D-39).
   Powód: gracz telefonu nie ma kursora, który dochodzi do przycisku przed dotknięciem,
   więc kolor, który pojawiałby się dopiero pod kursorem, nic by mu nie pokazał, i dlatego
-  nie ma osobnego wyglądu tego przycisku w układzie telefonu. Są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
+  nie ma osobnego wyglądu tego przycisku w układzie telefonu. Są nim „Zakończ”, „Usuń”, „Usuń z regułami” (D-296), „Restart”, „Porzuć zmiany”,
   „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” (D-44, D-402) i „Zablokuj” na liście kont (D-411), oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
@@ -353,7 +353,7 @@ Kontrolki odstępujące od tej listy stanów:
   dotyczy, bo żaden formularz czekający na serwer go nie ma.
 - `src/browser/view/controls/react-pick-cell.tsx`
   — komórka wyboru, czyli jedna
-  pozycja wyboru w panelu reguły (D-288, D-44): default — ramka w
+  pozycja wyboru w oknie reguły (D-288, D-44): default — ramka w
   `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
@@ -634,7 +634,7 @@ pomiarze.
 
 - **Decision:** D-396 · D-44 · D-19 · D-288 · D-306 · D-296 · D-43 · D-47
 - **Invariant:** none
-- **Good:** Strzałki „↑” i „↓” w nagłówku grupy reguł w obu układach, uchwyt dla myszy obok; zaznaczenie wiersza tabeli odkrytych kafelków dotknięciem kafelka obok zaznaczenia najechaniem; przycisk niszczący w `danger` już w spoczynku; `min-height: var(--touch-target-min)` w bloku `@media (width < 1280px)` reguły wiersza listy, który jest odnośnikiem.
+- **Good:** Strzałki „↑” i „↓” grupy reguł w jej nagłówku w układzie komputera i w jej oknie w układzie telefonu, uchwyt dla myszy obok; zaznaczenie wiersza tabeli odkrytych kafelków dotknięciem kafelka obok zaznaczenia najechaniem; przycisk niszczący w `danger` już w spoczynku; `min-height: var(--touch-target-min)` w bloku `@media (width < 1280px)` reguły wiersza listy, który jest odnośnikiem.
 - **Bad:** Czynność, którą da się zrobić tylko przeciągnięciem myszą albo tylko po najechaniu kursorem; przycisk niższy albo węższy niż `--touch-target-min` w układzie telefonu; `min-height: 48px` wpisane zamiast tokenu; kontrolka bez swojego celu dotyku tylko dlatego, że jej reguła stoi w arkuszu ekranu, a nie we wspólnym.
 
 W układzie telefonu wszystko, co gra oferuje, robi się dotykiem (D-396): logowanie, pisanie i
@@ -645,8 +645,10 @@ Najechanie albo przeciągnięcie wolno zostawić w układzie komputera jako doda
 - rysunek mapy: najechanie kursorem na kafelek zaznacza jego wiersz w tabeli odkrytych kafelków,
   a dotknięcie kafelka palcem zaznacza ten wiersz i trzyma zaznaczenie, aż dotknięcie gdzie indziej
   je zdejmie; kliknięcie myszą w kafelek niczego nie zmienia (D-19);
-- reguły i grupy reguł: przesuwają się strzałkami „↑” i „↓” w każdym układzie, a uchwyt z linią „tu
-  wyląduje” jest dla myszy komputera (D-288);
+- reguły i grupy reguł: przesuwają się strzałkami „↑” i „↓” w każdym układzie — w układzie komputera
+  stoją one w wierszu reguły i w nagłówku grupy, a w układzie telefonu w oknie reguły i w oknie grupy
+  (reguła The window of a rule and of a rule group) — a uchwyt z linią „tu wyląduje” jest dla myszy
+  komputera (D-288);
 - kolor albo wygląd, który pojawia się dopiero pod kursorem, nie niesie żadnej wiedzy, bez której
   gracz telefonu nie może działać: to, co gracz ma wiedzieć przed dotknięciem, stoi w spoczynku, jak
   tekst przycisku niszczącego w `danger` (D-44).
@@ -674,7 +676,9 @@ układu komputera zostają takie, jakie są.
 - Wiersz, który otwiera się dotknięciem, otwiera się dotknięciem w dowolnym miejscu poza
   swoimi przyciskami, a przyciski nie sięgają nad jego środek: dotknięcie środka wiersza
   reguły nie trafia w sąsiedni przycisk i nie zmienia programu (D-306, D-296; reguła
-  Program editor).
+  Program editor). W układzie telefonu wiersz reguły nie ma przycisków, a nagłówek grupy ma tylko
+  „▾”: strzałki i usuwanie stoją w oknie reguły i w oknie grupy, na jego dole, więc chybione
+  dotknięcie obok wiersza niczego nie przesuwa ani nie usuwa (D-288).
 
 Przegląd zmiany czyta każdą kontrolkę zmienionego ekranu wobec minimum, w pomiarze z
 `.claude/skills/loop2-play/SKILL.md` (lista `controlsSmallerThan48`), i każdą czynność wobec
@@ -744,7 +748,7 @@ States of shared controls.
 - Zakładka (`kind: "tab"`) to przycisk wybrany w grupie narysowany bez
   ramki — dziś przełącznik „Zaloguj się” i „Załóż konto” karty logowania
   (D-276) oraz dwa przyciski „Kronika” i „Teren” nad treścią obszaru pod światem
-  na ekranie przejścia; otwarty panel reguły ich nie zastępuje (D-311). „Zakładka”
+  na ekranie przejścia; otwarte okno reguły ich nie zastępuje (D-311). „Zakładka”
   znaczy w wytycznych wygląd: element, atrybut
   `aria-pressed` i klawiatura zostają jak przy przycisku wybranym w grupie —
   Tab przechodzi przez każdą, Enter albo Spacja przełącza — bez strzałek
@@ -804,7 +808,7 @@ w rozwiniętych opcjach.
 
 - **Decision:** none
 - **Invariant:** none
-- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w wierszu tej postaci; „✕” panelu reguły, który stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
+- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w wierszu tej postaci; „✕” okna reguły, które stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
 - **Bad:** Element z fokusem znika, a fokus ląduje na stronie, więc gracz z klawiaturą zaczyna ekran od góry.
 
 Gdy element, który trzyma fokus, znika z ekranu — zamknięta karta, zamknięty
@@ -1133,10 +1137,10 @@ węższym niż 1280 px, lewy stoi nad prawym (D-396).
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-290 · D-291 · D-292 · D-293 · D-296 · D-306 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310 · D-396
+- **Decision:** D-288 · D-289 · D-290 · D-291 · D-292 · D-293 · D-296 · D-306 · D-350 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310 · D-396
 - **Invariant:** none
-- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; w nagłówku grupy reguł „↑” i „↓” w obu układach; dotknięcie środka wiersza reguły albo nagłówka grupy, jego tekstu i jego wolnego pasa otwiera je; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
-- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym; strzałki grupy reguł tylko w układzie komputera albo grupa, którą przesuwa wyłącznie przeciąganie uchwytem; przycisk wiersza albo nagłówka stojący pod jego środkiem, tak że dotknięcie środka przesuwa regułę zamiast ją otworzyć; powód wyszarzonej komórki przecięty w środku słowa.
+- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; w nagłówku grupy reguł „↑” i „↓” w układzie komputera, a w układzie telefonu nagłówek z samym tekstem i „▾”, wiersz reguły z samym tekstem i cienka linia w `divider` między wierszami reguł; dotknięcie środka wiersza reguły albo nagłówka grupy, jego tekstu i jego wolnego pasa otwiera je; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
+- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym; grupa, którą w układzie telefonu przesuwa wyłącznie przeciąganie uchwytem; „↑”, „↓” albo „Usuń” w wierszu reguły w układzie telefonu; przycisk wiersza albo nagłówka stojący pod jego środkiem, tak że dotknięcie środka przesuwa regułę zamiast ją otworzyć; powód wyszarzonej komórki przecięty w środku słowa.
 
 Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
 Wygląd jego części bierze się z ról tabeli Roles i z wartości pliku tokenów;
@@ -1166,13 +1170,15 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   spełniony; pasek zostaje przy wierszu otwartym. Powód, jeden, stoi w
   wierszu przy czynności w `warning`.
 - Nagłówek grupy reguł: nazwa w `text-strong`, warunek w `text-secondary`,
-  liczba reguł i suma „Wykonano” w `text-label`. W nagłówku każdej grupy stoją
-  strzałki „↑” i „↓”, w układzie komputera i w układzie telefonu: „↓” przesuwa grupę
-  o jedno miejsce w dół, „↑” o jedno w górę, tak jak strzałki reguły, „↑” wyłączona
-  na pierwszej grupie, a „↓” na ostatniej (D-288). Uchwyt grupy i uchwyt reguły
-  zostają w obu układach; przeciąganie uchwytem jest dla myszy komputera, więc
-  żadna czynność nie ma tylko przeciągania (reguła Everything is done by touch,
-  and every control holds the touch target). Strzałki są wspólnymi przyciskami i
+  liczba reguł i suma „Wykonano” w `text-label`. W układzie komputera w nagłówku
+  każdej grupy stoją strzałki „↑” i „↓” oraz „✕”, które usuwa grupę, a w wierszu reguły
+  „↑”, „↓” i „Usuń”; w układzie telefonu stoją one w oknie grupy i w oknie reguły
+  (reguła The window of a rule and of a rule group), „✕” grupy jako „Usuń z regułami”
+  (D-288, D-296). „↓” przesuwa grupę o jedno miejsce w dół, „↑” o jedno w górę, tak jak
+  strzałki reguły, „↑” wyłączona na pierwszej grupie, a „↓” na ostatniej (D-288). Uchwyt
+  grupy i uchwyt reguły zostają w obu układach; przeciąganie uchwytem jest dla myszy
+  komputera, więc żadna czynność nie ma tylko przeciągania (reguła Everything is done by
+  touch, and every control holds the touch target). Strzałki są wspólnymi przyciskami i
   trzymają minimum celu dotyku tak samo jak każdy przycisk.
 - Wiersz reguły i nagłówek grupy otwiera dotknięcie albo kliknięcie w dowolnym
   miejscu poza ich przyciskami, także na uchwycie, bo przeciągnięcie uchwytem
@@ -1189,19 +1195,20 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   przyciski, pomija; bez takiego elementu dotknięcie tekstu obok strzałek przesuwałoby
   regułę, a dotknięcie wolnego końca linii tekstu nad „Usuń” albo „✕” usuwałoby regułę
   albo grupę zamiast ją otworzyć.
-- W układzie telefonu przyciski wiersza i nagłówka stoją w osobnej linii pod
-  tekstem: strzałki z lewej, pozostałe przyciski z prawej, a środek linii jest
-  wolny od przycisków, bo dotknięcie najczęściej ląduje w środku wiersza. Żadne miejsce
-  wiersza poza przyciskami nie jest gołym wierszem: tekst jest pudełkiem na całą
-  pierwszą linię, aż do jej prawego końca, jego dopełnienie zastępuje dopełnienie
-  wiersza, a w linii przycisków przerwy i odstęp z `rule-list-gap` zastępują odstępy
-  wiersza i grup (w układzie komputera się ich nie rysuje). Każdy przycisk
-  zachowuje cel `--touch-target-min`. Cena: wiersz i nagłówek mają w układzie telefonu
-  dwie linie także przy obszarze strony 720–1279 px, gdzie przyciski zmieściłyby się
-  obok tekstu, bo CSS nie odróżni linii, która się mieści, od zawiniętej.
-- Panel reguły stoi na tle `panel` z ramką w `divider`; podpisy jego pól są
-  w `text-label`. Komórki jego wyboru podaje reguła States of shared controls.
-  W układzie telefonu wybór każdego pola stoi w dwóch kolumnach, jak warunki
+- W układzie telefonu wiersz reguły to sam tekst, a nagłówek grupy to tekst i „▾”,
+  które zwija grupę, na końcu jego linii; wiersze reguł rozdziela cienka linia
+  w `divider` o grubości `--frame-width`, bo bez niej nie widać, gdzie kończy się jedna
+  reguła, a zaczyna następna. Powód: przyciski w osobnej linii pod tekstem brały
+  chybione dotknięcia — dotknięcie w marginesie na prawo od „Usuń” usuwało regułę,
+  dotknięcie pod ostatnią regułą grupy przenosiło ją do następnej grupy — więc stoją
+  w oknie, jak w starym Loopie. Żadne miejsce wiersza ani nagłówka poza przyciskiem
+  nie jest gołym wierszem: tekst jest pudełkiem na całą linię, jego dopełnienie
+  zastępuje dopełnienie wiersza, a w nagłówku przed „▾” stoi przerwa z `rule-list-gap`
+  (w układzie komputera się jej nie rysuje). Wiersz i nagłówek trzymają cel
+  `--touch-target-min`, a „▾” tak jak każdy przycisk.
+- Okno reguły i okno grupy podaje reguła The window of a rule and of a rule group.
+  Podpisy jego pól są w `text-label`; komórki jego wyboru podaje reguła States of shared
+  controls. W układzie telefonu wybór każdego pola stoi w dwóch kolumnach, jak warunki
   (D-290), bo przy czterech komórka ma około 70 px, za mało na słowo „niewykupiona” w
   powodzie wyszarzonej komórki; strzałki klawiatury idą po kolumnach, które siatka
   rysuje, a nie po stałej liczbie (`drawnColumns` w `src/browser/view/rule-panel.tsx`).
@@ -1211,6 +1218,77 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   text).
 
 Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
+
+### The window of a rule and of a rule group
+
+- **Decision:** D-288 · D-296 · D-306 · D-311 · D-350 · D-303 · D-302 · D-44 · D-370 · D-39 · D-40 · D-43 · D-47 · D-396
+- **Invariant:** none
+- **Good:** Dotknięcie wiersza „1.2” otwiera tuż pod nim okno „Reguła 1.2 w grupie „Ogień””, które leży na wierszach „1.3” i niżej, a wiersz „1.1” nad oknem i wiersze pod jego dolną krawędzią da się dotknąć; w układzie telefonu na dole okna, pod linią w `divider`, „↑” i „↓” z lewej i „Usuń” w `danger` z prawej, z dala od „✕” w nagłówku okna; Escape w polu liczby potwierdza wpisaną liczbę i zamyka okno, a fokus wraca na wiersz.
+- **Bad:** Okno z przygaszoną zasłoną albo z `aria-modal`; Tab, który trafia w przycisk wiersza pod oknem; okno na środku ekranu albo nad światem; wiersze pod oknem zepchnięte w dół; okno, które wychodzi poza obszar programu na zakładki „Kronika” i „Teren”; „✕” jako przycisk, który usuwa grupę w jej oknie; strzałki albo „Usuń” w oknie w układzie komputera.
+
+Okno reguły i okno grupy to `section.rule-panel` z `src/browser/view/rule-panel.tsx`; to, co
+czyni z niego okno — nagłówek, zdanie grupy, dolny pasek i wyłączenie wierszy pod nim — stoi
+w `src/browser/view/rule-window.tsx`, a jego wygląd w `src/browser/program-panel.css`.
+
+Gdzie stoi i co przykrywa:
+
+- Stoi tuż pod wierszem reguły albo nagłówkiem grupy, który je otworzył, a pod nagłówkiem
+  zwiniętej grupy, gdy wiersza jego reguły nie widać (D-288, D-350). Miejsce okna w liście nie
+  ma wysokości, więc lista pod nim się nie zmienia; okno ma wysokość swojej treści i leży na
+  wierszach niżej, jako warstwa (`position: absolute`).
+- Szerokość bierze z obszaru programu, najbliższego pudełka z pozycją: nad kolumną programu
+  w układzie komputera, nad edytorem na ekranie Programy, na szerokość ekranu w układzie telefonu
+  (D-288, D-311). Na ekranie przejścia świat zostaje widoczny, a przejście biegnie dalej.
+- Wiersze nad oknem i pod jego dolną krawędzią widać i dotyka się ich jak bez okna: wiersz otwarty
+  zostaje na `highlight` (D-308), a dotknięcie innego wiersza przenosi okno na tamtą regułę (D-306).
+  Każdy wiersz, nagłówek, „+ reguła”, „+ dodaj grupę” i zdanie pustej grupy, które leżą pod oknem,
+  dostaje na czas okna atrybut `inert`, więc nie sięga do nich ani Tab, ani mysz. Gdy okno sięga
+  niżej niż koniec listy, lista rośnie do jego dolnej krawędzi (`min-height`, wymiar układu, którego
+  D-43 nie liczy), więc okno nie leży na niczym poza listą.
+- Okno nie ma zasłony ani `aria-modal` i nie zatrzymuje fokusu, jak okno końca przejścia (D-370),
+  bo wiersze nad nim i pod nim zostają dostępne. Odchodzi od tamtego wzoru w jednym: jest warstwą
+  nad częścią listy, którą D-370 odrzucił dla okna końca przejścia, bo klawiatura sięgałaby pod
+  warstwę, a przyciski spadałyby pod dolną krawędź okna przeglądarki. Tu warstwa stoi pod wierszem,
+  który ją otworzył, lista rośnie, żeby ją pomieścić, a wiersze pod nią są `inert`.
+- Okno należy do obszaru programu: póki stoi okno końca przejścia, nie widać go razem z tym
+  obszarem, a po zamknięciu okna końca przejścia stoi takie, jakie było. Gdy „Zakończ” albo
+  „Otwarte: {mapa} →” stawia pytanie „Zapisać, odrzucić, wrócić?”, okno się zamyka, żeby pytanie
+  było widać i żeby wzięło fokus (D-311).
+
+Jak wygląda:
+
+- Tło `panel`, tekst w `text`, ramka w `divider` o grubości `--frame-width`, jak okno końca
+  przejścia (D-40); nie wnosi nowej roli ani wartości.
+- Nagłówek w `text-strong`: „Grupa {n} „{nazwa grupy}”” albo „Reguła {n.m} w grupie „{nazwa grupy}””,
+  z nazwą zapisaną w grupie, a przy nazwie pustej albo z samych spacji „Grupa {n}” i „Reguła {n.m}”.
+  Nazwę wpisał gracz, więc łamie się w nagłówku (reguła A name typed by the player breaks in its
+  row). Obok, na prawym końcu nagłówka, „✕” z etykietą „Zamknij okno”.
+- Pod nagłówkiem okna kopii zdanie „Zmiana zeruje passę tego przejścia.” w `text-secondary`
+  (D-302); okno grupy ma pod swoim warunkiem zdanie „Gdy warunek grupy nie jest spełniony, program
+  pomija wszystkie jej reguły.” w `text-secondary`, jako wyjaśnienie (D-40).
+- W układzie telefonu na dole okna stoi pasek oddzielony linią w `divider`: „↑” i „↓” z lewej,
+  z prawej „Usuń” w oknie reguły i „Usuń z regułami” w oknie grupy, oba przyciskami niszczącymi
+  (D-44, D-296), z dala od „✕” w nagłówku, które zamyka okno. „↑” i „↓” przesuwają regułę albo
+  grupę jak strzałki wiersza i nagłówka, okno idzie za nią, a fokus zostaje na strzałce, albo
+  przechodzi na drugą, gdy naciśnięta stała się wyłączona. Usunięcie działa od razu (D-303), zamyka
+  okno i oddaje fokus wierszowi, który stoi na miejscu usuniętego, albo wierszowi przed nim, albo
+  nagłówkowi grupy; po grupie — nagłówkowi grupy na jej miejscu, przed nią albo „+ dodaj grupę”.
+  W układzie komputera paska nie ma: strzałki i usuwanie stoją w wierszu i w nagłówku.
+
+Klawiatura i fokus:
+
+- Korzeń okna ma `role="dialog"` i nazwę z nagłówka przez `aria-labelledby`. Escape czyta korzeń
+  okna, nigdy dokument (D-370).
+- Okno bierze fokus tak jak panel przed nim: na komórkę otwartego pola albo na pole liczby, nie na
+  swój korzeń, bo gracz zaczyna pisać od razu (D-306) — drugie odejście od wzoru okna końca
+  przejścia.
+- „✕” i Escape zamykają okno i oddają fokus wierszowi reguły, a przy zwiniętej grupie nagłówkowi
+  grupy (reguła Focus does not fall to the page). Zamknięcie potwierdza liczbę i nazwę grupy
+  wpisane w pole, które ma fokus, tak jak wyjście z pola (D-306).
+
+Reguły układu telefonu okna nie sprawdza test (reguła Two layouts and one threshold between them);
+sprawdza je agent w przeglądarce przy obszarze strony 360 px (reguła A change is checked in both
+layouts). Strona wszystkich stanów nie ma próbki okna; jego przyciski stoją tam w swoich stanach.
 
 ### The scene of a map run
 
@@ -1670,7 +1748,7 @@ Jak się zamyka i otwiera:
   zamiast tego zamykają okno i stawiają pytanie „Zapisać, odrzucić, wrócić?”
   w panelu kopii; okno nie stoi, póki pytanie stoi, i po „Wróć” zostaje
   zamknięte, aż gracz otworzy je przyciskiem „Koniec przejścia” (D-173).
-- „Dodaj regułę z tym” zamyka okno i otwiera panel reguły pod wierszem reguły
+- „Dodaj regułę z tym” zamyka okno i otwiera okno reguły pod wierszem reguły
   (D-313).
 
 Jak role, czcionka i wspólne kontrolki składają okno; żadna część nie dostaje
