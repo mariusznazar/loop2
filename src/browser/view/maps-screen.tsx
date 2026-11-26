@@ -1,8 +1,8 @@
 /**
  * The screen Mapy (D-325, D-331, D-282; `#/mapy` and `#/mapy/{map}`): two areas of their own, on the
- * left the list of the maps open to the player and on the right the card of the map the address
+ * left the catalog of the maps (`map-catalog.tsx`) and on the right the card of the map the address
  * names with, under it, the section „Kto idzie”. Before a map is named the right area says to pick
- * one. The card is drawn from the map's data (D-327, D-328); under it each character of the team
+ * one. The card is drawn from the map's data by `map-card.tsx` (D-327, D-328); under it each character of the team
  * stands with its lines, the two buttons that send it and the button of a judging of its program, whose
  * result unfolds under it (D-329, D-243, D-244, D-287, D-326, D-439, D-440). „Puść w pętlę” judges the
  * program anew first, starts the earning loop at once where all twelve seeds are solved, and otherwise
@@ -17,11 +17,9 @@
  * second click that waits) lives in the screen alone (D-407). Nothing runs when the module is imported.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
-import { RESOURCES } from "../sim/data/resources.js";
 import { markOfRecord } from "../sim/judging-record.js";
 import type { JudgingIds, JudgingRecord } from "../sim/judging-record.js";
 import { rowProgram } from "../sim/programs.js";
@@ -44,15 +42,9 @@ import {
   solvedSeeds,
   unsolvedSentence,
 } from "./judging-lines.js";
-import {
-  attackerLines,
-  capLines,
-  cardHeading,
-  resourceLines,
-  sendMaps,
-  solvingSentence,
-  terrainLines,
-} from "./map-lines.js";
+import { MapCard } from "./map-card.js";
+import { sendMaps } from "./map-lines.js";
+import { MapCatalog } from "./map-catalog.js";
 import { screenAddress } from "./screen-address.js";
 import {
   loopLine,
@@ -75,6 +67,12 @@ export type MapsScreenProps = {
    * screen reads it at each draw, so a judging made in another tab shows at the next one (D-441).
    */
   readRecord(ids: JudgingIds): JudgingRecord | null;
+  /**
+   * The record of the most health the creature of a map lost in one fight of any judging, or null where the
+   * map's data name no creature for it or none stands (D-440, D-441). The screen reads it at each draw, for
+   * the row of the map in the catalog and for its card, as it reads the record of a judging.
+   */
+  readMapRecord(mapId: MapId): number | null;
 };
 
 /** What the screen asks of the page; the page turns each into a call of the simulation. */
@@ -186,140 +184,6 @@ type FocusPlumbing = {
   /** Records the move to owe before the page is called, so the commit of its answer makes it. */
   owe: (owed: OwedFocus) => void;
 };
-
-/** The list of the maps open to the player, the map named marked. */
-function MapList({ state, mapId }: { state: GameState; mapId: MapId | null }) {
-  return (
-    <ul className="maps-list-items" aria-label="Mapy">
-      {sendMaps(state.solvedMaps).map((id) => (
-        <li key={id}>
-          <a
-            className="maps-list-item"
-            href={screenAddress({ kind: "map", mapId: id })}
-            aria-current={id === mapId ? "page" : undefined}
-          >
-            {MAPS[id].name}
-            {state.solvedMaps.includes(id) ? (
-              <span className="maps-list-solved">rozwiązana</span>
-            ) : null}
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** One line of a part of the card, `warning` where the lines say so. */
-function CardLine({ text, warning }: { text: string; warning: boolean }) {
-  return <li className={warning ? "maps-card-warning" : undefined}>{text}</li>;
-}
-
-/** The card of a map: its heading and the parts the map has (D-327). */
-function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
-  const map = MAPS[mapId];
-  const heading = cardHeading(map, solved);
-  const attackers = attackerLines(map);
-  const caps = capLines(map);
-  return (
-    <div className="maps-card">
-      <div className="maps-card-heading">
-        <h2 className="maps-card-name">{heading.name}</h2>
-        {heading.solved === null ? null : (
-          <>
-            <span className="maps-card-sep"> · </span>
-            <span className="maps-card-solved">{heading.solved}</span>
-          </>
-        )}
-        {heading.openedBy === null ? null : (
-          <>
-            <span className="maps-card-sep"> · </span>
-            <span className="maps-card-opened-by">{heading.openedBy}</span>
-          </>
-        )}
-      </div>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Żąda</h3>
-        <p>{solvingSentence(mapId)}</p>
-      </section>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Teren</h3>
-        <ul className="maps-card-lines">
-          {terrainLines(map).map((line) => (
-            <li key={line.text}>
-              {line.text}
-              {line.note === null ? null : (
-                <span className="maps-card-note">{line.note}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="maps-card-part">
-        <h3 className="maps-card-part-name">Leży tu</h3>
-        <ul className="maps-card-lines">
-          {resourceLines(map).map((resource) => (
-            <li key={resource.id} className="maps-card-resource">
-              <span
-                className="icon-mask maps-card-icon"
-                aria-hidden="true"
-                style={
-                  {
-                    "--icon": `url("/icons/${RESOURCES[resource.id].icon}.svg")`,
-                  } as CSSProperties
-                }
-              />
-              {`${resource.text}, `}
-              <span
-                className={
-                  resource.renewal.warning ? "maps-card-warning" : undefined
-                }
-              >
-                {resource.renewal.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      {attackers.length === 0 ? null : (
-        <section className="maps-card-part">
-          <h3 className="maps-card-part-name">Czyha</h3>
-          <ul className="maps-card-lines">
-            {attackers.map((attacker) => (
-              <li
-                key={`${attacker.head}|${attacker.odds}`}
-                className="maps-card-attacker"
-              >
-                <p className="maps-card-attacker-head">
-                  <span
-                    className="icon-mask maps-card-icon"
-                    aria-hidden="true"
-                    style={
-                      {
-                        "--icon": `url("/icons/${attacker.icon}.svg")`,
-                      } as CSSProperties
-                    }
-                  />
-                  {attacker.head}
-                </p>
-                <p className="maps-card-attacker-odds">{attacker.odds}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {caps.length === 0 ? null : (
-        <section className="maps-card-part">
-          <h3 className="maps-card-part-name">Odbiera</h3>
-          <ul className="maps-card-lines">
-            {caps.map((cap) => (
-              <CardLine key={cap.text} text={cap.text} warning={cap.warning} />
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
-  );
-}
 
 type CharacterRowProps = {
   character: Character;
@@ -551,7 +415,7 @@ function resultKept(
   return without(now, characterId);
 }
 
-/** The screen: the list of open maps and the right area with the card and „Kto idzie”, or the sentence to pick. */
+/** The screen: the catalog of maps and the right area with the card and „Kto idzie”, or the sentence to pick. */
 function MapsView({
   controls,
   props,
@@ -567,6 +431,7 @@ function MapsView({
   const [shownOn, setShownOn] = useState(mapId);
   const alive = useRef(false);
   const cardMap = useRef(mapId);
+  const whoHeading = useRef<HTMLHeadingElement>(null);
 
   // Another map of the list is leaving the card: no result of a judging stands past it (D-329).
   if (shownOn !== mapId) {
@@ -690,16 +555,29 @@ function MapsView({
   return (
     <div className="screen maps-screen">
       <section className="screen-area maps-list-area">
-        <MapList state={state} mapId={open} />
+        <MapCatalog
+          solvedMaps={state.solvedMaps}
+          selected={open}
+          recordOf={(forMap) => props.readMapRecord(forMap)}
+        />
       </section>
       <section className="screen-area maps-card-area">
         {open === null ? (
           <p className="maps-card-empty">Wybierz mapę z listy.</p>
         ) : (
           <>
-            <MapCard mapId={open} solved={state.solvedMaps.includes(open)} />
+            <MapCard
+              mapId={open}
+              solved={state.solvedMaps.includes(open)}
+              record={props.readMapRecord(open)}
+              onChoose={() => whoHeading.current?.focus()}
+            />
             <section className="maps-who">
-              <h3 className="maps-who-heading">Kto idzie</h3>
+              {/* The heading takes the focus from „Wejdź — wybierz postać”, which brings it into view, and
+                  stands outside the keyboard's order otherwise. */}
+              <h3 className="maps-who-heading" tabIndex={-1} ref={whoHeading}>
+                Kto idzie
+              </h3>
               {state.team.characters.length === 0 ? (
                 <p className="maps-who-empty">
                   Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.

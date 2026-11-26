@@ -154,7 +154,7 @@ class BalanceInstrumentFileWrites(unittest.TestCase):
             "balance/engine.mjs",
             "balance/new-mode.mjs",
             "balance/deeper/mode.js",
-            "balance/overlays/forest-pack.json",
+            "balance/overlays/wasteland.json",
             "balance/players/edge-daily-best.json",
             "tests/balance/cli.test.mjs",
             "src/browser/sim/game.ts",

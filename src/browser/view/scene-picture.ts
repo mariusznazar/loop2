@@ -91,6 +91,8 @@ export type SceneCreature = {
   bite: SceneSprite;
   death: SceneSprite;
   cloud: SceneSprite;
+  /** Rows below the ground line the bottom edge of its frame stands (`SCENE_FIGHT.sink`). */
+  sink: number;
 };
 
 /** The scene of the map run as plain data for drawing; pure, no DOM, no URL built from a name. */
@@ -254,6 +256,7 @@ function drawnCreature(
     bite: spriteOf(sheets.bite),
     death: spriteOf(sheets.death),
     cloud: spriteOf(SCENE_DUST),
+    sink: SCENE_FIGHT.sink[creature.id],
   };
 }
 
@@ -739,13 +742,17 @@ export function creatureEffect(
       sprite: {
         ...spriteOf(sheets.death),
         x: place.x,
-        y: SCENE.groundLine,
+        y: SCENE.groundLine + SCENE_FIGHT.sink[was.activeCombat.creatureId],
       },
       faces,
     };
   return {
     kind: "creatureOut",
-    sprite: { ...spriteOf(sheets.run), x: place.x, y: SCENE.groundLine },
+    sprite: {
+      ...spriteOf(sheets.run),
+      x: place.x,
+      y: SCENE.groundLine + SCENE_FIGHT.sink[was.activeCombat.creatureId],
+    },
     faces: "right",
     run: sceneWidth - place.x,
   };

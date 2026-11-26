@@ -2509,6 +2509,34 @@ test("in the minutes of a combat the wolf stands beside the mage, on its right, 
   });
 });
 
+// D-316. Catches a bear drawn on the bottom edge of its frame, with its feet above the ground line: the bear's
+// frame of 64 × 64 is lowered by 4 rows, so it stands from 191 across and from 76 down (136 + 4 - 64), its
+// bottom edge on 140, where the wolf's, lowered by none, ends on the line 136.
+test("in the minutes of a combat the bear's frame is lowered by its rows below the ground line", async () => {
+  await withPage(async (page) => {
+    const bearCombat = {
+      creatureId: "bear",
+      attackMinute: 181,
+      resolveMinute: 186,
+    };
+    const scene = await drawn(
+      page,
+      inCombat({
+        run: {
+          ...inCombat().run,
+          activeCombat: bearCombat,
+          lastCombat: { ...bearCombat, result: null },
+        },
+      }),
+    );
+    placedAt(
+      one(scene, ".scene-creature"),
+      [(191 / 336) * 100, (76 / 152) * 100, (64 / 336) * 100, (64 / 152) * 100],
+      "bear",
+    );
+  });
+});
+
 // D-316. Catches a wolf that stands on the right at the right edge, where its frame would leave the
 // picture, and a mage that does not turn to it: the mage there, 275, faces left, so its figure starts at
 // 294 and the wolf's frame ends at 292.

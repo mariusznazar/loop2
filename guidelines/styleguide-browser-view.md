@@ -27,7 +27,7 @@ bez odstępstw zgodnie z D-38.
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
 | `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem, z progiem 2:1 wobec `panel` (D-42).                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
-| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
+| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę, i jako belka po lewej wybranego wiersza katalogu map, którego karta stoi otwarta; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                                                                               | —          | D-39     |
 | `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                                                                                       | —          | D-39     |
 | `discovery`       | text       | Odkryto coś nowego; stoi też jako ramka plakietki odkrycia w scenie.                                                                                                                                                                                                                                                                                                         | —          | D-39     |
@@ -416,7 +416,8 @@ później: grubością belki i linii zakładki (2026-11-02), wyglądem sceny
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
-  z elementem, z którego wartość wzięto;
+  a dla rozmiaru tytułu karty mapy (`--font-size-map-card-title`, D-327)
+  2026-11-26, z elementem, z którego wartość wzięto;
 - dla wartości zmienionej wobec loop — próg kontrastu z D-42, który ją
   wyznaczył;
 - dla wartości, których loop nie pokazała — kafelek odsłonięty, podświetlenie
@@ -712,7 +713,8 @@ w kolorze tego napisu — bierze kolor tego tekstu: w stylach
 dostaje własnej roli i nie zmienia znaczenia roli tego tekstu (D-39, D-40).
 Linia, która znaczy wybrane w swojej grupie — ramka przycisku wybranego
 w grupie, linia wybranej zakładki i bieżącej pozycji paska menu oraz belka
-wybranej pozycji listy programów — zostaje w `selected`. Pasek stanu reguły
+wybranej pozycji listy programów — zostaje w `selected`; wyjątkiem jest belka
+wybranego wiersza katalogu map, która stoi w `positive` (D-279, D-39, D-331). Pasek stanu reguły
 programu i grupy reguł (reguła Program editor) nie jest taką ramką ani belką:
 mówi o stanie reguły i nie bierze koloru tekstu obok (D-39). Przegląd zmiany
 czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
@@ -837,31 +839,112 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-439 · D-440 · D-243 · D-134 · D-188 · D-217 · D-244 · D-274 · D-287 · D-281 · D-39 · D-40 · D-282 · D-396
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-332 · D-333 · D-439 · D-440 · D-441 · D-243 · D-133 · D-134 · D-149 · D-188 · D-217 · D-244 · D-274 · D-279 · D-287 · D-281 · D-27 · D-39 · D-40 · D-44 · D-282 · D-396
 - **Invariant:** none
-- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
-- **Bad:** Obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
+- **Good:** Wiersz rozwiązanej mapy w katalogu: kółko wypełnione w `positive`, nazwa w `text`, pod nią fakty w `text-secondary`, z „⊘ wnosisz 0” w `warning`; wybrany wiersz wypełniony `highlight`, z tekstem w `text-strong` i belką w `positive` po lewej; trzy widoki jako przyciski w ramkach, wybrany z ramką w `selected`; w nagłówku karty nazwa i obok „otwarta” w `text-secondary`, a po prawej „Wejdź — wybierz postać”; przy Mateczniku po pierwszej ocenie na końcu wiersza „niedźwiedź: 24 ze 120” w `text`; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
+- **Bad:** Kółko stanu rozwiązanej mapy w `text` albo „rozwiązana” po nazwie wiersza katalogu; wybrany wiersz z samą belką, bez wypełnienia, albo z belką w `selected`; zwijak przygaszony, gdy stoi wybrana mapa albo wpisany tekst; widoki jako podkreślone zakładki; „otwarta” w `positive`; liczba niedźwiedzia przy Mateczniku przed pierwszą oceną albo jako „0”; obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
 
 Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: w układzie
-komputera po lewej listę otwartych map, po prawej kartę wybranej mapy, a w układzie
-telefonu karta stoi pod listą (D-282, D-396).
+komputera po lewej katalog map, po prawej kartę wybranej mapy, a w układzie
+telefonu karta stoi pod katalogiem (D-282, D-396).
 
-- Lista: każdy wiersz to odnośnik do `#/mapy/{map}` z nazwą mapy w `text`; przy
-  mapie rozwiązanej po nazwie stoi „rozwiązana” w `positive` (D-134). Wybrany
-  wiersz ma tekst w `text-strong` i belkę w `selected` o grubości `--bar-width`
-  po lewej, jak wybrany program na liście programów (D-331, D-40); niewybrany
-  wygląda jak niewybrany program na tej liście; pod kursorem tło `highlight`.
-  Przed wyborem mapy, pod `#/mapy`, w obszarze karty stoi „Wybierz mapę z listy.” w
-  `text-secondary` (D-331).
-- Karta mapy (D-327): nagłówek z nazwą mapy w `text-strong`, a przy mapie
-  rozwiązanej obok „rozwiązana” w `positive`; przy mapie otwieranej przez inną
-  mapę „odsłania ją {mapa}” w `text-secondary`. Nazwy części — „Żąda”, „Teren”,
-  „Leży tu”, „Czyha”, „Odbiera” — stoją w `text-label` (nazwy sekcji, D-40);
-  ich treść w `text`; dopisek przy kroku innym niż zwykły, „— drożej niż
-  zwykle” albo „— taniej niż zwykle”, w `text-secondary`; „nie odnawia się” w
-  `warning`; „wnosisz najwyżej {n}” i „wynosisz najwyżej {n}” w `warning`.
-  Części, której mapa nie ma, nie rysuje się wcale.
-- Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`. Przy
+Katalog (D-325) stoi w jednej kolumnie, od góry:
+
+- Pole szukania z napisem „Szukaj mapy albo zasobu” i podpowiedzią „szukaj mapy
+  albo zasobu”, na całą szerokość obszaru; w ramce pola, po lewej, stoi lupa —
+  ikona z game-icons.net (D-27) rysowana maską w `text-label`, roli podpowiedzi
+  obok niej — a tekst pola zaczyna się za nią. Szuka fragmentu nazwy mapy albo nazwy zasobu bez względu na
+  wielkość liter, po obcięciu spacji na brzegach; polskich liter nie zrównuje,
+  więc „ł” nie znajduje „l”. Gdy nic nie pasuje, stoi „Nic nie pasuje do
+  „{zapytanie}”.” w `text-secondary`.
+- Trzy widoki „Dokąd”, „Co daje” i „Postęp” jako wspólne przyciski wybrane w
+  grupie (D-44, D-40), w ramkach, jak przyciski tempa, żeby od razu było widać, że
+  to przyciski: wybrany ma ramkę w `selected` i tekst w `text-strong`; zakładkami
+  nie są. Na starcie wybrana jest „Dokąd”. Pod nimi licznik w `text-secondary`: w „Dokąd”
+  „{n} poznanych · {m} rozwiązanych”, w „Co daje” „{n} zasobów w zasięgu”, w
+  „Postęp” „{m} rozwiązanych z {n} poznanych”; liczby mają polską odmianę, więc
+  nowa gra czyta „1 poznana · 0 rozwiązanych”, a dalej „2 poznane · 1 rozwiązana”,
+  „5 poznanych · 4 rozwiązane”, „0 rozwiązanych z 1 poznanej”, „1 rozwiązana z 2
+  poznanych” (po „z” stoi dopełniacz, więc „z 1 poznanej”).
+- Region ma linię `divider` nad nagłówkiem w `text-label` (nazwa sekcji, D-40).
+  W „Dokąd” i „Postęp” nagłówek to nazwa regionu i „{m} z {n}”: m rozwiązanych
+  spośród n wszystkich map regionu w danych gry, także jeszcze nieotwartych
+  (D-325). W „Co daje” nagłówek to ikona zasobu, jego nazwa i z prawej liczba
+  otwartych map, które go dają. Region, w którym nic nie jest otwarte, nie stoi
+  wcale.
+- „Dokąd”: w regionie najpierw otwarte, nierozwiązane mapy, a rozwiązane zwinięte
+  pod jednym wierszem zwijaka — zwykły wspólny przycisk (D-44) „▸ {n} rozwiązane”,
+  po rozwinięciu „▾”, z `aria-expanded`. Zwijak nie stoi, gdy region nie ma
+  rozwiązanej mapy. Zwijak działa zawsze, także przy wybranej mapie i przy
+  wpisanym tekście szukania (D-331). Bez szukania rozwiązane stoją zwinięte, aż
+  gracz je rozwinie; przy szukaniu pasujące rozwiązane stoją rozwinięte, a zwijak
+  zwija je i rozwija tak samo. Wybrana mapa, która stoi wśród zwiniętych
+  rozwiązanych, stoi nad zwijakiem, żeby jej wiersz z belką był widać, a po
+  rozwinięciu stoi na swoim miejscu wśród rozwiązanych, raz. Rozwinięcie, które
+  gracz wybrał, zostaje, dopóki ekran stoi, osobno bez szukania i przy szukaniu.
+- „Co daje”: grupy po zasobie, zaczynając od tego, który daje najmniej otwartych
+  map; w grupie najpierw rozwiązane. Wiersz zasobu ma ten sam wygląd co wiersz
+  mapy, a jego fakty to „≈ {n} z {kafelki} · po {zapas}” i „+1 co {min} min”,
+  albo „nie wraca” w `warning`.
+- „Postęp”: w regionie wiersze otwartych map, a za nimi po jednym pustym miejscu
+  na każdą mapę, której gracz jeszcze nie otworzył. Puste miejsce to przerywana
+  kreska w `text-disabled`, bez nazwy, o trzech długościach po kolei; przy
+  szukaniu go nie ma.
+- Wiersz mapy to odnośnik do `#/mapy/{map}` w dwóch liniach. W pierwszej stoi
+  kółko stanu po lewej, nazwa mapy w `text` i po prawej ikony stworzeń, które na
+  mapie napadają, w `text-secondary`. Kółko to „●” w `positive` przy mapie
+  rozwiązanej i „○” w `text-secondary` przy otwartej; czytnik ekranu czyta je jako
+  „Rozwiązana” albo „Otwarta” (D-134). W drugiej linii, pod nazwą, stoją fakty
+  mapy w `text-secondary`, w tej kolejności: czas passy („12 h”, a gdy nie jest
+  pełną liczbą godzin, w minutach), „{n} do pokonania”, „⊘ wnosisz {n}” i
+  „wynosisz {n}” w `warning`, „bez ognia {n} min” oraz „krok {n} min” tylko tam,
+  gdzie krok odstaje od kroku większości map (D-333). Każdy fakt jest osobnym
+  elementem, który się nie łamie w środku; wąski wiersz łamie się między faktami.
+  Wiersz wybranej mapy stoi wypełniony `highlight`, z tekstem w `text-strong`
+  i belką w `positive` o grubości `--bar-width` po lewej, jak wybrany wiersz
+  starej gry (D-331, D-39, D-40); wiersz pod kursorem ma tło `highlight`.
+- Rekord niedźwiedzia (D-440) stoi na mapie, której dane nazywają to stworzenie
+  do rekordu (Las — matecznik): po pierwszej ocenie na tej mapie jest ostatnim
+  faktem wiersza, „niedźwiedź: {n} z {zdrowie}”, w roli `text`, z „ze” zamiast „z”
+  przed liczbą, której pierwsze wypowiedziane słowo zaczyna się od „sze” albo „st”
+  albo jest zerem („ze 120”, „ze 16”, ale „z 24”, „z 7”, „z 70”). Stoi w „Dokąd”
+  i w „Postęp”, nie w „Co daje”, gdzie wiersz jest wierszem zasobu. Przed pierwszą
+  oceną nie stoi wcale. Zapamiętuje go przeglądarka (D-441).
+- W układzie telefonu wiersz mapy ma co najmniej `--touch-target-min` wysokości
+  i jest celem dotyku (D-396), a wybrany wiersz zostaje wypełniony także na
+  urządzeniu, które nie najeżdża.
+- Widok, wpisany tekst i rozwinięte zwijaki żyją, dopóki ekran stoi: po wyjściu
+  z ekranu katalog zaczyna od „Dokąd” i pustego pola.
+- Karta mapy (D-327), jak karta starej gry. U góry nagłówek: nazwa mapy w
+  `text-strong`, w rozmiarze i wadze tytułu karty mapy starej gry — rozmiar
+  `--font-size-map-card-title`, odczytany z jej strony, i waga tekstu — obok niej znacznik stanu w rozmiarze
+  podpisu — „rozwiązana” w `positive` (D-134) albo „otwarta” w `text-secondary` —
+  a przy mapie otwieranej przez inną mapę po „ · ” „odsłania ją {mapa}” w
+  `text-secondary`; po prawej stronie nagłówka zwykły wspólny przycisk „Wejdź —
+  wybierz postać” (D-44), który przenosi fokus na nagłówek „Kto idzie”, a
+  przeglądarka pokazuje go na ekranie. Pod nagłówkiem jedno krótkie zdanie tego,
+  czego mapa żąda, pisane ręcznie w danych mapy, jak w starej grze, w `text`
+  („Osiem godzin bez jednej zmiany programu.”). Pod nim dwie
+  kolumny: po lewej „Żąda” i „Teren”, po prawej „Czyha”, „Leży tu” i „Odbiera”;
+  w układzie telefonu jedna pod drugą, lewa nad prawą. Każda część ma cienką
+  linię `divider` nad nazwą, a nazwy części stoją w `text-label` (nazwy sekcji,
+  D-40). „Żąda” i „Teren” to tabele: podpis w `text-secondary` w jednej kolumnie
+  i wartość w `text` w następnej — „passa 8 h”, „do pokonania 2” z ikoną
+  stworzenia, które napada, a pod tabelą „Żąda” zdanie warunku rozwiązania z
+  danych mapy w `text-secondary` w rozmiarze szczegółu (D-133); „siatka 4 × 4”, „wejście stałe”, „krok 5 min”, „bez
+  ognia 83 min — otoczenie 25 °C”, gdzie dopisek po wartości, także „— drożej niż
+  zwykle” albo „— taniej niż zwykle” przy kroku innym niż zwykły, stoi w
+  `text-secondary`. Wiersz „Leży tu” i „Czyha” ma ikonę w osobnej kolumnie, w
+  pierwszej linii nazwę w `text`, a pod nią szczegół w `text-secondary` w
+  rozmiarze szczegółu: „≈ 16 z 16 kafelków · po 12 · +1 co 30 min”, przy stworzeniu
+  szansę, spokój i średni odstęp; „nie odnawia się” w `warning`; „wnosisz najwyżej
+  {n}” i „wynosisz najwyżej {n}” w `warning`. Części, której mapa nie ma, nie
+  rysuje się wcale.
+  W „Czyha” mapy, której dane nazywają stworzenie do rekordu, pod wierszem szansy
+  tego stworzenia stoi jego rekord „niedźwiedź: {n} z {zdrowie}”, pisany jak w
+  wierszu katalogu („ze 120”, „z 24”), w roli `text`, jak nazwa stworzenia, i dopiero po pierwszej ocenie na tej mapie (D-440).
+- Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`, który bierze
+  fokus od „Wejdź — wybierz postać” i poza tym nie stoi w kolejności klawiatury. Przy
   każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
   `text-strong`; wiersz wskrzeszenia w `text-secondary`, a przy zerze użyć
   w `danger` (D-217); przy postaci w pętli zarobkowej wiersz
@@ -1076,7 +1159,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi; wilk w walce stoi obok maga, a między nimi leży mały obłok kurzu; scena 672 × 304 px w układzie komputera i 336 × 152 px w układzie telefonu przy 360 px, z bokami lekko przyciętymi tylko tam, gdzie szerokości brakuje, a plakietka nad głową czytelna w obu rozmiarach.
 - **Bad:** Scena rysowana w ułamku obrazu, na przykład półtora raza, albo w trzykrotności; scena 336 × 152 px w układzie komputera; przycięcie sceny, które chowa maga przy brzegu lasu albo stwora; plakietka nad głową zmniejszona razem ze sceną do rozmiaru trudnego do odczytania; efekt sceny zrobiony dla trzeciego rozmiaru; pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
 
-Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
+Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, stworzeniem, które napada: wilkiem albo niedźwiedziem. Stoi
 w `src/browser/view/scene.tsx`, `src/browser/view/scene-memory.ts` i
 `src/browser/view/scene-picture.ts`, a jej ruch i szarości w `src/browser/run-screen.css`; nazwy plików obrazków postaci,
 stworzeń i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
@@ -1192,10 +1275,15 @@ kadr, po lewej, odbity. Mag obraca się ku niemu i zostaje tak zwrócony po star
 a obłok szamotaniny nad nim, w tej samej kolejności warstw co wyżej. Jego arkusze — stanie, bieg, gryzienie
 i śmierć — to klatki 64 × 32 z paczki LPC Wolf, przeniesione bez zmiany pikseli, z łapami w dolnym rzędzie
 każdej klatki, więc bieg, gryzienie i śmierć nie podskakują przy zmianie animacji; patrzą w lewo,
-a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Kłąb szamotaniny to ten
+a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Niedźwiedź z mapy
+Las — matecznik stoi w scenie tak samo, w tym samym miejscu i w tej samej kolejności warstw co wilk, bo scena
+bierze arkusze i położenie stworzenia z jego identyfikatora w danych, ale ma własne arkusze, klatki
+64 × 64, a jego łapy nie stoją w dolnym rzędzie klatki, tylko kilka rzędów wyżej. Scena obniża więc jego
+klatkę o `SCENE_FIGHT.sink`, liczbę rzędów z danych sceny, różną dla każdego stworzenia (wilk 0, niedźwiedź 4),
+tak że łapy niedźwiedzia stoją na linii gruntu, jak wilka; bez tego unosiłyby się nad nią. Kłąb szamotaniny to ten
 sam plik kurzu co chybienie, osiem klatek w pętli w takcie klatek sceny, między wilkiem a magiem; jest mały,
 nie zakrywa żadnego z nich i nie błyska. Plik wilka i miejsce kłębu stoją w danych sceny, a czasy w regułach
-sceny w `src/browser/run-screen.css`; kod widoku nie nazywa żadnego pliku wilka.
+sceny w `src/browser/run-screen.css`; kod widoku nie nazywa żadnego pliku stworzenia.
 
 Bieg wilka z prawego brzegu kadru na jego miejsce to efekt zwykłego zdarzenia (D-317): trwa 300 ms przy
 każdym tempie, pięć klatek biegu raz, i scena zaczyna go w odczycie, którego zdarzenia niosą napaść, tylko

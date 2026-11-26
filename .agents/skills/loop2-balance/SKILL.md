@@ -40,7 +40,8 @@ or an unknown name stops the command with a sentence on standard error and exit 
 ## Flags
 
 - `--map <id>`: a map of the game, or a map an overlay adds. The game's maps are `forestEdge`
-  (Skraj lasu), `forest` (Las) and `forestDeep` (Las — głębiej), named as the game shows them.
+  (Skraj lasu), `forest` (Las), `forestDeep` (Las — głębiej), `forestPack` (Las — wataha) and
+  `forestLair` (Las — matecznik), named as the game shows them.
 - `--program <id or path>`: an identifier of the reference programs (`npm run --silent balance -- programs`
   lists them), or the path of a program file of the game's shape.
 - `--seeds <list>`: a range `1-500`, a list `3,7,12`, or both `1-5,9`. Default `1-100`; `trace`
@@ -68,8 +69,8 @@ and leaves the game's data files untouched. Its keys name tables of the game's d
 values merge into the table deeply: a number changes in place, and a new key of `MAPS` adds a map.
 A `description` text is allowed and is not laid.
 
-`balance/overlays/forest-pack.json` is an example: it adds the map `forestPack`, the wolf pack of
-Las, and changes nothing else. The overlay is checked whole before anything is laid. A key that
+`balance/overlays/wasteland.json` is an example: it adds the map `wasteland`, the wasteland after
+Las, which opens after `forest`, and changes nothing else. The overlay is checked whole before anything is laid. A key that
 names no table, a table that is not an object, or a file that cannot be read stops the command with
 nothing changed.
 
@@ -163,9 +164,11 @@ The table is the map check's without the earning loop's columns: the map, the pr
 (`P1`, `P2`..., the key to it is `programs`), the share solved, the median game minutes of the solved
 runs, the deaths by cause and the runs at the cap. Under it stands one sentence that says with what
 each map was measured and how many manual runs its stock took. Both go to the person as they are,
-and name no condition, action, rule, skill, branch, rank or item. The measurement reads a map as
-solvable where its best program solves at least 20 % of the seeds; that share is the measurement's
-reading and no number the game's decisions hold for later maps. Read the share of each map's best
+and name no condition, action, rule, skill, branch, rank or item. A map can be solved where its best
+program, with the character built from what the maps before it gave, solves one seed or more of
+1-500. A map is harder than the map that opens it where its best program solves a smaller share of
+the seeds than the best program of the map that opens it does. Las — matecznik, until the change that sets its
+numbers, passes this check where no program solves a seed of it. Read the share of each map's best
 row from the table. A failure of the best program says the map needs an earning loop; a pass can
 let through a map that a player without an equally good program passes more rarely.
 
@@ -189,5 +192,5 @@ A `sweep` of 500 seeds takes a few seconds; `check-map` for one overlay takes ab
 two narrowed rows about 6 seconds. Each call also builds the game, so a short measurement costs about
 two seconds more.
 
-`progression` for the three maps of the game, every reference program on seeds 1-500, takes about 45
-seconds.
+`progression` for the five maps of the game, every reference program on seeds 1-500, takes about a
+minute and a half.

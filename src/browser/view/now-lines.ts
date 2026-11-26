@@ -1,13 +1,7 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import { CREATURES } from "../sim/data/creatures.js";
 import type { NowAndNext, NowLine } from "../sim/game.js";
-import type {
-  Action,
-  CreatureId,
-  DeathCause,
-  Program,
-  RuleId,
-} from "../sim/types.js";
+import type { Action, DeathCause, Program, RuleId } from "../sim/types.js";
 import { actionSentence, ruleNumber } from "./program-editor.js";
 
 /** The word that opens the row „Potem”. */
@@ -55,12 +49,6 @@ export type NextRow = {
 /** The parts of the two rows. */
 export type NowRows = { now: NowRow; next: NextRow };
 
-/** The creature's name in the case that follows „z”: „wilk” becomes „wilkiem”. */
-function creatureAfterZ(id: CreatureId): string {
-  const name = CREATURES[id].name;
-  return name.endsWith("k") ? `${name.slice(0, -1)}kiem` : name;
-}
-
 /** „reguła 2.1” for the rule as the editor numbers it in the program, or null when the program lacks it. */
 function ruleLabel(program: Program, ruleId: RuleId): string | null {
   for (const [groupIndex, group] of program.groups.entries()) {
@@ -96,7 +84,7 @@ function nowRow(line: NowLine, program: Program): NowRow {
     case "combat":
       return {
         icon: null,
-        text: `Walczy z ${creatureAfterZ(line.creatureId)}`,
+        text: `Walczy z ${CREATURES[line.creatureId].nameWith}`,
         role: "text",
         right: null,
       };

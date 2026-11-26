@@ -9,9 +9,9 @@ through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, 
 `end`, recording the map run's tiles at each start.
 The new game of each start has an Understanding that holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives. Its solved maps include Skraj lasu and Las, the prerequisites
-for Las and Las — głębiej (D-149); this input opens the maps without changing their generated
-tiles.
+program stay what the check drives. Its solved maps include Skraj lasu, Las, Las — głębiej and
+Las — wataha, the prerequisites for each map of MAP_RESOURCES down to Las — matecznik (D-149); this
+input opens the maps without changing their generated tiles.
 
 Reading of the sentence:
 - a map run starts: the state a `send` returns, and the state a `restart` returns;
@@ -78,6 +78,18 @@ MAP_RESOURCES = {
         {"id": "moss", "stock": 6},
         {"id": "fiber", "stock": 6},
     ),
+    "forestPack": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
+    "forestLair": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
 }
 # The game maps whose resources lie on every tile: the density of each resource is 1 in the data.
 ON_EVERY_TILE = ("forestEdge",)
@@ -126,7 +138,7 @@ for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(
       await newKnowingGame(game, join(simDirectory, 'game.js')), config.program).state;
-    state = { ...state, solvedMaps: ['forestEdge', 'forest'] };
+    state = { ...state, solvedMaps: ['forestEdge', 'forest', 'forestDeep', 'forestPack'] };
     state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });

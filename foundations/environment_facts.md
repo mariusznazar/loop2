@@ -93,6 +93,19 @@ to include a copy of the licence, or its URI, with every copy of the work they d
 
 - **Source:** https://creativecommons.org/licenses/by/3.0/legalcode § 4(a) — "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform."; read 2026-10-13
 
+## cc-by-4-credit
+
+The Creative Commons Attribution 4.0 International Public License requires whoever shares licensed
+material, including in modified form, to retain, where the licensor supplies it with the material,
+the identification of the creator, a copyright notice, a notice that refers to the licence, a notice
+that refers to the disclaimer of warranties and, to the extent reasonably practicable, a URI or
+hyperlink to the material, to indicate if the material was modified, and to indicate that the
+material is licensed under the licence and include the text of, or the URI or hyperlink to, the
+licence, and allows these conditions to be satisfied in any reasonable manner based on the medium,
+means and context of sharing.
+
+- **Source:** https://creativecommons.org/licenses/by/4.0/legalcode § 3(a)(1) — "If You Share the Licensed Material (including in modified form), You must:" · § 3(a)(1)(A) — "retain the following if it is supplied by the Licensor with the Licensed Material:" · "identification of the creator(s) of the Licensed Material and any others designated to receive attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated);" · "a copyright notice;" · "a notice that refers to this Public License;" · "a notice that refers to the disclaimer of warranties;" · "a URI or hyperlink to the Licensed Material to the extent reasonably practicable;" · § 3(a)(1)(B) — "indicate if You modified the Licensed Material and retain an indication of any previous modifications; and" · § 3(a)(1)(C) — "indicate the Licensed Material is licensed under this Public License, and include the text of, or the URI or hyperlink to, this Public License." · § 3(a)(2) — "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material."; read 2026-11-25
+
 ## game-icons-wood-stick-title
 
 The page of Delapouite's icon `wood-stick` on game-icons.net names the icon "Wood stick icon".
@@ -201,6 +214,12 @@ The page of Lorc's icon `wolf-head` on game-icons.net names the icon "Wolf head 
 
 - **Source:** https://game-icons.net/1x1/lorc/wolf-head.html (archived: https://web.archive.org/web/20261011095410/https://game-icons.net/1x1/lorc/wolf-head.html, 2026-10-11) § heading — "Wolf head icon"; read 2026-11-16
 
+## game-icons-bear-head-title
+
+The page of Delapouite's icon `bear-head` on game-icons.net names the icon "Bear head icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/bear-head.html (archived: https://web.archive.org/web/20260217055608/https://game-icons.net/1x1/delapouite/bear-head.html, 2026-02-17) § heading — "Bear head icon"; read 2026-11-25
+
 ## game-icons-bandage-roll-title
 
 The page of Lorc's icon `bandage-roll` on game-icons.net names the icon "Bandage roll icon".
@@ -218,6 +237,12 @@ The page of Delapouite's icon `first-aid-kit` on game-icons.net names the icon "
 The page of Lorc's icon `cultist` on game-icons.net names the icon "Cultist icon".
 
 - **Source:** https://game-icons.net/1x1/lorc/cultist.html (archived: https://web.archive.org/web/20261114052730/https://game-icons.net/1x1/lorc/cultist.html, 2026-11-14) § heading — "Cultist icon"; read 2026-11-21
+
+## game-icons-magnifying-glass-title
+
+The page of Lorc's icon `magnifying-glass` on game-icons.net names the icon "Magnifying glass icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/magnifying-glass.html (archived: https://web.archive.org/web/20260906164312/https://game-icons.net/1x1/lorc/magnifying-glass.html, 2026-09-06) § heading — "Magnifying glass icon"; read 2026-11-25
 
 ## eslint-recommended-rules
 
@@ -842,6 +867,12 @@ The page of the pack Smoke & Fire Animated Particle [16x16] on OpenGameArt gives
 The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj as its author and Redshrike as a collaborator, offers the pack under the licences CC-BY 4.0, CC-BY 3.0, GPL 3.0, GPL 2.0 and OGA-BY 3.0, the name of the licence CC-BY 3.0 linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/, and asks for a credit to Stephen "Redshrike" Challener as graphic artist and to William.Thompsonj as contributor, with a link back to the page or to the OpenGameArt homepage if reasonable.
 
 - **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-14
+
+## lpc-bears-deer-lions-licence
+
+The page of the pack [LPC] bears, deer, lions and more on OpenGameArt gives tapatilorenzo as its author, offers the pack under the licence CC-BY 4.0, the name of the licence linking to the Creative Commons Attribution 4.0 licence at https://creativecommons.org/licenses/by/4.0/, lists among its sprites bears of 64 × 64 pixels, grizzly, black and polar, and says in its notice that the pack is adapted from work by Sevarihk — the shiba dog, shark, giant rat, walking mushroom and underwater tile sprites — under CC-BY 4.0, while saying that any work not derived from his may be used explicitly under CC0, no attribution required.
+
+- **Source:** https://opengameart.org/content/lpc-bears-deer-lions-and-more (archived: https://web.archive.org/web/20260412212533/https://opengameart.org/content/lpc-bears-deer-lions-and-more, 2026-04-12) § Author — "tapatilorenzo" · § License(s) — "CC-BY 4.0", a link to https://creativecommons.org/licenses/by/4.0/ · § Sprite Info — "Bear sprites (64x64). Grizzly, black bear, polar bear. Each has the same animations." · § License — "Note that any work which isn't derivative of Sevarihk's work may be used explicitly under CC0, no attribution required. I also don't require attribution for my adaptations of Sevarihk's work (though attribution to him is still required when using derivative work)." · § Copyright/Attribution Notice — "Adapted from work by Sevarihk under CC-BY 4.0 license, including the shiba dog, shark, giant rat, walking mushroom, and underwater tile sprites."; read 2026-11-25
 
 ## docker-desktop-start-detach
 

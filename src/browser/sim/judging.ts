@@ -1,5 +1,6 @@
 import { newBackpack } from "./character.js";
 import { BALANCE } from "./data/balance.js";
+import { CREATURES } from "./data/creatures.js";
 import { MAPS } from "./data/maps.js";
 import { canSendMap, programOf, type GameResult } from "./game.js";
 import { recordOfJudging, type JudgingRecord } from "./judging-record.js";
@@ -25,6 +26,17 @@ function resultOf(run: MapRun): SeedResult {
 }
 
 /**
+ * The health the map run's last fight took from its creature (D-440): the creature's health before the
+ * fight less what it has after the resolved turns, so a fight the character won takes its whole health.
+ * A fight with no result yet, cut off by the completion or by the cap, takes 0, as does no fight at all.
+ */
+function fightDamage(run: MapRun): number {
+  const fight = run.lastCombat;
+  if (!fight?.result) return 0;
+  return CREATURES[fight.creatureId].health - fight.result.creatureHealth;
+}
+
+/**
  * Judges the program numbered `ids.programId` for the team's character `ids.characterId` on the map
  * `ids.mapId` (D-439): a map run of that map from each of the data's twelve seeds, in their order, each
  * passed game minute by game minute to its end or to the data's cap, the minute of the cap itself
@@ -35,7 +47,8 @@ function resultOf(run: MapRun): SeedResult {
  * paid, no death is settled, nothing is discovered and no rule is written, and no seed is drawn. The
  * character may be in an earning loop or in the manual map run; neither is touched. Throws an Error
  * on a map the data lacks or the player may not enter yet, a character the team lacks and a program
- * not on the list, as `send` does. Inputs stay unchanged.
+ * not on the list, as `send` does. Each seed's most health taken from the map's creature in one fight is
+ * read from the map run's state as the minutes pass (D-440). Inputs stay unchanged.
  */
 export function judgeOnSeeds(
   state: GameState,
@@ -73,7 +86,7 @@ export function judgeOnSeeds(
     character.id,
     character.skills,
   );
-  const results = BALANCE.judgingSeeds.map((seed): SeedResult => {
+  const seeds = BALANCE.judgingSeeds.map((seed) => {
     let run = newMapRun(
       map,
       seed,
@@ -83,11 +96,18 @@ export function judgeOnSeeds(
       character.skills,
       backpack,
     ).run;
-    while (!mapRunEnded(run) && run.minute < BALANCE.judgingCapMinutes)
+    let creatureDamage = 0;
+    while (!mapRunEnded(run) && run.minute < BALANCE.judgingCapMinutes) {
       run = stepMinute(run, map, program).run;
-    return resultOf(run);
+      creatureDamage = Math.max(creatureDamage, fightDamage(run));
+    }
+    return { result: resultOf(run), creatureDamage };
   });
-  return { results, equipment };
+  return {
+    results: seeds.map((seed) => seed.result),
+    equipment,
+    creatureDamage: seeds.map((seed) => seed.creatureDamage),
+  };
 }
 
 /**

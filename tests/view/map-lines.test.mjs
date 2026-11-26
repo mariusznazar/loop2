@@ -7,31 +7,69 @@ import {
   attackerLines,
   cardHeading,
   capLines,
+  demandRows,
+  goalSentence,
   resourceLines,
   sendMaps,
   solvingSentence,
-  terrainLines,
+  terrainRows,
 } from "../../dist/browser/view/map-lines.js";
 
 // The made-up cases below change one field of Las or Las — głębiej, so each case names the field.
-const { forestEdge, forest, forestDeep } = MAPS;
+const { forestEdge, forest, forestDeep, forestLair } = MAPS;
+
+/** A row of a table of the card, with no note and no icon unless given. */
+const row = (label, value, note = null, icons = []) => ({
+  label,
+  value,
+  note,
+  icons,
+});
 
 test("importing the map lines touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
   assert.equal(typeof sendMaps, "function");
 });
 
-test("the condition sentence is the map's name, a dash and the solving text of its data", () => {
+// D-327: the short sentence under the heading of the card is written by hand in each map's data, and it
+// gives the hours of the streak and the attacks to beat of the map's own solving condition: 480 minutes are
+// eight hours, 540 nine and 600 ten; Las — głębiej asks two beaten attacks of the wolf, Las — wataha six and
+// Las — matecznik one of the bear. Catches a sentence taken from another map, and the long solving text in
+// its place.
+test("the short sentence of each map's demand comes from its data and gives the hours and the attacks of its condition", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  assert.deepEqual(
+    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"].map(
+      goalSentence,
+    ),
+    [
+      "Osiem godzin bez jednej zmiany programu.",
+      "Osiem godzin bez jednej zmiany programu.",
+      "Dziewięć godzin bez zmiany programu i dwa pokonane wilki.",
+      "Dziewięć godzin bez zmiany programu i sześć pokonanych wilków.",
+      "Dziesięć godzin bez zmiany programu i jeden pokonany niedźwiedź.",
+    ],
+  );
+});
+
+test("the condition sentence is the solving text of the map's data alone, since the heading of the card names the map", () => {
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.equal(
     solvingSentence("forest"),
-    "Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
   );
 });
 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
-  assert.deepEqual(sendMaps(), ["forestEdge", "forest", "forestDeep"]);
+  assert.deepEqual(sendMaps(), [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+    "forestPack",
+    "forestLair",
+  ]);
   assert.deepEqual(sendMaps([]), ["forestEdge"]);
   assert.deepEqual(sendMaps(["forestEdge"]), ["forestEdge", "forest"]);
   assert.deepEqual(sendMaps(["forestEdge", "forest"]), [
@@ -39,85 +77,109 @@ test("the list of maps hides maps until their prerequisites are solved; the edit
     "forest",
     "forestDeep",
   ]);
+  assert.deepEqual(sendMaps(["forestEdge", "forest", "forestDeep"]), [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+    "forestPack",
+  ]);
+  assert.deepEqual(
+    sendMaps(["forestEdge", "forest", "forestDeep", "forestPack"]),
+    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"],
+  );
 });
 
-// D-327: the heading names the map, says „rozwiązana” once it is solved, and says „odsłania ją”
-// with the opener's name from the data at a map another map opens. Catches a heading that drops the
-// solved mark or the opener, or takes the opener's name from the wrong map.
-test("the heading names the map, with the solved mark and the opener's name from the data", () => {
+// D-327: the heading names the map, gives the tag of its state — „rozwiązana” once it is solved,
+// „otwarta” before — and says „odsłania ją” with the opener's name from the data at a map another map
+// opens. Catches a heading that drops the tag or the opener, a tag the wrong way round, or the opener's
+// name taken from the wrong map.
+test("the heading names the map, with the tag of its state and the opener's name from the data", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
+  const open = { text: "otwarta", solved: false };
+  const done = { text: "rozwiązana", solved: true };
   assert.deepEqual(cardHeading(forestEdge, false), {
     name: "Skraj lasu",
-    solved: null,
+    state: open,
     openedBy: null,
   });
   assert.deepEqual(cardHeading(forest, false), {
     name: "Las",
-    solved: null,
+    state: open,
     openedBy: "odsłania ją Skraj lasu",
   });
   assert.deepEqual(cardHeading(forest, true), {
     name: "Las",
-    solved: "rozwiązana",
+    state: done,
     openedBy: "odsłania ją Skraj lasu",
-  });
-  assert.deepEqual(cardHeading(forestDeep, false), {
-    name: "Las — głębiej",
-    solved: null,
-    openedBy: "odsłania ją Las",
   });
   assert.deepEqual(cardHeading(forestDeep, true), {
     name: "Las — głębiej",
-    solved: "rozwiązana",
+    state: done,
     openedBy: "odsłania ją Las",
   });
 });
 
-// D-327: the grid, the entrance, the step and the minutes without fire with the temperature.
-// Catches a grid with its sides swapped, the entrance word the wrong way round, a note on the step
-// the data gives, and wrong minutes without fire.
-test("the terrain lines give the grid, the entrance, the step and the minutes without fire", () => {
+// D-327: „Żąda” is a table of what the solving condition asks: the streak in hours, or in minutes where it
+// is not a whole number of hours (480 minutes are 8 h, 540 are 9 h, and 90 stay 90 min), and the attacks to beat with the icon of the creature
+// that attacks. Catches a streak in the wrong unit, a row for a requirement the condition lacks, and
+// the attacks without the creature's icon.
+test("the table „Żąda” gives the streak in hours, or in minutes where it is no whole hour, and the attacks to beat with the creature's icon", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  assert.deepEqual(terrainLines(forest), [
-    { text: "siatka 4 × 4", note: null },
-    { text: "wejście stałe", note: null },
-    { text: "krok 5 min", note: null },
-    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
+  assert.deepEqual(demandRows(forest), [row("passa", "8 h")]);
+  assert.deepEqual(demandRows(forestDeep), [
+    row("passa", "9 h"),
+    row("do pokonania", "2", null, ["wolf-head"]),
   ]);
-  assert.deepEqual(terrainLines(forestDeep), [
-    { text: "siatka 5 × 5", note: null },
-    { text: "wejście losowe", note: null },
-    { text: "krok 5 min", note: null },
-    { text: "bez ognia 33 min — otoczenie 7 °C", note: null },
+  assert.deepEqual(demandRows(forestLair), [
+    row("passa", "10 h"),
+    row("do pokonania", "1", null, ["bear-head"]),
+  ]);
+  assert.deepEqual(demandRows({ ...forest, solving: { streak: 90 } }), [
+    row("passa", "90 min"),
+  ]);
+});
+
+// D-327: the grid, the entrance, the step and the minutes without fire with the temperature as their
+// note. Catches a grid with its sides swapped, the entrance word the wrong way round, a note on the step
+// the data gives, and wrong minutes without fire.
+test("the table „Teren” gives the grid, the entrance, the step and the minutes without fire", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  assert.deepEqual(terrainRows(forest), [
+    row("siatka", "4 × 4"),
+    row("wejście", "stałe"),
+    row("krok", "5 min"),
+    row("bez ognia", "83 min", " — otoczenie 25 °C"),
+  ]);
+  assert.deepEqual(terrainRows(forestDeep), [
+    row("siatka", "5 × 5"),
+    row("wejście", "losowe"),
+    row("krok", "5 min"),
+    row("bez ognia", "33 min", " — otoczenie 7 °C"),
   ]);
 });
 
 // D-327: a step above the usual one (5 minutes, the step most maps of the data give) costs more, one
-// below it costs less, and the note stands apart from the line's text, as the renewal of a resource
-// does. At 37 °C the body never cools below the chill threshold, so the minutes without fire are
-// left out. Catches a note on the usual step, a note with the wrong direction, a note left in the
-// text instead of standing apart, and a minutes line for a map that does not cool the body.
+// below it costs less, and the note stands apart from the value, as the renewal of a resource does. At
+// 37 °C the body never cools below the chill threshold, so the minutes without fire are left out.
+// Catches a note on the usual step, a note with the wrong direction, a note left in the value instead of
+// standing apart, and a minutes row for a map that does not cool the body.
 test("a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
-  assert.deepEqual(terrainLines({ ...forest, stepMinutes: 9 }), [
-    { text: "siatka 4 × 4", note: null },
-    { text: "wejście stałe", note: null },
-    { text: "krok 9 min", note: " — drożej niż zwykle" },
-    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
-  ]);
-  assert.deepEqual(terrainLines({ ...forest, stepMinutes: 2 }), [
-    { text: "siatka 4 × 4", note: null },
-    { text: "wejście stałe", note: null },
-    { text: "krok 2 min", note: " — taniej niż zwykle" },
-    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
-  ]);
-  assert.deepEqual(terrainLines({ ...forest, ambientTemperature: 37 }), [
-    { text: "siatka 4 × 4", note: null },
-    { text: "wejście stałe", note: null },
-    { text: "krok 5 min", note: null },
+  assert.deepEqual(
+    terrainRows({ ...forest, stepMinutes: 9 })[2],
+    row("krok", "9 min", " — drożej niż zwykle"),
+  );
+  assert.deepEqual(
+    terrainRows({ ...forest, stepMinutes: 2 })[2],
+    row("krok", "2 min", " — taniej niż zwykle"),
+  );
+  assert.deepEqual(terrainRows({ ...forest, ambientTemperature: 37 }), [
+    row("siatka", "4 × 4"),
+    row("wejście", "stałe"),
+    row("krok", "5 min"),
   ]);
 });
 
@@ -129,44 +191,55 @@ test("each resource gives its name, the tiles that hold it, its stock and its re
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  const renews = (minutes) => ({
+    text: `+1 co ${minutes} min`,
+    warning: false,
+  });
   assert.deepEqual(resourceLines(forest), [
     {
       id: "stick",
-      text: "patyk — ≈ 11 z 16 kafelków, po 12",
-      renewal: { text: "+1 co 30 min", warning: false },
+      name: "patyk",
+      spread: "≈ 11 z 16 kafelków · po 12",
+      renewal: renews(30),
     },
     {
       id: "berry",
-      text: "jagoda — ≈ 8 z 16 kafelków, po 8",
-      renewal: { text: "+1 co 40 min", warning: false },
+      name: "jagoda",
+      spread: "≈ 8 z 16 kafelków · po 8",
+      renewal: renews(40),
     },
     {
       id: "moss",
-      text: "mech — ≈ 6 z 16 kafelków, po 6",
-      renewal: { text: "+1 co 60 min", warning: false },
+      name: "mech",
+      spread: "≈ 6 z 16 kafelków · po 6",
+      renewal: renews(60),
     },
     {
       id: "fiber",
-      text: "włókno — ≈ 6 z 16 kafelków, po 6",
-      renewal: { text: "+1 co 60 min", warning: false },
+      name: "włókno",
+      spread: "≈ 6 z 16 kafelków · po 6",
+      renewal: renews(60),
     },
   ]);
   assert.deepEqual(resourceLines(forestEdge), [
     {
       id: "stick",
-      text: "patyk — ≈ 16 z 16 kafelków, po 12",
-      renewal: { text: "+1 co 30 min", warning: false },
+      name: "patyk",
+      spread: "≈ 16 z 16 kafelków · po 12",
+      renewal: renews(30),
     },
     {
       id: "berry",
-      text: "jagoda — ≈ 16 z 16 kafelków, po 8",
-      renewal: { text: "+1 co 40 min", warning: false },
+      name: "jagoda",
+      spread: "≈ 16 z 16 kafelków · po 8",
+      renewal: renews(40),
     },
   ]);
   assert.deepEqual(resourceLines(forestDeep)[0], {
     id: "stick",
-    text: "patyk — ≈ 18 z 25 kafelków, po 12",
-    renewal: { text: "+1 co 30 min", warning: false },
+    name: "patyk",
+    spread: "≈ 18 z 25 kafelków · po 12",
+    renewal: renews(30),
   });
   assert.deepEqual(resourceLines({ ...forest, resources: [] }), []);
 });
@@ -184,7 +257,8 @@ test("a resource that does not renew says so apart, in warning, in place of its 
   assert.deepEqual(resourceLines(map), [
     {
       id: "moss",
-      text: "mech — ≈ 6 z 16 kafelków, po 6",
+      name: "mech",
+      spread: "≈ 6 z 16 kafelków · po 6",
       renewal: { text: "nie odnawia się", warning: true },
     },
   ]);
@@ -195,7 +269,7 @@ test("a resource that does not renew says so apart, in warning, in place of its 
 // and a mean gap that counts the chance alone.
 test("an attacker gives its icon, name, health and blow, and its chance, quiet time and mean gap", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(attackerLines(forestDeep), [
     {
@@ -234,7 +308,7 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in four things only"
+  // decision: D-327 "It departs from the card of the predecessor game, beyond its words and the roles of its parts, in six things only"
   assert.deepEqual(capLines(forest), []);
   assert.deepEqual(capLines({ ...forest, carryIn: 0, carryOut: 12 }), [
     { text: "wnosisz najwyżej 0", warning: true },

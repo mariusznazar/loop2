@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, keeps in the browser's lasting storage the one lasting state it holds, the last judging of each character, program and map of a game, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
+The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, keeps in the browser's lasting storage the lasting state it holds, the last judging of each character, program and map of a game and, for a map whose data name a creature for it, the record of the most health that creature lost in one fight of a judging, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css
@@ -233,6 +233,7 @@ may not.
 | the Pixel Crawler pack of Anokolisa | them → us | untrusted |
 | the pack Smoke & Fire Animated Particle [16x16] of KnoblePersona | them → us | untrusted |
 | the pack [LPC] Wolf Animation of William.Thompsonj and Redshrike | them → us | untrusted |
+| the pack [LPC] bears, deer, lions and more of tapatilorenzo | them → us | untrusted |
 | Mikrus Outsider | both | untrusted |
 | Mikrus Strych | both | untrusted |
 | the `pusher` service of Mikrus | both | untrusted |

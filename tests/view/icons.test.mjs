@@ -9,6 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   ICON_CREDITS,
   ICON_SOURCE_COMMIT,
+  SEARCH_ICON,
 } from "../../dist/browser/view/credits.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
@@ -174,9 +175,11 @@ const TITLES = {
   dodge: "Dodge icon",
   "wood-pile": "Wood Pile icon",
   "wolf-head": "Wolf head icon",
+  "bear-head": "Bear head icon",
   "bandage-roll": "Bandage roll icon",
   "first-aid-kit": "First aid kit icon",
   cultist: "Cultist icon",
+  "magnifying-glass": "Magnifying glass icon",
 };
 
 /**
@@ -216,15 +219,26 @@ const ACTION_ICONS = [
   { name: "Odskocz", icon: "dodge" },
 ];
 
-/** The icon of the creatures, one line after the actions' (creatures.ts). */
-const CREATURE_ICONS = [{ name: "wilk", icon: "wolf-head" }];
+/** The icons of the creatures, one line each after the actions' and in the order of the data: the wolf's, then the bear's (creatures.ts). */
+const CREATURE_ICONS = [
+  { name: "wilk", icon: "wolf-head" },
+  { name: "niedźwiedź", icon: "bear-head" },
+];
 
 /** The icon of the archetypes, one line after the creatures' (archetypes.ts). */
 const ARCHETYPE_ICONS = [{ name: "Mag żywiołów", icon: "cultist" }];
 
 /**
- * Everything the data gives an icon, in the section's order: the items, the campfire, the
- * extinguished campfire, the actions, the creatures, the archetypes.
+ * The icons of the interface, which stand for no thing of the game's data, one line each after the
+ * archetypes': the magnifying glass of the search field of the catalog of maps.
+ */
+const INTERFACE_ICONS = [
+  { name: "szukanie mapy albo zasobu", icon: "magnifying-glass" },
+];
+
+/**
+ * Every icon the section credits, in its order: the items, the campfire, the extinguished campfire, the
+ * actions, the creatures, the archetypes, then the icons of the interface.
  */
 const NAMED = [
   ...ITEM_ICONS,
@@ -233,22 +247,30 @@ const NAMED = [
   ...ACTION_ICONS,
   ...CREATURE_ICONS,
   ...ARCHETYPE_ICONS,
+  ...INTERFACE_ICONS,
 ];
 
 // The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
 // `sprite-credits`): what the pack is for, the title, author and licence the pack's page on OpenGameArt
 // gives, and the change the files of the game made to it, with its page and its licence linked. The
-// dust is the pack Smoke & Fire Animated Particle [16x16] and the wolf the pack LPC Wolf, whose files
-// are frames cut from its sheet.
+// dust is the pack Smoke & Fire Animated Particle [16x16], the wolf the pack LPC Wolf and the bear the
+// pack [LPC] bears, deer, lions and more, whose files are frames cut from its sheets.
 const PACK_LINES = [
   "Kurz i obłok walki: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)",
   "Wilk: „[LPC] Wolf Animation”, Stephen „Redshrike” Challener (grafika), William.Thompsonj (współtwórca), opengameart.org, CC BY 3.0, zmienione (wycięte klatki)",
+  "Niedźwiedź: „[LPC] bears, deer, lions and more”, tapatilorenzo, opengameart.org, CC BY 4.0, zmienione (wycięte klatki)",
 ];
 const PACK_PAGES = [
   "https://opengameart.org/content/smoke-fire-animated-particle-16x16",
   "https://opengameart.org/content/lpc-wolf-animation",
+  "https://opengameart.org/content/lpc-bears-deer-lions-and-more",
 ];
-const PACK_LICENCE = "http://creativecommons.org/licenses/by/3.0/";
+// The licence of each pack's line, as its link's text and its address.
+const PACK_LICENCES = [
+  { name: "CC BY 3.0", url: "http://creativecommons.org/licenses/by/3.0/" },
+  { name: "CC BY 3.0", url: "http://creativecommons.org/licenses/by/3.0/" },
+  { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+];
 
 test("the section credits the campfire's icon, by Lorc, after the five items' icons", () => {
   const items = itemsOf(sectionMarkup());
@@ -324,7 +346,7 @@ test("the section credits the actions' icons after the two campfires', one line 
   );
 });
 
-test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the archetype's", () => {
+test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the bear's", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   const items = itemsOf(sectionMarkup());
   const at = ACTIONS_AT + ACTION_ICONS.length;
@@ -336,10 +358,25 @@ test("the section credits the wolf's icon, by Lorc, after the actions' icons and
     linksOf(items[at])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/wolf-head\.html"/,
   );
+  assert.match(textOfMarkup(items[at + 1]), /^niedźwiedź: /);
+});
+
+test("the section credits the bear's icon, by Delapouite, after the wolf's and before the archetype's", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at = ACTIONS_AT + ACTION_ICONS.length + 1;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "niedźwiedź: „Bear head icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/delapouite\/bear-head\.html"/,
+  );
   assert.match(textOfMarkup(items[at + 1]), /^Mag żywiołów: /);
 });
 
-test("the section credits the elemental mage's icon, the cultist by Lorc, after the wolf's and before the packs", () => {
+test("the section credits the elemental mage's icon, the cultist by Lorc, after the creatures' and before the icons of the interface", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names"
   const items = itemsOf(sectionMarkup());
@@ -352,7 +389,33 @@ test("the section credits the elemental mage's icon, the cultist by Lorc, after 
     linksOf(items[at])[0].attributes,
     /^href="https:\/\/game-icons\.net\/1x1\/lorc\/cultist\.html"/,
   );
+  assert.match(textOfMarkup(items[at + 1]), /^szukanie mapy albo zasobu: /);
+});
+
+test("the section credits the magnifying glass of the search field, by Lorc, after the archetype's and before the packs", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at =
+    ACTIONS_AT +
+    ACTION_ICONS.length +
+    CREATURE_ICONS.length +
+    ARCHETYPE_ICONS.length;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "szukanie mapy albo zasobu: „Magnifying glass icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/magnifying-glass\.html"/,
+  );
   assert.match(textOfMarkup(items[at + 1]), /^Kurz i obłok walki: /);
+});
+
+test("the search field's icon names the file magnifying-glass.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  assert.equal(SEARCH_ICON.icon, "magnifying-glass");
+  assert.equal(SEARCH_ICON.iconTitle, "Magnifying glass icon");
+  assert.ok(existsSync(`${ICONS}magnifying-glass.svg`));
 });
 
 test("the elemental mage's data names the icon file cultist.svg and its title on game-icons.net, and the file exists", () => {
@@ -369,6 +432,14 @@ test("the wolf's data names the icon file wolf-head.svg and its title on game-ic
   assert.equal(CREATURES.wolf.icon, "wolf-head");
   assert.equal(CREATURES.wolf.iconTitle, "Wolf head icon");
   assert.ok(existsSync(`${ICONS}wolf-head.svg`));
+});
+
+test("the bear's data names the icon file bear-head.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
+  assert.equal(CREATURES.bear.icon, "bear-head");
+  assert.equal(CREATURES.bear.iconTitle, "Bear head icon");
+  assert.ok(existsSync(`${ICONS}bear-head.svg`));
 });
 
 test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {
@@ -438,8 +509,8 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
 });
 
 // invariant: sprite-credits
-test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
-  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+test("the section's last three lines credit the packs of the dust, of the wolf and of the bear: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked, the bear's pack under CC BY 4.0", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, the bear's pictures come from the pack „[LPC] bears, deer, lions and more”, which the game takes under its licence CC BY 4.0 and credits"
   const items = itemsOf(sectionMarkup()).slice(NAMED.length);
   assert.equal(items.length, PACK_LINES.length);
   items.forEach((item, i) => {
@@ -454,8 +525,8 @@ test("the section's last two lines credit the packs of the dust and of the wolf:
           "opengameart.org",
         ],
         [
-          `href="${PACK_LICENCE}" target="_blank" rel="noopener noreferrer"`,
-          "CC BY 3.0",
+          `href="${PACK_LICENCES[i].url}" target="_blank" rel="noopener noreferrer"`,
+          PACK_LICENCES[i].name,
         ],
       ],
     );
@@ -469,14 +540,16 @@ const SPRITES = fileURLToPath(
 );
 
 /**
- * The three packs the scene's pictures come from (D-271) and whether the licence of each asks for a
+ * The four packs the scene's pictures come from (D-271) and whether the licence of each asks for a
  * credit: Pixel Crawler asks for none but of a project with a saxophone solo, which the game has not
- * (environment fact pixel-crawler-terms), the other two are under CC BY 3.0 (lpc-wolf-licence,
- * smoke-fire-particle-licence).
+ * (environment fact pixel-crawler-terms), the wolf's and the dust's are under CC BY 3.0
+ * (lpc-wolf-licence, smoke-fire-particle-licence) and the bear's under CC BY 4.0
+ * (lpc-bears-deer-lions-licence).
  */
 const SPRITE_PACKS = {
   "Pixel Crawler": { asksForCredit: false },
   "[LPC] Wolf Animation": { asksForCredit: true },
+  "[LPC] bears, deer, lions and more": { asksForCredit: true },
   "Smoke & Fire Animated Particle [16x16]": { asksForCredit: true },
 };
 
@@ -485,6 +558,10 @@ const SPRITE_PACKS = {
  * it was made from, which is how the credits come to be asked about it.
  */
 const PACK_OF_SPRITE = {
+  "bear-bite.png": "[LPC] bears, deer, lions and more",
+  "bear-death.png": "[LPC] bears, deer, lions and more",
+  "bear-idle.png": "[LPC] bears, deer, lions and more",
+  "bear-run.png": "[LPC] bears, deer, lions and more",
   "berry-bush.png": "Pixel Crawler",
   "camp-clearing.png": "Pixel Crawler",
   "chest.png": "Pixel Crawler",
@@ -527,7 +604,7 @@ function packOfSpriteInReadme() {
   );
   const packs = {};
   for (const sentence of point[0].split(
-    /(?=The second pack is |The third is )/,
+    /(?=The second pack is |The third is |The fourth is )/,
   )) {
     const named = Object.keys(SPRITE_PACKS).filter((pack) =>
       sentence.includes(pack),
@@ -542,8 +619,8 @@ function packOfSpriteInReadme() {
 }
 
 // invariant: sprite-credits
-test("each PNG file directly in assets/sprites is assigned to one of the three packs, a file with no assignment fails naming it, and README.md names for each file the pack assigned to it", () => {
-  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+test("each PNG file directly in assets/sprites is assigned to one of the four packs, a file with no assignment fails naming it, and README.md names for each file the pack assigned to it", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, the bear's pictures come from the pack „[LPC] bears, deer, lions and more”, which the game takes under its licence CC BY 4.0 and credits"
   assert.ok(spriteFiles.length > 0, "no sprite files found");
   assert.deepEqual(
     spriteFiles.filter((name) => !Object.hasOwn(PACK_OF_SPRITE, name)),
@@ -562,11 +639,12 @@ test("each PNG file directly in assets/sprites is assigned to one of the three p
 // invariant: sprite-credits
 test("each pack with a file in assets/sprites whose licence asks for a credit has a line among the credits of the section, and a pack without one fails by name", () => {
   // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
-  // Precondition: both credited packs have files, so the check below has something to ask about.
+  // Precondition: the three credited packs have files, so the check below has something to ask about.
   const packsInUse = new Set(
     spriteFiles.map((name) => PACK_OF_SPRITE[name]).filter(Boolean),
   );
   assert.ok(packsInUse.has("[LPC] Wolf Animation"));
+  assert.ok(packsInUse.has("[LPC] bears, deer, lions and more"));
   assert.ok(packsInUse.has("Smoke & Fire Animated Particle [16x16]"));
   // React writes the ampersand of a title as an entity, as markup does.
   const lines = itemsOf(sectionMarkup()).map((item) =>

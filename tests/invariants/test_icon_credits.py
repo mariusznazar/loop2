@@ -87,6 +87,7 @@ AUTHORS = {
     "bandage-roll.svg": "Lorc",
     "first-aid-kit.svg": "Delapouite",
     "cultist.svg": "Lorc",
+    "magnifying-glass.svg": "Lorc",
 }
 # Titles of the current icon files, as the headings of their pages on game-icons.net give them
 # (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
@@ -95,8 +96,8 @@ AUTHORS = {
 # game-icons-grab-title, game-icons-claw-hammer-title, game-icons-match-tip-title,
 # game-icons-logging-title, game-icons-meal-title, game-icons-deadly-strike-title,
 # game-icons-boot-kick-title, game-icons-dodge-title, game-icons-wood-pile-title,
-# game-icons-wolf-head-title, game-icons-bandage-roll-title, game-icons-first-aid-kit-title and
-# game-icons-cultist-title).
+# game-icons-wolf-head-title, game-icons-bear-head-title, game-icons-bandage-roll-title,
+# game-icons-first-aid-kit-title, game-icons-cultist-title and game-icons-magnifying-glass-title).
 TITLES = {
     "wood-stick.svg": "Wood stick icon",
     "berry-bush.svg": "Berry bush icon",
@@ -116,9 +117,11 @@ TITLES = {
     "dodge.svg": "Dodge icon",
     "wood-pile.svg": "Wood Pile icon",
     "wolf-head.svg": "Wolf head icon",
+    "bear-head.svg": "Bear head icon",
     "bandage-roll.svg": "Bandage roll icon",
     "first-aid-kit.svg": "First aid kit icon",
     "cultist.svg": "Cultist icon",
+    "magnifying-glass.svg": "Magnifying glass icon",
 }
 
 REACT_DRIVER = r"""

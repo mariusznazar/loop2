@@ -301,7 +301,7 @@ An overlay is a file that changes the game's data in memory for the time of one 
 
 ## wall
 
-A map that asks for something new — an item, a spell or another idea of a program — and without it is solved rarely.
+A map that asks for something new — an item, a spell or another idea of a program.
 
 - **Not:** none
 

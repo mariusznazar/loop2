@@ -1622,6 +1622,80 @@ test("the wolf falls where it stood when defeated and runs off to the right edge
   assert.equal(run("creatureDefeated", 275).sprite.x, 228);
 });
 
+const BEAR_FIGHT = {
+  creatureId: "bear",
+  attackMinute: FIGHT_FROM,
+  resolveMinute: FIGHT_FROM + 5,
+};
+
+/** The state in the minutes of a combat with the bear. */
+const fightingTheBear = () =>
+  withRun(sent(), {
+    current: null,
+    minute: FIGHT_FROM,
+    activeCombat: BEAR_FIGHT,
+    lastCombat: { ...BEAR_FIGHT, result: null },
+  });
+
+/** The state after a combat with the bear that had the outcome given. */
+const afterTheBear = (outcome) =>
+  afterFight(outcome, {
+    lastCombat: { ...BEAR_FIGHT, result: RESULT(outcome) },
+  });
+
+// D-316. Catches a creature that floats above the ground line or sinks into it: the rows a creature is
+// lowered by are the rows between the bottom of its standing figure and the bottom of its frame, which the
+// pixels of its idle sheet give (the wolf's feet are on the bottom row, 32 of 32, the bear's end at row 60
+// of 64, measured with `sheet-frames.mjs measure`), so a new sheet of the pack or a changed number breaks it.
+test("each creature is lowered by the rows its standing figure stops short of the bottom of its frame", () => {
+  const lowestRow = (picture) => {
+    const image = decodePng(picture.file);
+    for (let y = picture.height - 1; y >= 0; y--)
+      for (let x = 0; x < picture.width; x++)
+        if (image.pixels[y][x][3] > 0) return y + 1;
+    throw new Error(`${picture.file} holds no visible pixel`);
+  };
+  for (const [id, sheets] of Object.entries(SCENE_CREATURES))
+    assert.equal(
+      SCENE_FIGHT.sink[id],
+      sheets.idle.height - lowestRow(sheets.idle),
+      id,
+    );
+  assert.deepEqual(SCENE_FIGHT.sink, { wolf: 0, bear: 4 });
+});
+
+// D-316. Catches a creature drawn on the bottom edge of its frame whatever its figure: the drawing carries the
+// rows its creature is lowered by, which the scene adds to the ground line, and the wolf is lowered by none.
+test("the drawing of the creature in the scene carries the rows it is lowered by, the bear's 4 and the wolf's none", () => {
+  assert.equal(creatureOf(fighting()).sink, 0);
+  assert.equal(creatureOf(fightingTheBear()).sink, 4);
+  assert.deepEqual(
+    [
+      creatureOf(fightingTheBear()).bite.href,
+      creatureOf(fightingTheBear()).idle.height,
+    ],
+    ["/sprites/bear-bite.png", 64],
+  );
+});
+
+// D-316, D-317. Catches a creature that falls or runs off on the bottom edge of its frame instead of lowered
+// by its rows: the ground line is 136, so the bear's death and run stand on 140 and the wolf's on 136.
+test("the bear that falls or runs off stands on the ground line lowered by its rows, the wolf on the line", () => {
+  const effectOf = (was, after, outcome) =>
+    creatureEffect(was, after, [ENDED(outcome)], 144, 64, 336);
+  for (const [outcome, kind] of [
+    ["creatureDefeated", "creatureDown"],
+    ["creatureDeparted", "creatureOut"],
+  ]) {
+    const bear = effectOf(fightingTheBear(), afterTheBear(outcome), outcome);
+    assert.equal(bear.kind, kind);
+    assert.equal(bear.sprite.y, 140, `the bear ${outcome}`);
+    const wolf = effectOf(fighting(), afterFight(outcome), outcome);
+    assert.equal(wolf.kind, kind);
+    assert.equal(wolf.sprite.y, 136, `the wolf ${outcome}`);
+  }
+});
+
 // D-271, D-273, D-316. The wolf's files hold pixels alone, are the sheets of the data in size, hold only
 // fully opaque or fully clear pixels (the pack's own), and each frame has the wolf's feet on its bottom row,
 // the first frame of the death sheet standing and the last lying, so the bite, the death and the run do not

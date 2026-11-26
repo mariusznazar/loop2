@@ -4,6 +4,7 @@
  * its list changes the map and builds nothing again. A new screen copies this entry. Nothing here
  * runs when the module is imported.
  */
+import { MAPS } from "../sim/data/maps.js";
 import { judgeAndRecord } from "../sim/judging.js";
 import type { JudgingIds } from "../sim/judging-record.js";
 import { pickProgram } from "../sim/programs.js";
@@ -11,6 +12,7 @@ import { stopLoop } from "../sim/loop.js";
 import type { Judging, MapId } from "../sim/types.js";
 import { createMapsScreen } from "./maps-screen.js";
 import type { JudgingCache } from "./judging-cache.js";
+import { recordCreatureOf } from "./map-lines.js";
 import type { Screen, ScreenEntry } from "./screen-registry.js";
 import type { StateStore } from "./state-store.js";
 
@@ -21,7 +23,7 @@ export type MapsEntryOptions = {
   >;
   /**
    * The cache of the judgings the browser remembers (D-441): the entry reads the mark beside the list
-   * „Program:” from it and gives it each judging. A page whose storage is refused gives it a cache that
+   * „Program:” and the record of a map's creature from it and gives it each judging. A page whose storage is refused gives it a cache that
    * keeps the judgings for the open page alone.
    */
   readonly judgingCache: JudgingCache;
@@ -43,11 +45,19 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
       let mapId = mapOf(screen);
       let acting = false;
       let disposed = false;
+      /** The record of the map's creature, or null where the map's data name none or none stands (D-440). */
+      function readMapRecord(forMap: MapId): number | null {
+        const creature = recordCreatureOf(MAPS[forMap]);
+        return creature === null
+          ? null
+          : judgingCache.readRecord(forMap, creature);
+      }
       const props = () => ({
         state: store.get(),
         nowMs: store.moment(),
         mapId,
         readRecord: (ids: JudgingIds) => judgingCache.read(ids),
+        readMapRecord,
       });
 
       /**
@@ -59,6 +69,17 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
       function draw(): void {
         if (acting || disposed) return;
         maps.update(props());
+      }
+
+      /** Offers the largest of the twelve seeds' damage to the record of the map, where its data name a creature. */
+      function offerDamage(forMap: MapId, judging: Judging): void {
+        const creature = recordCreatureOf(MAPS[forMap]);
+        if (creature === null) return;
+        judgingCache.offerRecord(
+          forMap,
+          creature,
+          Math.max(0, ...judging.creatureDamage),
+        );
       }
 
       /** Runs an act of the screen and then draws the screen once, synchronously from the click. */
@@ -117,7 +138,8 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
           // The judging is an act of the store, so the time is counted first and the state the
           // judging reads is the one the click met (D-409). Inside the act, before the screen's one
           // draw, its record replaces the judging the cache holds for its character, program and
-          // map (D-440, D-441), unless the store has halted (D-323). The act takes no result into the
+          // map, and the most health it took from the map's creature in one fight is offered to the
+          // record of the map (D-440, D-441), unless the store has halted (D-323). The act takes no result into the
           // store, which saves nothing for it (D-170); the judging is given back for the screen to
           // show, with the cause and the minute of each death the cache does not keep.
           judge(characterId, judged, programId) {
@@ -126,7 +148,10 @@ export function createMapsEntry(options: MapsEntryOptions): ScreenEntry {
               store.act(() => {
                 const ids = { mapId: judged, characterId, programId };
                 const done = judgeAndRecord(store.get(), ids);
-                if (!store.halted()) judgingCache.remember(ids, done.record);
+                if (!store.halted()) {
+                  judgingCache.remember(ids, done.record);
+                  offerDamage(judged, done.judging);
+                }
                 made.push(done.judging);
               }),
             );

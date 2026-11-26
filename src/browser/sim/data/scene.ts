@@ -92,8 +92,9 @@ export const SCENE_MAGES = {
 
 /**
  * The sheets of a creature that attacks, by its id: standing, running, biting and dying, each in its
- * frame size, which is common to all of them and has the creature's feet on its bottom row. The pictures
- * are the pack LPC Wolf's own side views of the wolf in the frames of the scene, facing left (D-271):
+ * frame size, which is common to all four of them. The scene places a creature by its frame's bottom
+ * edge; the wolf's feet stand on that edge, the bear's stand a few rows above it in its own sheets. The
+ * pictures are the pack LPC Wolf's own side views of the wolf in the frames of the scene, facing left (D-271):
  * the idle sheet is the standing frame of its walk, the run sheet serves the creature that runs in and
  * runs off, the bite sheet loops while the creature fights and starts on the frame the idle sheet is,
  * and the death sheet is the four frames in which it falls and lies, the last frame the creature lying
@@ -115,6 +116,12 @@ export const SCENE_CREATURES = {
     bite: { file: "wolf-bite.png", width: 64, height: 32, frames: 5 },
     death: { file: "wolf-death.png", width: 64, height: 32, frames: 4 },
   },
+  bear: {
+    idle: { file: "bear-idle.png", width: 64, height: 64, frames: 1 },
+    run: { file: "bear-run.png", width: 64, height: 64, frames: 5 },
+    bite: { file: "bear-bite.png", width: 64, height: 64, frames: 3 },
+    death: { file: "bear-death.png", width: 64, height: 64, frames: 4 },
+  },
 } as const satisfies Record<CreatureId, SceneCreatureSheets>;
 
 /**
@@ -125,13 +132,21 @@ export const SCENE_CREATURES = {
  * where its frame then lies inside the scene, as it does at every place the mage stands at but the
  * right edge, and on the left where it does not. The cloud of the scuffle, the dust's picture, stands
  * over the gap, its middle on the gap's middle and its bottom edge `cloudUp` pixels above the ground
- * line.
+ * line. `sink` is how many rows below the ground line the bottom edge of a creature's frame stands, so
+ * that its feet stand on the line: the wolf's feet are on the bottom row of its frame, the bear's a few
+ * rows above it in its own sheets.
  */
 export const SCENE_FIGHT = {
   mageFigure: { left: 20, right: 44 },
   gap: 2,
   cloudUp: 3,
-} as const;
+  sink: { wolf: 0, bear: 4 },
+} as const satisfies {
+  mageFigure: { left: number; right: number };
+  gap: number;
+  cloudUp: number;
+  sink: Record<CreatureId, number>;
+};
 
 /**
  * The cloud of dust of a missed gathering and of a scuffle: the eight cells of smoke of the pack Smoke &
