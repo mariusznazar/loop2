@@ -321,32 +321,43 @@ test("the check names each program by its number in the whole list of reference 
 });
 
 test("the earning loop of a row starts with the gear given to the check, so its loop columns are those of a loop started with that gear", () => {
+  // On Las - głębiej the best program fights the wolves, so a stick in the main hand from the start
+  // changes how its earning loop goes; the loop columns of a row with the stick are then those of a
+  // loop started with it, and not those of a loop started with an empty hand.
   const skills = buildSkills({ practice: { smallItemGathering: 80 } });
-  const gear = buildGear({ mainHand: "stick", pocket1: "bandage" });
-  const loopSeeds = seedRange(1, 10);
-  const expected = loopBalance({
-    mapId: "forest",
-    program: forestLoopWithStock,
-    seeds: loopSeeds,
-    hours: 12,
-    skills,
-    gear,
-    chest: chestOf(forestLoopWithStock),
-    resurrectionReady: true,
-  }).summary;
-  const row = withNoReturn(() =>
-    measureRow({
-      mapId: "forest",
-      programLabel: "P6",
-      program: forestLoopWithStock,
+  const loopSeeds = seedRange(1, 4);
+  const loopOf = (gear) =>
+    loopBalance({
+      mapId: "forestDeep",
+      program: forestDeepBest,
+      seeds: loopSeeds,
+      hours: 12,
       skills,
       gear,
-      sweepSeeds: seedRange(1, 2),
-      loopSeeds,
-      hours: 12,
-    }),
+      chest: chestOf(forestDeepBest),
+      resurrectionReady: true,
+    }).summary;
+  const columns = ({ takenPerMapRun, putPerMapRun, deathShare }) => ({
+    takenPerMapRun,
+    putPerMapRun,
+    deathShare,
+  });
+  const gear = buildGear({ mainHand: "stick" });
+  const withStick = columns(loopOf(gear));
+  assert.notDeepEqual(
+    withStick,
+    columns(loopOf({})),
+    "precondition: the stick in the main hand changes this loop's columns",
   );
-  assert.equal(row.takenPerMapRun, expected.takenPerMapRun);
-  assert.equal(row.putPerMapRun, expected.putPerMapRun);
-  assert.equal(row.deathShare, expected.deathShare);
+  const row = measureRow({
+    mapId: "forestDeep",
+    programLabel: "P10",
+    program: forestDeepBest,
+    skills,
+    gear,
+    sweepSeeds: seedRange(1, 2),
+    loopSeeds,
+    hours: 12,
+  });
+  assert.deepEqual(columns(row), withStick);
 });

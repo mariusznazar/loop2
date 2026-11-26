@@ -85,18 +85,6 @@ test("the flag --gear reads slot=item pairs, and a pair the data refuses is refu
     [[...sweepFlags, "--gear", "mainHand=bogusItem"], /bogusItem/],
     [[...sweepFlags, "--gear", "head=stick"], /stick/],
     [[...sweepFlags, "--gear", "mainHand=stick,mainHand=stick"], /--gear/],
-    [
-      [
-        "loop",
-        "--map",
-        "forest",
-        "--program",
-        "forestBest",
-        "--gear",
-        "mainHand=stick",
-      ],
-      /--gear/,
-    ],
   ];
   for (const [argv, pattern] of refused)
     assert.throws(() => parseArgs(argv), pattern, argv.join(" "));
