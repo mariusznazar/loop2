@@ -202,6 +202,11 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/lorc/magnifying-glass.html",
     changes: CHANGES,
   },
+  gloves: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/gloves.html",
+    changes: CHANGES,
+  },
 };
 
 /**
