@@ -22,6 +22,7 @@ import type { FocusEvent, KeyboardEvent, RefObject } from "react";
 import { ACTIONS } from "../sim/data/actions.js";
 import type { MoveHint } from "./chronicle-entries.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
+import type { GearPlace } from "../sim/data/gear.js";
 import { conditionNumber } from "../sim/program.js";
 import type {
   Action,
@@ -56,6 +57,7 @@ import {
   withActionResource,
   withConditionItem,
   withConditionKind,
+  withConditionPlace,
   withConditionResource,
   withConditionValue,
   type PickCell,
@@ -208,7 +210,7 @@ function pickOf(
   }
 }
 
-function asSection(cells: PickCell<ItemId>[] | null): FieldPick | null {
+function asSection(cells: PickCell<string>[] | null): FieldPick | null {
   return cells === null ? null : [{ name: null, cells }];
 }
 
@@ -281,6 +283,8 @@ function changedProgram(
         offeredItems(state),
       );
     case "conditionTarget":
+      if (condition?.kind === "emptyPlace")
+        return withConditionPlace(program, groupId, index, value as GearPlace);
       return condition?.kind === "hereBelow"
         ? withConditionResource(program, groupId, index, value as ResourceId)
         : withConditionItem(program, groupId, index, value as ItemId);

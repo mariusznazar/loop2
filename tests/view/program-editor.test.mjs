@@ -813,6 +813,7 @@ test("every program the editor builds passes setProgram, before sending and duri
     "healthBelow",
     "opponentHealthBelow",
     "awayFromCampfire",
+    "emptyPlace",
   ]);
   assert.deepEqual(actionKinds, [
     "explore",
@@ -826,6 +827,7 @@ test("every program the editor builds passes setProgram, before sending and duri
     "strikeWithStick",
     "kick",
     "dodge",
+    "equip",
     "craft",
   ]);
 
@@ -1095,6 +1097,7 @@ test("the actions of the pick stand in five named groups, in the order of D-290,
           "Uderz — patyk",
           "Kopnij",
           "Odskocz",
+          "Załóż",
         ],
       ],
       ["Wytwarzanie", ["Wytwórz"]],
@@ -1130,6 +1133,7 @@ test("the conditions of the pick stand in four sections with no names, in the or
           "Sytość poniżej",
           "Zdrowie poniżej",
           "Energia natury poniżej",
+          "Puste",
         ],
       ],
       [

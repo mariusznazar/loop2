@@ -5,12 +5,14 @@ import {
   type ConditionDef,
 } from "../sim/data/conditions.js";
 import { itemTargets, takesItem } from "../sim/action-targets.js";
+import { GEAR_PLACES, type GearPlace } from "../sim/data/gear.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import {
   actionPrice,
   conditionNumber,
+  fittedPlaces,
   onStep,
   type ConditionNumber,
 } from "../sim/program.js";
@@ -365,7 +367,7 @@ export function dropGroup(
  * names a resource with the first of `resources`, „Zapas poniżej” with the item the data names as
  * its default where `items` holds it, otherwise with the first of `items`. Null where there is
  * nothing to name, and for a kind none of the cases names, so that a kind added to the data before
- * the editor names it gives no condition.
+ * the editor names it gives no condition. „Puste” starts with the first place some item fits (D-459).
  */
 function newCondition(
   kind: ConditionKind,
@@ -373,6 +375,10 @@ function newCondition(
   items: readonly ItemId[],
 ): Condition | null {
   if (kind === "always" || kind === "awayFromCampfire") return { kind };
+  if (kind === "emptyPlace") {
+    const place = fittedPlaces()[0];
+    return place === undefined ? null : { kind, place };
+  }
   const value = conditionNumber(kind)?.defaultValue;
   if (value === undefined) return null;
   switch (kind) {
@@ -499,6 +505,19 @@ export function withConditionResource(
   )
     return null;
   return replaceCondition(program, groupId, index, { ...previous, resource });
+}
+
+/** The condition's place of the gear; a null index selects the group. Null result when unchanged or absent. */
+export function withConditionPlace(
+  program: Program,
+  groupId: GroupId,
+  index: number | null,
+  place: GearPlace,
+): Program | null {
+  const previous = conditionAt(program, groupId, index);
+  if (!previous || previous.kind !== "emptyPlace" || previous.place === place)
+    return null;
+  return replaceCondition(program, groupId, index, { ...previous, place });
 }
 
 /** The condition's item; a null index selects the group. Null result when unchanged or absent. */
@@ -742,14 +761,33 @@ function resourcePick(state: GameState, held: ResourceId): PickCell<ItemId>[] {
 }
 
 /**
+ * The places of the gear „Puste” offers: those some item of the data fits, in the order of the places,
+ * and the held one greyed where no item fits it any more (D-459). Pure.
+ */
+function placePick(held: GearPlace): PickCell<GearPlace>[] {
+  const fitted = fittedPlaces();
+  return (Object.keys(GEAR_PLACES) as GearPlace[])
+    .filter((place) => place === held || fitted.includes(place))
+    .map((place) => ({
+      value: place,
+      label: targetName(GEAR_PLACES[place].name),
+      chosen: place === held,
+      greyed: !fitted.includes(place),
+      reason: null,
+    }));
+}
+
+/**
  * The pick of the condition's target: the resources for „Tu leży mniej niż”, the items of the
- * backpack for „Zapas poniżej”; null for a condition that names none. Pure.
+ * backpack for „Zapas poniżej”, the places of the gear for „Puste”; null for a condition that names
+ * none. Pure.
  */
 export function conditionTargetPick(
   state: GameState,
   held: Condition,
-): PickCell<ItemId>[] | null {
+): PickCell<ItemId | GearPlace>[] | null {
   if (held.kind === "hereBelow") return resourcePick(state, held.resource);
+  if (held.kind === "emptyPlace") return placePick(held.place);
   if (held.kind !== "itemBelow") return null;
   const known = offeredItems(state);
   return (Object.keys(ITEMS) as ItemId[])
@@ -782,7 +820,9 @@ export function conditionFields(
   return [
     "condition",
     ...(conditionNumber(condition.kind) ? (["number"] as const) : []),
-    ...(condition.kind === "hereBelow" || condition.kind === "itemBelow"
+    ...(condition.kind === "hereBelow" ||
+    condition.kind === "itemBelow" ||
+    condition.kind === "emptyPlace"
       ? (["conditionTarget"] as const)
       : []),
   ];
@@ -900,6 +940,8 @@ export function conditionSentence(condition: Condition): string {
     return `${head} · ${targetName(RESOURCES[condition.resource].name)}`;
   if (condition.kind === "itemBelow")
     return `${head} · ${targetName(ITEMS[condition.item].name)}`;
+  if (condition.kind === "emptyPlace")
+    return `${head} — ${targetName(GEAR_PLACES[condition.place].name)}`;
   return head;
 }
 
