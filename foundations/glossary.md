@@ -334,3 +334,9 @@ The phone layout is the look the game takes in every window whose page area, the
 The computer layout is the look the game takes in every window whose page area, the area of the page inside the browser's window and not the resolution of the screen, is 1280 px wide or wider, its smallest window having a page area of 1280 × 720 px (D-396).
 
 - **Not:** none
+
+## gear
+
+Gear is what a character wears, wields and has at hand, apart from its backpack.
+
+- **Not:** what a trip plan takes from the chest into a map run — "equipment"
