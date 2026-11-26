@@ -12,9 +12,6 @@ import type { MapDef } from "../sim/data/maps.js";
 import type { Body, MapRun, RunCharacter } from "../sim/types.js";
 import { warmthAt } from "../sim/world.js";
 
-/** One value of the body row and whether it stands in `danger` (D-39). */
-export type BodyValue = { text: string; danger: boolean };
-
 /**
  * A number cut down to tenths, with a decimal comma: 36.976 as „36,9”. The body row writes the
  * temperature so, and the sentence of a rule the number of a condition that takes tenths.
@@ -23,30 +20,6 @@ export function tenths(value: number): string {
   // The body's numbers keep six decimal places, so value * 10 lies far from a whole number
   // unless the value is one tenth exactly, and the cut never falls a tenth short.
   return (Math.floor(value * 10) / 10).toFixed(1).replace(".", ",");
-}
-
-/**
- * The values of the body row: temperature cut down to tenths, satiety, health and nature energy cut
- * down to whole numbers (D-57, D-178). Temperature below the threshold of chill and satiety below
- * that of hunger stand in `danger`; cut down, a shown value is below a threshold exactly when the
- * body's is. Nature energy never stands in `danger`, at 0 too: empty energy closes the spells and
- * takes no health. Pure.
- */
-export function bodyValues(body: Body, natureEnergy: number): BodyValue[] {
-  const rules = BALANCE.body;
-  const number = bodyNumbers(body, natureEnergy);
-  return [
-    {
-      text: `${NAMES.temperature} ${number.temperature}`,
-      danger: body.temperature < rules.chilledBelow,
-    },
-    {
-      text: `${NAMES.satiety} ${number.satiety}`,
-      danger: body.satiety < rules.starvingBelow,
-    },
-    { text: `${NAMES.health} ${number.health}`, danger: false },
-    { text: `${NAMES.natureEnergy} ${number.natureEnergy}`, danger: false },
-  ];
 }
 
 /** The values of the body row a cell stands for. */
@@ -79,9 +52,6 @@ function bodyNumbers(
 /** The note under a value of the body row and whether it stands in `danger` (D-337). */
 export type BodyNote = { text: string; danger: boolean };
 
-/** A cell of the body row: its value and, under temperature and satiety, a note. */
-export type BodyCell = BodyValue & { note: BodyNote | null };
-
 /**
  * The words of the note under temperature: „marznie” in `danger`, otherwise „przy ogniu”, „nie
  * stygnie” or „bez ognia {n} min” in `text-secondary` (D-337). Pure.
@@ -107,26 +77,6 @@ export function satietyNoteText(note: SatietyNote): BodyNote {
   return note.kind === "starving"
     ? { text: "głoduje", danger: true }
     : { text: `bez jedzenia ${note.minutes} min`, danger: false };
-}
-
-/**
- * The cells of the body row for a map run on `map`: the four values of `bodyValues`, with the notes
- * of `needNotes` under temperature and satiety and none under health and nature energy. They hold
- * from game minute zero and for the stopped minute after the end, whatever the Understanding holds
- * (D-337, D-125). Pure.
- */
-export function bodyCells(run: MapRun, map: MapDef): BodyCell[] {
-  const notes = needNotes(run, map);
-  const [temperature, satiety, health, natureEnergy] = bodyValues(
-    run.body,
-    run.natureEnergy,
-  );
-  return [
-    { ...temperature, note: temperatureNoteText(notes.temperature) },
-    { ...satiety, note: satietyNoteText(notes.satiety) },
-    { ...health, note: null },
-    { ...natureEnergy, note: null },
-  ];
 }
 
 /**
@@ -215,7 +165,7 @@ function temperatureFrame(run: MapRun, map: MapDef): TemperatureFrame {
 
 /**
  * The cells of the body row as they are drawn for a map run on `map` (D-337, D-178): for each of the
- * four values its name and its number apart, the number as `bodyValues` writes it, the meter under
+ * four values its name and its number apart, the number as `bodyNumbers` writes it, the meter under
  * them, whether the value is below its threshold, the note and, for temperature, the frame. The
  * meter of satiety is a bar from 0 to the starting satiety, that of health from 0 to the starting
  * health and that of nature energy from 0 to its cap, all from the game's data, and that of
