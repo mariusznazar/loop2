@@ -168,6 +168,7 @@ test("a judging stands only while the character's count in the state at hand equ
 
 // Catches an erasure of the judgings of one map alone, and one that reaches another character.
 test("a change of the gear of a character takes its judgings on every map and no other character's", () => {
+  // decision: D-440 "A change of a character's gear that the player makes on the screen Postać erases every judging remembered for that character, on every map;"
   // decision: D-463 "The value of a remembered judging holds the count of its character in the game state the judging read (D-441), and the judging stands beside the list „Program:” only while that count equals the count the game state gives its character, so that a change of the gear made by the player erases every judging remembered for that character, on every map (D-440)."
   const storage = mapStorage();
   const cache = open(storage);
@@ -352,6 +353,7 @@ const markOfWho = (root) =>
 // Catches an entry that stores the judging with the count of the state the cache was opened with, one that
 // reads the mark against that state, and one whose mark stands after the player took the stick off.
 test("the entry stores a judging with the count of the state it read, and the mark of it goes out with a change of the gear the player makes and stands again at the next judging", async () => {
+  // decision: D-440 "A change of a character's gear that the player makes on the screen Postać erases every judging remembered for that character, on every map;"
   // decision: D-463 "The value of a remembered judging holds the count of its character in the game state the judging read (D-441), and the judging stands beside the list „Program:” only while that count equals the count the game state gives its character, so that a change of the gear made by the player erases every judging remembered for that character, on every map (D-440)."
   await withPage(async (page) => {
     const opened = gameOfEntry();

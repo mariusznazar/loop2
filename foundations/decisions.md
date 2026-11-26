@@ -6450,15 +6450,9 @@ The used uses return one at a time on one clock: a death that uses up a use of a
   uses returning one at a time on one clock that a death of a full stock starts and a later death
   leaves as it runs, the clock stopping when the stock is full, a first completion returning one
   use while the stock is not full and nothing when it is, the clock running on, and a second
-  solving of a map returning nothing. For the gear, an agent compares a change with the part no test
-  holds yet:
-  - complies: a character with a stick in its main hand dying with one use of the resurrection left,
-    the stick staying in the hand and the use spent; the same character dying with none left, the
-    stick gone with the practice; a character with no practice yet dying with none left, losing its
-    stick and nothing else besides its backpack
-  - violates: a death that spends the last use of the resurrection and takes the gear with it; a
-    death of a character with no practice yet and no use left that leaves the stick in its hand; a
-    death with a use left that takes the gear
+  solving of a map returning nothing; the gear of a character staying with it at a death while a
+  use of the resurrection is left, the last one included, and gone at a death with none left, that of
+  a character with no practice yet included.
 - **Origin:** none
 
 *Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve with a few uses, paid back in real time and by a new map solved: a failed try at a wall costs the player what was carried in and, at worst, a wait of hours before the next protected try, and the progression never needs the player's absence (D-438). At a wall where each try succeeds with a share of 25% and every failed try ends in death, 3 uses let the wall fall within one sitting on the uses alone in 58% of sittings, and a full stock returns 12 hours after the first death when one use returns every 4 hours; that is a calculation, and both numbers are lines of the balance data, to be corrected when the walls are measured. The resurrection is numbers of the account and no item; restoring a use by making an item is a later direction, not built. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A use of the resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; a use of the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death with no use left stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice takes a use from every character until it returns. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would take a use from the whole team until it returned, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death with no use left takes it, so a new character that has gathered practice at its earning loop is guarded. The use returned at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map returns a use at most once, and a full stock gains nothing from it. The clock of the other used uses runs on at a completion, so a player who saw the next use due in some hours sees it still, with one use more. Accepted with it: each new map gives the account one use for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes a use from the others; the catch-up gives the last use to the character earlier on the list (D-240); a judging of a program on twelve fixed seeds of a map (D-439) shows at no cost where the program loses before the earning loop, but it covers its twelve seeds alone, so an earning loop on other seeds may still cost the character all its practice when none of its uses is left. A judging can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies with no use left comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one. The gear is no part of what the character carried (D-183), and it is taken by a death only when no use of the resurrection is left, so a death that the resurrection covers costs the character none of what it wears, wields and has at hand, and the gear is lost by the same deaths as the practice. The death of a character with no practice yet takes its gear as well when no use is left, so that a new character cannot be sent with a good piece at no risk, though it takes nothing else besides what it carried. Accepted with it: a new character, whom the exception of this decision keeps from losing its progress, loses what the player put on it.
@@ -6919,14 +6913,14 @@ and an attack interrupts the action under way, which is lost.
   an encounter, whose turns resolve in its last; combat verbs refused outside combat and every other
   action but „Załóż” refused in it; the wolf's pairs of condition and action kept in its data, of the form of
   program rules, and the wolf acting by them; an attack interrupting the action under way, which is
-  lost. For where a creature's behaviour comes from and for „Załóż” in combat and out of it, an agent
-  compares a change with the part no test and no invariant holds:
+  lost; „Załóż — patyk” carried out in a combat turn that is the character's turn, the wolf acting
+  in it as in any turn and the program not passing in the same turn to the next rule, and out of
+  combat lasting 1 minute. For where a creature's behaviour comes from, an agent compares a change
+  with the part no test and no invariant holds:
   - complies: a new creature added to data together with its pairs of condition and action, which
-    the engine reads as it reads the wolf's; „Załóż — patyk” carried out in a combat turn, the wolf
-    acting in it as in any turn, and out of combat lasting 1 minute
+    the engine reads as it reads the wolf's
   - violates: a wolf's behaviour written as a branch of the engine, though it gives the same turns as
-    its data pairs; „Załóż” refused in combat as no combat verb; „Załóż” carried out in a turn with
-    the program passing in the same turn to the next rule
+    its data pairs
 - **Origin:** none
 
 *Rationale:* a fixed cost keeps a long fight from eating half a day and mixing into hunger and cold.
@@ -6998,14 +6992,13 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 - **Verification:** tests: the first wolf attack bringing the wolf, „Uderz — patyk”, „Kopnij”,
   „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding and pausing the
   game after the attack minute and before the first turn; the game adding no rule at that attack; a
-  later attack of the known wolf leaving time running. For the action „Załóż” and the condition
-  „Puste” the first attack brings, and for a later attack in a minute that discovers something else,
-  an agent compares a change with the part no test holds:
-  - complies: the first wolf attack bringing „Załóż” and „Puste” into the Understanding together with
-    „Uderz — patyk”; an attack of the known wolf in the game minute a finished exploration reveals a
-    new item, the game stopping for that discovery
-  - violates: „Załóż” or „Puste” known to the player before the first wolf attack; such a minute
-    running on without the stop because the attacking creature is already known
+  later attack of the known wolf leaving time running; the first attack bringing „Załóż” and
+  „Puste” into the Understanding with them, neither known before it. For a later attack in a minute
+  that discovers something else, an agent compares a change with the part no test holds:
+  - complies: an attack of the known wolf in the game minute a finished exploration reveals a new
+    item, the game stopping for that discovery
+  - violates: such a minute running on without the stop because the attacking creature is already
+    known
 - **Origin:** none
 
 *Rationale:* The encounter teaches the player what its counter can use; keeping the program theirs accepts that resuming with no combat rule can kill the character. „Załóż” and „Puste” come with the encounter, together with the strike, the kick and the dodge. Accepted with it: before the first attack the player puts pieces on the gear on the screen Postać alone, and a program does not put bandages into the pockets by itself.
@@ -7024,17 +7017,17 @@ In combat the character can use „Załóż — {rzecz}” (D-458) as well, whic
   no item and „Odskocz” setting a reduction of 5 for the next strike, each raised by the bought ranks
   of its branch; repeated dodges keeping one refreshed reduction, and a strike taking it with its
   damage floored at zero; the wolf's 24 health, its strike of 7, its rules „Zdrowie poniżej 8 →
-  Odskocz; Zawsze → Uderz” and its dodge giving up its action with no protection. For the stick
-  the strike needs and „Załóż” in combat, for a creature's dodge and the end of an encounter, an
-  agent compares a change with the part no test holds:
-  - complies: a strike with a stick in the main hand taking that stick; a strike with an empty main
-    hand and a stick in the backpack taking the stick into the hand and striking in the same turn;
-    „Załóż — patyk” in a combat turn taking that turn of the character; a dodge of the character
-    answered by a dodge of the wolf, the reduction then taking 5 off the wolf's next bite; a
-    reduction set in the last turn of an encounter gone at the first bite of the next
-  - violates: a strike that takes a stick from the backpack while the main hand holds one, or from a
-    pocket; „Załóż” refused in a combat turn; a wolf dodge consuming the character’s reduction; a
-    reduction left from one encounter lowering the first bite of the next
+  Odskocz; Zawsze → Uderz” and its dodge giving up its action with no protection; a strike with a
+  stick in the main hand taking that stick, one with an empty main hand and a stick in the backpack
+  taking the stick into the hand and striking in the same turn, and none taking a stick from the
+  backpack while the hand holds one or from a pocket; „Załóż — patyk” in a combat turn taking that
+  turn of the character. For a creature's dodge and the end of an encounter, an agent compares a
+  change with the part no test holds:
+  - complies: a dodge of the character answered by a dodge of the wolf, the reduction then taking 5
+    off the wolf's next bite; a reduction set in the last turn of an encounter gone at the first bite
+    of the next
+  - violates: a wolf dodge consuming the character’s reduction; a reduction left from one encounter
+    lowering the first bite of the next
 - **Origin:** none
 
 *Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection. The strike takes its weapon from the hand of the gear, which is where the character wields it (D-451), and from the backpack only to fill an empty hand, so that without a rule of a program putting something into the hand the strike takes the stick itself (D-457). The numbers of the actions and of the ranks of their branches are those of the predecessor game, loop, taken as the requirement, except the ranks of the two combat branches „Mocniejszy cios” and „Cięższy kop”, which D-379 sets. Accepted with it: the balance of loop was measured in a different game, so this one can come out easier or harder; with two ranks of the dodge branch the dodge takes the whole strike of the wolf; later tuning is a change of data and tests.
@@ -7053,11 +7046,8 @@ A stick stays in the main hand after a strike, with its condition unchanged.
   piece of its target and giving back the target's healing when it ends, together, whether the
   health was lost to cold, to hunger or to a blow of combat, and never above full health; „Opatrz”
   not carried out in combat or at full health, and the piece staying in the backpack where health
-  is full when it ends. For the stick after the encounter, an agent compares a change with the part
-  no test holds:
-  - complies: the stick in the main hand after an encounter fought with it, as it was before, with
-    nothing of it changed
-  - violates: the end of an encounter taking or breaking the stick its strikes used
+  is full when it ends; the stick staying in the main hand after an encounter fought with it, with
+  nothing of it changed.
 - **Origin:** none
 
 *Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; breakage would cost a different balance. A bandage gives health back whatever took it, so the game keeps no account of wounds apart from the rest of the health. The action takes its piece and gives its health when it ends, as a lighting takes its sticks when it ends (D-63), so an interruption costs time alone, and it cannot be carried out at full health, as „Zapal — ognisko” cannot be at a burning campfire, so a rule „Zawsze → Opatrz — Opatrunek” never stops a program at full health. Accepted with it: below full health such a rule uses up a whole bandage for a point of health, and the condition „Zdrowie poniżej”, which defends against it, is known to the player only from the first wolf attack (D-143); a bandage gives health back on the cold maps too, which is a stock for a program, though it does not save a streak, since a game minute with health lost to cold or hunger sets the streak to zero.
@@ -8091,12 +8081,10 @@ campfire — the simulation chooses, not the program, and an action that uses an
   invariant and no test holds:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
     and the whole number it takes; a condition on the character's temperature taking 36.5, a number
-    with tenths, from a number field of the picker; a strike that takes the stick its main hand
-    holds, with no piece named in the program
+    with tenths, from a number field of the picker
   - violates: a text field taking a condition as an expression; a kind of condition added to the
     closed list that takes a formula as text; a button that makes the character eat now; a program
-    rule naming which stick to burn; an action that uses an item from the gear and takes another
-    piece than the one the gear holds
+    rule naming which stick to burn
 - **Origin:** none
 
 *Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
@@ -8370,17 +8358,17 @@ A program rule whose condition holds and whose action the game's check refuses n
 
 „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack, „brakuje {ile} × {rzecz}”, such as „brakuje 2 × mech” and „brakuje 1 × opatrunek”; „Opatrz — {rzecz}” at full health, „zdrowie pełne”, which stands before „brakuje …” where both hold.
 
-„Uderz — patyk” is short of a thing only where its stick lies neither in the main hand nor in the backpack (D-457), „brakuje 1 × patyk”. „Załóż — {rzecz}” short of the thing in the backpack reads „brakuje 1 × {rzecz}”, where the slot it fits already holds the thing „już założone: {rzecz}”, and for an item of a pocket with every pocket taken „kieszenie pełne” in place of „już założone”, each reason about the state of things standing before „brakuje …”.
+„Uderz — patyk” is short of a thing where its stick lies neither in the main hand nor in the backpack (D-457), „brakuje 1 × patyk”. „Załóż — {rzecz}” short of the thing in the backpack reads „brakuje 1 × {rzecz}”, where the slot it fits already holds the thing „już założone: {rzecz}”, and for an item of a pocket with every pocket taken „kieszenie pełne” in place of „już założone”, each reason about the state of things standing before „brakuje …”.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-309 · derives from D-310 · derives from D-457 · derives from D-458
-- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule; „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack reading „brakuje {ile} × {rzecz}”, with the first piece the backpack lacks in the recipe's order, and „Opatrz — {rzecz}” at full health reading „zdrowie pełne” before „brakuje …”, a rule refused at full health passed over for the next. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, and for the reasons of „Uderz — patyk” with the gear and of „Załóż — {rzecz}”, an agent compares a change with the part no test holds:
-  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”; „Uderz — patyk” in combat with no stick in the main hand or the backpack reading „brakuje 1 × patyk”, and with a stick in the hand and none in the backpack not refused; „Załóż — patyk” with a stick already in the main hand and none in the backpack reading „już założone: patyk”, and „Załóż — opatrunek” with every pocket taken reading „kieszenie pełne”
-  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none; „Uderz — patyk” with no stick in the main hand or the backpack reading „brak w ręku: patyk”; „Załóż — opatrunek” with every pocket taken reading „już założone: opatrunek”
+- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule; „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack reading „brakuje {ile} × {rzecz}”, with the first piece the backpack lacks in the recipe's order, and „Opatrz — {rzecz}” at full health reading „zdrowie pełne” before „brakuje …”, a rule refused at full health passed over for the next; the strike short of its stick with none in the main hand or the backpack, and not with a stick in the hand alone; „Załóż — {rzecz}” reading „brakuje 1 × {rzecz}”, „już założone: {rzecz}” or „kieszenie pełne”, the state of the slot before the lack in the backpack. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
+  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
+  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
-*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — here, and those of combat, „tylko w walce” and „trwa walka”, in D-309, so a later change names a refusal in the words it already has and no writer of an action's code finds its own. A reason about the state of things stands before one about a lack in the backpack, so „zdrowie pełne” stands before „brakuje …” as „ognisko już płonie” stands before it. Accepted with it: every new action needs a reason of its own later, and a player with no bandage learns of it only after losing some health, since at full health there is nothing to dress anyway. The strike is short of a thing only where no stick lies in the hand or in the backpack, since the backpack fills the hand at the strike (D-457) and the rule is passed over only where the stick is lacking altogether; „Załóż” names a state of a slot, „już założone” and „kieszenie pełne”, before the lack in the backpack, as „zdrowie pełne” stands before it.
+*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — here, and those of combat, „tylko w walce” and „trwa walka”, in D-309, so a later change names a refusal in the words it already has and no writer of an action's code finds its own. A reason about the state of things stands before one about a lack in the backpack, so „zdrowie pełne” stands before „brakuje …” as „ognisko już płonie” stands before it. Accepted with it: every new action needs a reason of its own later, and a player with no bandage learns of it only after losing some health, since at full health there is nothing to dress anyway. The strike is short of a thing where no stick lies in the hand or in the backpack, since the backpack fills the hand at the strike (D-457) and the rule is passed over for a lack of the stick where it is lacking altogether; „Załóż” names a state of a slot, „już założone” and „kieszenie pełne”, before the lack in the backpack, as „zdrowie pełne” stands before it.
 *Rejected:* the reasons written by the author of the work itself and judged only when the work is merged; a table with corrections of chosen rows; „nie ma czego opatrywać” in place of „zdrowie pełne” — the same cost, with a longer text in the narrow column; „brakuje 1 × opatrunek” before „zdrowie pełne” — an order unlike that of the campfire; „brak w ręku: patyk” for the strike with no stick in the hand or the backpack — a new reason in the game and in its tests that speaks only of the hand, though the stick is lacking in the backpack as well.
 
 ### D-443 — How does an action name what it acts on?
@@ -8803,14 +8791,15 @@ When „Zakończ” or „Restart” ends a map run before completion, or „Zat
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · derives from D-452
-- **Verification:** invariants: trip-run-end. For the gear, an agent compares a change with the part no
-  invariant and no test holds yet:
-  - complies: a stick the strike took into the main hand during the map run staying in the hand after
-    a completion that has the stick on no bring list, and after „Zakończ”, „Restart” and „Zatrzymaj”;
-    a stick put from the hand into the backpack by „Załóż” in the map run lost with the backpack at
-    „Zakończ” and left out of the chest at a completion that lists it on no bring list
-  - violates: a completion that takes from the gear what the bring list does not name; „Zakończ”
-    that leaves a stick the map run put from the hand into the backpack with the character
+- **Verification:** invariants: trip-run-end. tests: the gear of a character staying with it at a
+  completion beyond the bring list and an exit cap of 0, and after „Zakończ”, „Restart” and
+  „Zatrzymaj”, as it stood at the end of the map run, a piece the map run took from the backpack into
+  the gear included. For a piece the map run put from the gear into the backpack, an agent compares a
+  change with the part no invariant and no test holds yet:
+  - complies: a stick put from the hand into the backpack by „Załóż” in the map run lost with the
+    backpack at „Zakończ” and left out of the chest at a completion that lists it on no bring list
+  - violates: „Zakończ” that leaves a stick the map run put from the hand into the backpack with the
+    character
 - **Origin:** none
 
 *Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out, and what a character carries is lost with an attempt that ends before completion, as it is in death (D-190). Accepted with it: „Zakończ” after the character has brought a stock onto a map not yet solved loses that stock, and the player cannot view the earning-loop map run that „Zatrzymaj” cut off. The gear is what the character wears, wields and has at hand, not what it carries (D-455), so the ends of a map run that cost the backpack its contents cost the gear nothing, and it goes into a map run and out of it with the character (D-452): a piece the map run took into the gear is no loot to leave through the plan, and one put back into the backpack is a carried item like any other.
@@ -8880,12 +8869,8 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 - **Relations:** derives from D-18 · derives from D-64 · derives from D-179 · derives from D-452
 - **Verification:** invariants: trip-transfer. tests: a map's two caps, one for entry and one for
   exit, each from zero up, set one apart from the other or left unset; gathering during the run
-  bounded by the character's carrying capacity whatever the caps. For the gear, an agent compares a
-  change with the part no invariant and no test holds yet:
-  - complies: a character with a stick in its main hand entering a map whose entry cap is 0 with the
-    stick in the hand and leaving a map whose exit cap is 0 with it
-  - violates: an entry cap or an exit cap that clips a piece of the gear, or that counts the pieces
-    of the gear toward its number
+  bounded by the character's carrying capacity whatever the caps; a character entering a map whose
+  entry cap is 0 with the gear in its slots whole and leaving a map whose exit cap is 0 with it.
 - **Origin:** none
 
 *Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset. Two fields, each of which may be unset, are the predecessor game's shape, and the map's cap acts at the boundaries of the map run, at entry and at completion, without stopping gathering, since the backpack's cap is the character's carrying capacity (D-64). Accepted with it: code, tests and a message that the player does not see while no current map sets a cap, the cost for which D-136 rejects a kind of solving condition no map asks for; and two cuts to check by tests instead of one. The caps cut the trip plan, which the map run takes from the chest and gives back to it, and the gear belongs to the character and not to the plan (D-452), so the caps leave it out. Accepted with it: a character enters a map whose entry cap is 0 with its gear, so a map that is to keep gear out needs a rule of its own in its data.
@@ -10226,16 +10211,15 @@ walce”. A rule with „Załóż”, which D-140 lets be carried out in combat,
   rule the first turn would choose, at the creature's health as it stands, marked as winning, no rule
   marked as running, and an ordinary rule whose condition holds unable to start with „trwa walka”,
   the combat conditions reading the health of the two sides given; outside those minutes, after a
-  death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”. For
-  the mage's health the signs read, the backgrounds of those minutes and the signs of a rule with
-  „Załóż”, an agent compares a change with the part no invariant and no test holds:
+  death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”; a
+  rule with „Załóż” amber with neither „trwa walka” nor „tylko w walce”, in the minutes of an attack
+  and outside them, and winning in the minutes where the turn would choose it. For the mage's health
+  the signs read and the backgrounds of those minutes, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50 pkt” winning while the mage
-    has 40 health, its row on `rule-winning`; a rule „Zawsze → Załóż — patyk” showing
-    neither „trwa walka” nor „tylko w walce”, in the minutes of an attack and outside them, and
-    standing on `rule-winning` in the minutes where the turn would choose it
+    has 40 health, its row on `rule-winning`
   - violates: the signs of an attack counted at the mage's full health; the row of the combat rule
-    the turn would choose on `rule-running` or on `highlight`; a rule with „Załóż” amber with „trwa
-    walka” in the minutes of an attack or with „tylko w walce” outside them
+    the turn would choose on `rule-running` or on `highlight`
 - **Origin:** none
 
 *Rationale:* in the minutes of an attack the simulation chooses no ordinary action, and it resolves the
@@ -10787,18 +10771,15 @@ At the character of that map run the tiles of its gear cannot be selected, and u
   after the end of the map run; while the map run waits and after its end, „Wróć do niego i je
   zakończ, żeby wysłać postać.” of the sentence under the buttons of every character a link to the
   screen of that map run, `#/postac/{n}/przejscie` of the map run's character and not of the row's,
-  the rest of the sentence standing before it as text, and the link gone after „Zakończ”. For what
-  Siedziba and the screen Postać keep active and for the tiles of the gear and their sentence, an
-  agent compares a change with the part no test holds:
+  the rest of the sentence standing before it as text, and the link gone after „Zakończ”; the tiles
+  of the gear of that map run's character not selectable, with its sentence under „Wyposażenie”,
+  and those of another character selectable. For what
+  Siedziba and the screen Postać keep active, an agent compares a change with the part no test
+  holds:
   - complies: while a map run of Las waits in a pause, „Załóż” on Siedziba creating a character and
-    „Zatrzymaj” on the screen Postać stopping another character's earning loop; the tiles of the
-    gear of the character of that map run not selectable, with „Przejście na mapie Las jest
-    niezakończone. Wyposażenie zmienisz po jego zakończeniu.” under „Wyposażenie”, and the tiles of
-    another character selectable
+    „Zatrzymaj” on the screen Postać stopping another character's earning loop
   - violates: Siedziba or the screen Postać blocking an act the simulation allows, such as „Załóż”
-    or „Zatrzymaj”, while a manual map run waits or has ended; a tile of the gear of the character
-    of that map run that can be selected while the map run waits or has ended; the sentence of the
-    skills, „Stopnie kupisz po jego zakończeniu.”, under the heading „Wyposażenie”
+    or „Zatrzymaj”, while a manual map run waits or has ended
 - **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
@@ -10863,9 +10844,10 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   it and not in the world area, „✕” and Escape closing it and uncovering the screen, the window
   opening again at every entry and closing when the question stands; the window opening once the
   scene's effect of the end has played, the scene uncovered while it plays, and at once at an entry
-  on the screen, after a reload or a load and under reduced motion. For the two columns, the
-  place of the window under the menu bar and the line of the gear, an agent compares a change with
-  the part no invariant and no test holds:
+  on the screen, after a reload or a load and under reduced motion; the line of the gear right under
+  the line of the backpack, in its text, naming the main hand before the pockets, in the words of
+  each case from a stick and two bandages to nothing. For the two columns and the place of the window
+  under the menu bar, an agent compares a change with the part no invariant and no test holds:
   - complies: on the screen of a map run of Las in a window 1280 px wide, the world and under it the
     area with the tabs in the left column and the program in the right column; in the phone layout
     at a page area 360 px wide the world, the program and the area with the tabs in one column, one
@@ -10873,14 +10855,11 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
     warnings, the menu bar in sight above it; the window of a rule standing over the column of the
     program with the world in sight beside it and the clock going on, and in the phone layout as wide
     as the area of the program; the window of a rule open before a death standing as it was once the
-    end-of-run window is closed; under the line of the backpack the line „Wyposażenie: patyk w ręku,
-    2 × opatrunek pod ręką” for a character holding a stick in its main hand and two bandages in
-    its pockets, and „Wyposażenie: nic” for one holding nothing
+    end-of-run window is closed
   - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
     the column of the program or in a third column of their own; two columns of the screen in the
     phone layout; the window covering the menu bar or the row of warnings; the window of a rule
-    standing over the world, or pausing the map run while it stands; the line of the gear naming
-    the pockets before the main hand, or left off the screen of a map run
+    standing over the world, or pausing the map run while it stands
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -12576,13 +12555,14 @@ Each of the twelve runs starts too with the gear the character has at the time o
   run and an earning loop — and a program the character cannot carry out yet judged as the program
   it can; a program judged on a map not yet solved, and for a character in an earning loop or a
   manual map run as for one outside both, the button „Oceń na 12 ziarnach” standing and active
-  there; a map, a character or a program the game lacks, and a map not open, refused. For the gear,
-  an agent compares a change with the part no test holds yet:
+  there; a map, a character or a program the game lacks, and a map not open, refused; a judging
+  taking nothing of the gear or the chest of a character at the camp, in an earning loop and beside
+  a manual map run. For the gear the twelve runs start with, an agent compares a change with the
+  part no test holds yet:
   - complies: a character with a stick in its main hand judged with the stick in the hand in each of
-    the twelve runs and holding it after the judging; a character in a manual map run judged with
-    the gear it entered with, and one in an earning loop with the gear set for its next map run
-  - violates: a judging that starts the runs with an empty hand though the character holds a stick,
-    or takes the stick from the character or a piece from the chest
+    the twelve runs; a character in a manual map run judged with the gear it entered with, and one
+    in an earning loop with the gear set for its next map run
+  - violates: a judging that starts the runs with an empty hand though the character holds a stick
 - **Origin:** none
 
 *Rationale:* In the product's own measurements, whose record is not open to a reader of the repository, 108 variants of the thresholds of one program gave on a fixed twelve of seeds the same count or a count one seed apart, so a bare count answers almost no change the player makes; and on fresh seeds a program that solves 94% of map runs passed a mark of 95 in 100 in 44% of tries, so a result on fresh seeds grows from trying again. A program that keeps the character alive and keeps losing the streak never ends its run, so the judging stops it at a cap; such a seed is no death, since the program does not die but does not hold the streak, which asks for another correction of the program. The cap is one number in the game's data, as the game's numbers are; it starts where the balance instrument stops a run, so that the judging and the measurement of a map stop the same run at the same minute. Accepted with it: a map with a much longer streak needs the number changed. A program can be judged on every map open to the player, a map not yet solved included, so the player sees what a program dies of on a new map before risking the character; accepted with it: part of the tension of a first try goes, and on a map where the player has not discovered something the program has no rules for it. The character enters a judging with what the earning loop would take from the chest at that moment, since in a game where many maps ask for the right equipment a judging with equipment from nowhere would not last: the result tells what the earning loop really gets at its start, and stock is gained by manual play on solved maps, so gaining it and then judging costs minutes, not hours; accepted with it: the game has no place where a program is tried with stock the player does not have yet, and the result changes with every change of the chest. The character enters a judging with its gear as well, as a map run of its earning loop does, and the judging takes nothing of it, as it takes nothing from the chest; accepted with it: after several map runs the earning loop may start with poorer gear than the judging took, since the loop does not refill it (D-452). A judging discovers nothing, as a map run of an earning loop discovers nothing (D-249); accepted with it: on a map not yet solved a judging may show failures that a manual map run, with its discoveries, could avoid.
@@ -12625,13 +12605,14 @@ On a map whose data name a creature for the record, the game remembers in the br
   data name the creature for it alone, never before the first judging on that map, kept through a
   change of the program and the death of a character, raised by a judging that took more and left
   as it was by one that took less, and showing nothing where the creature's health or blow differ
-  from those it was made at. For the judgings a change of the gear erases, an agent compares a change
-  with the part no test holds yet:
-  - complies: a stick taken off on the screen Postać erasing every judging of that character, on every
-    map, while a map run of its earning loop in which a strike took a stick into an empty hand, and
-    the death of a character with no practice and no use of the resurrection left, erase none
-  - violates: a judging that stays beside a character that took off the stick it was judged with; a
-    judging erased by a change with which the character came back from a map run
+  from those it was made at; every judging of a character erased, on every map, by a change of its
+  gear that the player makes on the screen Postać. For what a change with which the character comes
+  back from a map run and the death of a character with no practice that takes its gear leave, an
+  agent compares a change with the part no test holds yet:
+  - complies: a map run of an earning loop in which a strike took a stick into an empty hand, and
+    the death of a character with no practice and no use of the resurrection left, erasing no
+    judging of that character
+  - violates: a judging erased by a change with which the character came back from a map run
 - **Origin:** none
 
 *Rationale:* the game remembers a judging so that its result stands at a return to the card with no judging again, and the card of a map has the result of each character and program judged to show. It is remembered for a character, since a judging depends on the character's bought ranks. The badge stands at twelve of twelve alone, since the earning loop draws further seeds and a program that does not solve one of the twelve meets seeds like it. A result judged with more of an item than the chest now holds promises what the earning loop will not get, so the badge goes out while the result stays and tells how the program did with that stock; more in the chest leaves it true. A change of the program makes the result speak of another program, and a death that takes all the practice makes it speak of another character, after which the badge would lie at the worst moment; the next judging replaces the result, so it needs no limit of time. Accepted with it: the badge and the count are missing on another device, in a browser whose data were cleared and, for the game whose save the server refused, in the refused browser, until the next judging there (D-441); a remembered result grows old with no sign when the character buys a rank, so what erases a judging is not symmetric; one more state of the result on the screen, the note on the stock; the player loses how the programs did with the character before a death that took its practice; one more place in the code that erases judgings. A change of the gear that the player makes on the screen Postać makes the result speak of gear the character no longer holds, so the badge does not stand beside a character that took off its stick; accepted with it: after each such change the player judges anew at each map, with one click on the card. A change with which the character comes back from a map run erases none, since otherwise the first map run of an earning loop in which a strike takes a stick into an empty hand, or a pocket is used, would take the badge „szczelny: 12 z 12” off the cards of the maps until a new judging; accepted with it: the badge may stand beside a result judged with full pockets while the character enters with empty ones, so the result promises more than the map run gets. The lair stands in the game with a number and not as a wall alone: the most of the bear's health that a program took is a measure of the game's own rules, grows with the player's work and pretends to no level to pass. The record is the most any judging took, so it does not fall when the player changes a program or a character dies, and it is bound to the creature's numbers, so it never stands beside a creature it was not made against. Accepted with it, for the record: it can show the result of a program that no longer exists; another device and a browser whose data were cleared show no number until a judging there (D-441); it does not say what the present program can do, which shows only at its judging in „Kto idzie”.
@@ -12702,9 +12683,9 @@ A character has gear apart from its backpack: what it wears, what it wields and 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · TODO — the decision "Which items are single pieces with numbers of their own?", expected in the change that makes items single pieces with numbers of their own
-- **Verification:** tests: a character holding gear apart from its backpack, in the game state and in the saved game state, the backpack's cap and the actions that take pieces from the backpack counting and taking nothing of it, and the strike taking its stick from the gear. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character whose main hand holds a stick and whose backpack holds none, the strike taking the stick from the hand; an action that uses an item kept piece by piece taking the piece the slot of the gear holds
-  - violates: a stick of the main hand counted among the pieces of the backpack's cap; an action that uses an item kept piece by piece and takes from the backpack a piece that a rule of the game, such as the best one, or a program naming a property or a piece, picks, while the gear holds a piece of that item
+- **Verification:** tests: a character holding gear apart from its backpack, in the game state and in the saved game state. For the second sentence, which binds only once items are kept piece by piece and which no test can hold before they are, an agent compares a change with the decision:
+  - complies: an action that uses an item kept piece by piece taking the piece the slot of the gear holds
+  - violates: an action that uses an item kept piece by piece and takes from the backpack a piece that a rule of the game, such as the best one, or a program naming a property or a piece, picks, while the gear holds a piece of that item
 - **Origin:** none
 
 *Rationale:* It is the standard gear of a character: what the character has on, what it works with and what lies at hand, apart from what it carries.
@@ -12717,9 +12698,9 @@ A character's gear belongs to the character and stays at it between map runs, bu
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-451 · derives from D-50
-- **Verification:** tests: the gear a character holds apart from its backpack and the chest, kept in the saved game state; a piece put on leaving the chest for the slot and a piece taken off returning to the chest; the gear going with the character into a manual map run and into every map run of its earning loop, whatever the trip plan takes, and coming back with it; the trip plan taking no gear and a switch of the program changing none; an earning loop refilling no slot from the chest. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character whose program is switched keeping the stick of its main hand; an earning loop whose next map run starts with the stick the player put on and nothing more
-  - violates: a list of gear in the trip plan of a program; an earning loop that takes a stick from the chest into an empty hand at the start of a map run
+- **Verification:** tests: the gear a character holds apart from its backpack and the chest, kept in the saved game state; a piece put on leaving the chest for the slot and a piece taken off returning to the chest; the gear going with the character into a manual map run and into every map run of its earning loop, whatever the trip plan takes, and coming back with it; the trip plan taking no gear; an earning loop taking no gear from the chest for any of its map runs. For the switch of the program, which no test holds yet, an agent compares a change with the decision:
+  - complies: a character whose program is switched keeping the stick of its main hand
+  - violates: a list of gear in the trip plan of a program; a switch of the program that changes the gear of the character
 - **Origin:** none
 
 *Rationale:* the gear is what the character has on, works with and keeps at hand, so it stays at the character and goes where the character goes; a list of the trip plan would let it exist only while a program stands in force, and the screen Postać could show nothing outside a map run but the gear of the program chosen for the character. The player chooses what stands in each slot, so the game picks nothing from the chest on the player's behalf. Accepted with it: an earning loop does not refill the gear on its own, so where nothing is put into a slot it stays empty from one map run of the loop to the next, and a switch of the program changes no gear.
@@ -12732,9 +12713,7 @@ The player changes a character's gear on the screen Postać outside an unfinishe
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-452
-- **Verification:** tests: a change of the gear refused while a manual map run of that character goes, waits in a pause or has ended, and made at the camp and at a character in an earning loop; a change at a character in an earning loop acting from its next map run while the map run going on keeps the gear it started with; the gear of another character changing while a manual map run of one waits. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a stick put on at a character in an earning loop, the map run going on keeping the gear it started with and the next map run starting with the stick
-  - violates: a change of the gear at the character of a manual map run that waits in a pause; a stick put on at a character in an earning loop that stands in the hand of the map run going on
+- **Verification:** tests: a change of the gear refused while a manual map run of that character goes, waits in a pause or has ended, and made at the camp and at a character in an earning loop; a change at a character in an earning loop acting from its next map run while the map run going on keeps the gear it started with; the gear of another character changing while a manual map run of one waits.
 - **Origin:** none
 
 *Rationale:* a change of the gear follows the pattern of buying a branch rank (D-200): the map run going on keeps what it started with and the change acts from the next one, so the player can change the weapon of a character in an earning loop without stopping the loop. Accepted with it: the map run going on holds its own gear beside the gear the player set for the next one, which is more state of the game and more code; and a character in an unfinished manual map run keeps its gear unchanged until that map run ends, as it can buy no rank meanwhile.
@@ -12747,9 +12726,7 @@ The screen Postać shows every slot of the gear, a slot that no item of the game
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-451
-- **Verification:** tests: each slot of the gear standing on the screen Postać with its name when empty, a slot that no item of the data fits among them. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: the second hand standing on the screen as the empty tile of a slot with its pale name while no item of the data fits it
-  - violates: a slot left off the screen until the player has an item that fits it
+- **Verification:** tests: each slot of the gear standing on the screen Postać with its name when empty, a slot that no item of the data fits among them.
 - **Origin:** none
 
 *Rationale:* the player sees at once every place the character's gear has, and the section does not change its look when the first item that fits a slot appears. Accepted with it: slots stand empty with nothing to choose for them until items that fit them come.
@@ -12762,13 +12739,11 @@ The gear is no backpack: a piece in the gear takes no room of the backpack's cap
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-451 · derives from D-64
-- **Verification:** tests: a stick in the main hand counted neither by the cap of the backpack nor by „Zapas poniżej” nor by the line of the backpack, burnt by no „Zasil — ognisko” and lit by no „Zapal — patyk”; an action that takes pieces from the backpack taking none from the gear. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character with a full backpack of 15 pieces and a stick in its main hand, the stick standing outside the cap and staying in the hand when „Zasil — ognisko” takes its fuel
-  - violates: „Zapas poniżej 1 szt. · Patyk” counting the stick of the main hand and so not holding for a character whose only stick lies there
+- **Verification:** tests: a stick in the main hand counted neither by the cap of the backpack nor by „Zapas poniżej” nor by the line of the backpack, burnt by no „Zasil — ognisko” and lit by no „Zapal — patyk”; an action that takes pieces from the backpack taking none from the gear.
 - **Origin:** none
 
 *Rationale:* a piece in the gear is what the character works with, not what it carries; counted in the backpack it would take room of the cap from what the character carries, and a campfire could burn the stick of the hand.
-*Rejected:* none considered
+*Rejected:* no cost to the product known
 
 ### D-456 — Which slots does the gear have, and which item fits which?
 
@@ -12779,9 +12754,7 @@ An item whose data name no place fits no slot.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-451
-- **Verification:** tests: the data's eight slots, each of one place and holding one piece, the three pockets of one place; the stick fitting the main hand and the bandage a pocket, an item whose data name no place fitting no slot, and a piece refused in a slot whose place it does not fit; the strike taking its stick from the main hand and from no pocket or other slot. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a pocket refusing a stick and the main hand refusing a bandage
-  - violates: the strike taking a stick from a pocket; a pocket holding three bandages as a count of pieces in one slot
+- **Verification:** tests: the data's eight slots, each of one place and holding one piece, the three pockets of one place; the stick fitting the main hand and the bandage a pocket, an item whose data name no place fitting no slot, and a piece refused in a slot whose place it does not fit; the strike taking its stick from the main hand and from no pocket or other slot.
 - **Origin:** none
 
 *Rationale:* the gear has from the start the places of a character in a game of roles, so items of later kinds find their place with no change of its shape. The head, the torso and the legs are what the character has on, the hands what it wields and the pockets what it has at hand. A slot holds one piece, so that a piece with numbers of its own needs no stack to split. Accepted with it: slots stand with nothing that fits them; three pockets is a number set before the numbers of the maps that need them are; and the split into the main hand and the second settles the weapon held in two hands before there are items.
@@ -12794,9 +12767,7 @@ An empty slot of the gear stays empty until a rule puts something on it or the c
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-451 · derives from D-456
-- **Verification:** tests: a strike at an empty main hand taking one stick from the backpack into the hand and striking in the same turn; an empty slot left empty by every other act and by the start and the end of a map run; a strike with no stick in the hand or the backpack passed over. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character entering a map run with an empty main hand and a stick in the backpack, the hand staying empty until the first strike, which takes the stick into it
-  - violates: a stick moved from the backpack into an empty main hand at the entry to a map run, with no action having used it
+- **Verification:** tests: a strike at an empty main hand taking one stick from the backpack into the hand and striking in the same turn; an empty slot left empty by every other act and by the start and the end of a map run; a strike with no stick in the hand or the backpack passed over.
 - **Origin:** none
 
 *Rationale:* where an empty hand is refilled only when an action needs the piece, the rule of a program that says what goes into the hand, standing above the strike, decides it, and without such a rule the strike takes the stick itself, as the strike of the predecessor game took its weapon from the backpack. Accepted with it: until the first strike the hand is empty, so the line of the gear on the screen of a map run says „nic” though the strike works.
@@ -12809,9 +12780,9 @@ The action „Załóż — {rzecz}”, one for all slots, takes one piece of its
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-451 · derives from D-443 · derives from D-456
-- **Verification:** tests: „Załóż — patyk” taking a stick from the backpack into the main hand and putting the stick the hand held into the backpack; „Załóż — opatrunek” taking a bandage into the first empty pocket; the count of the backpack's pieces never rising by it. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character with a stick in the hand and another in the backpack, „Załóż — patyk” leaving one stick in the hand and one in the backpack
-  - violates: „Załóż — patyk” that takes a stick from a pocket; an action „Weź do ręki — patyk” beside „Załóż — patyk” for the same item
+- **Verification:** tests: „Załóż — patyk” taking a stick from the backpack into the main hand and putting the stick the hand held into the backpack; „Załóż — opatrunek” taking a bandage into the first empty pocket; the count of the backpack's pieces never rising by it; the piece going into no slot of another place. For the one action for every slot, which no test holds yet, an agent compares a change with the decision:
+  - complies: one action „Załóż — {rzecz}” in the editor for every item that fits a slot, the hands and the pockets alike
+  - violates: an action „Weź do ręki — patyk” beside „Załóż — patyk” for the same item
 - **Origin:** none
 
 *Rationale:* the backpack is where the pieces stand that the character carries, and a rule of a program puts on what the character carries; one action serves every slot, so the program editor has one row for one thing. Accepted with it: „Załóż — patyk” reads better for clothes than for a stick.
@@ -12824,9 +12795,9 @@ The condition „Puste — {miejsce}” holds when the place it names holds noth
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-451 · derives from D-443 · derives from D-456
-- **Verification:** tests: the condition holding when the main hand is empty and failing when it holds a piece, „Kieszeń” holding it with one empty pocket among three; the targets of the condition standing at the places some item fits, the main hand and the pocket today, in the check of a program and in the pick of the editor and of the rule panel; a program naming a pocket by its number or position refused. For the part no test holds yet, an agent compares a change with the decision:
+- **Verification:** tests: the condition holding when the main hand is empty and failing when it holds a piece, „Kieszeń” holding it with one empty pocket among three; the targets of the condition standing at the places some item fits, the main hand and the pocket today, in the check of a program and in the pick of the editor and of the rule panel; a program naming a pocket by its number or position refused, and a place no item of the data fits not offered. For the rule that fills the pockets, which no test holds as a whole yet, an agent compares a change with the decision:
   - complies: the rule „Puste — Kieszeń” → „Załóż — opatrunek” putting bandages into the pockets one by one until the pockets are full
-  - violates: a condition „Puste — Kieszeń 2”; a condition „Puste — Głowa” offered while no item of the data fits the head
+  - violates: the same rule putting a bandage into a pocket that is already full, or stopping with a pocket empty
 - **Origin:** none
 
 *Rationale:* a rule that puts something on when nothing is in the hand needs exactly this condition, and one condition for every place serves it. A program names a thing of the world by its kind, so the three pockets are one target, and the targets follow the items of the data as those of an action do. Accepted with it: the condition does not say „no club in the hand though a stick is there”, which a later change may add with a second weapon.
@@ -12834,29 +12805,25 @@ The condition „Puste — {miejsce}” holds when the place it names holds noth
 
 ### D-460 — How is the gear of a character in an earning loop merged at the end of a map run?
 
-At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left. A slot counts as changed from the first piece the player puts on it or takes off it, whether or not it holds again the item it held at the start of the map run.
+At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left. A slot counts as changed from the first piece the player puts on it or takes off it, whether or not it holds again the item it held at the start of the map run. While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-452 · derives from D-453
-- **Verification:** tests: the end of a map run of an earning loop at a character whose slots the player changed, the changed slot keeping the player's piece and the piece the map run left there going to the chest, or lost with a full chest, and any other slot taking what the map run left; a slot the player emptied and filled again counting as changed. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a player who changed the main hand of a character in an earning loop while a map run took a bandage into a pocket, the main hand keeping the player's piece and the pocket the bandage
-  - violates: the player's change of one slot putting the whole gear of the map run into the chest; a slot that the player emptied and filled with another stick counted as unchanged
+- **Verification:** tests: the end of a map run of an earning loop at a character whose slots the player changed, the changed slot keeping the player's piece and the piece the map run left there going to the chest, or lost with a full chest, and any other slot taking what the map run left; a slot the player emptied and filled again counting as changed; a piece put on in the loop leaving the chest at once and returning at once when taken off, and the piece the map run holds in a slot not yet changed going into no chest and needing no room in it before the merge.
 - **Origin:** none
 
-*Rationale:* a change the player made stands for what the player wants in that slot, and a slot the player did not touch stays as the map run left it, so a stick the program took into the hand and the bandages put into the pockets are not sent to the chest for a slot the player said nothing of. A slot counts as changed by the use of its tile and not by a difference from its state at the start: the player takes off a stick and puts on another from the chest, the slot looks unchanged, and the stick from the chest would vanish. Accepted with it: a piece may be lost when the chest is full, the slot by slot rule is harder to explain than „your choice wins”, and the player learns of a piece lost with a full chest only from the chronicle.
+*Rationale:* a change the player made stands for what the player wants in that slot, and a slot the player did not touch stays as the map run left it, so a stick the program took into the hand and the bandages put into the pockets are not sent to the chest for a slot the player said nothing of. A slot counts as changed by the use of its tile and not by a difference from its state at the start: the player takes off a stick and puts on another from the chest, the slot looks unchanged, and the stick from the chest would vanish. The piece the map run going on holds in a slot the player has not changed is the map run's own until it ends (D-453), so the chest neither takes it when the player puts another piece on nor needs room for it when the player takes the slot empty; the piece the player put on is the player's, so it comes and goes with the chest at once. Accepted with it: a piece may be lost when the chest is full, the slot by slot rule is harder to explain than „your choice wins”, and the player learns of a piece lost with a full chest only from the chronicle.
 *Rejected:* the choice of the player replacing the whole gear — the stick that the program took into the hand and the bandages in the pockets land in the chest, though the player said nothing of those slots.
 
 ### D-461 — How does the player change the gear on the screen Postać?
 
-The player changes the gear by touching the tile of a slot, which opens under it a pick in the cells of the pick of an action in the program editor: the items of the chest that fit the slot, each with its icon, its name and the number of its pieces in the chest, and „Zdejmij” where the slot holds something. Choosing an item moves one piece of it from the chest into the slot and the piece the slot held back into the chest, and „Zdejmij” moves the piece of the slot into the chest.
+The player changes the gear by touching the tile of a slot, which opens under it a pick in the cells of the pick of an action in the program editor: the items of the chest that fit the slot, each with its icon, its name and the number of its pieces in the chest, and „Zdejmij” where the slot holds something. Choosing an item moves one piece of it from the chest into the slot and the piece the slot held back into the chest, and „Zdejmij” moves the piece of the slot into the chest. Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-452 · derives from D-453
-- **Verification:** tests: the tile of a slot opening under it the pick of the fitting items of the chest, each with its icon, name and number of pieces, and „Zdejmij” where the slot holds something; the choice of an item moving a piece from the chest into the slot and the piece the slot held into the chest; „Zdejmij” moving the piece of the slot into the chest. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a touch of the tile of the slot „Ręka główna” opening a pick with „Patyk” and its number of pieces and, where the hand holds a stick, „Zdejmij”
-  - violates: a drop-down list in the row of each slot; a grid of the chest's items standing under the figure with no choice of the slot
+- **Relations:** derives from D-452 · derives from D-453 · derives from D-460
+- **Verification:** tests: the tile of a slot opening under it the pick of the fitting items of the chest, each with its icon, name and number of pieces, and „Zdejmij” where the slot holds something; the choice of an item moving a piece from the chest into the slot and the piece the slot held into the chest; „Zdejmij” moving the piece of the slot into the chest; a piece the map run going on of an earning loop holds going into no chest by the choice and needing no room in it.
 - **Origin:** none
 
 *Rationale:* the screen of a character in a game of roles stands the figure in the middle and the slots around it, so the player sees what each holds; the pick under the tile gives the choice of the slot and of the item together, and the items stand on the screen as cells with icons, not behind a closed list. Accepted with it: the pick takes room in the narrow left area of the screen, and the player reaches an item with two touches, the tile and the cell.
@@ -12869,9 +12836,7 @@ At a character in an earning loop the tiles of the gear show the gear set for it
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-453
-- **Verification:** tests: the tiles of a character in an earning loop showing the gear set for its next map run, with the sentence above them, also while the map run going on holds other gear. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a character in an earning loop whose map run going on holds a stick the player took off for the next one, the tile of its main hand standing empty under the sentence
-  - violates: a second row of icons „Teraz w przejściu: …” under the tiles; tiles that show the gear of the map run going on
+- **Verification:** tests: the tiles of a character in an earning loop showing the gear set for its next map run, with the sentence above them, also while the map run going on holds other gear.
 - **Origin:** none
 
 *Rationale:* the tiles show what the player can change, which acts from the next map run (D-453), and the sentence says why what the character holds in the map run going on is not what the tiles show. Accepted with it: the screen does not show what the character holds in the map run going on of its earning loop.
@@ -12886,13 +12851,13 @@ The count is a part of the stored form of a judging, whose version rises with it
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-440 · derives from D-441 · derives from D-461
-- **Verification:** tests: the count of a character's gear changes in the game state and in the saved game state, from 0 at a new character, one higher after each putting on, exchanging and taking off of a piece by the player on the screen Postać, and left as it is by a refused change, by a refill of a slot or a „Załóż” in a map run, by the return of a character from a map run of its earning loop and by the death of a character with no practice that takes its gear; a judging stored with the count of its character and read again by a cache opened anew, standing beside „Program:” only while the count equals that of the character in the game state, and gone, on every map of that character and no other, after a change of the gear the player made; a value stored without the count, under the key of the version before, showing nothing; the opening removing the values of this game whose count stands above that of their character in the loaded game. For the part no test holds yet, an agent compares a change with the decision:
-  - complies: a stick taken off on the screen Postać raising the count of its character by one, so that no judging stands beside that character on any map, while a map run of its earning loop in which a strike took a stick into an empty hand leaves the count and the judgings as they were
-  - violates: a change of the gear made by the player that leaves the count where it was; a count that rises at the return of a map run; the page removing the character's judgings from the browser at the change, with no count in the stored value
+- **Verification:** tests: the count of a character's gear changes in the game state and in the saved game state, from 0 at a new character, one higher after each putting on, exchanging and taking off of a piece by the player on the screen Postać; a judging stored with the count of its character and read again by a cache opened anew, standing beside „Program:” only while the count equals that of the character in the game state, and gone, on every map of that character and no other, after a change of the gear the player made; a value stored without the count, under the key of the version before, showing nothing; the opening removing the values of this game whose count stands above that of their character in the loaded game. For the counts a refused change, a refill of a slot or a „Załóż” in a map run, the return of a character from a map run and the death that takes its gear leave as they are, which no test holds yet, an agent compares a change with the decision:
+  - complies: a map run of an earning loop in which a strike took a stick into an empty hand leaving the count of its character where it was
+  - violates: a count that rises at the return of a map run, at a refill of a slot or at a refused change
 - **Origin:** none
 
 *Rationale:* the badge beside a character must not stand after the player took off the stick the program was judged with (D-440), and it must not depend on which tab, device or page made the change. A count that the game state holds and the stored judging carries is read against the game state at hand, as the content revision (D-442) and the generation number are, so a reload, another tab and another device give the same answer; the count only rises, so a value above the loaded game's own can come only from a save that never reached the server, and the opening removes it. Accepted with it: one more field in the game state and in each stored value; the version of the stored form rises, so the judgings stored before it show nothing once and the player judges anew at each map; a change of the gear that is later lost with a refused or an unsent save leaves a judging above the count, which the opening removes.
-*Rejected:* the page removing the character's stored judgings from the browser at the act of the change — another device or browser keeps a badge that lies, which the reading against the game state at hand (D-441) was made to prevent.
+*Rejected:* unknown
 
 ## Withdrawn identifiers
 

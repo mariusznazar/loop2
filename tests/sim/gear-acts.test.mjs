@@ -53,6 +53,8 @@ function character(state, id) {
 }
 
 test("putting a stick on at the camp moves it from the chest to the main hand and counts one gear change", () => {
+  // decision: D-452 "A character's gear belongs to the character and stays at it between map runs, but for a death that D-190 says takes it; the player puts a piece of an item on from the chest on the screen Postać, and a piece taken off returns to the chest."
+  // decision: D-463 "The game state counts at each character, from 0, the gear changes the player makes on the screen Postać (D-461): each putting on, exchanging and taking off of a piece counts one"
   // decision: D-453 "The player changes a character's gear on the screen Postać outside an unfinished manual map run of that character, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too."
   const state = twoCharacters({ stick: 2 });
   const result = putOnPiece(state, ANNA, "mainHand", "stick");
@@ -121,6 +123,8 @@ test("a put on refused for a character the team does not have", () => {
 });
 
 test("taking the stick off the main hand at the camp returns it to the chest and counts one gear change", () => {
+  // decision: D-452 "A character's gear belongs to the character and stays at it between map runs, but for a death that D-190 says takes it; the player puts a piece of an item on from the chest on the screen Postać, and a piece taken off returns to the chest."
+  // decision: D-463 "The game state counts at each character, from 0, the gear changes the player makes on the screen Postać (D-461): each putting on, exchanging and taking off of a piece counts one"
   const worn = putOnPiece(
     twoCharacters({ stick: 1 }),
     ANNA,
@@ -186,6 +190,7 @@ test("the gear acts of another character go on beside the manual map run of Anna
 });
 
 test("a put on in an earning loop leaves the chest at once and marks its slot as changed", () => {
+  // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
   const looped = withLoopOfAnna(twoCharacters({ stick: 2 }));
   const result = putOnPiece(looped, BOB, "mainHand", "stick");
   assert.equal(result.refusal, null);
@@ -202,6 +207,7 @@ test("a put on in an earning loop leaves the chest at once and marks its slot as
 });
 
 test("a piece put on and taken off in an earning loop returns to the chest at once, the slot marked once", () => {
+  // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
   const looped = withLoopOfAnna(twoCharacters({ stick: 1 }));
   const put = putOnPiece(looped, ANNA, "mainHand", "stick").state;
   const taken = takeOffPiece(put, ANNA, "mainHand");
@@ -249,6 +255,8 @@ function loopHoldingStick(pieces) {
 }
 
 test("taking off in an earning loop the piece the map run going on holds puts nothing into the chest at once, and needs no room in it", () => {
+  // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
+  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice."
   // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
   for (const [label, pieces] of [
     ["an empty chest", {}],
@@ -271,6 +279,8 @@ test("taking off in an earning loop the piece the map run going on holds puts no
 });
 
 test("putting a piece on in an earning loop over the piece the map run going on holds takes one from the chest and puts the held one into none", () => {
+  // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
+  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice."
   // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
   const looped = loopHoldingStick({ stick: 2 });
   const put = putOnPiece(looped, ANNA, "mainHand", "stick");

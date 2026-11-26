@@ -57,10 +57,10 @@ function refills(result) {
 }
 
 test("a strike with a stick in the main hand takes that stick and leaves the backpack's sticks", () => {
+  // decision: D-23 "Which piece of an item an action uses — which fuel goes into a campfire — the simulation chooses, not the program, and an action that uses an item from the gear uses the piece the gear holds (D-451)."
   // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear"
   // decision: D-456 "„Uderz — patyk” takes its stick from the main hand and from no other slot."
   // decision: D-145 "A stick stays in the main hand after a strike, with its condition unchanged."
-  // decision: D-451 "An action that uses a piece of a kind kept piece by piece uses the piece the gear holds."
   const program = programFromRules({ condition: ALWAYS, action: STRIKE });
   const run = carrying(program, 2, STICK_IN_HAND);
   const result = resolveCombat(run, "wolf", program);
@@ -104,7 +104,7 @@ test("a strike at an empty main hand takes one stick from the backpack into the 
 });
 
 test("with no stick in the main hand or the backpack the strike is passed over with „brakuje 1 × patyk”, and a stick in the hand alone is enough", () => {
-  // decision: D-380 "„Uderz — patyk” is short of a thing only where its stick lies neither in the main hand nor in the backpack (D-457), „brakuje 1 × patyk”."
+  // decision: D-380 "„Uderz — patyk” is short of a thing where its stick lies neither in the main hand nor in the backpack (D-457), „brakuje 1 × patyk”."
   // decision: D-456 "„Uderz — patyk” takes its stick from the main hand and from no other slot."
   const program = programFromRules(
     { condition: ALWAYS, action: STRIKE },

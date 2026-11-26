@@ -68,6 +68,7 @@ test("the line of gear names the main hand „w ręku” and the pockets „pod 
 });
 
 test("the stick fits the main hand and the bandage each pocket, and nothing fits the other slots", () => {
+  // decision: D-456 "An item whose data name no place fits no slot."
   // decision: D-456 "The data of each item name the place it fits: the stick fits the main hand and the bandage a pocket."
   const fitting = Object.entries(GEAR_SLOTS).flatMap(([slot, place]) =>
     Object.entries(ITEMS)
@@ -83,6 +84,7 @@ test("the stick fits the main hand and the bandage each pocket, and nothing fits
 });
 
 test("a new character has an empty gear, no changed slot and no gear change counted", () => {
+  // decision: D-463 "The game state counts at each character, from 0, the gear changes the player makes on the screen Postać (D-461): each putting on, exchanging and taking off of a piece counts one"
   const state = createCharacter(newKnowingGame(), "Ala").state;
   const [ala] = state.team.characters;
   assert.deepEqual(ala.gear, EMPTY_GEAR);
@@ -137,6 +139,7 @@ test("a manual map run enters a map whose entry cap is 0 with the character's ge
 });
 
 test("a manual map run takes its trip plan from the chest and its gear from the character, each apart", () => {
+  // decision: D-451 "A character has gear apart from its backpack: what it wears, what it wields and what it has at hand."
   const before = holding(HELD_GEAR, { stick: 3, bandage: 2 }, [
     { item: "stick", count: 2 },
   ]);
