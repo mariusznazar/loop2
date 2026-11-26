@@ -10,6 +10,7 @@ import { programById, rowProgram } from "./programs.js";
 import { mixSeed, nextSeed } from "./random.js";
 import { mapRunEnded, newMapRun, stepMinute } from "./run.js";
 import { paidPractice, sumPractice } from "./skills.js";
+import { teamAtRunEnd } from "./gear.js";
 import { takeTrip, tripLoot } from "./trip.js";
 import type {
   AwayReportLine,
@@ -56,8 +57,9 @@ function withLoop(
 
 /**
  * A map run of an earning loop at minute 0 (D-241, D-249): the program of the earning loop reduced to the
- * repertoire of the run's skills, the skills and traits those of the team's `character` now, and the
- * equipment the take list takes from the chest as it stands, whether the map is solved or not. The
+ * repertoire of the run's skills, the skills and traits those of the team's `character` now, the
+ * equipment the take list takes from the chest as it stands, whether the map is solved or not, and the
+ * gear the game keeps at the character, whole and apart from the chest (D-452). The
  * map run is not marked, and nothing is discovered, counted or reported by it.
  */
 function beginRun(
@@ -84,6 +86,7 @@ function beginRun(
     traits,
     character.skills,
     equipment.backpack,
+    character.gear,
   );
   return { run: started.run, chest: equipment.chest };
 }
@@ -94,7 +97,8 @@ function beginRun(
  * earning loop carries the content of the program numbered `ids.programId`, or of the character's row where
  * none is given, and nothing else of it. That program becomes the character's program used last and
  * the one with which a character last entered a map, the character's pick is cleared and its entry
- * of `stoppedLoops` goes. The rule counts and the program they stand beside stay as they were, and
+ * of `stoppedLoops` goes, and so do the slots the player changed (D-460). The first map run starts
+ * with the character's gear. The rule counts and the program they stand beside stay as they were, and
  * no event leaves. A map unknown or not solved, a character the team does not list, one in an earning loop
  * or in the manual map run, and a program not on the list are refused with the very state.
  */
@@ -138,10 +142,14 @@ export function startLoop(
   delete pickedPrograms[characterId];
   const stoppedLoops = { ...state.stoppedLoops };
   delete stoppedLoops[characterId];
+  const cleared =
+    character.changedSlots.length === 0
+      ? state
+      : withCharacter(state, character, { ...character, changedSlots: [] });
   return {
     state: withLoop(
       {
-        ...state,
+        ...cleared,
         lastSeed: seed,
         pickedPrograms,
         lastUsedPrograms: {
@@ -150,7 +158,7 @@ export function startLoop(
         },
         lastEnteredProgram: chosen.id,
         stoppedLoops,
-        team: { ...state.team, chest: started.chest },
+        team: { ...cleared.team, chest: started.chest },
       },
       characterId,
       {
@@ -184,7 +192,8 @@ export function waitingPractice(loop: EarningLoop): Practice {
  * Stops the earning loop of a character at once (D-245): the practice waiting at the earning loop is paid
  * into the character's skills, the earning loop is dropped, and the sum paid is written into
  * `stoppedLoops`, `{}` where none waited. The items the map run carries are lost and its loot does
- * not reach the chest. With no earning loop of that character, returns the very state.
+ * not reach the chest; its gear is merged into the character's as at every end of a map run of an
+ * earning loop (`teamAtRunEnd`, D-460). With no earning loop of that character, returns the very state.
  */
 export function stopLoop(
   state: GameState,
@@ -198,10 +207,17 @@ export function stopLoop(
     ...character,
     skills: paidPractice(character.skills, paid),
   };
+  const paidState = withCharacter(state, character, stopped);
   return {
     state: withLoop(
       {
-        ...withCharacter(state, character, stopped),
+        ...paidState,
+        team: teamAtRunEnd(
+          paidState.team,
+          characterId,
+          loop.run.character.gear,
+          false,
+        ),
         stoppedLoops: { ...state.stoppedLoops, [characterId]: paid },
       },
       characterId,
@@ -322,8 +338,10 @@ function takeEnd(
       found.character,
       waitingPractice(loop),
       nowMs,
+      run.character.gear,
     );
     team = settled.team;
+    chest = team.chest;
     if (settled.settlement.kind === "progressLost") {
       return {
         state: withLoop({ ...state, team }, characterId, null),
@@ -345,7 +363,14 @@ function takeEnd(
       MAPS[run.mapId],
     ))
       pieces[item] = (pieces[item] ?? 0) + count;
-    chest = { pieces };
+    // The loot first, then the gear's merge into the room the loot left (D-460).
+    team = teamAtRunEnd(
+      { ...team, chest: { pieces } },
+      characterId,
+      run.character.gear,
+      false,
+    );
+    chest = team.chest;
     practice = sumPractice(practice, run.practice);
     completed += 1;
     inARow += 1;
@@ -356,7 +381,8 @@ function takeEnd(
     settledState,
     loop.program,
     run.mapId,
-    found.character,
+    // The character as the end left it: its gear merged (D-460).
+    settledState.team.characters.find((listed) => listed.id === characterId)!,
     nextSeed(run.seed),
     chest,
   );
@@ -391,8 +417,10 @@ function takeEnd(
  * use left one is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; with
  * none left the character loses its practice and ranks and the earning loop is dropped with what it
  * gathered; where the earning loop goes on, the run of map runs with no death starts anew at 0 and the
- * loop record stays. The carried items go with the run and the chest stays as it stood. One `loopRunEnded` event
- * follows for the end.
+ * loop record stays. The carried items go with the run and the chest stays as it stood. At every end
+ * the gear of the map run is merged into the character's slot by slot (`teamAtRunEnd`, D-460), after
+ * the loot of a completion, and taken where the death finds no use left (D-190); the next map run
+ * starts with the gear so merged. One `loopRunEnded` event follows for the end.
  * With no earning loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
  * `nowMs` that is no safe integer is a RangeError.
  */

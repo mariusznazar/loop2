@@ -35,6 +35,7 @@
       "tests/sim/gather.test.mjs",
       "tests/sim/gear-acts.test.mjs",
       "tests/sim/gear-state.test.mjs",
+      "tests/sim/gear-transfer.test.mjs",
       "tests/sim/hex.test.mjs",
       "tests/sim/judging-record.test.mjs",
       "tests/sim/judging.test.mjs",

@@ -1,4 +1,5 @@
 import { newGear, newTraits } from "./character.js";
+import { teamAtRunEnd, teamAtRunStop } from "./gear.js";
 import { hasNoPractice, newSkills, paidPractice } from "./skills.js";
 import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
@@ -47,6 +48,7 @@ import type {
   DeathSettlement,
   GameMapRun,
   GameState,
+  Gear,
   MapId,
   MapRun,
   Pace,
@@ -572,14 +574,16 @@ export function send(
  * same map, character, traits and seed, carrying out the copy record of the map run it replaces as
  * it is, unsaved changes included; every count starts from zero. The new map run takes the skills
  * of the one it replaces, its repertoire with them; after a death that took everything, the skills
- * the team's character was left with.
+ * the team's character was left with. A map run ended before its completion and a death gives its
+ * gear to the character first, and the new map run starts with the character's gear (D-183).
  */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
   const lost = run.deathSettlement?.kind === "progressLost";
+  const team = teamAtRunStop(state);
   const started = startRun(
     // With no map run standing, the start reads the character's skills from the team.
-    lost ? { ...state, run: null } : state,
+    lost ? { ...state, team, run: null } : { ...state, team },
     run.mapId,
     run.character.id,
     run.seed,
@@ -597,7 +601,8 @@ export function restart(state: GameState): GameResult {
  * programs, the last seed and the solved maps stay. The counts are reconciled against the copy's
  * program, which they then stand beside: a rule of that program keeps the count of the copy's rule
  * of the same identity where the two have the same condition and action, and stands at 0 otherwise.
- * Where the copy's program is gone, the counts are cleared.
+ * Where the copy's program is gone, the counts are cleared. A map run ended before its completion and
+ * a death gives its gear to the character, and its carried items are lost (D-183).
  */
 export function end(state: GameState): GameResult {
   const run = requireRun(state, "end");
@@ -605,6 +610,7 @@ export function end(state: GameState): GameResult {
   return {
     state: {
       ...state,
+      team: teamAtRunStop(state),
       ruleCounts: owner
         ? reconcileCounts(state.ruleCounts, run.copy.program, owner.program)
         : null,
@@ -651,7 +657,10 @@ export function setPace(state: GameState, pace: Pace): GameResult {
  * renewal after `nowMs`, and a death with the clock running leaves its moment as it runs, which a
  * death settled at an earlier real moment after another never moves back (D-240); the settlement
  * holds the uses spent after it. With none left the character loses all its practice and ranks and its
- * generation number grows by one, the uses and their moment unchanged. `nowMs` is taken as a safe
+ * generation number grows by one, the uses and their moment unchanged. The gear goes as
+ * `teamAtRunEnd` gives it from `runGear`, the gear the map run left, the character's own where none is
+ * given: taken where no use is left at `nowMs`, a character with no practice included, and given back
+ * otherwise, the death that spends the last use included (D-190). `nowMs` is taken as a safe
  * integer; the caller checks it. A safe `nowMs` that carries a moment of the clock beyond the safe
  * integers is still a RangeError (D-386).
  */
@@ -660,14 +669,17 @@ export function teamAfterDeath(
   died: Character,
   gathered: Practice,
   nowMs: number,
+  runGear: Gear = died.gear,
 ): { team: Team; settlement: DeathSettlement } {
-  if (hasNoPractice(died.skills, gathered))
-    return { team, settlement: { kind: "noPractice" } };
   const { spent, nextReturnMs } = usesAt(team, nowMs);
-  if (spent < BALANCE.resurrectionUses)
+  const noneLeft = spent >= BALANCE.resurrectionUses;
+  const geared = teamAtRunEnd(team, died.id, runGear, noneLeft);
+  if (hasNoPractice(died.skills, gathered))
+    return { team: geared, settlement: { kind: "noPractice" } };
+  if (!noneLeft)
     return {
       team: {
-        ...team,
+        ...geared,
         resurrectionUsesSpent: spent + 1,
         resurrectionNextReturnAtMs:
           nextReturnMs ?? momentAfter(nowMs, renewalMs()),
@@ -678,16 +690,14 @@ export function teamAfterDeath(
       },
     };
   const generation = died.generation + 1;
-  const lost: Character = {
-    ...died,
-    skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
-    generation,
-  };
+  const skills = newSkills(ARCHETYPES[died.archetypeId].predispositions);
   return {
     team: {
-      ...team,
-      characters: team.characters.map((character) =>
-        character === died ? lost : character,
+      ...geared,
+      characters: geared.characters.map((character) =>
+        character.id === died.id
+          ? { ...character, skills, generation }
+          : character,
       ),
     },
     settlement: { kind: "progressLost", generation },
@@ -700,7 +710,8 @@ export function teamAfterDeath(
  * run's character having no earning loop and so no practice gathered at one: a character with no
  * practice leaves the team and itself as they were; otherwise, with a use of the team's resurrection
  * left it is spent, and with none left the character loses all its practice and ranks and its
- * generation number grows by one. The map run holds how it went; its own
+ * generation number grows by one; the gear the map run left becomes the character's, or is taken where
+ * no use is left, a character with no practice included (D-190). The map run holds how it went; its own
  * skills, the chest, the programs, the Understanding and the solved maps are out of reach, and the
  * mark of a solved map plays no part. With no map run, no death or a death settled, returns the very
  * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer, or whose
@@ -717,7 +728,13 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
   const died = state.team.characters.find(
     (character) => character.id === run.character.id,
   )!;
-  const settled = teamAfterDeath(state.team, died, {}, nowMs);
+  const settled = teamAfterDeath(
+    state.team,
+    died,
+    {},
+    nowMs,
+    run.character.gear,
+  );
   return {
     state: {
       ...state,
@@ -844,7 +861,8 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
  * events, no program rule is picked and the map is added to the solved maps; the completion deposits
- * the bring list clipped as every completion does, for every run (D-189), and pays practice only for
+ * the bring list clipped as every completion does, for every run (D-189), gives the character the
+ * gear the map run left, whatever the bring list and the exit cap (D-183), and pays practice only for
  * a run not marked `solvedMapRun`, and a death pays nothing; where the minute of a completion or of
  * a death is
  * also a discovery's, the game holds the discovery and is not paused (D-122). A map run that has ended
@@ -969,6 +987,14 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     for (const { item, count } of deposited)
       pieces[item] = (pieces[item] ?? 0) + count;
     current = { ...current, team: { ...current.team, chest: { pieces } } };
+    // The gear the map run left becomes the character's in the game minute of the completion (D-183).
+    const team = teamAtRunEnd(
+      current.team,
+      run.character.id,
+      run.character.gear,
+      false,
+    );
+    current = { ...current, team };
   }
   return {
     state: {

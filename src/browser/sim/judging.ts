@@ -43,7 +43,9 @@ function fightDamage(run: MapRun): number {
  * counting, as the balance instrument stops a run. Each map run is an earning loop's: the program
  * reduced to the character's repertoire as the Understanding stands (D-249), the character's skills and
  * traits as they stand, and the take list cut by the chest, the carrying capacity and the map's entry
- * cap, the same for all twelve. It is no map run of the character: nothing leaves the chest, nothing is
+ * cap, the same for all twelve, and the gear the game keeps at the character, the gear its manual map
+ * run entered with or its earning loop's next map run takes (D-439), the same for all twelve, none of it
+ * taken. It is no map run of the character: nothing leaves the chest, nothing is
  * paid, no death is settled, nothing is discovered and no rule is written, and no seed is drawn. The
  * character may be in an earning loop or in the manual map run; neither is touched. Throws an Error
  * on a map the data lacks or the player may not enter yet, a character the team lacks and a program
@@ -95,6 +97,7 @@ export function judgeOnSeeds(
       { ...character.traits },
       character.skills,
       backpack,
+      character.gear,
     ).run;
     let creatureDamage = 0;
     while (!mapRunEnded(run) && run.minute < BALANCE.judgingCapMinutes) {

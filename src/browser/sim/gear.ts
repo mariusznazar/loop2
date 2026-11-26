@@ -1,13 +1,15 @@
 // The player's two acts on a character's gear (D-452, D-453): putting a piece on from the chest and
-// taking a piece off into it, and what the screen Postać shows for a slot's pick (D-456, D-460).
-// Each act returns a new state and changes nothing passed to it.
-import { fitsSlot } from "./character.js";
+// taking a piece off into it, and what the screen Postać shows for a slot's pick (D-456, D-460);
+// and the gear a map run gives back to its character at its end (D-183, D-190, D-460).
+// Each function returns a new state and changes nothing passed to it.
+import { fitsSlot, gearSlots } from "./character.js";
 import { GEAR_SLOTS, type GearSlot } from "./data/gear.js";
 import { ITEMS, type ItemId } from "./data/items.js";
 import { BALANCE } from "./data/balance.js";
+import { mapRunEnded } from "./run.js";
 import { pieceCount } from "./trip.js";
 import type { GameResult } from "./game.js";
-import type { Character, CharacterId, GameState } from "./types.js";
+import type { Character, CharacterId, GameState, Gear, Team } from "./types.js";
 
 /** Why the player's act on a gear slot was refused. */
 export type GearRefusal =
@@ -187,4 +189,59 @@ export function gearPick(
   else if (pieceCount(state.team.chest.pieces) + 1 > BALANCE.chestCapacity)
     takeOff = "chestFull";
   return { options, takeOff };
+}
+
+/**
+ * The team after the end of a map run of the character `characterId`, whose gear stood at `runGear`
+ * at that end (D-183, D-190, D-460), merged slot by slot. A slot the player changed since that map run
+ * started keeps the player's choice, and the piece the map run left in it goes to the chest, in the
+ * order of the slots of the data, or is lost where the chest has no room, as loot beyond the free room
+ * of the chest is; any other slot takes what the map run left. Where the death that ended the map run
+ * takes the gear (`taken`), the gear of the map run is lost: a changed slot keeps the player's choice,
+ * any other is emptied, and nothing goes to the chest. The changed slots are cleared. The very team
+ * where nothing changes, and for a character the team does not list.
+ */
+export function teamAtRunEnd(
+  team: Team,
+  characterId: CharacterId,
+  runGear: Gear,
+  taken: boolean,
+): Team {
+  const before = team.characters.find((listed) => listed.id === characterId);
+  if (!before) return team;
+  const gear = { ...before.gear };
+  const pieces = { ...team.chest.pieces };
+  let room = BALANCE.chestCapacity - pieceCount(pieces);
+  let changed = before.changedSlots.length > 0;
+  for (const slot of gearSlots()) {
+    const left = taken ? null : runGear[slot];
+    if (!before.changedSlots.includes(slot)) {
+      changed ||= gear[slot] !== left;
+      gear[slot] = left;
+    } else if (left !== null && room > 0) {
+      pieces[left] = (pieces[left] ?? 0) + 1;
+      room -= 1;
+      changed = true;
+    }
+  }
+  if (!changed) return team;
+  const after: Character = { ...before, gear, changedSlots: [] };
+  return {
+    ...team,
+    chest: { pieces },
+    characters: team.characters.map((listed) =>
+      listed === before ? after : listed,
+    ),
+  };
+}
+
+/**
+ * The team after „Zakończ” or „Restart” ends the manual map run of `state` (D-183): before a completion
+ * and a death the map run's gear becomes its character's; after either, the team as it stands, since
+ * the completion and the settled death have given the gear already. The very team with no map run.
+ */
+export function teamAtRunStop(state: GameState): Team {
+  const run = state.run;
+  if (!run || mapRunEnded(run)) return state.team;
+  return teamAtRunEnd(state.team, run.character.id, run.character.gear, false);
 }
