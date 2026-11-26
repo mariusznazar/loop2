@@ -228,7 +228,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323 · D-329 · D-439
+- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323 · D-329 · D-439 · D-337 · D-450
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; przycisk „Oceń na 12 ziarnach” na czas liczenia oceny wyłączony i z napisem „Oceniam…”, choć na serwer nie czeka; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -362,6 +362,22 @@ Kontrolki odstępujące od tej listy stanów:
   pozycją, nie listą; loading nie dotyczy, bo żaden formularz czekający na
   serwer jej nie ma. Ikona czynności w komórce jest rysowana maską w kolorze
   tekstu obok (D-291, D-43), więc szarzeje razem z wyszarzoną komórką.
+- `src/browser/view/controls/react-button.tsx`
+  — przycisk komórki wiersza ciała, rodzaj `value-cell` (D-44, D-337, D-450): default — bez
+  własnego tła, ramka w `control-border`, nazwa wartości w `text-label`, jej liczba w `text`,
+  dopisek w `text-secondary`; ramka komórki temperatury ma kolor tego, co działa na postać (reguła
+  The body row of a map run). Hover — nie tło `highlight`, jak u każdego innego przycisku, tylko
+  nazwa wartości jaśnieje do `text-strong`, a tło i ramka zostają bez zmiany; tak samo wygląda
+  komórka, której objaśnienie stoi otwarte (`aria-expanded`), więc komórka pod kursorem i komórka
+  otwarta wyglądają tak samo, a którą otwarto, mówi objaśnienie pod wierszem. Visible focus —
+  obwódka z reguły Visible focus. Disabled — cały tekst komórki w `text-disabled`, jak u każdego
+  wyłączonego przycisku. Error nie dotyczy, bo komórka nie ma wpisu; empty nie dotyczy, bo komórka
+  nie ma pozycji ani listy; loading nie dotyczy, bo komórka nie czeka na serwer, a kontrolka tego
+  rodzaju nie ma tekstu oczekiwania. Powód odstępstwa od hover: tor paska komórki stoi w `highlight`,
+  w tym samym kolorze co tło przycisku pod kursorem, więc to tło zlałoby pusty albo prawie pusty pasek
+  z tłem komórki; nazwa jaśnieje zamiast tła, jak nazwa otwartej komórki w starym Loopie (D-40).
+  Cel dotyku w układzie telefonu trzyma jak każdy przycisk. Komórka zdrowia, która nie jest
+  przyciskiem, nie jest kontrolką i stanów nie ma.
 
 Kontrolka, która odstępuje od listy stanów, stoi tu ze swoją ścieżką i powodem;
 reguła nie powtarza listy kontrolek, którą trzyma kod. Przegląd porównuje stany
@@ -469,7 +485,7 @@ wybór przyjęty tekst zadania zostawił agentowi (2026-11-26):
   („the agent's choice”) z zadaniem, które go zostawia, z datą wyboru i z progiem
   kontrastu z D-42, który wartość ogranicza, oraz miejsce, z którego wartość
   odczytano: kolor gry loop z jej wyrenderowanej strony albo z kodu wersji
-  wdrożonej — gałęzi `origin/test` repozytorium loop, z commitem, plikiem
+  wdrożonej — gałęzi origin/test repozytorium loop, z commitem, plikiem
   i klasą — albo z palety, z której pochodzą kolory loop, z wersją i plikiem;
   z kodu wersji wdrożonej, z commitem, plikiem i klasą, pochodzi też wartość
   wiersza ciała, którą zadanie podaje samo — bursztyn ramki komórki
@@ -1395,6 +1411,151 @@ w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obraz
 bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).
 Lista wartości tego przewodnika ich nie nazywa (zob. „No value in place of a
 design token”).
+
+### The body row of a map run
+
+- **Decision:** D-337 · D-450 · D-311 · D-178 · D-39 · D-40 · D-42 · D-44 · D-04 · D-396 · D-407 · D-317 · D-322 · D-57 · D-125
+- **Invariant:** none
+- **Good:** Komórka sytości poniżej progu: „Sytość” po lewej i „14 %” po prawej w `danger`, pod nimi pasek w `satiety-fill` na torze w `highlight`, pulsujący w swoim kolorze, a pod paskiem „głoduje” w `danger`; komórka temperatury ze skalą w trzech strefach, z kreską w `scale-marker` i z ramką w `warming-frame` przy ognisku; po kliknięciu „Sytość” jej objaśnienie stoi tuż pod czterema komórkami, nad plecakiem, a drugie kliknięcie je zamyka; „−21 · wilk” nad komórką zdrowia po starciu z wilkiem przy tempie 4×; przy obszarze strony 360 px cztery komórki w dwóch rzędach po dwie, bez przewijania w bok.
+- **Bad:** Wypełnienie paska sytości zmieniające kolor na `danger` przy alarmie; pasek pod plecakiem; skala temperatury bez strefy przegrzania albo ze strefami, które się stykają bez przerwy; pulsująca albo przesuwająca się ramka komórki temperatury; pulsowanie, które staje w pauzie gracza; cios znaleziony porównaniem zdrowia z poprzednim odczytem; dwa objaśnienia otwarte naraz albo objaśnienie pod plecakiem; tło `highlight` pod kursorem na przycisku komórki; „Energia natury 0” w `danger`; czas, odstęp albo kolor wiersza ciała wpisany w jego arkusz zamiast tokenu.
+
+Wiersz ciała stoi w obszarze świata ekranu przejścia, pod „Teraz” i „Potem” (D-311): cztery
+wartości ciała — temperatura, sytość, zdrowie i energia natury — każda w komórce, a pod nimi wiersz
+plecaka, który jest samym tekstem i nie ma paska. Komponent to `src/browser/view/body-row-cells.tsx`,
+liczby, skale, dopiski i słowa objaśnień składa `src/browser/view/body-row.ts`, znacznik ciosu
+`src/browser/view/body-blow.ts`, wspólny wygląd komórki stoi w `src/browser/styles.css` (strona
+wszystkich stanów czyta tylko ten arkusz, reguła A stylesheet of its own for each screen and each
+shared part), a reguły wiersza i jego ruchu w `src/browser/run-screen.css`. Wiersz rysuje z odczytu
+stanu gry i z danych gry, a cios ze zdarzeń wywołania symulacji (D-04); pokazuje wartości od minuty
+zero, cokolwiek gracz odkrył, a na ekranie po końcu przejścia stan zatrzymanej minuty (D-125,
+D-337). Role pasków, stref, kreski i ramki stoją w tabeli Roles i w pliku tokenów, a wiersz czyta je
+przez `var(--…)`; nowe znaczenie roli to zmiana decyzji (reguła Each role in its meaning).
+
+Komórka (D-337, D-178, D-57):
+
+- u góry nazwa wartości po lewej w `text-label` i jej liczba po prawej w `text`, w jednej linii,
+  pod nimi pasek albo skala, pod nimi dopisek w `text-secondary`, mniejszy od wartości, tam, gdzie
+  D-337 go daje, czyli pod temperaturą i pod sytością; zdrowie i energia natury dopisku nie mają.
+  D-40 nie nazywa ról spoczynku nazwy i liczby, więc ta reguła je nazywa; liczba zachowuje swoją
+  jednostkę, temperatura stoi w dziesiątych z przecinkiem, a pozostałe w całych liczbach. Zasady
+  tych słów — „marznie”, „głoduje”, „przy ogniu”, „nie stygnie”, minuty — stoją w D-337 i w
+  `src/browser/view/body-row.ts`;
+- trzy komórki, temperatury, sytości i energii natury, są przyciskami zbudowanymi z rodzaju
+  `value-cell` wspólnego przycisku (D-44): nazwa, liczba, pasek i dopisek stoją w nim jako jego
+  części, które stoją też w komórce zdrowia, a ekran daje im tylko to, co jego własne — kolor
+  wypełnienia, skalę, alarm i ramkę — jako klasy, których wspólna kontrolka nie zna i którym nie
+  nadaje wyglądu. Komórka zdrowia nie jest przyciskiem: nie ma ramki, ale trzyma jej miejsce
+  przezroczystą ramką, żeby cztery komórki stały równo;
+- cztery komórki stoją w dwóch parach, temperatura z sytością i zdrowie z energią natury. Komórka
+  nie jest węższa niż jej części ułożone każda w jednej linii, z całą nazwą i liczbą obok siebie, więc
+  żaden napis nie wychodzi poza jej ramkę, a para nie jest węższa niż jej dwie komórki. Gdzie obie
+  pary nie mieszczą się obok siebie, druga schodzi pod pierwszą i wiersz stoi jako dwa rzędy po
+  dwie komórki, a gdzie mieszczą się, cztery dzielą wiersz po równo. Żaden próg szerokości o tym nie
+  decyduje, więc reguła stoi w arkuszu bez bloku `@media (width < 1280px)`, a cel dotyku
+  trzech przycisków trzyma ten blok, który ma każdy `.button` w `src/browser/styles.css` (reguła
+  Everything is done by touch, and every control holds the touch target, D-396).
+
+Paski i skala (D-337, D-39, D-40, D-42):
+
+- pasek ma grubość podwojonego `--bar-width`, jak pasek wprawy drzewa na ekranie Postać, na torze
+  w `highlight`, bo w takim kolorze stoi tor paska wymagania mapy w nagłówku; długość wypełnienia
+  to udział wartości w jej zakresie z danych gry — sytości od 0 do jej wartości startowej, zdrowia
+  od 0 do zdrowia startowego, energii natury od 0 do jej maksimum — a długość toru jest wymiarem
+  układu, którego D-43 nie liczy. Wypełnienie ma kolor wartości: zdrowie `positive`, sytość
+  `satiety-fill`, energia natury `text-strong`, choć wypełnienie nie jest tekstem; kolor wypełnienia
+  nigdy nie przechodzi w kolor alarmu;
+- temperatura stoi na skali liniowej zamiast paska, o tej samej wysokości co pasek, a jej liczby —
+  końce skali, początek strefy przegrzania i udziały stref — stoją w `src/browser/view/body-row.ts`
+  (`temperatureZones`). Torem skali są trzy strefy, od zimnej: `chill-zone`, `safe-zone`
+  i `danger`, każda tak szeroka, jaki jest jej udział w skali, rozdzielone przerwą o szerokości
+  `--frame-width`, przez którą widać `panel`, tak że strefa styka się tylko z tłem i z kreską.
+  Granica stref wychłodzenia i bezpiecznej to próg wychłodzenia z danych gry, więc kreska stoi
+  w strefie wychłodzenia dokładnie wtedy, gdy temperatura jest w alarmie; strefa przegrzania jest
+  liczbą rysunku, bo gra przegrzania nie ma. Kreska temperatury teraz, w `scale-marker`, ma
+  szerokość `--bar-width` i wysokość skali, nie wychodzi poza skalę, a poniżej lewego końca skali
+  stoi przy nim. Kreska jest ciemna, a przerwa między strefami pokazuje ciemny `panel`, więc przy
+  temperaturze tuż przy granicy stref kreska zlewa się z przerwą; liczba niesie wtedy wartość;
+- długość wypełnienia i miejsce kreski zmieniają się płynnie, w czasie, który stoi w regule
+  w `src/browser/run-screen.css`, a przy pierwszym rysowaniu wiersza i pod systemowym ustawieniem
+  ograniczenia ruchu stają od razu.
+
+Alarm (D-337, D-39, D-42):
+
+- poniżej progu — temperatura poniżej progu wychłodzenia i sytość poniżej progu głodu, oba
+  z danych gry, oraz zdrowie poniżej progu, który jest liczbą wyglądu i którego gra nie zna —
+  liczba wartości stoi w `danger`, a pod temperaturą i pod sytością także „marznie” albo
+  „głoduje” w `danger`. Energia natury nie alarmuje, na żadnym poziomie, zerem też. Ekran znaczy
+  komórkę w alarmie klasami `alarm` i `note-danger`;
+- wypełnienie paska w alarmie pulsuje w swoim kolorze, a na skali temperatury kreska razem ze
+  strefą, w której stoi (`holds-marker`): krycie schodzi do `--alarm-pulse-dim-opacity` i wraca do
+  pełnego, płynnie i bez końca, w czasie z reguły w `src/browser/run-screen.css`. Przygaszona faza
+  jest wyjątkiem od progu 3:1, który reguła Contrast of every pair trzyma dla pełnego koloru;
+  alarm niosą przez cały czas liczba i dopisek. Pod systemowym ustawieniem ograniczenia ruchu nic
+  nie pulsuje. Pulsowanie trwa, gdy czas gry stoi — w pauzie gracza, w chwili odkrycia, śmierci
+  i rozwiązania mapy i na ekranie po końcu przejścia — choć ruch sceny wtedy stoi (D-322); ocenia
+  je kryterium błysków, jedno z czterech, które interfejs przyjmuje (D-42).
+
+Ramka komórki temperatury (D-337, D-39):
+
+- ramka przycisku komórki temperatury mówi, co działa na postać: w `warming-frame`, dopóki na polu
+  postaci coś się pali, także gdy temperatura stoi już na swoim maksimum; w `chill-zone`, dopóki
+  nic postaci nie grzeje, a mapa jest od jej ciała zimniejsza, jak liczy to krok ciała; zwykła
+  w `control-border` tam, gdzie mapa nie chłodzi. Klasy `frame-warming` i `frame-cooling` znaczą
+  ją w komórce. Ma grubość ramki przycisku, nie pulsuje i nie rusza się, zmienia się tylko wtedy,
+  gdy zmienia się to, co działa na postać, więc ograniczenie ruchu jej nie dotyczy. Od obwódki
+  fokusu, którą rysuje wyłącznie reguła Visible focus, odróżnia ją to, że obwódka jest grubsza
+  i odsunięta od komórki. Nie jest ramką przy tekście w rozumieniu reguły A line at a text takes the colour of
+  that text: nie bierze koloru tekstu w komórce. Na ekranie po końcu przejścia mówi o stanie
+  zatrzymanej minuty, jak dopiski.
+
+Objaśnienie po kliknięciu (D-450, D-407, D-04):
+
+- kliknięcie komórki temperatury, sytości albo energii natury otwiera tuż pod czterema komórkami,
+  nad plecakiem, akapit z objaśnieniem jej wartości, w `text-secondary` w rozmiarze szczegółu, jak
+  dopiski; drugie kliknięcie tej komórki go zamyka, a kliknięcie innej przełącza na jej objaśnienie,
+  więc otwarte jest najwyżej jedno. Akapit jest linią przepływu, więc plecak i to, co pod nim,
+  schodzą o jego wysokość. Słowa — próg, to, co dzieje się poniżej niego, i tempo zmiany —
+  składa `bodyExplanation` w `src/browser/view/body-row.ts` z liczb danych gry;
+- które objaśnienie stoi otwarte, jest stanem komponentu wiersza i nie wchodzi do stanu gry ani do
+  zapisu; przycisk mówi o tym przez `aria-expanded`. Komórka zdrowia nie jest przyciskiem
+  i objaśnienia nie ma.
+
+Znacznik ciosu (D-450, D-04, D-317):
+
+- cios stworzenia wstrząsa komórką zdrowia i pokazuje gasnący napis „−{n} · {stworzenie}”, w
+  `danger`, nad komórką, przy jej prawym brzegu; napis unosi się, gasnąc, i nie ma własnego wiersza, więc przy
+  dwóch rzędach po dwie komórki zasłania na czas gaśnięcia dolną część komórki nad zdrowiem. Cios
+  czyta wiersz ze zdarzeń wywołania symulacji, nigdy z porównania zdrowia z poprzednim odczytem, więc
+  nie pokazuje go ani pierwsze rysowanie ekranu, ani przeładowanie, ani wczytanie zapisu. Jedno
+  starcie daje jeden znacznik z sumą ciosów stworzenia, gdy ta suma to co najmniej 2, także gdy cios
+  zabija, zanim otworzy się okno końca przejścia, a nowy cios zastępuje znacznik poprzedniego
+  (`src/browser/view/body-blow.ts`);
+- znacznik pokazuje się przy tempie 1×, 2× i 4×, a przy 8× i 16× nie, tak jak scena nie pokazuje
+  wtedy napisów swoich efektów (D-317), i cios z szybkiego tempa przepada, nie czeka na zwolnienie.
+  Pod ustawieniem ograniczenia ruchu komórka nie drga, a napis stoi nieruchomo i znika. Gdy czas
+  gry stoi, drganie i napis stoją tam, gdzie doszły, i ruszają dalej, gdy czas rusza; znacznik,
+  który przychodzi, gdy czas stoi, stoi w pierwszej klatce. Ruch ocenia kryterium błysków (D-42).
+
+Ruch wiersza:
+
+- ruch daje sam CSS, w regułach wiersza w `src/browser/run-screen.css`, a TypeScript tylko znaczy
+  wiersz i komórkę: `data-standing` niesie to, jak stoi czas gry, czytane z tego samego odczytu co
+  ruch sceny (`src/browser/view/scene-picture.ts`), `data-blow` niesie parzystość numeru ciosu, która zaczyna drganie od nowa przy nowym ciosie, a klasy
+  `alarm` i `holds-marker` niosą alarm. Wiersz nie czyta ustawienia ograniczenia ruchu w TypeScripcie
+  — D-04 pozwala to widokowi tylko dla sceny — ale w regule `@media (prefers-reduced-motion: …)`;
+  reguły ruchu sceny stoją pod `.scene`, więc żadna nie sięga wiersza;
+- czasy ruchu wiersza — płynnej zmiany długości, pulsu, drgania i gaśnięcia napisu — stoją
+  w regułach w `src/browser/run-screen.css`, a źródła w komentarzach przy nich; krycie
+  przygaszonej fazy i odstępy ruchu są tokenami. Ten przewodnik nie wymienia ich w liście wartości
+  i D-43 ich nie liczy, jak czasów ruchu sceny; czy staną się tokenami, ten przewodnik nie rozstrzyga.
+
+Przycisk komórki w stanach wspólnych kontrolek stoi w regule States of shared controls, na liście
+kontrolek odstępujących, z powodem, a jego próbki — przycisk w spoczynku, pod kursorem, otwarty, przy
+fokusie i wyłączony, z paskiem i ze skalą — na stronie wszystkich stanów (D-45). Układ telefonu przy
+obszarze strony 360 px sprawdza pomiar ze skilla `.claude/skills/loop2-play/SKILL.md` na wierszu
+z objaśnieniem otwartym i ze znacznikiem ciosu pokazanym (reguły Nothing scrolls to the side in the
+phone layout, and no text crosses its frame i A change is checked in both layouts). Przegląd zmiany
+wiersza czyta każdy jego kolor wobec tej reguły i tabeli Roles, a każdy ruch wobec kryterium błysków.
 
 ### The picture band of Siedziba
 
