@@ -243,6 +243,26 @@ test("only the number below its threshold stands in danger, health below 35 incl
       container.querySelector(".backpack-text").textContent,
       "Plecak 0/15",
     );
+
+    // Nature energy full, at its cap of 100: its number still in `text`, as at 0 and 90 (D-178).
+    await show(
+      withRun(base, {
+        body: { temperature: 37, satiety: 100, health: 100 },
+        natureEnergy: 100,
+      }),
+    );
+    assert.deepEqual(partsOf(container, ".value-cell-number"), [
+      "37,0 °C",
+      "100 %",
+      "100",
+      "100",
+    ]);
+    assert.deepEqual(numberColours(container, window), [
+      TEXT,
+      TEXT,
+      TEXT,
+      TEXT,
+    ]);
   });
 });
 
@@ -255,6 +275,7 @@ test("each cell holds its name and number on one line, the bar or the scale unde
   // decision: D-337 "The cells of temperature, satiety and nature energy are buttons"
   // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337)"
   // decision: D-178 "Its cell stands as the other cells of the body row do (D-337): the name „Energia natury” at its left and the number at its right, under them a white bar"
+  // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row with a bar under each of its values"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const cells = cellsOf(container);

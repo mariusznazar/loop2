@@ -86,7 +86,6 @@ const ENERGY_EXPLANATION =
 
 test("a click on the satiety cell opens its explanation under the four cells, and a second click closes it", async () => {
   // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
-  // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
   // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row with a bar under each of its values and the minutes each need lasts, the explanation of a value right under its cells while the player has one open (D-450), the backpack and the lines below them"
   // Breaks: the cell is no button, or its click opens nothing, or the explanation stands under the backpack.
   await withPage(async ({ document }) => {
@@ -120,6 +119,37 @@ test("a click on the satiety cell opens its explanation under the four cells, an
     assert.equal(explanationOf(container), null);
     assert.equal(satiety.getAttribute("aria-expanded"), "false");
     assert.equal(satiety.hasAttribute("aria-controls"), false);
+  });
+});
+
+// Catches an explanation laid over the backpack in place of moving it down: one taken out of the flow
+// of the row by its rule — placed absolute or fixed, or floated — or a row that does not lay its parts
+// one under another. What this case holds is the stylesheet's rule and the place in the document; it
+// does not lay out the page, so the backpack's top moving down by the height of the explanation is
+// measured in the browser (D-87, D-88).
+test("an open explanation stands in the flow of the row, between the cells and the backpack, so it moves the backpack down", async () => {
+  // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four cells and above the backpack, the explanation of its value — its threshold, what happens to the character below it and how fast the value changes, with the numbers of the game's data — and moves down what stands under it"
+  // Breaks: the explanation given `position: absolute`, `fixed` or a float, so that it lies over the backpack.
+  await withPage(async ({ document, window }) => {
+    const { container } = await draw(document, sent());
+    await press(cellsOf(container)[1]);
+    const open = explanationOf(container);
+    const row = container.querySelector(".body-row");
+    assert.equal(open.parentElement, row);
+    assert.deepEqual(
+      [...row.children].map((part) => part.getAttribute("class")),
+      ["body-cells", "body-explanation", "backpack-text"],
+    );
+    const rowStyle = window.getComputedStyle(row);
+    assert.deepEqual(
+      [rowStyle.display, rowStyle.flexDirection],
+      ["flex", "column"],
+    );
+    const style = window.getComputedStyle(open);
+    assert.deepEqual(
+      [style.display, style.position, style.float],
+      ["block", "static", "none"],
+    );
   });
 });
 
