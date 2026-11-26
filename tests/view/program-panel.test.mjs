@@ -311,10 +311,10 @@ test("an edit of the trip plan on Programy goes to the program shown, and anothe
 for (const mode of ["programs", "run"]) {
   test(`the rule panel opens from a row and from a header under it (${mode}), takes the focus, and „✕” and Escape give it back to the row`, async () => {
     // decision: D-288 "One program editor stands on Programy and on the screen of a map run"
-    // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
-    // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-    // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
-    // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name"
+    // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
+    // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+    // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
+    // decision: D-296 "A click on the header of a rule group opens the window of the group with the group's name"
     await withPage(async (page) => {
       const game = await wiredPanel(page, gameWithRule(), mode);
       assert.equal(classed(game.root, "rule-panel").length, 0, "closed");
@@ -386,8 +386,8 @@ for (const mode of ["programs", "run"]) {
 // D-288. A rule open in a group that is then folded has no
 // row drawn. Catches the panel vanishing with the row, and one left at the end of the list.
 test("a rule open in a group that gets folded keeps its panel under that group's header, and under its row again once unfolded", async () => {
-  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
-  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
+  // decision: D-350 "The window of a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no window and changes no field of it, and the window stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -414,8 +414,8 @@ test("a rule open in a group that gets folded keeps its panel under that group's
 // „✕” and Escape, since the row of its rule is not drawn. Catches the focus left on the page.
 for (const close of ["✕", "Escape"]) {
   test(`${close} on a panel under a folded group's header gives the focus to that header`, async () => {
-    // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
-    // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+    // decision: D-350 "The window of a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+    // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
     await withPage(async (page) => {
       const game = await wiredPanel(page, gameWithRule(), "programs");
       await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -450,7 +450,7 @@ for (const close of ["✕", "Escape"]) {
 // D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
 test("„+ reguła” adds the rule and opens its panel on the condition", async () => {
-  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the condition"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(buttonNamed(game.root, "+ reguła"));
@@ -1096,7 +1096,7 @@ test("a number typed into the panel on the screen of a map run at 16× keeps its
 // see is skipped. jsdom does not deliver that second press, so the case holds the cause: the keydown
 // of Enter is consumed. Catches the number's Enter left to the browser.
 test("Enter in the number field is consumed, so the press cannot reach the cell the focus moves to", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   await withPage(async (page) => {
     const game = await wiredPanel(page, runWithNumber());
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1210,7 +1210,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
 // the rule, and a request to open that opens again at every draw.
 test("with a saved program shown on the list „Program:”, „Dodaj regułę z tym” shows the copy and opens the new rule there, once", async () => {
   // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const game = await wiredPanel(page, firstChill());
     await pick(game.root, "1");
@@ -1889,8 +1889,8 @@ const openField = (root) =>
 // Catches the panel mounted anew at its new place after a fold: the focus goes into its grid and the
 // field goes back to the condition.
 test("folding and unfolding the group of the open rule leaves the focus on the fold button and the panel on its field", async () => {
-  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
-  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
+  // decision: D-350 "The window of a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no window and changes no field of it, and the window stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1935,7 +1935,7 @@ test("folding and unfolding the group of the open rule leaves the focus on the f
 
 // Catches the same remount by „zwiń wszystkie” and „rozwiń wszystkie”.
 test("„zwiń wszystkie” and „rozwiń wszystkie” leave the focus on the button pressed and the panel on its field", async () => {
-  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no window and changes no field of it, and the window stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1961,9 +1961,9 @@ test("„zwiń wszystkie” and „rozwiń wszystkie” leave the focus on the b
 // The player opens a rule: that is an opening, so the focus goes into the panel, and so again for
 // another rule in another group.
 test("opening a rule, and then a rule of another group, takes the focus into the panel each time", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1990,7 +1990,7 @@ test("opening a rule, and then a rule of another group, takes the focus into the
 // under its new row on the field it had. Catches the panel closed at the border, or put back on the
 // condition with the focus taken into the grid.
 test("a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field", async () => {
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it, as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes nothing, and the panel stays open on the same field and goes with the rule to its new group"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it, as does deleting the rule, and closing it confirms a number typed as leaving the field does; moving the rule to another group, by an arrow of its row or of its window or by the handle, closes nothing, and the window stays open on the same field and goes with the rule to its new group"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));

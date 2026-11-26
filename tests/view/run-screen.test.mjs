@@ -372,7 +372,7 @@ test("the screen draws the map run it was given, the copy of that map run in its
 test("an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
   // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;

@@ -5107,7 +5107,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, with their text in `danger` at rest, in every layout, and the background `highlight` besides under the pointer, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39).
+The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, with their text in `danger` at rest, in every layout, and the background `highlight` besides under the pointer, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39). „Usuń z regułami”, which deletes a rule group with its rules from the window of the group in the phone layout (D-296), is a destructive button as well.
 
 A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”, as the button „Wciągnij programy z poprzedniego zapisu” reads „Wciąganie…” while its pull waits (D-401). A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
@@ -5116,13 +5116,13 @@ Besides the kinds above, the button has the kind of the button of a cell of the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence; the button of a cell of the body row holding the name of a value at its left and its number at its right on one line, a bar, or a scale, under them and a note under the bar, saying by `aria-expanded` whether its explanation stands open, and its background and the role of its name under the pointer and while it stands open as D-40 gives them. An agent compares a change with the part no test holds:
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule, of the window of a rule and of a position of the trip plan, „Usuń z regułami” of the window of a group, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence; the button of a cell of the body row holding the name of a value at its left and its number at its right on one line, a bar, or a scale, under them and a note under the bar, saying by `aria-expanded` whether its explanation stands open, and its background and the role of its name under the pointer and while it stands open as D-40 gives them. An agent compares a change with the part no test holds:
   - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; the cell of satiety made with the shared button of a cell of the body row; „Zakończ”, „Restart” and „Zacznij od zera” on the background `highlight` under the pointer with their text staying in `danger`, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
   - violates: a module that creates and styles a `<button>` of its own; the cells of the body row made as a `<button>` of the screen with a class of its own; „Porzuć zmiany” made as a plain button; a destructive button with a look of its own in the phone layout; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
 
 *Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. A destructive button shows what it is at rest, since a player of a phone has no pointer that reaches a button before it is tapped, so a colour that came only under the pointer would show that player nothing; its look is one in every layout, the narrow window of a computer included, and the colour is the text's alone, the background `highlight` under the pointer being what every button takes. A button that ends a map run, deletes a program rule, resets progress on a map, starts the game from zero or discards the unsaved changes of the copy is destructive, in every place it stands. „Zacznij od zera” puts the present game in the place of the previous save, where the next move into that place replaces it. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: red stands at rest on every button that may drop something, which the earlier wording kept off so that red would not drown out the state of the character and would mean a threat to a character alone, and in the editor a red sign stands in every row, a risk to be seen in the game; one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning. A cell of the body row that opens an explanation is a button the keyboard reaches and a touch opens, so it is built from the shared button, and its focus, its frame and its touch target are those of every button; it is a kind of its own since it carries the parts of a cell, not a text alone, and its look stands with the shared controls, where the kitchen-sink page shows it. Accepted with it: a kind of the shared button that one screen uses.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; a look of its own for the destructive button in the phone layout alone — two looks of one control; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake; „Odbierz” in the main look, its frame and text in `positive`, as the old Loop showed „Wejdź” in a green frame (D-274) — against D-274: „Odbierz” sends no form and is no „Wejdź”, and an act of the headquarters takes the plain button; it would change D-274, D-44 and D-39; „Odbierz” as a plain grey button with only the part „wprawa do odebrania: …” in green — no new look, but contrary to „Odbierz” in `positive`, which D-246 gives.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; the button that deletes a group from its window reading „Usuń” — it does not say that the rules of the group go with it — or „✕” — taken for the „✕” that closes the window; a look of its own for the destructive button in the phone layout alone — two looks of one control; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake; „Odbierz” in the main look, its frame and text in `positive`, as the old Loop showed „Wejdź” in a green frame (D-274) — against D-274: „Odbierz” sends no form and is no „Wejdź”, and an act of the headquarters takes the plain button; it would change D-274, D-44 and D-39; „Odbierz” as a plain grey button with only the part „wprawa do odebrania: …” in green — no new look, but contrary to „Odbierz” in `positive`, which D-246 gives.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -7822,7 +7822,7 @@ written into the copy alone, into the saved program alone or into every program 
 
 ### D-124 — What does „+ reguła” do?
 
-„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the
+„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the
 condition, „Zawsze → Eksploruj” standing there until the player picks otherwise, and it is never
 disabled.
 
@@ -7831,12 +7831,12 @@ disabled.
 - **Relations:** derives from D-118
 - **Verification:** tests: „+ reguła” adding „Zawsze → Eksploruj” at the end of its rule group,
   in a new game and in a game whose Understanding holds no action, and never disabled; the opening
-  of the new rule's panel asked for with no field named, and the panel then standing on the new
+  of the new rule's window asked for with no field named, and the window then standing on the new
   rule, on the condition, as every opening that names no field does.
 - **Origin:** none
 
 *Rationale:* with „Eksploruj” in the Understanding from the start, a rule always has an action to
-offer, so the player's first move works from the first second. The rule panel opens on the
+offer, so the player's first move works from the first second. The window of the rule opens on the
 condition, where the player writes the rule next.
 *Rejected:* a button disabled until the first chill — the player sees a button that cannot be used,
 with no reason, at the worst moment of a first game; a rule added whose action the Understanding
@@ -7963,19 +7963,19 @@ players (D-206), for one sentence of the band.
 ### D-313 — What does „Dodaj regułę z tym” do?
 
 „Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first
-rule group and opens its rule panel on the field it filled from the discovery: where the discovery
-holds an action that takes no target or one the rule panel offers a target for, the rule is
-„Zawsze → {the first such action}” and the panel opens on the action, the action's target, where it
+rule group and opens the window of the rule on the field it filled from the discovery: where the
+discovery holds an action that takes no target or one the rule panel offers a target for, the rule is
+„Zawsze → {the first such action}” and the window opens on the action, the action's target, where it
 takes one, being the first target that matches an item of the same discovery, else the first target
 the rule panel offers for that action. Where the discovery holds no such action but a condition that
 takes no target or one the rule panel offers a target for, the rule is „{the first such condition}
 → Eksploruj”, the condition's number and target being those a pick of that condition in the rule
-panel gives, and the panel opens on the condition; where it holds neither, the button does what
+panel gives, and the window opens on the condition; where it holds neither, the button does what
 „+ reguła” does (D-124). Where the copy holds no rule group, the button is disabled.
 
 The same button
 stands in the end-of-run window where the window names a discovery of the game minute of the end
-(D-122), and there it closes the window and does what it does in the band.
+(D-122), and there it closes the end-of-run window and does what it does in the band.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7983,13 +7983,14 @@ stands in the end-of-run window where the window names a discovery of the game m
 - **Verification:** tests: the rule „Zawsze → {the first action}” added at the end of the copy's
   first rule group, not to a group of its own nor to a saved program, its target the first item of
   the discovery that matches it or else the first target the rule panel offers, an action no one
-  can pick a target for giving way to the next, and the panel opened under the new rule on the
-  action; where the discovery holds no such action, „{the first condition} → Eksploruj” with the
-  number and target a pick of that condition gives, a condition no one can pick a target for giving
-  way to the next, and the panel opened on the condition; „Zawsze → Eksploruj” with the panel on the
-  condition where the discovery holds neither; the button disabled where the copy holds no rule
-  group, in the band and in the end-of-run window; the same button in the end-of-run window that
-  names a discovery, closing the window and then adding the rule with its panel open.
+  can pick a target for giving way to the next, and the window of the rule opened under the new rule
+  on the action; where the discovery holds no such action, „{the first condition} → Eksploruj” with
+  the number and target a pick of that condition gives, a condition no one can pick a target for
+  giving way to the next, and the window opened on the condition; „Zawsze → Eksploruj” with the
+  window on the condition where the discovery holds neither; the button disabled where the copy holds
+  no rule group, in the band and in the end-of-run window; the same button in the end-of-run window
+  that names a discovery, closing the end-of-run window and then adding the rule with its window
+  open.
 - **Origin:** none
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
@@ -7997,11 +7998,11 @@ the discovery into the rule and opens the panel where the player goes on writing
 Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. An action or condition that needs a target
 the rule panel offers none for gives way to the next one, because a rule without the target it needs
 cannot be written, and a button left greyed there would refuse a discovery for which the decision
-gives a rule; so the button writes only a rule the rule panel can show filled. Accepted with it: a
+gives a rule; so the button writes only a rule the window of the rule can show filled. Accepted with it: a
 rule of acting on the list of discoveries, the adding setting the streak to zero as every change of the copy does
 (D-131); a player who deleted every rule group in the pause adds a group before using the button. The window
 offers the same button because the discovery of the game minute of an end is named there alone, and
-the window closes so that the rule panel it opens is seen under its row.
+the end-of-run window closes so that the window of the rule it opens is seen under its row.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
 for later — the band would lack the button D-122 gives it; the target always the first of the grid,
 whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the window naming the
@@ -9438,42 +9439,76 @@ How the player writes, groups, folds, moves and deletes program rules in the pro
 ### D-288 — How does the player write a program rule?
 
 One program editor stands on Programy and on the screen of a map run. A rule's row reads as a
-sentence and a rule panel changes it, opening in place on the list under the row of the rule or the
-header of the rule group it changes, on both screens, and taking no column of its own: each pick
-moves on to the next field, conditions, actions and targets stand as cells in groups that the
-keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed
-with its reason. Rules move by a handle with a line showing where they land, by arrows, and between
-groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header,
-one place at a time as the arrows of a rule do, in every layout; the drag by a handle is for the
-mouse of a computer.
+sentence and the window of the rule changes it, as the window of a rule group changes the group, and
+where another entry names the rule panel, it is this window: in the window each pick moves on to the
+next field, conditions, actions and targets stand as cells in groups that the keyboard can reach,
+the conditions in two columns, and what the player may not pick stands greyed with its reason. Rules
+move by a handle with a line showing where they land, by arrows, and between groups, and whole rule
+groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a
+rule do, in every layout; the drag by a handle is for the mouse of a computer.
+
+The window stands over the editor — over the column of the program in the computer layout, over the
+editor on Programy and across the width of the screen in the phone layout — and the list of rules
+under it does not change. It is as tall as its content and stands directly under the row of the
+rule or the header of the rule group that opened it, lying over the rows below it; the rows above the
+window and below its lower edge stay in sight and are tapped and clicked as before, and the rows it
+lies over are out of the reach of the keyboard and the mouse while it stands.
+
+In the computer layout „↑”, „↓” and „Usuń” of a rule stand in its row and „↑” and „↓” of a rule
+group in its header, and the window holds none of them. In the phone layout the row of a rule and
+the header of a rule group hold no arrow and no deletion: „↑”, „↓” and „Usuń” of a rule stand in the
+window of the rule, and „↑”, „↓” and the button that deletes the group (D-296) in the window of the
+group.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-44
-- **Verification:** tests: one program panel with its rule list and rule panel on Programy and on
-  the screen of a map run; a rule's row reading „Zapas poniżej 8 szt. · Patyk” and „Zbierz — Patyk”
-  with the arrow between them; the rule panel standing in the list right under the row or the
-  header it changes, on both screens, in no column or area of its own, and moving there when
-  another rule opens; each pick moving on to the next field; the conditions as cells in two
-  columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
-  greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
-  handle, with the line „tu wyląduje” where they land and no line over their own place, over the
-  panel or after the drag ends; rule groups moved by a handle with such a line; in the header of
-  every rule group „↑” and „↓”, „↓” moving the group one place down and „↑” one place up, the group
-  keeping its rules and its name, „↑” off on the first group and „↓” on the last, on a folded group
-  too, and a group moving by these arrows alone, not by arrow keys on its header. For the cells of
-  actions and targets reached by the keyboard, and for the arrows of a rule group in the phone
+- **Verification:** tests: one program panel with its rule list and the window of a rule on Programy
+  and on the screen of a map run; a rule's row reading „Zapas poniżej 8 szt. · Patyk” and „Zbierz —
+  Patyk” with the arrow between them; the window standing in the list right under the row or the
+  header it changes, on both screens, in no column or area of its own, laid by the stylesheet over
+  the rows below it, and moving there when another rule opens; the rows after the window whose boxes
+  lie under it taken out of the reach of the keyboard and the mouse, those above it and below its
+  lower edge not, every row given back its reach when it closes, and the list made as tall as a
+  window that reaches below its end; each pick moving on to the next field; the conditions as cells
+  in two columns, in sections parted by a line, which the arrow keys reach; a cell that may not be
+  picked greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and
+  by a handle, with the line „tu wyląduje” where they land and no line over their own place, over
+  the window or after the drag ends; rule groups moved by a handle with such a line; in the header
+  of every rule group „↑” and „↓”, „↓” moving the group one place down and „↑” one place up, the
+  group keeping its rules and its name, „↑” off on the first group and „↓” on the last, on a folded
+  group too, and a group moving by these arrows alone, not by arrow keys on its header; „↑”, „↓” and
+  „Usuń” in the window of a rule and „↑”, „↓” and „Usuń z regułami” in the window of a group, its
+  arrows moving the rule or the group one place, across the border of a group too, the window going
+  with it, and the stylesheet drawing them in the computer layout in the row and the header and not
+  in the window. For the cells of actions and targets reached by the keyboard, and for the phone
   layout, an agent compares a change with the part no invariant and no test holds:
   - complies: the arrow keys moving among the cells of the action and of its target as they do
-    among the conditions; in the phone layout at a page area 360 px wide the arrows „↑” and „↓” in
-    the header of every rule group, as in the computer layout
-  - violates: the cells of the actions reached by the mouse alone; the arrows of a rule group
-    present in the computer layout alone
+    among the conditions; in the phone layout at a page area 360 px wide the row of a rule its text
+    alone and the header of a group its text and „▾”, with „↑”, „↓” and the deletion at the bottom of
+    the window, and the window as wide as the area of the program
+  - violates: the cells of the actions reached by the mouse alone; in the phone layout an arrow or
+    „Usuń” in the row of a rule, or the window narrower than the area of the program
 - **Origin:** none
 
-*Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
-opens in place on the list rather than over it or in a column of its own, which would take width
-from the program; a row is for reading while the panel is for changing. In Factorio, since its 2.0
+*Rationale:* the player writes while seeing the world and the rows around the rule, so the window
+opens on the list, under the row it changes, rather than in the middle of the screen or in a column
+of its own, which would take width from the program; a row is for reading while the window is for
+changing. The editing of a group and of a rule stands in a window apart from the list, so that the
+player sees whether the name and the condition of a group or the condition of a rule is being
+changed, which a panel among the rows, alike for both, did not show. The window lies under the row
+that opened it and leaves the rows above and below it in sight, closest to loop, whose list stays
+whole in sight while a rule is written, so another rule opens with one tap as before; a layer over
+the list leaves the keyboard the controls under it, so the rows it lies over are out of reach while
+it stands. In the phone layout a line of buttons under each row took stray taps: a tap in the
+margin to the right of „Usuń” deleted a rule, a tap under the last rule of a group moved it to the
+next group, and the line stood close to the text of the next row with no line between them; loop
+keeps the arrows and the deletion in the editing on a phone, so the rows there are text alone.
+Accepted with the window: the rows it lies over are hidden while it stands, at a rule early in a
+long group a large part of the list; a window that lies over the list parts the editing from the
+list less than one over the whole list would; a window opened low on a long list stands low on the
+page; in the phone layout the first move of a rule by an arrow takes a tap more, since the window
+opens first. In Factorio, since its 2.0
 edition, and in Gladiabots the writing and the watching of the state happen in one place, not on
 separate screens. When the panel was settled to open in
 place, with the panel in a column of its own the program had 174 px in a window 1280 px wide and
@@ -9504,7 +9539,23 @@ pickers need keyboard handling that native lists gave for free, long names of
 conditions wrap into two lines, a group far from its place takes one press of an arrow for each place
 it moves, and on Programy, where width is not wanting, the
 panel opens in place all the same, so the editor has one way of opening it on both screens.
-*Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
+*Rejected:* the panel beside the list, as in loop, in the column beside the rows on Programy and on
+the screen of a map run, and under the row in the phone layout — the column of the panel takes the
+width of the program on the screen of a map run, 174 px of a window 1280 px wide where it has 526
+px; the panel left in the list under the row, made clearly other for a group than for a rule — the
+editing stays among the rows of the list, which was what chafed; the panel left in the list with the
+pick of a condition, an action and a target in a window over the screen, as in loop — the window
+covers the column of the program or the world and the program while the player picks, and only the
+panel tells a group from a rule; the window standing in place of the list and filling it from its
+top, as the end-of-run window fills the screen — another rule takes closing the window first, two
+taps in place of one, and while a rule is written in a map run no other rule and its bar is in
+sight; the window at the top of the column of the program, as tall as its content — the rule changed
+may lie under the window or far below it, so only its heading says which rule is open, and the rows
+at the top of the list are hidden; the buttons left in the row in the phone layout, with the empty
+places beside them covered by an element that takes a tap and does nothing and a line with a
+larger gap between rows — rows taller and the editor longer, and the risk stays where no such
+element stands; such buttons with a question before deleting a rule or a group — D-303 rejects the
+question as a tap more at every deletion, and a mistaken move stays possible; native select lists in each row — a form, the source of the game's look of paperwork;
 lists in the header of a rule group — the form stays; the pick in a window in the middle, as in loop
 — it covers the world and the program; hiding what may not be picked — the player asks where it
 went; a select list for conditions in the panel — two
@@ -9618,28 +9669,40 @@ program rule dropped on it lands at its end while the group stays folded.
 
 ### D-296 — Where does the player change and delete a rule group?
 
-A click on the header of a rule group opens the rule panel with the group's name and condition, and
-the group's „✕” stands in its header. A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well.
+A click on the header of a rule group opens the window of the group with the group's name and
+condition. In the computer layout the group's „✕” stands in its header, and in the phone layout the
+button that deletes the group stands in the window of the group and reads „Usuń z regułami”. A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** tests: a click on the header of a rule group asking to open the group, on
-  Programy and on the screen of a map run, and the panel then standing under that header with the
+  Programy and on the screen of a map run, and the window then standing under that header with the
   field of the group's name; a click on the bare header, on a gap between its buttons and on its
   handle asking once to open the group, and a click on its button asking nothing of it; the header
-  covered outside its buttons by elements that take a click and hold no button; the panel of a group holding the fields of its name and its condition;
-  „✕” of the group in its header. For a tap on the header as a real phone gives it, an agent
+  covered outside its buttons by elements that take a click and hold no button; the window of a group holding the fields of its name and its condition;
+  „✕” of the group in its header; „Usuń z regułami” in the window of the group deleting the group
+  with its rules. For the phone layout and a tap on the header as a real phone gives it, an agent
   compares a change with the part no test holds:
   - complies: in the phone layout at a page area 360 px wide a tap at the centre of a group's
-    header and on its text opening the group and moving no group
-  - violates: a tap at the centre of a group's header in the phone layout landing on its „↑” or
-    „↓” and moving the group
+    header and on its text opening the group and moving no group; the header holding its text and
+    „▾” alone, „Usuń z regułami” standing at the bottom of the window of the group
+  - violates: a tap at the centre of a group's header in the phone layout landing on „▾” and
+    folding the group; „✕” of the group in its header in the phone layout
 - **Origin:** none
 
-*Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
-row does (D-288).
-*Rejected:* select lists in the header of a rule group — the look of a form stays.
+*Rationale:* a window changes a group, as one changes a rule, so the header stays a line to read, as
+a rule's row does (D-288). In the phone layout the deletion of a group stands in its window, as in
+loop, away from the stray taps beside the header (D-288); the heading of the window holds the „✕”
+that closes it, and a second „✕” there that deletes the group with its rules at once, with no
+question (D-303), would be the stray tap the move guards against, so the button says in words that
+the rules of the group go with it. Accepted with it: the same button reads „✕” in the computer
+layout and „Usuń z regułami” in the phone layout, and its longer words take more room in the bar of
+the window beside the arrows.
+*Rejected:* select lists in the header of a rule group — the look of a form stays; the button that
+deletes the group reading „Usuń” in its window, as that of a rule does — shorter, but it does not say
+that the rules of the group go with it, less than loop says; „✕” in the window, as in the header —
+taken for the „✕” that closes the window.
 
 ### D-297 — Where does an arrow move a program rule at the edge of its rule group?
 
@@ -9958,48 +10021,56 @@ before the streak goes.
 
 ### D-306 — How does the rule panel take the player through a rule?
 
-A click on a program rule's row opens the rule panel on the condition, and its fields follow as
-condition, number, target of the condition, action and target of the action, the number field and a
-field of a target standing only where the condition or the action has one; each pick changes the
-rule at once and moves to the next field, a pick of the value already picked included, and Enter or
-leaving the field confirms the number. In the grid of a field the arrow keys move between the cells,
+A click on a program rule's row opens the window of the rule on the condition, and its fields follow
+as condition, number, target of the condition, action and target of the action, the number field
+and a field of a target standing only where the condition or the action has one; each pick changes
+the rule at once and moves to the next field, a pick of the value already picked included, and Enter
+or leaving the field confirms the number. In the grid of a field the arrow keys move between the cells,
 a greyed one included so that its reason can be read, and Enter picks, doing nothing on a greyed
-cell. After the last field the panel stays open, and „✕”, Escape or opening another rule closes it,
-as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes
-nothing, and the panel stays open on the same field and goes with the rule to its new group.
+cell. After the last field the window stays open, and „✕”, Escape or opening another rule closes it,
+as does deleting the rule, and closing it confirms a number typed as leaving the field does; moving
+the rule to another group, by an arrow of its row or of its window or by the handle, closes nothing,
+and the window stays open on the same field and goes with the rule to its new group.
 
-A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule.
+A tap or a click anywhere on a program rule's row outside its buttons opens the window of the rule, at the centre of the row, on its text and on its empty strip alike, and moves no rule.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** tests: a click on a rule's row opening the panel on the condition, and a click on the bare row, on a gap between its buttons and on its handle asking once to open the rule, the row covered outside its buttons by elements that take a click and hold no button, and
+- **Verification:** tests: a click on a rule's row opening the window on the condition, and a click on the bare row, on a gap between its buttons and on its handle asking once to open the rule, the row covered outside its buttons by elements that take a click and hold no button, and
   opening another rule showing that one on its condition; the fields in the order condition,
   number, target of the condition, action, target of the action, each only where the rule has it;
   each pick changing the rule at once and moving on, a pick of the value held too; Enter
   committing the number and moving on; the rule „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk”
-  written from a click on its row in six acts, the panel still open after them; the arrow keys
+  written from a click on its row in six acts, the window still open after them; the arrow keys
   moving among the cells of a grid, a greyed one reached, Enter picking and doing nothing on a
-  greyed cell; „✕”, Escape and the opening of another rule closing the panel; a rule moved to
-  another group by „↓” and by its handle, the panel staying open on the same field under its new
-  row. For the number confirmed by leaving its field and for the deleting of the rule, an agent
-  compares a change with the part no invariant and no test holds:
-  - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
-    with the mouse, the rule then holding 8; „Usuń” of a rule whose panel stands open closing that
-    panel; in the phone layout at a page area 360 px wide a tap at the centre of a rule's row, on its
-    text and on its empty strip opening the rule and moving no rule
+  greyed cell; „✕”, Escape and the opening of another rule closing the window; Escape in the number
+  field confirming the number typed and closing the window; „Usuń” of the window deleting the rule
+  and closing the window; a rule moved to another group by „↓” of its row, by „↓” of its window and
+  by its handle, the window staying open on the same field under its new row. For the number
+  confirmed by leaving its field and for the tap of a real phone, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: 8 typed into the number field of the window and the focus moved to the cell „Patyk”
+    with the mouse, the rule then holding 8; in the phone layout at a page area 360 px wide a tap at
+    the centre of a rule's row, on its text and on its empty strip opening the rule and moving no
+    rule
   - violates: a number typed and left with no Enter dropped, the rule keeping the number it held;
-    the panel left open on a rule that was deleted; a tap at the centre of a rule's row in the phone
-    layout landing on its „↑” and moving the rule
+    a tap on a rule's row in the phone layout that moves or deletes the rule
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 szt. ·
-Patyk → Zbierz — Patyk” is written from a click on its row in six acts, and the panel stays open
+Patyk → Zbierz — Patyk” is written from a click on its row in six acts, and the window stays open
 after the last field, so a fix takes no new opening. A greyed cell stays within the keyboard's reach
-so that its reason can be read. The panel is open on a rule the player is writing, so it goes with
-that rule where the rule moves, between groups as within one, and ends with it where the rule is
-deleted, since nothing is left for it to change.
-*Rejected:* the panel closing by itself after the last field — a fix takes opening it again; greyed
+so that its reason can be read. The window is open on a rule the player is writing, so it goes with
+that rule where the rule moves, between groups as within one, by the arrows of its row or of the
+window, and ends with it where the rule is deleted, since nothing is left for it to change. A number
+typed and not yet confirmed is part of what the player wrote, so closing the window keeps it, as
+leaving the field does. Accepted with it: in the phone layout a stray tap on a cell changes the rule
+of the copy at once and sets the streak of the map run to zero, where a window that kept its changes
+until they were confirmed would let the player drop it at no cost.
+*Rejected:* the window keeping its changes until „Gotowe” writes them into the program in one move
+and „✕” drops them — a move more at every edit, D-313 changed, and an edit giving one entry of the
+chronicle, for a mistaken pick that could be dropped before it resets the streak; the window closing by itself after the last field — a fix takes opening it again; greyed
 cells out of the keyboard's reach; the closing at a move to another group staying, with this
 decision naming it beside the deleting of a rule — two sentences and no change of the code, but the
 player goes on losing the open field at every move across the border of a group, and the decision
@@ -10159,28 +10230,30 @@ merged; a table with corrections of chosen rows.
 
 ### D-350 — Where does the rule panel stand while the rule group of its rule is folded?
 
-A rule panel open on a rule whose rule group is folded stands directly under the header of that
-group, where the row of the rule is not drawn. Folding or unfolding that group, or every group at
-once, closes no panel and changes no field of it, and the panel stands under the row again when the
+The window of a rule whose rule group is folded stands directly under the header of that group,
+where the row of the rule is not drawn. Folding or unfolding that group, or every group at once,
+closes no window and changes no field of it, and the window stands under the row again when the
 group unfolds.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-295
-- **Verification:** tests: the panel of a rule in a folded group right under that group's header,
+- **Verification:** tests: the window of a rule in a folded group right under that group's header,
   its row not drawn; folding and unfolding that group, and „zwiń wszystkie” and „rozwiń
-  wszystkie”, leaving the same panel open on its field „Czynność”, and the panel under the row
+  wszystkie”, leaving the same window open on its field „Czynność”, and the window under the row
   again once the group unfolds.
 - **Origin:** none
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the player is
-writing (D-294), so the rule being changed stays changeable, and the panel goes to the one place of
-its group that is drawn. A folded group keeps the list where it stood under the pointer (D-295), so
-the panel does not unfold it.
-*Rejected:* closing the panel when its group folds — D-306 names what closes it, „✕”, Escape,
+writing (D-294), so the rule being changed stays changeable, and the window goes to the one place of
+its group that is drawn, since it stands directly under the row that opened it (D-288). A folded
+group keeps the list where it stood under the pointer (D-295), so the window does not unfold it.
+*Rejected:* closing the window when its group folds — D-306 names what closes it, „✕”, Escape,
 opening another rule and deleting the rule, and a fold is none of them, so the player would lose the
-open field and the place in it; unfolding the group for the panel — the group the player folded
-opens again and the list runs from under the pointer.
+open field and the place in it; unfolding the group for the window — the group the player folded
+opens again and the list runs from under the pointer; withdrawing this decision, as a window that
+stands nowhere in the list would need it no more — the window stands directly under the row that
+opened it, which a folded group does not draw.
 
 ### D-363 — Where does the player read what an action costs?
 
@@ -10679,8 +10752,9 @@ another character, and the code would have to block what the simulation allows.
 The screen of a map run has two columns under one header in the computer layout: on the left the world and, under the
 drawing of the map and the line of a tile that end it, an area with the tabs „Kronika” and „Teren”
 holding one content at a time, the chronicle or the table of revealed tiles, as the player picks,
-„Kronika” picked when the character is sent to the map; on the right the program, in which the
-editing of a rule or a rule group opens in place under its row (D-288). The world holds, from the
+„Kronika” picked when the character is sent to the map; on the right the program, over which the
+window of a rule or a rule group opens under its row (D-288), the world staying in sight and the map
+run going on while the window stands. The world holds, from the
 top, the scene, „Teraz” and „Potem”, the body row
 with a bar under each of its values and the minutes each need lasts, the explanation of a value
 right under its cells while the player has one open (D-450), the backpack and the lines below them,
@@ -10689,7 +10763,9 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 „Wznów”, the pace, and after the end of the
 map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”.
 
-In the phone layout (D-396) the screen has one column under the same header, with the world, the program and the area with the tabs „Kronika” and „Teren” one above the other in that order (D-282).
+In the phone layout (D-396) the screen has one column under the same header, with the world, the program and the area with the tabs „Kronika” and „Teren” one above the other in that order (D-282), and the window of a rule or a rule group takes the width of the screen.
+
+The window of a rule or a rule group belongs to the area of the program: it is not seen while the end-of-run window stands and stands again as it was once that window closes, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 appears, so that the question is seen and takes the focus.
 
 After a character's death or a
 completion that window (D-368) stands in place of this screen, its header included (D-370), under the menu bar and
@@ -10701,8 +10777,10 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
 - **Relations:** derives from D-280 · derives from D-282
 - **Verification:** tests: the header above areas of their own for the world, the program and the
   tabs, the tabs „Kronika” and „Teren” holding the chronicle or the table of revealed tiles one at a
-  time as the player picks, „Kronika” picked at every send, and the editing of a rule or a rule
-  group opening in the program right under its row; the world from the top: the scene, „Teraz” and
+  time as the player picks, „Kronika” picked at every send, and the window of a rule or a rule
+  group opening in the program right under its row; the window closing as the question „Zapisać,
+  odrzucić, wrócić?” appears, and a rule opened while the question stands opening its window; the
+  world from the top: the scene, „Teraz” and
   „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; a bar
   under each value of the body row and the explanation of a value open right under its cells and
   above the backpack; the header holding the character's name, the map's name, the clock, the bar of the solving condition,
@@ -10719,13 +10797,22 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
     area with the tabs in the left column and the program in the right column; in the phone layout
     at a page area 360 px wide the world, the program and the area with the tabs in one column, one
     above the other; after a completion the window standing under the menu bar and the row of
-    warnings, the menu bar in sight above it
+    warnings, the menu bar in sight above it; the window of a rule standing over the column of the
+    program with the world in sight beside it and the clock going on, and in the phone layout as wide
+    as the area of the program; the window of a rule open before a death standing as it was once the
+    end-of-run window is closed
   - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
     the column of the program or in a third column of their own; two columns of the screen in the
-    phone layout; the window covering the menu bar or the row of warnings
+    phone layout; the window covering the menu bar or the row of warnings; the window of a rule
+    standing over the world, or pausing the map run while it stands
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
+The window of a rule or a rule group stands over the column of the program, so the world stays in
+sight while a rule is written, and the map run goes on, so the player fixes a rule as it runs;
+accepted with it: in the phone layout the window takes the width of the screen and the scene is not
+in sight while it stands as the map run goes on, so the player closes the window to look, where
+before a scroll was enough.
 The layout takes the division of the screen and the solutions of loop and departs from them only
 where the result is better, never worse. It was settled when the screen was one column, in which the
 status line, the discovery, the paragraph of the last encounter, the body row, the backpack, the
@@ -10764,7 +10851,12 @@ it. The window covers the scene, so it opens after the scene's effect of the end
 the whole page as the end of loop does; the end is out of sight while the question stands and after
 it, until the player opens it with „Koniec przejścia”; the window needs keyboard handling of its own,
 Escape included, and a way back to it (D-370, D-371); the window stands some seconds after the end, longer after a completion than after a death.
-*Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
+*Rejected:* the window of a rule or a rule group in the middle of the screen, over everything, as the
+picks of loop stand, and sliding in from the bottom on a phone, the map run going on — it covers the
+scene and the state of the character, and the character may die behind it; the window over the column
+of the program putting the map run on pause while it stands and going on when it closes — a rule of
+the game of its own, a pause with no „Pauza”, and a player who wants to fix a rule while it runs
+cannot, though nothing happens behind the window; the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
 change their place at the moment of the end; the same buttons in both places at once, the header and
 a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
 build and check; only the header's buttons, and the end offering only the way to the opened map —

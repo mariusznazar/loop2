@@ -340,8 +340,8 @@ test("the open row and the open header stand marked, the others not", async () =
 // --- opening the panel ---------------------------------------------------------------------------
 
 test("a click on a row asks to open that rule, on a header that group, and a click on a button in the row asks nothing", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-296 "A click on the header of a rule group opens the rule panel"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-296 "A click on the header of a rule group opens the window of the group"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(rowOf(page.root, 2).querySelector(".rule-condition"));
@@ -360,7 +360,7 @@ test("a click on a row asks to open that rule, on a header that group, and a cli
 // Breaks: a click on the bare row, on a gap between its buttons or on its handle that asks nothing,
 // or one that asks twice; a click on a button that asks to open.
 test("a click anywhere on a row or a header outside its buttons — its bare area, a gap between buttons, its handle — asks once to open it", async () => {
-  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the window of the rule, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
   // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
@@ -392,7 +392,7 @@ test("a click anywhere on a row or a header outside its buttons — its bare are
 // browser check's (D-88).
 test("a row and a header are covered outside their buttons by elements that take a click and hold no button: the text, a gap before the arrows and between two buttons, a spacer between the groups", async () => {
   // decision: D-396 "In the phone layout every screen fits the width of the window with no scroll to the side and no text over the border of its frame, and everything the game offers is done by touch."
-  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the rule panel, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
+  // decision: D-306 "A tap or a click anywhere on a program rule's row outside its buttons opens the window of the rule, at the centre of the row, on its text and on its empty strip alike, and moves no rule."
   // decision: D-296 "A tap or a click anywhere on the header outside its buttons opens the group, at its centre and on its text as well."
   await withPage(async (page) => {
     await mount(page, twoGroups());
@@ -463,8 +463,8 @@ test("Enter and Space on a row or a header ask to open it, and other keys do not
 
 test("a row has „↑”, „↓” and the destructive „Usuń”, and a header has „↑”, „↓” and the destructive „✕”", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
-  // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name and condition, and the group's „✕” stands in its header"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-296 "A click on the header of a rule group opens the window of the group with the group's name and condition. In the computer layout the group's „✕” stands in its header"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const row = rowOf(page.root, 1);
@@ -481,7 +481,7 @@ test("a row has „↑”, „↓” and the destructive „Usuń”, and a head
 });
 
 test("a header's „↑” is off on the first group and „↓” on the last, both on between them, folded or not", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     await mount(page, threeGroups());
     const off = (id) =>
@@ -503,7 +503,7 @@ test("a header's „↑” is off on the first group and „↓” on the last, 
 });
 
 test("the header's arrows carry the names of a group's move, and a single group has both off", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     assert.equal(
@@ -529,7 +529,7 @@ test("the header's arrows carry the names of a group's move, and a single group 
 });
 
 test("„↓” on a group's header moves the group one place down and hands the group as the hint of the move", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await press(buttonIn(headerOf(page.root, 1), "↓"));
@@ -551,7 +551,7 @@ test("„↓” on a group's header moves the group one place down and hands the
 });
 
 test("„↑” on a group's header moves it one place up and hands its identity as the hint", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await press(buttonIn(headerOf(page.root, 2), "↑"));
@@ -668,7 +668,7 @@ test("„Usuń” of a rule and „✕” of a group delete at once, with no que
 });
 
 test("„+ reguła” adds „Zawsze → Eksploruj” at the end of its group and asks to open its panel", async () => {
-  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the condition"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(sectionOf(page.root, 1), "+ reguła"));
@@ -686,7 +686,7 @@ test("„+ reguła” adds „Zawsze → Eksploruj” at the end of its group an
 // D-124: with „Eksploruj” in the Understanding from the start the button always has a rule to add,
 // so it is never disabled — not in a new game and not where the Understanding holds no action.
 test("„+ reguła” is never disabled, in a new game or in a game whose Understanding holds no action, and adds its rule there", async () => {
-  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the condition"
   const noAction = {
     ...newGame(),
     understanding: { ...fullUnderstanding(), actions: [] },
@@ -725,7 +725,7 @@ test("„+ dodaj grupę” appends an empty group with the next number", async (
 });
 
 test("the buttons of an old „Dodaj regułę” and „Dodaj grupę” are gone, and the group arrows of a header are named", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   // decision: D-304 "The button that adds a rule group reads „+ dodaj grupę”"
   await withPage(async (page) => {
     await mount(page, twoGroups());
@@ -737,7 +737,7 @@ test("the buttons of an old „Dodaj regułę” and „Dodaj grupę” are gone
 });
 
 test("arrow keys on a header commit nothing; a group moves by its „↑” and „↓” buttons", async () => {
-  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓” in their header, one place at a time as the arrows of a rule do, in every layout"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line and by „↑” and „↓”, one place at a time as the arrows of a rule do, in every layout"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     const { Event } = page.window;
@@ -1295,9 +1295,9 @@ const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
 
 test("the acceptance criterion: „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   // D-306: the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk”.
   await withPage(async (page) => {
     const editor = await mountEditor(page, twoGroups());
@@ -1325,7 +1325,7 @@ test("the acceptance criterion: „Zapas poniżej 8 szt. · Patyk → Zbierz —
 });
 
 test("a number typed in the panel keeps its text and the focus while the game at 16× redraws the panel, and Enter commits it", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   // D-03: a number field whose value the game clips may lose its cursor.
   await withPage(async (page) => {
     let state = setPace(runningGame(), 16).state;
@@ -1473,7 +1473,7 @@ test("the number field is selected when the focus goes to it, so what is typed r
 
 test("the fields of a rule stand in the order condition, number, target of the condition, action, target of the action, each only where the rule has it", async () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   await withPage(async (page) => {
     await mountPanel(page, withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK), {
       groupId: 1,
@@ -1507,7 +1507,7 @@ test("the fields of a rule stand in the order condition, number, target of the c
 });
 
 test("the panel opens on the condition and its focus on the cell chosen there, or on the field its opener names", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   await withPage(async (page) => {
     await mountPanel(page, twoGroups(), { groupId: 1, ruleId: 1 });
     const panel = panelOf(page.root);
@@ -1531,9 +1531,9 @@ test("the panel opens on the condition and its focus on the cell chosen there, o
 });
 
 test("each pick changes the rule at once with a whole new program and moves on, a pick of the value held too", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const { panel, calls, props } = await mountPanel(page, twoGroups(), {
       groupId: 1,
@@ -1562,7 +1562,7 @@ test("each pick changes the rule at once with a whole new program and moves on, 
 });
 
 test("in a grid the arrow keys move among the cells, two columns of conditions, a greyed cell reached and Enter on it doing nothing", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
   // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   // decision: D-306 "In the grid of a field the arrow keys move between the cells, a greyed one included so that its reason can be read, and Enter picks, doing nothing on a greyed cell"
@@ -1607,7 +1607,7 @@ test("in a grid the arrow keys move among the cells, two columns of conditions, 
 });
 
 test("each reason stands beside its greyed cell: „gałąź niewykupiona”, „wybierzesz w przejściu…”, „nie znasz jeszcze celu”, „nie ma go na tej mapie”", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
   // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   // D-289; the four sentences are written out as D-289 gives them.
   const open = { groupId: 1, ruleId: 1, field: "action" };
@@ -1824,7 +1824,7 @@ test("the value shown for the action field is its name with its price, and the t
 });
 
 test("the conditions stand in two columns in their sections, parted by a line, with no names; no search, no row „ostatnio” and no current value", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
   // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   // decision: D-299 "The pick of the rule panel holds no search field and no row of recent picks"
   // decision: D-300 "The program editor shows no current value beside a condition"
@@ -1867,8 +1867,8 @@ test("the conditions stand in two columns in their sections, parted by a line, w
 });
 
 test("the panel of a group holds its name and its condition with its number and target, and no action", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
-  // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name and condition"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-296 "A click on the header of a rule group opens the window of the group with the group's name and condition"
   await withPage(async (page) => {
     const { panel, calls, props } = await mountPanel(page, twoGroups(), {
       groupId: 1,
@@ -1922,7 +1922,7 @@ test("the panel of the copy says „Zmiana zeruje passę tego przejścia.”, wi
 });
 
 test("„✕” and Escape ask to close the panel, and with nothing open it draws nothing", async () => {
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const { calls } = await mountPanel(page, twoGroups(), {
       groupId: 1,
@@ -1939,8 +1939,8 @@ test("„✕” and Escape ask to close the panel, and with nothing open it draw
 });
 
 test("opening another rule shows that rule on its condition", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const program = withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK);
     const { panel, props } = await mountPanel(page, program, {
@@ -1974,7 +1974,7 @@ const probeIn = (root) => root.querySelector(".probe-panel");
 // Catches the panel standing beside the list or at its end, and the panel inside the row's own item.
 test("a list given a panel draws it right after the open row and never inside the row's item", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     await mount(page, twoGroups(), {
       open: { groupId: 1, ruleId: 1 },
@@ -1998,7 +1998,7 @@ test("a list given a panel draws it right after the open row and never inside th
 // Catches a header whose panel stands under its rules and a header of a group other than the open one.
 test("a list given a panel draws it right after the open header, above the rules of that group", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     await mount(page, twoGroups(), {
       open: { groupId: 2, ruleId: null },
@@ -2020,7 +2020,7 @@ test("a list given a panel draws it right after the open header, above the rules
 
 // Catches a rule open in a folded group left with no panel because its row is not drawn.
 test("the panel of a rule in a folded group stands right after that group's header", async () => {
-  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "The window of a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
   await withPage(async (page) => {
     await mount(page, twoGroups(), {
       folded: [1],
@@ -2039,7 +2039,7 @@ test("the panel of a rule in a folded group stands right after that group's head
 // Catches a panel drawn where none is open, a panel drawn with no panel handed over, and a panel
 // that stays at the old place when another rule opens.
 test("no panel is drawn without one handed over or with nothing open, and opening another rule moves it", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     await mount(page, twoGroups(), { open: { groupId: 1, ruleId: 1 } });
     assert.equal(probeIn(page.root), null, "none handed over");
@@ -2124,8 +2124,8 @@ test("a click, a key and a drag over the panel reach no handler of the row or th
 // again there starts with no memory of its field and takes the focus as an opening does. Catches the
 // panel mounted again at its new place: the element the page's panel drew is then another one.
 test("the panel is the same element wherever the list puts it: after a fold, an unfold and a move of the open rule to another group", async () => {
-  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
-  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
+  // decision: D-350 "The window of a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no window and changes no field of it, and the window stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const { list, props } = await mount(page, twoGroups(), {
       open: { groupId: 1, ruleId: 2 },
@@ -2165,7 +2165,7 @@ test("the panel is the same element wherever the list puts it: after a fold, an 
 
 // Catches a panel that goes after the first one it is shown in: the list must draw one panel only.
 test("a panel closed and opened again is drawn once, at the place of the row opened", async () => {
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     const { list, props } = await mount(page, twoGroups(), {
       open: { groupId: 1, ruleId: 1 },

@@ -408,7 +408,7 @@ test("the number field: a temperature is clamped to 30.0–37.0", () => {
 });
 
 test("„Dodaj regułę” appends a fresh „Zawsze → Eksploruj” to the named group", () => {
-  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the condition"
   assert.deepEqual(addRule(newGame().programs[0].program, 1).groups[0].rules, [
     ALWAYS_EXPLORE,
   ]);
@@ -918,7 +918,7 @@ test("every program the editor builds passes setProgram, before sending and duri
 // D-90 and the group-bound arrows of D-297: edits target a group identity, never its position.
 test("rule edits preserve other groups, group boundaries and identities", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
-  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens the window of the rule on the condition"
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   const first = {
@@ -1482,7 +1482,7 @@ test("the action field shows the verb, its target and its price; an action with 
 });
 
 test("the rule of a verb with an item target has a field of its target; picking the verb takes the first known target, picking a target changes the rule", () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   const rule = (action) => ({ id: 1, condition: ALWAYS, action });
   for (const kind of ["craft", "tend"])
     assert.deepEqual(
@@ -1686,7 +1686,7 @@ test("a „Obchód” with no target to name and its branch bought stands greyed
 
 test("the fields of a rule: the number only where the condition takes one, a target only where one is named", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   const rule = (condition, action) => ({ id: 1, condition, action });
   assert.deepEqual(ruleFields(rule(ALWAYS, EXPLORE)), ["condition", "action"]);
   assert.deepEqual(
@@ -1726,8 +1726,8 @@ test("the fields of a rule: the number only where the condition takes one, a tar
 
 test("the field after a pick follows the order condition, number, target, action, target, and none follows the last", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-288 "A rule's row reads as a sentence and the window of the rule changes it, as the window of a rule group changes the group, and where another entry names the rule panel, it is this window: in the window each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   const written = [
     "condition",
     "number",
