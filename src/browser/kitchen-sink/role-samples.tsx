@@ -9,7 +9,7 @@ import { ICONS, IconMask, Section } from "./sample-parts.js";
 /** The kinds of the table Roles, by their names on the page. */
 type Kind = "tło" | "tekst" | "inne";
 
-/** The 26 roles of the styleguide's table Roles, in its order, with their kinds. */
+/** The 31 roles of the styleguide's table Roles, in its order, with their kinds. */
 const ROLES: readonly (readonly [string, Kind])[] = [
   ["page", "tło"],
   ["panel", "tło"],
@@ -37,6 +37,11 @@ const ROLES: readonly (readonly [string, Kind])[] = [
   ["link-highlight", "inne"],
   ["depleted", "inne"],
   ["focus", "inne"],
+  ["satiety-fill", "inne"],
+  ["chill-zone", "inne"],
+  ["safe-zone", "inne"],
+  ["scale-marker", "inne"],
+  ["warming-frame", "inne"],
 ];
 
 /** The five roles of the kind background, on which every role of the kind text stands. */

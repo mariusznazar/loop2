@@ -630,44 +630,286 @@
 }
 
 /*
- * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
- * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
- * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
- * (D-337, D-39, D-40).
+ * The row of the body under the rows „Teraz” and „Potem” (D-337, D-311, D-39, D-40, D-42, D-44): the
+ * four cells, then, while one stands open, the explanation of its value (D-450), then the line of the
+ * backpack under them, with no bar. Each cell is the shared button of
+ * a cell, or for health the same parts with no button, whose look stands in styles.css: the name at
+ * the left and the number at the right on one line, the bar under them and the note under the bar,
+ * which says the minutes a need lasts, in `text-secondary`.
+ *
+ * The four cells stand in two pairs, temperature with satiety and health with nature energy. A cell is
+ * never narrower than its parts laid out each on one line, the whole name and the number side by
+ * side, so no text crosses its frame, and a pair never narrower than its two cells; where both pairs
+ * do not fit side by side the second drops under the first and the row stands as two rows of two,
+ * and where they fit, the four cells share the row evenly. No threshold of width decides it, so it
+ * holds in both layouts, and the phone layout needs no rule of its own here: the touch target of the
+ * three buttons is the one every `.button` holds there (D-396).
  */
 .body-row {
   display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--space-l);
+  flex-direction: column;
+  gap: var(--space-xs);
   margin-top: var(--space-xs);
 }
 
 .body-cells {
   display: flex;
   flex-wrap: wrap;
-  column-gap: var(--space-l);
+  gap: var(--space-s);
 }
 
-.body-cell {
+.body-cell-pair {
   display: flex;
-  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--space-s);
 }
 
-.body-cells,
+.body-cell-pair > * {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+/*
+ * The explanation of an open value (D-450, D-337): the words of its threshold, what happens below it and
+ * how fast the value changes, in `text-secondary` at the size of the detail text, as the notes under the
+ * cells are. It stands right under the four cells, above the backpack, and the row's gap sets it off from
+ * them; it is one line of the flow, so the backpack and what stands under it move down by its height. The
+ * open cell's own look, its name in `text-strong`, stands in styles.css beside the button's look.
+ */
+.body-explanation {
+  margin: 0;
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
 .backpack-text {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.body-note {
-  font-size: var(--font-size-detail);
-  color: var(--text-secondary);
+/*
+ * A value below its threshold — temperature below 35 °C, satiety below 30 and health below 35 — has its
+ * number in `danger`, and „marznie” and „głoduje” stand in `danger` too: the character may be lost
+ * (D-337, D-39). The fill keeps the colour of its value.
+ */
+.body-cells .alarm .value-cell-number,
+.body-cells .note-danger .value-cell-note {
+  color: var(--danger);
 }
 
-/* A value below the threshold of chill or hunger: the character may be lost (D-39). */
-.body-value.danger,
-.body-note.danger {
+/*
+ * The frame of the button of the temperature cell says what acts on the character (D-337, D-39): in
+ * `warming-frame` while something burns on the character's tile, in `chill-zone` while nothing warms
+ * the character and the map is colder than its body, and otherwise the plain frame of the button in
+ * `control-border`. It has the width of the button's frame, so it tells from the focus outline, which
+ * is thicker and stands apart from the cell (D-47).
+ */
+.body-cells .button.value-cell.frame-warming {
+  border-color: var(--warming-frame);
+}
+
+.body-cells .button.value-cell.frame-cooling {
+  border-color: var(--chill-zone);
+}
+
+/*
+ * The scale of temperature in place of a bar (D-337, D-40, D-42): from 30 °C at its left end to 41 °C
+ * at its right, its track three zones in `chill-zone`, `safe-zone` and `danger`, each as wide as its
+ * share of the scale, which TypeScript gives in `--zone-share` from the zones of the body row, with a
+ * gap of `--frame-width` between two, through which the `panel` of the area shows, so that a zone
+ * touches only the background and the marker. The marker of the temperature now is as high as the
+ * scale, which is the height of a bar: a light core in `text-strong`, `--bar-width` wide, between two
+ * dark sides in `scale-marker`, each `--frame-width` wide (D-40). The gaps show the dark `panel`, so a
+ * marker dark through would look like one more gap; its light core tells it from a gap in the middle
+ * of a zone and at its edge, and only its dark sides touch the zones (D-42). It stands `--share` of the
+ * way along the scale less its own width, so at the right end it does not cross the scale.
+ */
+.body-scale {
+  position: relative;
+  display: flex;
+  gap: var(--frame-width);
+  height: 100%;
+}
+
+.body-scale-zone {
+  flex-grow: var(--zone-share);
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 0;
+}
+
+.body-scale-zone.chill {
+  background-color: var(--chill-zone);
+}
+
+.body-scale-zone.safe {
+  background-color: var(--safe-zone);
+}
+
+.body-scale-zone.overheating {
+  background-color: var(--danger);
+}
+
+.body-scale-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--share) * (100% - var(--bar-width) - 2 * var(--frame-width)));
+  width: var(--bar-width);
+  border-style: none solid;
+  border-width: 0 var(--frame-width);
+  border-left-color: var(--scale-marker);
+  border-right-color: var(--scale-marker);
+  background-color: var(--text-strong);
+}
+
+/*
+ * The length of a fill and the place of the marker change smoothly, over 500 ms, the half second over
+ * which a bar of loop changes its length (task paski-parametrow, Context, from
+ * src/components/probe/RunWorld.tsx of branch origin/test 715026e of the repository loop); the curve
+ * `ease` is the agent's choice. A transition runs only from a value already drawn, so at the first
+ * draw of the row the length stands at once, and under the system's setting for reduced motion it
+ * stands at once at every change.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .body-cells .value-cell-fill {
+    transition: width 500ms ease;
+  }
+
+  .body-scale-marker {
+    transition: left 500ms ease;
+  }
+}
+
+/*
+ * The motion of the body row (D-337, D-450, D-42), after the pattern of the scene's rules of motion,
+ * reduced motion and standing below; it is CSS alone, and TypeScript only marks the row and the health
+ * cell. The scene's rules stand under `.scene`, so none of them reaches the row.
+ *
+ * - The alarm's pulse: below its threshold the fill of satiety and of health, and on the scale the
+ *   marker together with the zone it stands in (`holds-marker`, under `alarm`), go from full opacity to
+ *   `--alarm-pulse-dim-opacity` and back in 1.1 s, smoothly, with no end (task paski-parametrow, To do 3,
+ *   the pulse of the alarm of loop, @keyframes alarm in src/app/globals.css of branch origin/test 715026e
+ *   of the repository loop; the time is the task's). The marker and the zone start together, as the
+ *   class `alarm` comes to their cell, so they move together. Only where the system asks for no less
+ *   motion; the red number and the note carry the alarm otherwise. A pulse of one cycle in 1.1 s is
+ *   under three a second and moves a strip of a few pixels, so it is far under the threshold of 2.3.1
+ *   (D-42). The pulse goes on while game time stands (D-337): the stop below names the shake and the
+ *   text of a blow alone.
+ * - A creature's blow (D-450): the health cell, marked `data-blow`, shakes once in 340 ms and its text,
+ *   `.body-blow-text`, fades once in 1.3 s (task paski-parametrow, Context, --animate-shake and
+ *   --animate-rise in src/app/globals.css of branch origin/test 715026e of the repository loop). The
+ *   text stands still at its place as it fades and does not rise as loop's does: rising in the health
+ *   cell it ran across the bar and its end, and the number read badly. It fades `ease-in`, slowly at
+ *   first, so it reads whole for most of its time. A new blow changes the mark between `odd` and `even`,
+ *   which names the keyframes of the shake anew, so the shake starts again on the same element, and its
+ *   text is a new element. Under reduced motion the cell does not shake and the text, outside the block
+ *   below, stands for the same 1.3 s and goes at its end, in one step. The keyframes of the text change
+ *   only its opacity. The end of the text's animation, or its cancelling where the screen is hidden,
+ *   ends the marker (body-row-cells.tsx).
+ * - While game time stands, the shake and the text stand where they reached and go on when it goes on:
+ *   the row's `data-standing` is the scene's (`standingOf`), so one that is not `going` is the player's
+ *   pause, a discovery, a death, a completion or the screen after the end of a map run. A marker that
+ *   comes then stands at its first frame, the text whole and the cell not yet shaken.
+ * - The text stands in the health cell's own box, at its lower right corner, under the bar, where the
+ *   cell has room: in a row of four the cells of a pair take the height of the cells with a note, and
+ *   in the phone layout that of the button beside it, which holds the touch target. It leaves the bar
+ *   and its end free and never crosses the cell's frame, so no text stands over the border of another
+ *   frame (D-396).
+ */
+.body-cells .value-cell-static {
+  position: relative;
+}
+
+.body-blow-text {
+  position: absolute;
+  right: var(--space-s);
+  bottom: var(--space-2xs);
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
   color: var(--danger);
+  white-space: nowrap;
+  pointer-events: none;
+  animation-name: body-blow-text-fade;
+  animation-duration: 1.3s;
+  animation-timing-function: step-end;
+  animation-fill-mode: both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .body-cells .alarm .value-cell-fill,
+  .body-cells .alarm .body-scale-marker,
+  .body-cells .alarm .body-scale-zone.holds-marker {
+    animation-name: body-alarm-pulse;
+    animation-duration: 1.1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .body-cells .value-cell-static[data-blow] {
+    animation-duration: 340ms;
+    animation-timing-function: linear;
+  }
+
+  .body-cells .value-cell-static[data-blow="odd"] {
+    animation-name: body-blow-shake-odd;
+  }
+
+  .body-cells .value-cell-static[data-blow="even"] {
+    animation-name: body-blow-shake-even;
+  }
+
+  .body-blow-text {
+    animation-timing-function: ease-in;
+  }
+}
+
+.body-row:not([data-standing="going"]) .body-blow-text,
+.body-row:not([data-standing="going"]) .value-cell-static[data-blow] {
+  animation-play-state: paused;
+}
+
+/* The pulse: the element's own opacity is full at both ends of the cycle, so the keyframes name the dim phase alone. */
+@keyframes body-alarm-pulse {
+  50% {
+    opacity: var(--alarm-pulse-dim-opacity);
+  }
+}
+
+/* The shake: left, right, left, right and back, by the step of the spacing scale; two names with one body, for the restart. */
+@keyframes body-blow-shake-odd {
+  20%,
+  60% {
+    translate: calc(-1 * var(--space-xs)) 0;
+  }
+
+  40%,
+  80% {
+    translate: var(--space-xs) 0;
+  }
+}
+
+@keyframes body-blow-shake-even {
+  20%,
+  60% {
+    translate: calc(-1 * var(--space-xs)) 0;
+  }
+
+  40%,
+  80% {
+    translate: var(--space-xs) 0;
+  }
+}
+
+/*
+ * The text fades out where it stands: smoothly where the system asks for no less motion, and in one step
+ * at the end of its time under reduced motion, by the timing of its rule.
+ */
+@keyframes body-blow-text-fade {
+  to {
+    opacity: 0;
+  }
 }
 
 /*

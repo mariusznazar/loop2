@@ -7,19 +7,20 @@
  * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
  * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
  * its map run in place, the events of the simulation call that returned it, which it hands to the
- * scene (D-04), and, for the marked tile, hovered or tapped, the key and its two setters, which it
+ * scene and to the body row, which reads a creature's blow from them (D-04, D-450), and, for the marked
+ * tile, hovered or tapped, the key and its two setters, which it
  * shares with the table of revealed tiles in another area; a click on „Teraz” or „Potem” goes out through `onShowRule` (D-336). It imports the pure functions of the DOM modules and
  * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
  * when the module is imported.
  */
-import { MAPS } from "../sim/data/maps.js";
 import { PICTURE_PIXEL, SCENE } from "../sim/data/scene.js";
 import type { GameEvent } from "../sim/game.js";
 import type { GameState, RuleId } from "../sim/types.js";
-import { bodyCells, backpackText } from "./body-row.js";
+import { BodyRowCells } from "./body-row-cells.js";
 import { practiceText } from "./character-skills.js";
 import { NowRows } from "./now-rows.js";
 import { Scene } from "./scene.js";
+import { standingOf } from "./scene-picture.js";
 import { TerrainDrawing } from "./terrain-drawing.js";
 import { tileLine } from "./tile-list.js";
 import { solvedRunText, tripTexts } from "./trip-lines.js";
@@ -90,29 +91,12 @@ export function WorldArea({
         />
       </div>
       <NowRows state={state} onShowRule={onShowRule} />
-      <div className="body-row">
-        <div className="body-cells">
-          {bodyCells(run, MAPS[run.mapId]).map((cell, index) => (
-            <div key={index} className="body-cell">
-              <span
-                className={cell.danger ? "body-value danger" : "body-value"}
-              >
-                {cell.text}
-              </span>
-              {cell.note === null ? null : (
-                <span
-                  className={
-                    cell.note.danger ? "body-note danger" : "body-note"
-                  }
-                >
-                  {cell.note.text}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-        <p className="backpack-text">{backpackText(run.character)}</p>
-      </div>
+      <BodyRowCells
+        run={run}
+        events={events}
+        pace={state.pace}
+        standing={standingOf(state, run)}
+      />
       {solved === null ? null : <p className="trip-result">{solved}</p>}
       {practice === "" ? null : (
         <p

@@ -15,7 +15,10 @@ import {
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import { ReactButton } from "../../dist/browser/view/controls/react-button.js";
+import {
+  ReactButton,
+  ValueCellParts,
+} from "../../dist/browser/view/controls/react-button.js";
 import {
   ReactFormNote,
   ReactFormWarning,
@@ -460,6 +463,500 @@ test("a click on the button reaches the screen's handler, and a waiting or a loc
     );
     await press(button);
     assert.deepEqual(clicks, ["click"], "a locked button is not clicked");
+  });
+});
+
+// --- the button of a cell of the body row ------------------------------------------------------
+
+// A cell as a screen gives it: the name, the number, the share of the fill and the role of its
+// colour, and the note. Made-up values; the button knows no screen (D-395).
+const CELL = {
+  name: "Sytość",
+  number: "14",
+  note: "głoduje",
+  bar: { share: 0.14, fillRole: "satiety-fill" },
+};
+
+/** The classes of the children of `element`, in the order they stand. */
+function childClasses(element) {
+  return [...element.children].map((child) => child.getAttribute("class"));
+}
+
+// Breaks: a button that leaves out a part, puts the note above the bar or the number before the name,
+// or does not pass the share to the fill, fails here.
+test("a button of a cell holds the name and the number on one line, a bar under them and a note under the bar, and says whether its explanation stands open", async () => {
+  // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337): it carries the name of a value at its left and its number at its right on one line, a bar under them and a note under the bar, and says whether the explanation of its value stands open (D-450)."
+  await withPage(async ({ document }) => {
+    const closed = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: false,
+        }),
+      ),
+    );
+    assert.equal(closed.nodeName, "BUTTON");
+    assert.deepEqual(attributesOf(closed), {
+      type: "button",
+      class: "button value-cell",
+      "aria-expanded": "false",
+    });
+    assert.deepEqual(childClasses(closed), [
+      "value-cell-head",
+      "value-cell-bar",
+      "value-cell-note",
+    ]);
+    const [head, bar, note] = closed.children;
+    assert.deepEqual(childClasses(head), [
+      "value-cell-name",
+      "value-cell-number",
+    ]);
+    assert.equal(head.children[0].textContent, "Sytość");
+    assert.equal(head.children[1].textContent, "14");
+    assert.equal(note.textContent, "głoduje");
+    assert.equal(bar.children.length, 1);
+    const fill = bar.firstElementChild;
+    assert.equal(fill.getAttribute("class"), "value-cell-fill satiety-fill");
+    assert.equal(fill.style.getPropertyValue("--share"), "0.14");
+
+    const open = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: true,
+        }),
+      ),
+    );
+    assert.equal(open.getAttribute("aria-expanded"), "true");
+  });
+});
+
+// Breaks: parts drawn as adjacent spans with nothing between them, whose text — the button's name for a
+// reader of the screen — runs together as „Sytość14głoduje”; and a button that does not name the block
+// it opens by aria-controls, or names one where it is given none.
+test("the parts of a cell stand apart in its text, and a button given the id of the block it opens names it by aria-controls", async () => {
+  // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337): it carries the name of a value at its left and its number at its right on one line, a bar under them and a note under the bar, and says whether the explanation of its value stands open (D-450)."
+  await withPage(async ({ document }) => {
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: true,
+          controls: "explanation-1",
+        }),
+      ),
+    );
+    assert.equal(cell.textContent, "Sytość 14 głoduje");
+    assert.equal(cell.getAttribute("aria-controls"), "explanation-1");
+    const noNote = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: { ...CELL, note: null },
+        }),
+      ),
+    );
+    assert.equal(noNote.textContent, "Sytość 14");
+    assert.equal(noNote.hasAttribute("aria-controls"), false);
+    const plain = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "Anuluj", controls: "panel-2" }),
+      ),
+    );
+    assert.equal(plain.getAttribute("aria-controls"), "panel-2");
+  });
+});
+
+// Breaks: a button that draws an empty note under a value that has none, which takes a line of the cell.
+test("a button of a cell with no note draws none, and one given a scale draws it in place of the fill", async () => {
+  // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337): it carries the name of a value at its left and its number at its right on one line, a bar under them and a note under the bar, and says whether the explanation of its value stands open (D-450)."
+  await withPage(async ({ document }) => {
+    const noNote = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: { ...CELL, note: null },
+        }),
+      ),
+    );
+    assert.deepEqual(childClasses(noNote), [
+      "value-cell-head",
+      "value-cell-bar",
+    ]);
+    const scaled = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: {
+            ...CELL,
+            bar: {
+              scale: createElement("span", { className: "scale-probe" }),
+            },
+          },
+        }),
+      ),
+    );
+    const scaleBar = scaled.children[1];
+    assert.equal(scaleBar.getAttribute("class"), "value-cell-scale");
+    assert.deepEqual(childClasses(scaleBar), ["scale-probe"]);
+  });
+});
+
+test("a button of a cell carries the states its screen names as classes beside its own, and says nothing of them otherwise", async () => {
+  // decision: D-265 "Each shared control in `src/browser/view/controls/` has one form, a React component, and `src/browser/styles.css` stays the one place of the look of the controls."
+  await withPage(async ({ document }) => {
+    const marked = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: { ...CELL, marks: ["alarm", "warming"] },
+        }),
+      ),
+    );
+    assert.equal(
+      marked.getAttribute("class"),
+      "button value-cell alarm warming",
+    );
+    assert.equal(marked.hasAttribute("aria-expanded"), false);
+    const bare = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "value-cell", cell: CELL }),
+      ),
+    );
+    assert.equal(bare.getAttribute("class"), "button value-cell");
+  });
+});
+
+// Breaks: a cell that ignores `onClick`, or one that stays clickable while it is locked.
+test("a click on a button of a cell reaches the screen's handler, and a locked one gives none", async () => {
+  // decision: D-265 "Each shared control in `src/browser/view/controls/` has one form, a React component, and `src/browser/styles.css` stays the one place of the look of the controls."
+  await withPage(async ({ document }) => {
+    const clicks = [];
+    const onClick = () => clicks.push("click");
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { kind: "value-cell", cell: CELL, onClick }),
+    );
+    const cell = drawnElement(drawing);
+    await press(cell);
+    assert.deepEqual(clicks, ["click"]);
+    await inAct(() =>
+      drawing.root.render(
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          onClick,
+          disabled: true,
+        }),
+      ),
+    );
+    await press(cell);
+    assert.deepEqual(clicks, ["click"], "a locked cell is not clicked");
+  });
+});
+
+/**
+ * The text of the game's stylesheets with `:hover` written as the class `is-hovered`: jsdom never
+ * matches `:hover`, so a case puts the class on the element and reads the pointer's rules through the
+ * same cascade as the rest.
+ */
+function stylesheetWithPointerClass() {
+  return gameStylesheetText().replaceAll(":hover", ".is-hovered");
+}
+
+/**
+ * The last value the plain rules of the stylesheet declare for `element` as the first of `properties`
+ * that a rule holds, a longhand before its shorthand, read from the rules themselves: jsdom drops a declaration that holds `var()` from its computed style where it
+ * stands in a shorthand, such as the background `highlight` that every button takes under the pointer
+ * and the width of a frame, so they show nowhere else. Rules stand in the order the cascade reads
+ * them, and of two rules that match, the later one has the greater specificity for the rules of the
+ * controls, so the last is the winner. Blocks of `@media` hold no selector and are left out, as
+ * jsdom leaves them out.
+ */
+function lastDeclared(document, element, ...properties) {
+  let last = null;
+  for (const rule of document.styleSheets[0].cssRules) {
+    if (rule.selectorText === undefined || !element.matches(rule.selectorText))
+      continue;
+    for (const property of properties) {
+      const value = rule.style.getPropertyValue(property);
+      if (value === "") continue;
+      last = value;
+      break;
+    }
+  }
+  return last;
+}
+
+// Breaks: the pointer's background `highlight` reaching the cell, which would swallow the empty part
+// of its bar, whose track stands in the same colour; the name staying grey under the pointer or when open.
+test("under the pointer a button of a cell keeps its background and lightens its name to text-strong, as an open one does, and a plain button takes highlight", async () => {
+  // decision: D-40 "The button of a cell of the body row (D-44) takes no background `highlight` under the pointer, since the track of its bar stands in that colour, and its name stands in `text-strong` under the pointer and while its explanation stands open."
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = stylesheetWithPointerClass();
+    document.head.append(style);
+    const name = (cell) =>
+      window.getComputedStyle(cell.querySelector(".value-cell-name")).color;
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "value-cell", cell: CELL }),
+      ),
+    );
+    assert.equal(name(cell), "var(--text-label)", "at rest the name is grey");
+    cell.classList.add("is-hovered");
+    assert.equal(name(cell), "var(--text-strong)", "under the pointer");
+    assert.equal(
+      lastDeclared(document, cell, "background-color", "background"),
+      "transparent",
+    );
+    const open = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: true,
+        }),
+      ),
+    );
+    assert.equal(name(open), "var(--text-strong)", "open, with no pointer");
+    const closed = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: false,
+        }),
+      ),
+    );
+    assert.equal(name(closed), "var(--text-label)", "closed, with no pointer");
+    const plain = drawnElement(
+      await drawn(document, createElement(ReactButton, { text: "Anuluj" })),
+    );
+    plain.classList.add("is-hovered");
+    assert.equal(
+      lastDeclared(document, plain, "background-color", "background"),
+      "var(--highlight)",
+      "the plain button takes highlight under the pointer",
+    );
+  });
+});
+
+/** The condition of the blocks of the phone layout on a device whose pointer cannot hover (D-396). */
+const TOUCH = "(width < 1280px) and (hover: none)";
+
+/**
+ * The colour of the name of `cell` that the rules give it on a device whose pointer cannot hover: the
+ * last of the plain rules and of the rules of the blocks `TOUCH` that match the name, in the order the
+ * cascade reads them. jsdom applies no block of a media feature, so the case reads the rules themselves;
+ * of two rules of the cell's name that match, the later has the greater specificity.
+ */
+function nameColourOnTouch(document, cell) {
+  const name = cell.querySelector(".value-cell-name");
+  const media = [];
+  let last = null;
+  for (const rule of document.styleSheets[0].cssRules) {
+    if (rule.media !== undefined) media.push(rule.media.mediaText);
+    const held =
+      rule.selectorText !== undefined
+        ? [rule]
+        : rule.media?.mediaText === TOUCH
+          ? [...rule.cssRules]
+          : [];
+    for (const inner of held) {
+      if (!name.matches(inner.selectorText)) continue;
+      const colour = inner.style.getPropertyValue("color");
+      if (colour !== "") last = colour;
+    }
+  }
+  assert.ok(
+    media.includes(TOUCH),
+    `a block ${TOUCH} among ${media.join("; ")}`,
+  );
+  return last;
+}
+
+// Breaks: a browser of touch keeps `:hover` on the cell last tapped, so a cell closed by a tap would keep
+// the lit name of an open one until the next tap elsewhere; the open cell must keep its lit name there.
+test("on a device whose pointer cannot hover a closed cell under the pointer keeps its grey name, and an open one its lit name", async () => {
+  // decision: D-40 "The button of a cell of the body row (D-44) takes no background `highlight` under the pointer, since the track of its bar stands in that colour, and its name stands in `text-strong` under the pointer and while its explanation stands open."
+  await withPage(async ({ document }) => {
+    const style = document.createElement("style");
+    style.textContent = stylesheetWithPointerClass();
+    document.head.append(style);
+    const tapped = async (expanded) => {
+      const cell = drawnElement(
+        await drawn(
+          document,
+          createElement(ReactButton, {
+            kind: "value-cell",
+            cell: CELL,
+            expanded,
+          }),
+        ),
+      );
+      cell.classList.add("is-hovered");
+      return cell;
+    };
+    assert.equal(
+      nameColourOnTouch(document, await tapped(false)),
+      "var(--text-label)",
+      "closed",
+    );
+    assert.equal(
+      nameColourOnTouch(document, await tapped(true)),
+      "var(--text-strong)",
+      "open",
+    );
+  });
+});
+
+// Breaks: a bar whose track is not `highlight` or is not twice `--bar-width` thick, a fill that does not
+// follow the share the screen gives or takes another role than the one it is given, and a disabled cell
+// whose name stays grey beside the disabled text of every other control.
+test("the stylesheets draw the bar of a cell on a track in highlight twice --bar-width thick, its fill as long as the share given and in the role given, and a disabled cell in text-disabled", async () => {
+  // decision: D-40 "The bars of satiety, health and nature energy in the body row (D-337) have their track in `highlight`, as the bar of a requirement in the header has, and the fill of the bar of nature energy stands in `text-strong`, white, though it is no text."
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const computed = (element, property) =>
+      window.getComputedStyle(element).getPropertyValue(property);
+    const roles = {
+      positive: "var(--positive)",
+      "satiety-fill": "var(--satiety-fill)",
+      "text-strong": "var(--text-strong)",
+    };
+    for (const [fillRole, colour] of Object.entries(roles)) {
+      const cell = drawnElement(
+        await drawn(
+          document,
+          createElement(ReactButton, {
+            kind: "value-cell",
+            cell: { ...CELL, bar: { share: 0.5, fillRole } },
+          }),
+        ),
+      );
+      const fill = cell.querySelector(".value-cell-fill");
+      assert.equal(computed(fill, "background-color"), colour, fillRole);
+      assert.equal(computed(fill, "width"), "calc(var(--share) * 100%)");
+      assert.equal(computed(fill, "height"), "100%");
+    }
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "value-cell", cell: CELL }),
+      ),
+    );
+    const bar = cell.querySelector(".value-cell-bar");
+    assert.equal(computed(bar, "background-color"), "var(--highlight)");
+    assert.equal(computed(bar, "height"), "calc(var(--bar-width) * 2)");
+    const locked = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          disabled: true,
+        }),
+      ),
+    );
+    for (const part of ["name", "number", "note"]) {
+      assert.equal(
+        computed(locked.querySelector(`.value-cell-${part}`), "color"),
+        "var(--text-disabled)",
+        part,
+      );
+    }
+  });
+});
+
+// Breaks: the health cell that is no button standing in a rule of its own that drifts from the
+// button's, a frame drawn round it, or no frame place kept, so the four cells of a row stand uneven.
+test("the cell that is no button stands in the same parts as the button of a cell and keeps the place of its frame with no frame drawn", async () => {
+  // decision: D-337 "The cells of temperature, satiety and nature energy are buttons that open the explanation of their value, and the health cell, which is no button and holds the place of their frame, shows a creature's blow, as D-450 gives;"
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = gameStylesheetText();
+    document.head.append(style);
+    const computed = (element, property) =>
+      window.getComputedStyle(element).getPropertyValue(property);
+    const button = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { kind: "value-cell", cell: CELL }),
+      ),
+    );
+    const staticCell = drawnElement(
+      await drawn(
+        document,
+        createElement(
+          "div",
+          { className: "value-cell-static" },
+          createElement(ValueCellParts, {
+            cell: {
+              name: "Zdrowie",
+              number: "100",
+              note: null,
+              bar: { share: 1, fillRole: "positive" },
+            },
+          }),
+        ),
+      ),
+    );
+    for (const [property, expected] of [
+      ["border-width", "var(--frame-width)"],
+      ["border-style", "solid"],
+      ["padding-top", "var(--space-2xs)"],
+      ["padding-left", "var(--space-s)"],
+      ["display", "flex"],
+      ["flex-direction", "column"],
+    ]) {
+      for (const [place, element] of [
+        ["the button", button],
+        ["the cell that is no button", staticCell],
+      ]) {
+        assert.equal(
+          lastDeclared(document, element, property),
+          expected,
+          `${place}: ${property}`,
+        );
+      }
+    }
+    assert.equal(
+      lastDeclared(document, staticCell, "border-color"),
+      "transparent",
+    );
+    assert.equal(
+      computed(staticCell.querySelector(".value-cell-name"), "color"),
+      "var(--text-label)",
+    );
+    assert.equal(
+      computed(staticCell.querySelector(".value-cell-bar"), "background-color"),
+      "var(--highlight)",
+    );
+    assert.equal(
+      computed(
+        staticCell.querySelector(".value-cell-fill"),
+        "background-color",
+      ),
+      "var(--positive)",
+    );
   });
 });
 

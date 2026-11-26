@@ -205,8 +205,11 @@ function goalOf(run: GameMapRun): MageGoal {
   }
 }
 
-/** How the scene stands; the reasons ordered as the game states them, the death first. */
-function standingOf(state: GameState, run: GameMapRun): SceneStanding {
+/**
+ * How the scene stands; the reasons ordered as the game states them, the death first. The body row reads
+ * the same standing for the motion that stands while game time stands (D-450).
+ */
+export function standingOf(state: GameState, run: GameMapRun): SceneStanding {
   if (run.death !== null) return "dead";
   if (run.completion !== null) return "completed";
   if (state.discovery !== null) return "discovery";
