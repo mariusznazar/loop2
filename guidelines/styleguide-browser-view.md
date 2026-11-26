@@ -1204,7 +1204,9 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   w oknie, jak w starym Loopie. Żadne miejsce wiersza ani nagłówka poza przyciskiem
   nie jest gołym wierszem: tekst jest pudełkiem na całą linię, jego dopełnienie
   zastępuje dopełnienie wiersza, a w nagłówku przed „▾” stoi przerwa z `rule-list-gap`
-  (w układzie komputera się jej nie rysuje). Wiersz i nagłówek trzymają cel
+  (w układzie komputera się jej nie rysuje); przerwa i „▾” sięgają na całą wysokość nagłówka,
+  także dwu- i trzywierszowego, bo pas nad albo pod „▾” wyśrodkowanym w wyższym nagłówku byłby
+  gołym nagłówkiem, a dotknięcie tam zwijałoby grupę (D-296). Wiersz i nagłówek trzymają cel
   `--touch-target-min`, a „▾” tak jak każdy przycisk.
 - Okno reguły i okno grupy podaje reguła The window of a rule and of a rule group.
   Podpisy jego pól są w `text-label`; komórki jego wyboru podaje reguła States of shared

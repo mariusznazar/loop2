@@ -9511,12 +9511,12 @@ page; in the phone layout the first move of a rule by an arrow takes a tap more,
 opens first. In Factorio, since its 2.0
 edition, and in Gladiabots the writing and the watching of the state happen in one place, not on
 separate screens. When the panel was settled to open in
-place, with the panel in a column of its own the program had 174 px in a window 1280 px wide and
+place, with the panel in a column of its own the program had 174 px in a browser window 1280 px wide and
 270 px at the full content width of 1344 px, and each new line at a rule wrapped further; joining the
 columns of the program and the right area and opening the panel under a row gives the program 526 px
 and 622 px (the world area 706 px and a gap of 16 px; computed from the layout, not measured). In a
-narrow window the panel stood under the whole program on the screen of a map run and under the whole
-editor on Programy, and an edit in place on the list, as loop has it in a narrower window, serves a
+narrow browser window the panel stood under the whole program on the screen of a map run and under the whole
+editor on Programy, and an edit in place on the list, as loop has it in a narrower browser window, serves a
 wide window and a narrow one at once and the later layout for a phone as well. The complaints of
 players about the program editors of other games concern the mechanics of editing, such as an editor worked by mouse alone,
 not the model of rules. Dragging a rule
@@ -9541,7 +9541,7 @@ it moves, and on Programy, where width is not wanting, the
 panel opens in place all the same, so the editor has one way of opening it on both screens.
 *Rejected:* the panel beside the list, as in loop, in the column beside the rows on Programy and on
 the screen of a map run, and under the row in the phone layout — the column of the panel takes the
-width of the program on the screen of a map run, 174 px of a window 1280 px wide where it has 526
+width of the program on the screen of a map run, 174 px of a browser window 1280 px wide where it has 526
 px; the panel left in the list under the row, made clearly other for a group than for a rule — the
 editing stays among the rows of the list, which was what chafed; the panel left in the list with the
 pick of a condition, an action and a target in a window over the screen, as in loop — the window
@@ -9566,7 +9566,7 @@ screen of a map run, with the split of widths unchanged — the program stays na
 line at a rule wraps further; a smaller scene with the split of widths unchanged (D-349) — what was
 wanted was the width of the program as in loop, not a smaller scene; the panel beside the editor on Programy alone — the editor has two
 ways of opening the panel by screen, the player sees the same rule edited beside it once and on the
-list another time, and in a narrow window of Programy the panel still lands under the whole editor;
+list another time, and in a narrow browser window of Programy the panel still lands under the whole editor;
 the right column wrapped under the world in a window of the computer layout, with the panel opening
 under the whole area of the world — a part of the way that shrinks the scene there, which D-349
 rejects.
