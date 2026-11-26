@@ -523,9 +523,12 @@ test("a blow that comes while game time stands shows its marker held, and the sa
   });
 });
 
-// Catches a health cell that shakes under reduced motion, a text that moves under it or never goes, and
-// a shake that is not one shake of a third of a second, or a text that is not one fading of 1.3 s.
-test("under reduced motion the cell does not shake and the text stands still and goes; otherwise the cell shakes once in 0.34 s and the text rises and fades once in 1.3 s", async () => {
+// Catches a health cell that shakes under reduced motion, a text that moves under it or never goes, a
+// shake that is not one shake of a third of a second, a text that is not one fading of 1.3 s, and a text
+// that moves from its place under the bar as it fades. The text does not rise, as loop's does: rising in
+// the health cell it ran across the bar and its end, where the number of the blow read badly, so it stands
+// still under the bar and fades there, as the styleguide's rule "The body row of a map run" gives it.
+test("under reduced motion the cell does not shake and the text stands still and goes; otherwise the cell shakes once in 0.34 s and the text stands still and fades smoothly once in 1.3 s", async () => {
   // decision: D-450 "While game time stands — in the player's pause, at the moments of a discovery, a death and a completion, and on the screen after the end of a map run — the shake and the text stand where they reached, a marker that comes while it stands, as that of a killing blow does, standing at its first frame, and they go on when time goes on; under the system's setting for reduced motion the cell does not shake and the text stands still and goes"
   // decision: D-42 "The alarm's pulse of a fill, from full opacity to 40 % and back in 1.1 s, smoothly and with no end, is exempt from that ratio in its dim phase, the full colour keeping it, and the pulse and the shake and the fading text of a blow in the health cell (D-450) are judged by 2.3.1"
   await withPage(async ({ document }) => {
@@ -562,15 +565,31 @@ test("under reduced motion the cell does not shake and the text stands still and
     const stillFrames = keyframesOf(document, still, ["opacity", "translate"]);
     assert.deepEqual(stillFrames, { "100%": { opacity: "0", translate: "" } });
 
-    const rising = animationUnder(text, NO_PREFERENCE);
-    assert.ok(rising !== "" && rising !== still, "the text moves otherwise");
+    const fading = animationUnder(text, NO_PREFERENCE);
+    assert.ok(fading !== "", "the text fades otherwise");
     assert.equal(under(text, NO_PREFERENCE, "animation-duration"), "1.3s");
     assert.notEqual(
       under(text, NO_PREFERENCE, "animation-iteration-count"),
       "infinite",
     );
-    const frames = keyframesOf(document, rising, ["opacity", "translate"]);
+    assert.notEqual(
+      under(text, NO_PREFERENCE, "animation-timing-function"),
+      "step-end",
+      "it fades smoothly, not in one step",
+    );
+    const frames = keyframesOf(document, fading, [
+      "opacity",
+      "translate",
+      "transform",
+      "bottom",
+      "top",
+    ]);
     assert.equal(frames["100%"].opacity, "0", "it fades out");
-    assert.notEqual(frames["100%"].translate, "", "and rises");
+    for (const [offset, frame] of Object.entries(frames))
+      assert.deepEqual(
+        [frame.translate, frame.transform, frame.bottom, frame.top],
+        ["", "", "", ""],
+        `it stays at its place under the bar, at ${offset}`,
+      );
   });
 });

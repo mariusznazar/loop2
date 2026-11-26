@@ -798,21 +798,24 @@
  *   (D-42). The pulse goes on while game time stands (D-337): the stop below names the shake and the
  *   text of a blow alone.
  * - A creature's blow (D-450): the health cell, marked `data-blow`, shakes once in 340 ms and its text,
- *   `.body-blow-text`, rises and fades once in 1.3 s (task paski-parametrow, Context, --animate-shake and
- *   --animate-rise in src/app/globals.css of branch origin/test 715026e of the repository loop). A new
- *   blow changes the mark between `odd` and `even`, which names the keyframes of the shake anew, so the
- *   shake starts again on the same element, and its text is a new element. Under reduced motion the cell
- *   does not shake and the text, outside the block below, stands still for the same 1.3 s and goes at
- *   its end: its keyframes change only its opacity, in a step at the end. The end of the text's
- *   animation, or its cancelling where the screen is hidden, ends the marker (body-row-cells.tsx).
+ *   `.body-blow-text`, fades once in 1.3 s (task paski-parametrow, Context, --animate-shake and
+ *   --animate-rise in src/app/globals.css of branch origin/test 715026e of the repository loop). The
+ *   text stands still at its place as it fades and does not rise as loop's does: rising in the health
+ *   cell it ran across the bar and its end, and the number read badly. It fades `ease-in`, slowly at
+ *   first, so it reads whole for most of its time. A new blow changes the mark between `odd` and `even`,
+ *   which names the keyframes of the shake anew, so the shake starts again on the same element, and its
+ *   text is a new element. Under reduced motion the cell does not shake and the text, outside the block
+ *   below, stands for the same 1.3 s and goes at its end, in one step. The keyframes of the text change
+ *   only its opacity. The end of the text's animation, or its cancelling where the screen is hidden,
+ *   ends the marker (body-row-cells.tsx).
  * - While game time stands, the shake and the text stand where they reached and go on when it goes on:
  *   the row's `data-standing` is the scene's (`standingOf`), so one that is not `going` is the player's
  *   pause, a discovery, a death, a completion or the screen after the end of a map run. A marker that
  *   comes then stands at its first frame, the text whole and the cell not yet shaken.
  * - The text stands in the health cell's own box, at its lower right corner, under the bar, where the
  *   cell has room: in a row of four the cells of a pair take the height of the cells with a note, and
- *   in the phone layout that of the button beside it, which holds the touch target. It rises over the
- *   bar as it fades and never crosses the cell's frame, so no text stands over the border of another
+ *   in the phone layout that of the button beside it, which holds the touch target. It leaves the bar
+ *   and its end free and never crosses the cell's frame, so no text stands over the border of another
  *   frame (D-396).
  */
 .body-cells .value-cell-static {
@@ -828,7 +831,7 @@
   color: var(--danger);
   white-space: nowrap;
   pointer-events: none;
-  animation-name: body-blow-text-still;
+  animation-name: body-blow-text-fade;
   animation-duration: 1.3s;
   animation-timing-function: step-end;
   animation-fill-mode: both;
@@ -858,8 +861,7 @@
   }
 
   .body-blow-text {
-    animation-name: body-blow-text-rise;
-    animation-timing-function: ease-out;
+    animation-timing-function: ease-in;
   }
 }
 
@@ -900,16 +902,11 @@
   }
 }
 
-/* The text rises and fades out. */
-@keyframes body-blow-text-rise {
-  to {
-    translate: 0 calc(-1 * var(--space-m));
-    opacity: 0;
-  }
-}
-
-/* The text under reduced motion: it stands, and goes in one step at the end of its time. */
-@keyframes body-blow-text-still {
+/*
+ * The text fades out where it stands: smoothly where the system asks for no less motion, and in one step
+ * at the end of its time under reduced motion, by the timing of its rule.
+ */
+@keyframes body-blow-text-fade {
   to {
     opacity: 0;
   }

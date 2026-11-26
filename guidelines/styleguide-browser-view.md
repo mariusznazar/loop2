@@ -1533,8 +1533,12 @@ Znacznik ciosu (D-450, D-04, D-317):
 - cios stworzenia wstrząsa komórką zdrowia i pokazuje gasnący napis „−{n} · {stworzenie}”, w
   `danger`, w samej komórce zdrowia, w jej prawym dolnym rogu, pod paskiem, gdzie komórka ma miejsce:
   w rzędzie czterech komórek bierze wysokość komórek z dopiskiem, a w układzie telefonu — przycisku
-  obok, który trzyma cel dotyku; napis unosi się, gasnąc, nad pasek i nie przekracza ramki komórki,
-  więc nie stoi na ramce innej komórki (D-396). Cios
+  obok, który trzyma cel dotyku. Napis stoi w tym miejscu nieruchomo i tylko gaśnie, płynnie, wolno
+  na początku, więc da się go przeczytać przez większość jego czasu, a pasek i jego koniec zostają
+  odsłonięte. Nie unosi się, jak napis starego Loopa: pod paskiem komórka ma miejsca tyle, ile
+  zajmuje napis, więc unoszący się napis wszedłby na pasek i zasłonił jego koniec, a nad komórką
+  stanąłby na wierszu „Potem” albo na ramce komórki obok. Napis nie przekracza ramki komórki, więc
+  nie stoi na ramce innej komórki (D-396). Cios
   czyta wiersz ze zdarzeń wywołania symulacji, nigdy z porównania zdrowia z poprzednim odczytem, więc
   nie pokazuje go ani pierwsze rysowanie ekranu, ani przeładowanie, ani wczytanie zapisu. Jedno
   starcie daje jeden znacznik z sumą ciosów stworzenia, gdy ta suma to co najmniej 2, także gdy cios
@@ -1542,7 +1546,8 @@ Znacznik ciosu (D-450, D-04, D-317):
   (`src/browser/view/body-blow.ts`);
 - znacznik pokazuje się przy tempie 1×, 2× i 4×, a przy 8× i 16× nie, tak jak scena nie pokazuje
   wtedy napisów swoich efektów (D-317), i cios z szybkiego tempa przepada, nie czeka na zwolnienie.
-  Pod ustawieniem ograniczenia ruchu komórka nie drga, a napis stoi nieruchomo i znika. Gdy czas
+  Pod ustawieniem ograniczenia ruchu komórka nie drga, a napis stoi w pełnym kolorze i znika na
+  końcu swojego czasu, od razu. Gdy czas
   gry stoi, drganie i napis stoją tam, gdzie doszły, i ruszają dalej, gdy czas rusza; znacznik,
   który przychodzi, gdy czas stoi, stoi w pierwszej klatce. Ruch ocenia kryterium błysków (D-42).
 
