@@ -5,15 +5,17 @@
  * satiety — and the line of the backpack under them. The cells of temperature, satiety and nature
  * energy are the shared button of a cell; health is no button and stands in the same parts. The cells
  * stand in two pairs, so that a row too narrow for four breaks into two rows of two (run-screen.css).
- * It draws from the map run it is given, the map's data included, and holds no state of its own. The
- * world area draws it between „Potem” and the lines below the backpack. Nothing runs when the module
- * is imported.
+ * A click on one of those three buttons opens the explanation of its value right under the cells and
+ * above the backpack, and at most one stands open (D-450); that one state is the component's own
+ * (D-407). It draws from the map run it is given, the map's data included. The world area draws it
+ * between „Potem” and the lines below the backpack. Nothing runs when the module is imported.
  */
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { MAPS } from "../sim/data/maps.js";
 import type { MapRun } from "../sim/types.js";
 import {
   backpackText,
+  bodyExplanation,
   bodyRowCells,
   temperatureZones,
   type BodyCellId,
@@ -98,8 +100,19 @@ function cellParts(cell: BodyRowCell): CellParts {
   };
 }
 
-/** One cell: the shared button of a cell, or for health, which is no button, the same parts in a block. */
-function BodyCell({ cell }: { cell: BodyRowCell }) {
+/**
+ * One cell: the shared button of a cell, or for health, which is no button, the same parts in a block.
+ * The button says whether its explanation stands open, and a click on it reports to the row (D-450).
+ */
+function BodyCell({
+  cell,
+  expanded,
+  onToggle,
+}: {
+  cell: BodyRowCell;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
   const parts = cellParts(cell);
   if (cell.id === "health") {
     return (
@@ -108,24 +121,48 @@ function BodyCell({ cell }: { cell: BodyRowCell }) {
       </div>
     );
   }
-  return <ReactButton kind="value-cell" cell={parts} />;
+  return (
+    <ReactButton
+      kind="value-cell"
+      cell={parts}
+      expanded={expanded}
+      onClick={onToggle}
+    />
+  );
 }
 
-/** The body row: its cells in two pairs, then the line of the backpack. */
+/**
+ * The body row: its cells in two pairs, the explanation of the value whose cell is open right under
+ * them, then the line of the backpack. The one open cell is the row's state (D-450, D-407): a click on
+ * the open cell closes it, a click on another cell opens that one instead.
+ */
 export function BodyRowCells({ run }: BodyRowCellsProps) {
-  const cells = bodyRowCells(run, MAPS[run.mapId]);
+  const [open, setOpen] = useState<BodyCellId | null>(null);
+  const map = MAPS[run.mapId];
+  const cells = bodyRowCells(run, map);
   const pairs = [cells.slice(0, 2), cells.slice(2)];
+  const explanation = open === null ? null : bodyExplanation(open, map);
+  const toggle = (id: BodyCellId) =>
+    setOpen((current) => (current === id ? null : id));
   return (
     <div className="body-row">
       <div className="body-cells">
         {pairs.map((pair, index) => (
           <div key={index} className="body-cell-pair">
             {pair.map((cell) => (
-              <BodyCell key={cell.id} cell={cell} />
+              <BodyCell
+                key={cell.id}
+                cell={cell}
+                expanded={open === cell.id}
+                onToggle={() => toggle(cell.id)}
+              />
             ))}
           </div>
         ))}
       </div>
+      {explanation === null ? null : (
+        <p className="body-explanation">{explanation}</p>
+      )}
       <p className="backpack-text">{backpackText(run.character)}</p>
     </div>
   );

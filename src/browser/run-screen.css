@@ -631,7 +631,8 @@
 
 /*
  * The row of the body under the rows „Teraz” and „Potem” (D-337, D-311, D-39, D-40, D-42, D-44): the
- * four cells, then the line of the backpack under them, with no bar. Each cell is the shared button of
+ * four cells, then, while one stands open, the explanation of its value (D-450), then the line of the
+ * backpack under them, with no bar. Each cell is the shared button of
  * a cell, or for health the same parts with no button, whose look stands in styles.css: the name at
  * the left and the number at the right on one line, the bar under them and the note under the bar,
  * which says the minutes a need lasts, in `text-secondary`.
@@ -666,6 +667,20 @@
 .body-cell-pair > * {
   flex: 1 1 0;
   min-width: max-content;
+}
+
+/*
+ * The explanation of an open value (D-450, D-337): the words of its threshold, what happens below it and
+ * how fast the value changes, in `text-secondary` at the size of the detail text, as the notes under the
+ * cells are. It stands right under the four cells, above the backpack, and the row's gap sets it off from
+ * them; it is one line of the flow, so the backpack and what stands under it move down by its height. The
+ * open cell's own look, its name in `text-strong`, stands in styles.css beside the button's look.
+ */
+.body-explanation {
+  margin: 0;
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .backpack-text {
