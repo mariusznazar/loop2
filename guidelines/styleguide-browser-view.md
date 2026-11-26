@@ -1592,7 +1592,9 @@ plecaka, który jest samym tekstem i nie ma paska, a pod wierszem plecaka wiersz
 tym samym tekstem co wiersz plecaka, w tej samej roli i wielkości, bez paska, z ręką przed kieszeniami
 — „Wyposażenie: patyk w ręku, 2 × opatrunek pod ręką”, „Wyposażenie: 2 × opatrunek pod ręką”,
 „Wyposażenie: patyk w ręku” i, gdy postać nic nie trzyma, „Wyposażenie: nic”. Wyposażenie nie wchodzi
-do wiersza plecaka (D-455). Komponent to `src/browser/view/body-row-cells.tsx`,
+do wiersza plecaka (D-455). Komponent wiersza ciała z wierszem plecaka to
+`src/browser/view/body-row-cells.tsx`, a wiersz wyposażenia rysuje `src/browser/view/world-area.tsx`
+zaraz po nim, ze słowami z `src/browser/view/gear-lines.ts`;
 liczby, skale, dopiski i słowa objaśnień składa `src/browser/view/body-row.ts`, znacznik ciosu
 `src/browser/view/body-blow.ts`, wspólny wygląd komórki stoi w `src/browser/styles.css` (strona
 wszystkich stanów czyta tylko ten arkusz, reguła A stylesheet of its own for each screen and each
