@@ -61,6 +61,7 @@ export function measureRow({
     seeds: loopSeeds,
     hours,
     skills,
+    gear,
     chest,
     resurrectionReady: true,
   }).summary;

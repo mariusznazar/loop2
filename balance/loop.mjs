@@ -44,7 +44,7 @@ export function earnedPoints(skills) {
 }
 
 /**
- * The state the earning loop starts from: one character with the program, skills, chest and the maps
+ * The state the earning loop starts from: one character with the program, skills, gear, chest and the maps
  * that open `mapId` solved, the loop started on `mapId` at the loop clock's start with the seed given.
  * With `resurrectionReady` false every use of the team's resurrection is spent at the start, and the
  * clock of the returns starts at the loop's start, so the uses return as in the game from there.
@@ -54,12 +54,14 @@ function startState({
   program,
   seed,
   skills,
+  gear = {},
   chest = {},
   resurrectionReady = true,
 }) {
   let state = makeState({
     program,
     skills,
+    gear,
     chest,
     solvedMaps: [...prerequisitesOf(mapId), mapId],
   });

@@ -21,6 +21,8 @@
 //   programs      the roles `first`, `loop`, `loopAfter` (optional) and those the attempts name,
 //                 each an identifier of a program
 //   knowing       whether the account starts with every Understanding (optional, true)
+//   gear          the slots and items the mage starts with, as { slot: item } (optional, empty):
+//                 the items are put on by the game's own act from a chest holding exactly them
 
 import { BALANCE } from "../dist/browser/sim/data/balance.js";
 import { MAPS } from "../dist/browser/sim/data/maps.js";
@@ -46,6 +48,7 @@ import {
   stopLoop,
   waitingPractice,
 } from "../dist/browser/sim/loop.js";
+import { putOnPiece } from "../dist/browser/sim/gear.js";
 import { appendPrograms, checkProgram } from "../dist/browser/sim/programs.js";
 import { mapRunEnded } from "../dist/browser/sim/run.js";
 import {
@@ -58,6 +61,7 @@ import { pieceCount } from "../dist/browser/sim/trip.js";
 import {
   DEFAULT_CAP_MINUTES,
   GAME_MADE_AT_MS,
+  buildGear,
   fullUnderstanding,
   meanNumber,
   outcomeOf,
@@ -104,6 +108,11 @@ function checkedPlayer(player, programs) {
   if (!BALANCE.paces.includes(player.pace))
     fail(`pace ${player.pace} is none of the game's paces`);
   if (!CASH_IN_RULES.includes(player.cashIn)) fail("unknown cashIn");
+  try {
+    buildGear(player.gear);
+  } catch (error) {
+    fail(`gear: ${error.message}`);
+  }
   for (const mapId of [player.firstMap, player.loopMapAfter ?? player.firstMap])
     if (!Object.hasOwn(MAPS, mapId)) fail(`no map ${mapId}`);
   const buyOrder = player.buyOrder ?? [];
@@ -168,7 +177,9 @@ function buyRanks(state, characterId, order, bought) {
 /**
  * The state of a new account: one mage, the programs of the player on the list in place of the game's
  * first program, the seed given. The programs are appended by the game's own function, so each takes
- * the number and the content revision the game gives a program it makes.
+ * the number and the content revision the game gives a program it makes. The player's gear is put on
+ * the mage by the game's own act from a chest that holds exactly those pieces, so the chest is left
+ * empty.
  */
 export function newAccount(player, programs, seed) {
   let state = newGame(GAME_MADE_AT_MS);
@@ -185,7 +196,25 @@ export function newAccount(player, programs, seed) {
   const ids = Object.fromEntries(
     roles.map((role, index) => [role, made.programs[index].id]),
   );
-  return { state: { ...made, lastSeed: seed }, ids };
+  const gear = buildGear(player.gear);
+  const pieces = {};
+  for (const item of Object.values(gear))
+    pieces[item] = (pieces[item] ?? 0) + 1;
+  let account = {
+    ...made,
+    lastSeed: seed,
+    team: { ...made.team, chest: { pieces } },
+  };
+  const [character] = account.team.characters;
+  for (const [slot, item] of Object.entries(gear)) {
+    const acted = putOnPiece(account, character.id, slot, item);
+    if (acted.refusal !== null)
+      throw new Error(
+        `campaign: the game refused ${item} on ${slot}: ${acted.refusal}`,
+      );
+    account = acted.state;
+  }
+  return { state: account, ids };
 }
 
 /** The empty record of one campaign. */

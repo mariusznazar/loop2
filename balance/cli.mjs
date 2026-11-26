@@ -61,6 +61,7 @@ const COMMAND_FLAGS = {
     "chest",
     "practice",
     "ranks",
+    "gear",
     "overlay",
     "hours",
     "no-resurrection",
@@ -372,18 +373,20 @@ function runTrace(options) {
 }
 
 function runLoop(options) {
-  const { mapId, program, chest, skills } = measurementOf(options);
+  const { mapId, program, chest, skills, gear } = measurementOf(options);
   const { perCheckpoint, runs } = loopSweep({
     mapId,
     program,
     seeds: seedsOf(options),
     skills,
+    gear,
     chest,
     checkpoints: options.hours,
     resurrectionReady: options.resurrection,
   });
   const header = {
     ...headerOf("loop", options),
+    gear,
     hours: options.hours ?? null,
     resurrection: options.resurrection,
   };

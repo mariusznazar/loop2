@@ -6,7 +6,12 @@ import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { chestOf, measureRow, renderTable } from "../../balance/check-map.mjs";
 import { runCommand } from "../../balance/cli.mjs";
-import { buildSkills, seedRange, sweep } from "../../balance/engine.mjs";
+import {
+  buildGear,
+  buildSkills,
+  seedRange,
+  sweep,
+} from "../../balance/engine.mjs";
 import { loopBalance } from "../../balance/loop.mjs";
 import { applyOverlay, readOverlay } from "../../balance/overlay.mjs";
 import {
@@ -313,4 +318,35 @@ test("the check names each program by its number in the whole list of reference 
   assert.equal(row[1], "P10");
   for (const id of Object.keys(REFERENCE_PROGRAMS))
     assert.ok(!printed.includes(id), `the table holds the identifier ${id}`);
+});
+
+test("the earning loop of a row starts with the gear given to the check, so its loop columns are those of a loop started with that gear", () => {
+  const skills = buildSkills({ practice: { smallItemGathering: 80 } });
+  const gear = buildGear({ mainHand: "stick", pocket1: "bandage" });
+  const loopSeeds = seedRange(1, 10);
+  const expected = loopBalance({
+    mapId: "forest",
+    program: forestLoopWithStock,
+    seeds: loopSeeds,
+    hours: 12,
+    skills,
+    gear,
+    chest: chestOf(forestLoopWithStock),
+    resurrectionReady: true,
+  }).summary;
+  const row = withNoReturn(() =>
+    measureRow({
+      mapId: "forest",
+      programLabel: "P6",
+      program: forestLoopWithStock,
+      skills,
+      gear,
+      sweepSeeds: seedRange(1, 2),
+      loopSeeds,
+      hours: 12,
+    }),
+  );
+  assert.equal(row.takenPerMapRun, expected.takenPerMapRun);
+  assert.equal(row.putPerMapRun, expected.putPerMapRun);
+  assert.equal(row.deathShare, expected.deathShare);
 });
