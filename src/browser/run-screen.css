@@ -802,6 +802,11 @@
  *   the row's `data-standing` is the scene's (`standingOf`), so one that is not `going` is the player's
  *   pause, a discovery, a death, a completion or the screen after the end of a map run. A marker that
  *   comes then stands at its first frame, the text whole and the cell not yet shaken.
+ * - The text stands in the health cell's own box, at its lower right corner, under the bar, where the
+ *   cell has room: in a row of four the cells of a pair take the height of the cells with a note, and
+ *   in the phone layout that of the button beside it, which holds the touch target. It rises over the
+ *   bar as it fades and never crosses the cell's frame, so no text stands over the border of another
+ *   frame (D-396).
  */
 .body-cells .value-cell-static {
   position: relative;
@@ -810,7 +815,7 @@
 .body-blow-text {
   position: absolute;
   right: var(--space-s);
-  bottom: 100%;
+  bottom: var(--space-2xs);
   font-size: var(--font-size-body);
   font-variant-numeric: tabular-nums;
   color: var(--danger);

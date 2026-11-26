@@ -12,7 +12,7 @@
  *
  * The row moves by CSS alone (run-screen.css): a value below its threshold pulses, which goes on while
  * game time stands, and a creature's blow shakes the health cell and shows the fading „−{n} · {creature}”
- * over it, which stand where they reached while it stands and go on with it (D-337, D-450). The row
+ * in it, which stand where they reached while it stands and go on with it (D-337, D-450). The row
  * reads the blow from the events of the simulation call that returned the run (D-04), as the scene reads
  * its effects: a first draw, which has no new events, shows none, and it keeps nothing but the one
  * marker of the last blow, which is dropped when its animation has ended or the browser has cancelled

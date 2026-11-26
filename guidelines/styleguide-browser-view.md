@@ -1419,7 +1419,7 @@ design token”).
 
 - **Decision:** D-337 · D-450 · D-311 · D-178 · D-39 · D-40 · D-42 · D-44 · D-04 · D-396 · D-407 · D-317 · D-322 · D-57 · D-125
 - **Invariant:** none
-- **Good:** Komórka sytości poniżej progu: „Sytość” po lewej i „14 %” po prawej w `danger`, pod nimi pasek w `satiety-fill` na torze w `highlight`, pulsujący w swoim kolorze, a pod paskiem „głoduje” w `danger`; komórka temperatury ze skalą w trzech strefach, z kreską w `scale-marker` i z ramką w `warming-frame` przy ognisku; po kliknięciu „Sytość” jej objaśnienie stoi tuż pod czterema komórkami, nad plecakiem, a drugie kliknięcie je zamyka; „−21 · wilk” nad komórką zdrowia po starciu z wilkiem przy tempie 4×; przy obszarze strony 360 px cztery komórki w dwóch rzędach po dwie, bez przewijania w bok.
+- **Good:** Komórka sytości poniżej progu: „Sytość” po lewej i „14 %” po prawej w `danger`, pod nimi pasek w `satiety-fill` na torze w `highlight`, pulsujący w swoim kolorze, a pod paskiem „głoduje” w `danger`; komórka temperatury ze skalą w trzech strefach, z kreską w `scale-marker` i z ramką w `warming-frame` przy ognisku; po kliknięciu „Sytość” jej objaśnienie stoi tuż pod czterema komórkami, nad plecakiem, a drugie kliknięcie je zamyka; „−21 · wilk” w komórce zdrowia, pod jej paskiem, po starciu z wilkiem przy tempie 4×; przy obszarze strony 360 px cztery komórki w dwóch rzędach po dwie, bez przewijania w bok.
 - **Bad:** Wypełnienie paska sytości zmieniające kolor na `danger` przy alarmie; pasek pod plecakiem; skala temperatury bez strefy przegrzania albo ze strefami, które się stykają bez przerwy; pulsująca albo przesuwająca się ramka komórki temperatury; pulsowanie, które staje w pauzie gracza; cios znaleziony porównaniem zdrowia z poprzednim odczytem; dwa objaśnienia otwarte naraz albo objaśnienie pod plecakiem; tło `highlight` pod kursorem na przycisku komórki; „Energia natury 0” w `danger`; czas, odstęp albo kolor wiersza ciała wpisany w jego arkusz zamiast tokenu.
 
 Wiersz ciała stoi w obszarze świata ekranu przejścia, pod „Teraz” i „Potem” (D-311): cztery
@@ -1527,8 +1527,10 @@ Objaśnienie po kliknięciu (D-450, D-407, D-04):
 Znacznik ciosu (D-450, D-04, D-317):
 
 - cios stworzenia wstrząsa komórką zdrowia i pokazuje gasnący napis „−{n} · {stworzenie}”, w
-  `danger`, nad komórką, przy jej prawym brzegu; napis unosi się, gasnąc, i nie ma własnego wiersza, więc przy
-  dwóch rzędach po dwie komórki zasłania na czas gaśnięcia dolną część komórki nad zdrowiem. Cios
+  `danger`, w samej komórce zdrowia, w jej prawym dolnym rogu, pod paskiem, gdzie komórka ma miejsce:
+  w rzędzie czterech komórek bierze wysokość komórek z dopiskiem, a w układzie telefonu — przycisku
+  obok, który trzyma cel dotyku; napis unosi się, gasnąc, nad pasek i nie przekracza ramki komórki,
+  więc nie stoi na ramce innej komórki (D-396). Cios
   czyta wiersz ze zdarzeń wywołania symulacji, nigdy z porównania zdrowia z poprzednim odczytem, więc
   nie pokazuje go ani pierwsze rysowanie ekranu, ani przeładowanie, ani wczytanie zapisu. Jedno
   starcie daje jeden znacznik z sumą ciosów stworzenia, gdy ta suma to co najmniej 2, także gdy cios
