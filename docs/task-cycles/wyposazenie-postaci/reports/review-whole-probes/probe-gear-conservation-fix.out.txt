@@ -1,0 +1,17 @@
+Case 1: one stick, put on at the camp, taken off during the loop's map run
+at the camp after the put on: chest 0, character's gear 1, map run going on 0
+loop started: chest 0, character's gear 1, map run going on 1
+after Zdejmij in the loop: chest 0, character's gear 0, map run going on 1
+after the map run's completion (merge): chest 1, character's gear 0, map run going on 0
+Case 2: two sticks, one put on at the camp, the other put on during the loop's map run
+loop started: chest 1, character's gear 1, map run going on 1
+after the second put on in the loop: chest 0, character's gear 1, map run going on 1
+after the map run's completion (merge): chest 1, character's gear 1, map run going on 1
+Case 3: one stick, put on at the camp, taken off in the loop, then a death with no use left
+after the death (expected 0 in all): chest 0, character's gear 0, map run going on 0
+Case 4: chest holds two sticks, one put on in the loop over an empty hand, then taken off
+after the put on in the loop: chest 1, character's gear 1, map run going on 0
+after Zdejmij of the piece put on in the loop (expected chest 2): chest 2, character's gear 0, map run going on 0
+Case 5: full chest, the run's stick taken off in the loop
+refusal: null
+after the merge with the chest at 59 berries (room 1): chest 1, character's gear 0, map run going on 0
