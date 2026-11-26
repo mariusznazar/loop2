@@ -12,11 +12,10 @@
  * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
  * when the module is imported.
  */
-import { MAPS } from "../sim/data/maps.js";
 import { PICTURE_PIXEL, SCENE } from "../sim/data/scene.js";
 import type { GameEvent } from "../sim/game.js";
 import type { GameState, RuleId } from "../sim/types.js";
-import { bodyCells, backpackText } from "./body-row.js";
+import { BodyRowCells } from "./body-row-cells.js";
 import { practiceText } from "./character-skills.js";
 import { NowRows } from "./now-rows.js";
 import { Scene } from "./scene.js";
@@ -90,29 +89,7 @@ export function WorldArea({
         />
       </div>
       <NowRows state={state} onShowRule={onShowRule} />
-      <div className="body-row">
-        <div className="body-cells">
-          {bodyCells(run, MAPS[run.mapId]).map((cell, index) => (
-            <div key={index} className="body-cell">
-              <span
-                className={cell.danger ? "body-value danger" : "body-value"}
-              >
-                {cell.text}
-              </span>
-              {cell.note === null ? null : (
-                <span
-                  className={
-                    cell.note.danger ? "body-note danger" : "body-note"
-                  }
-                >
-                  {cell.note.text}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-        <p className="backpack-text">{backpackText(run.character)}</p>
-      </div>
+      <BodyRowCells run={run} />
       {solved === null ? null : <p className="trip-result">{solved}</p>}
       {practice === "" ? null : (
         <p
