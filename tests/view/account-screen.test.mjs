@@ -4757,7 +4757,7 @@ test("on Programy the list and the editor are the two areas, and an open group d
       "the panel is inside the program panel",
     );
 
-    await press(buttonLabelled(screen, "Zamknij panel"));
+    await press(buttonLabelled(screen, "Zamknij okno"));
     assert.equal(byClass(screen, "rule-panel").length, 0, "closed");
     assert.equal(byClass(screen, "rule-list-panel").length, 0);
   });

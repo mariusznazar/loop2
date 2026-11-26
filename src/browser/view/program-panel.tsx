@@ -191,6 +191,15 @@ const COPY_VALUE = "copy";
 const COPY_TEXT = "Kopia w przejściu";
 const NO_GROUPS: readonly GroupId[] = [];
 
+/** The reading of a panel given no question of „Zakończ”: it holds none, and never changes. */
+const NO_QUESTION: RunScreenReading = {
+  subscribe: () => () => undefined,
+  snapshot: (() => {
+    const none = { question: null, windowShown: false };
+    return () => none;
+  })(),
+};
+
 /** The message under the name field for each name the name rule refuses (D-169). */
 export const NAME_MESSAGES: Record<ProgramNameRefusal, string> = {
   empty: "Wpisz nazwę programu.",
@@ -599,6 +608,8 @@ export function ProgramPanelView({
   const key = shownValue(shown);
   const [openState, setOpen] = useState<OpenRule | null>(null);
   const [openingSeen, setOpeningSeen] = useState(opening);
+  const { question } = useRunScreenSnapshot(endQuestion?.state ?? NO_QUESTION);
+  const [questionSeen, setQuestionSeen] = useState(question);
   const memory = useSyncExternalStore(folding.subscribe, folding.snapshot);
   const list = useRef<HTMLSelectElement>(null);
   const renameButton = useRef<HTMLButtonElement>(null);
@@ -657,6 +668,15 @@ export function ProgramPanelView({
     if (opening !== null) {
       open = { key, target: opening };
       setOpen(open);
+    }
+  }
+  // The question „Zapisać, odrzucić, wrócić?” closes the window as it appears, so that it is seen and
+  // takes the focus.
+  if (question !== questionSeen) {
+    setQuestionSeen(question);
+    if (question !== null && open !== null) {
+      open = null;
+      setOpen(null);
     }
   }
   if (open !== null && open.key !== key) {

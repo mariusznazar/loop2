@@ -339,7 +339,7 @@ for (const mode of ["programs", "run"]) {
       );
       assert.equal(
         game.root.querySelector(".rule-panel-heading").textContent,
-        "Reguła 1.1",
+        "Reguła 1.1 w grupie „Program”",
       );
       assert.equal(rowOf(game.root, 1).getAttribute("aria-current"), "true");
       assert.ok(
@@ -352,7 +352,7 @@ for (const mode of ["programs", "run"]) {
       await click(headerOf(game.root, 1));
       assert.equal(
         game.root.querySelector(".rule-panel-heading").textContent,
-        "Grupa 1",
+        "Grupa 1 „Program”",
       );
       assert.ok(
         game.root.querySelector('input[aria-label="Nazwa grupy"]'),
@@ -458,7 +458,7 @@ test("„+ reguła” adds the rule and opens its panel on the condition", async
     assert.equal(game.state.programs[0].program.groups[0].rules.length, 2);
     assert.equal(
       game.root.querySelector(".rule-panel-heading").textContent,
-      "Reguła 1.2",
+      "Reguła 1.2 w grupie „Program”",
     );
   });
 });
@@ -1179,7 +1179,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
     assert.equal(game.state.run.streak, 0);
     assert.equal(
       game.root.querySelector(".rule-panel-heading")?.textContent,
-      "Reguła 1.2",
+      "Reguła 1.2 w grupie „Program”",
     );
     assert.ok(
       rowOf(game.root, group.rules[1].id).nextElementSibling.contains(
@@ -1224,7 +1224,7 @@ test("with a saved program shown on the list „Program:”, „Dodaj regułę z
     assert.equal(programList(game.root).value, "copy");
     assert.equal(
       game.root.querySelector(".rule-panel-heading")?.textContent,
-      "Reguła 1.2",
+      "Reguła 1.2 w grupie „Program”",
     );
     assert.ok(
       game.root
@@ -1259,7 +1259,7 @@ test("text typed into the copy's editor and not yet committed lands in the copy 
     assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_WANDER]);
     assert.equal(
       game.root.querySelector(".rule-panel-heading")?.textContent,
-      "Reguła 1.2",
+      "Reguła 1.2 w grupie „Las nocą”",
     );
   });
 });
