@@ -1,0 +1,35 @@
+shot 6886 timedOut None samples 182 with text 141
+text '−21 · wilk' first t 0 last t 1361
+first rect [581.9, 480.2, 638, 498.3] last rect [581.9, 480.2, 638, 498.3] last opacity 0.00
+cell translates ['-0.203882px', '-0.351px', '-0.603882px', '-0.678471px', '-0.698059px', '-0.921529px'] ... blow marks ['None', 'odd'] standing ['going'] play ['None', 'running']
+cells [[145, 452.4, 307, 501.3], [315, 452.4, 477, 501.3], [485, 452.4, 647, 501.3], [655, 452.4, 817, 501.3]] bar [494, 475.5, 638, 479.5]
+violations [] count 0
+minutes ['Minuta 165', 'Minuta 166', 'Minuta 167'] .. ['Minuta 170', 'Minuta 171', 'Minuta 172']
+after Minuta 172 (pauza) | Zdrowie 79
+watch-desk-1x-250.json bar [494, 475.5, 638, 479.5] overlapping 0/141 opacity 0:1.00 97:0.99 249:0.94 449:0.83 648:0.69 800:0.55 1000:0.35 1000:0.35 1361:0.00 1361:0.00
+shot 6953 ms, opacity before 0.52, after 0.45 timedOut None samples 266 with text 216
+text '−21 · wilk' first t 0 last t 1303
+first rect [581.9, 480.2, 638, 498.3] last rect [581.9, 480.2, 638, 498.3] last opacity 0.00
+cell translates ['-0.187882px', '-0.359px', '-0.587882px', '-0.682706px', '-0.717824px', '-0.905529px'] ... blow marks ['None', 'odd'] standing ['going'] play ['None', 'running']
+cells [[145, 452.4, 307, 501.3], [315, 452.4, 477, 501.3], [485, 452.4, 647, 501.3], [655, 452.4, 817, 501.3]] bar [494, 475.5, 638, 479.5]
+violations [] count 0
+minutes ['Minuta 165', 'Minuta 166', 'Minuta 167'] .. ['Minuta 170', 'Minuta 171', 'Minuta 172']
+after Minuta 172 (pauza) | Zdrowie 79
+shot 6840 ms, opacity before 0.73, after 0.64 timedOut None samples 185 with text 148
+text '−21 · wilk' first t 0 last t 1376
+first rect [110.9, 390.2, 167, 408.4] last rect [110.9, 390.2, 167, 408.4] last opacity 0.00
+cell translates ['-0.191059px', '-0.351529px', '-0.591059px', '-0.691294px', '-0.710353px', '-0.896941px'] ... blow marks ['None', 'odd'] standing ['going'] play ['None', 'running']
+cells [[21, 306.4, 176, 355.4], [184, 306.4, 339, 355.4], [21, 363.4, 176, 411.4], [184, 363.4, 339, 411.4]] bar [30, 386.5, 167, 390.5]
+violations [] count 0
+minutes ['Minuta 165', 'Minuta 166', 'Minuta 167'] .. ['Minuta 170', 'Minuta 171', 'Minuta 172']
+after Minuta 172 (pauza) | Zdrowie 79
+watch-phone-1x.json bar [30, 386.5, 167, 390.5] overlapping 148/148 opacity 0:1.00 97:0.99 249:0.94 449:0.83 679:0.66 800:0.55 1000:0.35 1006:0.35 1376:0.00 1376:0.00
+shot 6820 ms, opacity before 1.00, after 1.00 timedOut None samples 265 with text 216
+text '−21 · wilk' first t 0 last t 1304
+first rect [581.9, 480.2, 638, 498.3] last rect [581.9, 480.2, 638, 498.3] last opacity 0.00
+cell translates ['none'] ... blow marks ['None', 'odd'] standing ['going'] play ['None', 'running']
+cells [[145, 452.4, 307, 501.3], [315, 452.4, 477, 501.3], [485, 452.4, 647, 501.3], [655, 452.4, 817, 501.3]] bar [494, 475.5, 638, 479.5]
+violations [] count 0
+minutes ['Minuta 165', 'Minuta 166', 'Minuta 167'] .. ['Minuta 170', 'Minuta 171', 'Minuta 172']
+after Minuta 172 (pauza) | Zdrowie 79
+watch-desk-rm.json bar [494, 475.5, 638, 479.5] overlapping 0/216 opacity 0:1.00 97:1.00 249:1.00 449:1.00 649:1.00 800:1.00 1000:1.00 1097:1.00 1200:1.00 1297:1.00

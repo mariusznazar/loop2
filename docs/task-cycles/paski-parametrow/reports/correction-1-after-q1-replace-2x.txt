@@ -1,0 +1,13 @@
+    5 Minuta 165 hp=100 n=0 [] op= blow=None anim=none shake=none
+  502 Minuta 166 hp=100 n=0 [] op= blow=None anim=none shake=none
+ 1102 Minuta 167 hp=79 n=1 [−21 · wilk] op=1.00 blow=odd anim=body-blow-shake-odd shake=0px
+ 1505 Minuta 168 hp=79 n=1 [−21 · wilk] op=0.86 blow=odd anim=body-blow-shake-odd shake=none
+ 2102 Minuta 169 hp=58 n=1 [−21 · wilk] op=1.00 blow=even anim=body-blow-shake-even shake=0px
+ 2503 Minuta 170 hp=58 n=1 [−21 · wilk] op=0.86 blow=even anim=body-blow-shake-even shake=none
+ 3102 Minuta 171 hp=37 n=1 [−21 · wilk] op=1.00 blow=odd anim=body-blow-shake-odd shake=0px
+ 3504 Minuta 172 hp=37 n=1 [−21 · wilk] op=0.86 blow=odd anim=body-blow-shake-odd shake=none
+ 4095 Minuta 173 hp=16 n=1 [−21 · wilk] op=1.00 blow=even anim=body-blow-shake-even shake=0px
+ 4504 Minuta 174 hp=16 n=1 [−21 · wilk] op=0.86 blow=even anim=body-blow-shake-even shake=none
+ 5103 Minuta 175 hp=0 n=1 [−21 · wilk] op=1.00 blow=odd anim=body-blow-shake-odd shake=0px
+ 6071 None hp=0 n=1 [−21 · wilk] op=1.00 blow=odd anim=body-blow-shake-odd shake=0px
+ 6077 None hp=0 n=0 [] op= blow=None anim=none shake=none
