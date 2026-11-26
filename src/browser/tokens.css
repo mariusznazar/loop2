@@ -3,7 +3,9 @@
  * var(--…). Each declaration names its source in a comment after its `;`
  * (guidelines/styleguide-browser-view.md, "Every value with its source"). "loop" is the running
  * game https://kantarion.bieda.it/, read 2026-10-20 from the rendered page; "Mariusz's choice" is
- * a value Mariusz chose, with the date of the choice.
+ * a value Mariusz chose, with the date of the choice; "the agent's choice" is a value whose choice
+ * the accepted text of a task left to the agent, with the date, the threshold that bounds it and
+ * where the value is read from.
  */
 :root {
   /* Backgrounds */
@@ -41,6 +43,14 @@
   --link-highlight: #f4f4f5; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: a thin line around the tile and at the left edge of its row */
   --depleted: 0.35; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: a depleted icon at 35% opacity */
   --focus: #f4f4f5; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: the focus outline */
+
+  /* Body row of a map run: the bars, the scale of temperature and the frame of the temperature cell */
+  --satiety-fill: #ff8904; /* Source: the agent's choice, which task paski-parametrow (To do 3) leaves to it, 2026-11-26: the orange of satiety, bounded by 3:1 against its track highlight of D-42 (WCAG 2.2 1.4.11), kept at 6.26:1; orange-400 of the palette of Tailwind CSS v4, from which loop's colours come, oklch(75% 0.183 55.934) in node_modules/tailwindcss/theme.css of Tailwind CSS 4.3.3 installed in the repository loop, converted to sRGB; an orange redder than the amber of warning, which stays out of every bar */
+  --chill-zone: #00a6f4; /* Source: loop, the blue of the rule whose action is being carried out (bg-sky-500, #00a6f4), src/components/probe/RulesPanel.tsx of branch origin/test 715026e of the repository loop, the blue the source of rule-running names; the agent's choice, which task paski-parametrow (To do 3) leaves to it, 2026-11-26, bounded by 3:1 against panel of D-42 (WCAG 2.2 1.4.11) as a zone and as the bluish frame of the temperature cell, kept at 6.55:1, and by the 3:1 of scale-marker against it, kept at 7.35:1 */
+  --safe-zone: #9f9fa9; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the grey of descriptions, the value text-secondary holds; the agent's choice, which task paski-parametrow (To do 3) leaves to it, 2026-11-26: a neutral grey about as light as the blue and the red of the scale, so that the dark marker stands out alike on all three zones, bounded by 3:1 against panel of D-42 (WCAG 2.2 1.4.11), kept at 6.76:1, and by the 3:1 of scale-marker against it, kept at 7.59:1 */
+  --scale-marker: #09090b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the background of the page, its darkest grey, the value page holds; the agent's choice, which task paski-parametrow (To do 2: a short vertical line in a dark colour) leaves to it, 2026-11-26, bounded by 3:1 against each zone of D-42 (WCAG 2.2 1.4.11), kept at 7.35:1 on chill-zone, 7.59:1 on safe-zone and 6.89:1 on danger */
+  --warming-frame: #ffd230; /* Source: loop, the amber of the bar of warmth at a fire (bg-amber-300, #ffd230), src/components/probe/RunWorld.tsx, FILL, of branch origin/test 715026e of the repository loop, the value discovery and character hold; the value task paski-parametrow (To do 3, question 10) gives the frame of the temperature cell, accepted by Mariusz with no veto, 2026-11-25; 12.24:1 against panel, over the 3:1 of D-42 */
+  --alarm-pulse-dim-opacity: 0.4; /* Source: loop, the alarm's pulse, @keyframes alarm (opacity 1 at 0% and 100%, 0.4 at 50%) in src/app/globals.css of branch origin/test 715026e of the repository loop; the opacity of the dim phase of the pulse of a fill of the body row below its threshold, task paski-parametrow (To do 3, question 8), Mariusz's choice, 2026-11-25 */
 
   /* Fonts */
   --font-family-text:

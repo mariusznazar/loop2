@@ -2,11 +2,15 @@
 `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change`
 has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`,
 `rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of
-those five, `character` has at
-least 3:1 against `tile-revealed` and against `tile-hidden`, `tile-revealed` has at least 3:1
-against `tile-hidden`, and `text-disabled`, the track of the bar of practice of a tree on the
-screen Postać, has at least 2:1 against `panel`, the background of the area it stands in, each
-ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
+those five, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`,
+`tile-revealed` has at least 3:1 against `tile-hidden`, `text-disabled`, the track of the bar of
+practice of a tree on the screen Postać, has at least 2:1 against `panel`, the background of the
+area it stands in, `positive`, `satiety-fill` and `text-strong`, the fills of the bars of the body
+row, have at least 3:1 against `highlight`, their track, each of `chill-zone`, `safe-zone` and
+`danger`, the zones of the scale of temperature, and `warming-frame` has at least 3:1 against
+`panel`, and `scale-marker` has at least 3:1 against each of `chill-zone`, `safe-zone` and
+`danger`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast
+ratio.
 
 The file is read from the working tree as text; nothing is built, rendered or computed by the
 cascade.
@@ -19,6 +23,10 @@ Reading of the sentence:
 - the pairs and thresholds are written out below as the sentence lists them; `text-disabled` is
   in one of them alone, against `panel` at 2:1, a pair of its own: no threshold of the text roles
   and no 3:1 holds it, and it is held against no other background;
+- the pairs of the body row are held at full opacity, the values as the file holds them: the dim
+  phase of the alarm's pulse, which D-42 exempts, is no pair, and two zones of the scale are no
+  pair either, since a gap in `panel` stands between them (D-42); `positive`, `text-strong` and
+  `danger` keep their pairs of 4.5:1 besides, which hold more than 3:1;
 - the contrast ratio is computed by the definitions the environment fact `wcag-contrast-ratio`
   quotes from WCAG 2.2 — (L1 + 0.05) / (L2 + 0.05) with L1 the lighter and L2 the darker relative
   luminance, L = 0.2126 R + 0.7152 G + 0.0722 B, each component q = c / 255 taken as q / 12.92
@@ -29,13 +37,16 @@ Covers: every pair of the sentence on the file's values; and controls: the ratio
 colour pairs (black on white 21, mid grey #808080 on white 3.949 and on black 5.317, #a0a0a0 on
 white 2.615, a dark grey on black through the linear branch 1.061), made-up token text whose pairs
 all pass, with `text-disabled` at 2.817:1 on every background, above its floor and below 3:1, and
-made-up token text failing each kind of pair, the track's at 1.846:1 on `panel` among them,
-missing a role, declaring one only inside a comment, declaring one twice and giving one a value
-that is no `#rrggbb`.
+the marker of the scale in white at 3.949:1 on each zone in mid grey, and made-up token text
+failing each kind of pair, the track's at 1.846:1 on `panel`, a fill of the body row at 1.846:1 on
+its track, a zone and the warming frame at 1.846:1 on `panel` and the marker at 1:1 on a zone among
+them, missing a role, a role of the body row among them, declaring one only inside a comment,
+declaring one twice and giving one a value that is no `#rrggbb`.
 
 Does NOT cover: colours that touch on a screen without being a pair of the sentence, the bar of
-a program rule (`condition-unmet`) among them, which has no threshold; text sizes;
-whether a style uses the roles where their meaning asks for them (review).
+a program rule (`condition-unmet`) among them, which has no threshold, and two zones of the scale
+of temperature, which a gap keeps apart; the opacity of the dim phase of the alarm's pulse; text
+sizes; whether a style uses the roles where their meaning asks for them (review).
 """
 
 import os
@@ -62,6 +73,11 @@ TEXT_THRESHOLD = 4.5
 NON_TEXT_THRESHOLD = 3.0
 TRACK_THRESHOLD = 2.0
 
+# The body row: the fills of its bars on their track, and the zones of its scale of temperature.
+BODY_ROW_FILLS = ("positive", "satiety-fill", "text-strong")
+BODY_ROW_TRACK = "highlight"
+TEMPERATURE_ZONES = ("chill-zone", "safe-zone", "danger")
+
 # (foreground, background, least ratio), as the invariant's sentence lists them.
 PAIRS = tuple(
     [(role, background, TEXT_THRESHOLD) for role in TEXT_ROLES for background in BACKGROUNDS]
@@ -76,6 +92,9 @@ PAIRS = tuple(
         ("tile-revealed", "tile-hidden", NON_TEXT_THRESHOLD),
         ("text-disabled", "panel", TRACK_THRESHOLD),
     ]
+    + [(fill, BODY_ROW_TRACK, NON_TEXT_THRESHOLD) for fill in BODY_ROW_FILLS]
+    + [(role, "panel", NON_TEXT_THRESHOLD) for role in (*TEMPERATURE_ZONES, "warming-frame")]
+    + [("scale-marker", zone, NON_TEXT_THRESHOLD) for zone in TEMPERATURE_ZONES]
 )
 ROLES = tuple(dict.fromkeys(role for pair in PAIRS for role in pair[:2]))
 
@@ -160,6 +179,12 @@ PASSING = {
     "tile-hidden": "#000000",
     "tile-revealed": "#ffffff",
     "character": "#808080",
+    "satiety-fill": "#808080",
+    "chill-zone": "#808080",
+    "safe-zone": "#808080",
+    "warming-frame": "#808080",
+    # 3.949:1 on each zone in mid grey, `danger` among them.
+    "scale-marker": "#ffffff",
 }
 
 
@@ -236,6 +261,26 @@ FLAGGED = {
     "the track of the practice bar at 1.846:1 on panel": (
         changed({"text-disabled": "#3a3a3a"}),
         "--text-disabled #3a3a3a on --panel",
+    ),
+    "a fill of the body row at 1.846:1 on its track": (
+        changed({"satiety-fill": "#3a3a3a"}),
+        "--satiety-fill #3a3a3a on --highlight",
+    ),
+    "a zone of the scale at 1.846:1 on panel": (
+        changed({"chill-zone": "#3a3a3a"}),
+        "--chill-zone #3a3a3a on --panel",
+    ),
+    "the warming frame at 1.846:1 on panel": (
+        changed({"warming-frame": "#3a3a3a"}),
+        "--warming-frame #3a3a3a on --panel",
+    ),
+    "the marker of the scale at 1:1 on the safe zone": (
+        changed({"scale-marker": "#808080"}),
+        "--scale-marker #808080 on --safe-zone",
+    ),
+    "a role of the body row missing": (
+        without("scale-marker"),
+        "--scale-marker is declared 0 times",
     ),
     "a role missing": (without("text-label"), "--text-label is declared 0 times"),
     "a role only inside a comment": (

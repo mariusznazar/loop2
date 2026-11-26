@@ -15,21 +15,21 @@ bez odstępstw zgodnie z D-38.
 | ----------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------- |
 | `page`            | background | Tu jest gra.                                                                                                                                                                                                                                                                                                                                                                 | `text`     | D-40     |
 | `panel`           | background | To osobny, wydzielony blok, także plakietka nad głową postaci, plakietka lecącej ikony zasobu i plakietka odkrycia w scenie.                                                                                                                                                                                                                                                 | `text`     | D-40     |
-| `highlight`       | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem.                                                                                                                                                                                                                   | `text`     | D-40     |
+| `highlight`       | background | Ten wiersz albo tor, także tor paska nad głową postaci, tor paska wymagania warunku mapy w nagłówku i tor pasków sytości, zdrowia i energii natury w wierszu ciała, jest zaznaczony albo ta kontrolka jest pod kursorem; przycisk komórki wiersza ciała nie dostaje go pod kursorem, bo w tym kolorze stoi tor jego paska.                                                                                                                                                                                                                   | `text`     | D-40     |
 | `rule-winning`    | background | Ta reguła programu wygrywa teraz.                                                                                                                                                                                                                                                                                                                                            | `text`     | D-40     |
 | `rule-running`    | background | Czynność tej reguły programu trwa teraz.                                                                                                                                                                                                                                                                                                                                     | `text`     | D-40     |
 | `divider`         | other      | Tu kończy się jedna sekcja, a zaczyna następna.                                                                                                                                                                                                                                                                                                                              | —          | D-40     |
 | `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                                                                               | —          | D-40     |
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
-| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                      | —          | D-40 · D-43 |
+| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu; stoi też jako wypełnienie paska energii natury w wierszu ciała, choć wypełnienie nie jest tekstem, z co najmniej 3:1 wobec toru w `highlight` przy pełnym kryciu, i jako nazwa wartości w przycisku komórki wiersza ciała pod kursorem i wtedy, gdy jej objaśnienie stoi otwarte.                                                                                                                                                                      | —          | D-40 · D-43 |
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, i jako wypełnienie paska wprawy drzewa na ekranie Postać, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
 | `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem, z progiem 2:1 wobec `panel` (D-42).                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
-| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę, i jako belka po lewej wybranego wiersza katalogu map, którego karta stoi otwarta; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
+| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę, i jako belka po lewej wybranego wiersza katalogu map, którego karta stoi otwarta; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska; stoi też jako wypełnienie paska zdrowia w wierszu ciała, na torze w `highlight`, z co najmniej 3:1 wobec toru przy pełnym kryciu. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                                                                               | —          | D-39     |
-| `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                                                                                       | —          | D-39     |
+| `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała i liczba wartości wiersza ciała poniżej jej progu, zdrowia poniżej 35 też; stoi też jako strefa przegrzania na skali temperatury w wierszu ciała, z co najmniej 3:1 wobec `panel`.                                                                                                                                                                                                                                                       | —          | D-39     |
 | `discovery`       | text       | Odkryto coś nowego; stoi też jako ramka plakietki odkrycia w scenie.                                                                                                                                                                                                                                                                                                         | —          | D-39     |
 | `player-change`   | text       | To zrobił gracz.                                                                                                                                                                                                                                                                                                                                                             | —          | D-39     |
 | `character`       | other      | Tu jest postać i tu właśnie idzie; cel kroku odróżnia kształt — cienka linia przerywana zamiast grubej ciągłej — nigdy kolor.                                                                                                                                                                                                                                                | —          | D-41     |
@@ -39,6 +39,11 @@ bez odstępstw zgodnie z D-38.
 | `link-highlight`  | other      | Ten kafelek i ten wiersz listy odsłoniętych kafelków to to samo miejsce.                                                                                                                                                                                                                                                                                                     | —          | D-41     |
 | `depleted`        | other      | Tego, co tu było, już nie ma.                                                                                                                                                                                                                                                                                                                                                | —          | D-41     |
 | `focus`           | other      | Tu jesteś, obsługując grę klawiaturą.                                                                                                                                                                                                                                                                                                                                        | —          | D-41     |
+| `satiety-fill`    | other      | Tyle sytości ma postać: wypełnienie paska sytości w wierszu ciała, na torze w `highlight`, z co najmniej 3:1 wobec toru przy pełnym kryciu; pomarańcz własny, bo `warning` nie stoi w żadnym pasku wiersza ciała.                                                                                                                                                            | —          | D-39     |
+| `chill-zone`      | other      | Przy tej temperaturze ciało jest wychłodzone: strefa wychłodzenia na skali temperatury w wierszu ciała, z co najmniej 3:1 wobec `panel`; stoi też jako ramka przycisku komórki temperatury, dopóki nic postaci nie grzeje, a jej mapa jest zimniejsza od jej ciała — ramka mówi wtedy o tym, co działa na postać, nie o tekście w komórce.                                                                                   | —          | D-40 · D-39 |
+| `safe-zone`       | other      | Przy tej temperaturze ciało jest bezpieczne: strefa bezpieczna na skali temperatury w wierszu ciała, neutralna szarość, z co najmniej 3:1 wobec `panel`.                                                                                                                                                                                                                     | —          | D-40     |
+| `scale-marker`    | other      | Tu stoi wartość na swojej skali: ciemna kreska temperatury teraz na skali temperatury w wierszu ciała, z co najmniej 3:1 wobec każdej strefy.                                                                                                                                                                                                                                  | —          | D-40     |
+| `warming-frame`   | other      | Coś grzeje postać: bursztynowa ramka przycisku komórki temperatury w wierszu ciała, dopóki na polu postaci coś się pali, z co najmniej 3:1 wobec `panel`; ramka mówi o tym, co działa na postać, nie o tekście w komórce, i nie bierze jego koloru.                                                                                                                              | —          | D-39     |
 
 Tabela nie trzyma wartości: wartości ról stoją w pliku tokenów, który wskazuje
 Where in code.
@@ -195,7 +200,27 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
   progu, a pasek w `positive` i w `warning` nie dokłada pary, bo te role
   mają już próg 4,5:1 na pięciu tłach;
 - `character` ma co najmniej 3:1 na `tile-revealed` i na `tile-hidden`;
-- `tile-revealed` ma co najmniej 3:1 wobec `tile-hidden`.
+- `tile-revealed` ma co najmniej 3:1 wobec `tile-hidden`;
+- wypełnienia pasków wiersza ciała — `positive` zdrowia, `satiety-fill` sytości
+  i `text-strong` energii natury — mają co najmniej 3:1 wobec swojego toru
+  w `highlight`, liczone przy pełnym kryciu (D-39, D-40, D-42); `positive`
+  i `text-strong` mają już 4,5:1 na `highlight` z pierwszego punktu, a test
+  sprawdza tę parę i tak, jak ją wymienia niezmiennik;
+- strefy skali temperatury — `chill-zone`, `safe-zone` i `danger` — mają
+  co najmniej 3:1 wobec `panel`, tła bloku, na którym stoją, i tak samo ramka
+  przycisku komórki temperatury w obu barwach, `warming-frame` i `chill-zone`
+  (D-39, D-40, D-42);
+- `scale-marker`, kreska temperatury teraz, ma co najmniej 3:1 wobec każdej
+  z trzech stref (D-40, D-42);
+- dwie strefy skali temperatury nie tworzą pary i nie mają progu wobec siebie,
+  bo między nimi stoi wąska przerwa w kolorze `panel` (D-42);
+- przygaszona faza pulsowania alarmu — wypełnienie paska wiersza ciała albo
+  kreska razem ze swoją strefą schodzą do krycia z tokenu
+  `--alarm-pulse-dim-opacity` i wracają do pełnego, płynnie i bez końca — jest
+  wyjątkiem od progu 3:1: próg trzyma pełny kolor, a alarm niosą przez cały
+  czas czerwona liczba i dopisek; pulsowanie, a także drganie i znikający
+  napis ciosu w komórce zdrowia (D-450), ocenia się kryterium błysków WCAG 2.2
+  2.3.1 (D-42).
 
 Zmieniając wartość w pliku tokenów, sprawdź ją tym testem przed scaleniem.
 Nowa rola albo nowa para wymaga zmiany decyzji ról, D-42 i niezmiennika razem
@@ -410,9 +435,10 @@ przez tyle linii, ile da jej Prettier. Zaraz po tym `;`, w tej samej linii,
 stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 `@font-face` ma tylko deskryptory `font-family`, `src` i `font-weight`.
 
-Źródło wartości ustalone z Mariuszem dla loop2, z trzema rodzajami dołożonymi
+Źródło wartości ustalone z Mariuszem dla loop2, z czterema rodzajami dołożonymi
 później: grubością belki i linii zakładki (2026-11-02), wyglądem sceny
-(2026-11-11) oraz kolorami trzech chwil sceny (2026-11-12):
+(2026-11-11), kolorami trzech chwil sceny (2026-11-12) oraz wartościami, których
+wybór przyjęty tekst zadania zostawił agentowi (2026-11-26):
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
@@ -437,13 +463,25 @@ później: grubością belki i linii zakładki (2026-11-02), wyglądem sceny
   z zimna z jej kryciem oraz dwa kolory drobinek światła — komentarz `Source:` niesie wybór Mariusza
   z datą, 2026-11-12, a przy kolorze drobinki podaje też piksel nazwanego obrazka paczki Pixel Crawler,
   z którego kolor odczytano;
+- dla wartości, której wybór przyjęty tekst zadania zostawia agentowi — dziś
+  wypełnienie sytości, strefy wychłodzenia i bezpieczna oraz kreska skali
+  temperatury w wierszu ciała — komentarz `Source:` niesie wybór agenta
+  („the agent's choice”) z zadaniem, które go zostawia, z datą wyboru i z progiem
+  kontrastu z D-42, który wartość ogranicza, oraz miejsce, z którego wartość
+  odczytano: kolor gry loop z jej wyrenderowanej strony albo z kodu wersji
+  wdrożonej — gałęzi `origin/test` repozytorium loop, z commitem, plikiem
+  i klasą — albo z palety, z której pochodzą kolory loop, z wersją i plikiem;
+  z kodu wersji wdrożonej, z commitem, plikiem i klasą, pochodzi też wartość
+  wiersza ciała, którą zadanie podaje samo — bursztyn ramki komórki
+  temperatury i krycie przygaszonej fazy pulsowania alarmu;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — wybór Mariusza z 2026-10-20;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
   z którego pochodzą pliki czcionek (D-46), z jego tagiem i commitem.
 
-Wartość i jej źródło bierz z tego, co ustalono z człowiekiem, nigdy z pamięci
-ani z makiety; nowa albo zmieniona wartość dostaje wpis swojego źródła w tej
+Wartość i jej źródło bierz z tego, co ustalono z człowiekiem — także z wyboru,
+który przyjęty tekst zadania zostawia agentowi, w granicach progu — nigdy
+z pamięci ani z makiety; nowa albo zmieniona wartość dostaje wpis swojego źródła w tej
 samej zmianie. Test sprawdza, że wpis jest, nie czy jest prawdziwy;
 prawdziwość ocenia przegląd zmiany pliku tokenów.
 
