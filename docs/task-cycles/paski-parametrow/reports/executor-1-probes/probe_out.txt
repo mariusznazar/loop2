@@ -1,0 +1,7 @@
+real file: []
+marker as dark as control-border grey: ['--scale-marker #71717b on --chill-zone #00a6f4: 1.784:1, less than 3.0:1', '--scale-marker #71717b on --safe-zone #9f9fa9: 1.840:1, less than 3.0:1', '--scale-marker #71717b on --danger #ff6467: 1.671:1, less than 3.0:1']
+safe zone in highlight: ['--safe-zone #27272a on --panel #18181b: 1.189:1, less than 3.0:1', '--scale-marker #09090b on --safe-zone #27272a: 1.336:1, less than 3.0:1']
+satiety fill as dark as text-disabled: ['--satiety-fill #52525c on --highlight #27272a: 1.929:1, less than 3.0:1']
+warming frame in highlight: ['--warming-frame #27272a on --panel #18181b: 1.189:1, less than 3.0:1']
+chill zone as the scene's chill layer, darker: ['--chill-zone #1f3f8f on --panel #18181b: 1.827:1, less than 3.0:1', '--scale-marker #09090b on --chill-zone #1f3f8f: 2.052:1, less than 3.0:1']
+satiety fill removed: ['--satiety-fill is declared 0 times, not once']
