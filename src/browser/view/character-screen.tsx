@@ -4,7 +4,8 @@
  * the character's name, the line of its generation and archetype with the archetype's icon, and its
  * resurrection line; under them the frame of what the character does: its state, the line of its
  * earning loop with „Zatrzymaj”, or the line of a stopped earning loop; and under the frame the section
- * „Wyposażenie”, from the creation of the character, with the figure of the character in it. The wide
+ * „Wyposażenie”, from the creation of the character, with the figure of the character and the tiles of
+ * its gear in it (`character-gear.tsx`). The wide
  * right area holds the section „Umiejętności” once a tree is known. The page holds the screen behind one
  * boundary, `createCharacterScreen` (D-36): an element of its own for the page to place, a first render
  * that is synchronous, `update(props)` and `dispose()`. The page calls them from an event handler or the
@@ -18,7 +19,7 @@ import { ARCHETYPES } from "../sim/data/archetypes.js";
 import { SKILLS, type BranchId, type SkillId } from "../sim/data/skills.js";
 import { waitingPractice } from "../sim/loop.js";
 import type { CharacterId, GameState } from "../sim/types.js";
-import { CharacterFigure } from "./character-figure.js";
+import { CharacterGear } from "./character-gear.js";
 import { statusLine } from "./character-status.js";
 import { CharacterTrees } from "./character-trees.js";
 import {
@@ -151,12 +152,11 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
               </p>
             )}
           </div>
-          <section className="character-screen-gear">
-            <h3>Wyposażenie</h3>
-            <div className="character-gear-body">
-              <CharacterFigure archetypeId={character.archetypeId} />
-            </div>
-          </section>
+          <CharacterGear
+            character={character}
+            run={state.run}
+            inLoop={loop !== undefined}
+          />
         </section>
         {trees.length === 0 ? null : (
           <CharacterTrees

@@ -1,7 +1,7 @@
 /*
  * The stylesheet of the screen Postać (D-421): its two areas, the name and the facts of a character with
  * its resurrection line, the frame of what the character does, the section „Wyposażenie” with the
- * figure, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
+ * figure and the tiles of its slots, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
  * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
@@ -39,15 +39,55 @@
  * The section „Wyposażenie” (D-461) under the frame of what the character does, in the left area, from
  * the creation of the character. Its heading is a heading of a section as „Umiejętności” has, in
  * `text-label` (D-40; rule of `.character-screen-skills h3` below). The body of the section holds the
- * figure of the character (D-445) in the middle of its width.
+ * figure of the character (D-445) in the middle of its width, with the tiles of the slots around it
+ * (D-461): the column of the head, the torso and the legs on its left, that of the two hands on its
+ * right, each tile next to the figure's side, and the row of the three pockets under all three, in the
+ * middle. The tiles are the shared button's own (styles.css gives their look and their size); this rule
+ * only gives them their places, and the columns may shrink below the tiles in them (`minmax(0, 1fr)`) so
+ * that nothing in the section widens the area. The gap between the columns is the narrower step, `--space-xs`,
+ * so that the two tiles, the figure and the gaps fit the left area of a window 1280 px wide, the narrowest
+ * the computer layout has, where it is the narrowest.
  */
 .character-screen-gear {
   margin-top: var(--space-m);
 }
 
 .character-gear-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "left figure right"
+    "pockets pockets pockets";
+  align-items: center;
+  gap: var(--space-s) var(--space-xs);
+}
+
+.character-gear-body > .character-figure {
+  grid-area: figure;
+}
+
+.character-gear-left,
+.character-gear-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.character-gear-left {
+  grid-area: left;
+  align-items: flex-end;
+}
+
+.character-gear-right {
+  grid-area: right;
+  align-items: flex-start;
+}
+
+.character-gear-pockets {
+  grid-area: pockets;
   display: flex;
   justify-content: center;
+  gap: var(--space-s);
 }
 
 /*
@@ -159,7 +199,11 @@
   color: var(--text-secondary);
 }
 
-/* The sections „Wyposażenie” and „Umiejętności”, their names in `text-label` (D-40), the sentence of an unfinished map run in `text-secondary` (D-287). */
+/*
+ * The sections „Wyposażenie” and „Umiejętności”, their names in `text-label` (D-40); under the heading
+ * the sentence of an unfinished map run in `text-secondary` (D-287), and in „Wyposażenie” also that of
+ * an earning loop (D-462), in the same role, as an explanation (D-40).
+ */
 .character-screen-gear h3,
 .character-screen-skills h3 {
   margin: 0 0 var(--space-s);
@@ -168,6 +212,7 @@
   color: var(--text-label);
 }
 
+.character-gear-note,
 .character-screen-skills-note {
   margin: 0 0 var(--space-s);
   color: var(--text-secondary);
