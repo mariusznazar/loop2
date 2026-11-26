@@ -39,9 +39,10 @@ const CAP_MINUTES = 4000;
 
 /**
  * The game as a player holds it before a send: the character "Ala" with the program, the chest
- * and the solved maps given, and the entries of `skills` laid over the skills of a new character.
+ * and the solved maps given, the entries of `skills` laid over the skills of a new character and
+ * the entries of `gear` laid over its empty gear.
  */
-function readyGame({ program, chest, solvedMaps, skills = {} }) {
+function readyGame({ program, chest, solvedMaps, skills = {}, gear = {} }) {
   let state = newKnowingGame();
   state = setProgram({ ...state, solvedMaps }, program).state;
   state = createCharacter(state, "Ala").state;
@@ -51,7 +52,11 @@ function readyGame({ program, chest, solvedMaps, skills = {} }) {
     team: {
       ...state.team,
       characters: [
-        { ...character, skills: { ...character.skills, ...skills } },
+        {
+          ...character,
+          skills: { ...character.skills, ...skills },
+          gear: { ...character.gear, ...gear },
+        },
       ],
       chest: { pieces: { ...chest } },
     },
@@ -89,8 +94,16 @@ function endOf(result) {
  * the set of the minutes the map runs ended in. `skills` is the skills as the game holds them,
  * `skillSpec` the same as the instrument is told them.
  */
-function agrees({ mapId, program, chest, solvedMaps, skills, skillSpec }) {
-  const ready = readyGame({ program, chest, solvedMaps, skills });
+function agrees({
+  mapId,
+  program,
+  chest,
+  solvedMaps,
+  skills,
+  skillSpec,
+  gear,
+}) {
+  const ready = readyGame({ program, chest, solvedMaps, skills, gear });
   const minutes = new Set();
   for (let index = 0; index < SEEDS_PER_CASE; index += 1) {
     const game = throughTheGame(
@@ -105,6 +118,7 @@ function agrees({ mapId, program, chest, solvedMaps, skills, skillSpec }) {
       chest,
       capMinutes: CAP_MINUTES,
       ...(skillSpec && { skills: buildSkills(skillSpec) }),
+      ...(gear && { gear }),
     });
     assert.deepEqual(endOf(instrument), game.ended, `seed ${game.seed}`);
     minutes.add(game.ended.minute);
@@ -159,6 +173,18 @@ test("on Las — głębiej with its best program and its chest the instrument en
     chest: { stick: 8, berry: 7 },
     solvedMaps: ["forestEdge", "forest"],
   });
+});
+
+// invariant: instrument-game-agreement
+test("on Las — głębiej with its best program, its chest and a stick in the main hand the instrument ends each seed as the game does", () => {
+  const minutes = agrees({
+    mapId: "forestDeep",
+    program: forestDeepBest,
+    chest: { stick: 8, berry: 7 },
+    solvedMaps: ["forestEdge", "forest"],
+    gear: { mainHand: "stick" },
+  });
+  assert.ok(minutes.size > 1);
 });
 
 // invariant: instrument-game-agreement

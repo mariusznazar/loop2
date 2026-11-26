@@ -8,11 +8,13 @@ import {
   ARCHETYPES,
   CREATED_ARCHETYPE,
 } from "../dist/browser/sim/data/archetypes.js";
+import { fitsSlot } from "../dist/browser/sim/character.js";
 import { ACTIONS } from "../dist/browser/sim/data/actions.js";
 import { BALANCE } from "../dist/browser/sim/data/balance.js";
 import { CAMPFIRE } from "../dist/browser/sim/data/campfire.js";
 import { CONDITIONS } from "../dist/browser/sim/data/conditions.js";
 import { CREATURES } from "../dist/browser/sim/data/creatures.js";
+import { GEAR_SLOTS } from "../dist/browser/sim/data/gear.js";
 import { ITEMS } from "../dist/browser/sim/data/items.js";
 import { MAPS } from "../dist/browser/sim/data/maps.js";
 import { BRANCHES, SKILLS } from "../dist/browser/sim/data/skills.js";
@@ -73,6 +75,24 @@ export function buildSkills(spec = {}) {
 }
 
 /**
+ * The gear of a character from `{ slot: item }` pairs, as the flag `--gear` gives them: each slot
+ * must be one of the data's slots and each item one of the data's items that fits that slot. Slots
+ * not named stay empty. Throws an error that names what the data lack or what does not fit.
+ */
+export function buildGear(spec = {}) {
+  const gear = {};
+  for (const [slot, item] of Object.entries(spec)) {
+    if (!Object.hasOwn(GEAR_SLOTS, slot))
+      throw new Error(`unknown slot ${slot}`);
+    if (!Object.hasOwn(ITEMS, item)) throw new Error(`unknown item ${item}`);
+    if (!fitsSlot(item, slot))
+      throw new Error(`item ${item} does not fit the slot ${slot}`);
+    gear[slot] = item;
+  }
+  return gear;
+}
+
+/**
  * The maps that must be solved before the game sends a character to `mapId`, the farthest back
  * first: the map that opens it, the one that opens that one, and so on.
  */
@@ -88,12 +108,14 @@ export function prerequisitesOf(mapId) {
 
 /**
  * A game state with one character, a full Understanding, the given program as the one the
- * character goes with, the given skills, chest and solved maps: the state every measurement starts
- * from. The skills are those of a new character where none are given.
+ * character goes with, the given skills, gear, chest and solved maps: the state every measurement
+ * starts from. The skills are those of a new character where none are given, and the gear is the
+ * gear of a new character, empty, where none is given.
  */
 export function makeState({
   program,
   skills,
+  gear = {},
   chest = {},
   solvedMaps = [],
 } = {}) {
@@ -107,7 +129,13 @@ export function makeState({
     ...state,
     team: {
       ...state.team,
-      characters: [{ ...created, skills: skills ?? created.skills }],
+      characters: [
+        {
+          ...created,
+          skills: skills ?? created.skills,
+          gear: { ...created.gear, ...gear },
+        },
+      ],
       chest: { pieces: { ...chest } },
     },
     solvedMaps: [...solvedMaps],
@@ -139,6 +167,7 @@ export function startOf(state, mapId, seed, skills) {
     { ...character.traits },
     skills,
     equipment.backpack,
+    character.gear,
   );
   return { map, program, equipment, reduced, run, events };
 }
@@ -209,10 +238,10 @@ function lootOf(run, equipment, program, map) {
 
 /**
  * One map run, to its end or to `capMinutes`: the layout from `seed`, the equipment taken from
- * `chest` by the program's take list as a send to a map not yet solved takes it. The maps that open
- * `mapId` count as solved. The Understanding is full, so nothing is discovered and no game minute
- * pauses. Gives how the map run ended, `solved`, `death` with its cause, or `cap`, and what it
- * showed on the way.
+ * `chest` by the program's take list as a send to a map not yet solved takes it, and the character
+ * starts with the `gear` given (empty where none is). The maps that open `mapId` count as solved.
+ * The Understanding is full, so nothing is discovered and no game minute pauses. Gives how the map
+ * run ended, `solved`, `death` with its cause, or `cap`, and what it showed on the way.
  */
 export function runOnce(options) {
   const {
@@ -220,12 +249,14 @@ export function runOnce(options) {
     program,
     seed,
     skills = buildSkills(),
+    gear = {},
     chest = {},
     capMinutes = DEFAULT_CAP_MINUTES,
   } = options;
   const state = makeState({
     program,
     skills,
+    gear,
     chest,
     solvedMaps: prerequisitesOf(mapId),
   });

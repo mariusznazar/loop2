@@ -33,13 +33,15 @@ export function chestOf(program) {
 /**
  * The row of one map and one program, which the row names by its neutral label: the sweep's figures
  * and the earning loop's balance, from the game's own simulation run through the engine. The chest
- * is the program's take list; the skills are the ones given, a new character's where none are.
+ * is the program's take list; the skills are the ones given, a new character's where none are, and
+ * the gear is the one given to the sweep's character, empty where none is.
  */
 export function measureRow({
   mapId,
   programLabel,
   program,
   skills,
+  gear = {},
   sweepSeeds = CHECK_SWEEP_SEEDS,
   loopSeeds = CHECK_LOOP_SEEDS,
   hours = CHECK_LOOP_HOURS,
@@ -50,6 +52,7 @@ export function measureRow({
     program,
     seeds: sweepSeeds,
     skills,
+    gear,
     chest,
   });
   const balance = loopBalance({
