@@ -22,7 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                                                                               | —          | D-40     |
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
-| `window-frame`    | other      | To jest okno, które leży nad ekranem pod nim: ramka okna reguły i okna grupy w edytorze programu, z co najmniej 3:1 wobec `panel` i `highlight`. | —          | D-40 · D-42 |
+| `window-frame`    | other      | To jest okno, które leży nad ekranem pod nim: ramka okna reguły i okna grupy w edytorze programu, z co najmniej 3:1 wobec kolorów, których dotyka.                                                                                                                                                                                                                           | —          | D-40 · D-42 |
 | `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu; stoi też jako wypełnienie paska energii natury w wierszu ciała, choć wypełnienie nie jest tekstem, z co najmniej 3:1 wobec toru w `highlight` przy pełnym kryciu, i jako nazwa wartości w przycisku komórki wiersza ciała pod kursorem i wtedy, gdy jej objaśnienie stoi otwarte; stoi też jako jasny środek kreski temperatury teraz na skali temperatury w wierszu ciała, między jej ciemnymi bokami, choć nie jest tekstem.                                                                                                                                                                      | —          | D-40 · D-43 |
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, i jako wypełnienie paska wprawy drzewa na ekranie Postać, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
@@ -195,13 +195,13 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
   ekranie Postać ma co najmniej 2:1 wobec `panel` — para osobna, próg własny
   produktu, nie kryterium WCAG, żeby tor nie zlał się z tłem bloku; tekstu
   w `text-disabled` ten próg nie dotyczy (D-42, D-40);
-- `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
-  tłach;
+- `control-border`, `focus` i `window-frame`, ramka okna reguły i okna grupy, mają co
+  najmniej 3:1 na tych samych pięciu tłach: okno stoi na `panel`, dotyka wiersza otwartego na
+  `highlight` i wierszy na `rule-winning` i `rule-running` pod swoją dolną krawędzią, a w układzie
+  komputera bokiem `page` za kolumną (D-42);
 - `condition-unmet`, pasek reguły, której warunek nie jest spełniony, nie ma
   progu, a pasek w `positive` i w `warning` nie dokłada pary, bo te role
   mają już próg 4,5:1 na pięciu tłach;
-- `window-frame`, ramka okna reguły i okna grupy, ma co najmniej 3:1 wobec `panel`, tła okna
-  i kolumny, na której leży, i wobec `highlight`, tła wiersza otwartego, którego dotyka (D-42);
 - `character` ma co najmniej 3:1 na `tile-revealed` i na `tile-hidden`;
 - `tile-revealed` ma co najmniej 3:1 wobec `tile-hidden`;
 - wypełnienia pasków wiersza ciała — `positive` zdrowia, `satiety-fill` sytości

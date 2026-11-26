@@ -419,7 +419,8 @@
 
 /*
  * The rule panel (styleguide rule "Program editor", D-288, D-290, D-293, D-302, D-306): a block on
- * `panel` with its text in `text` and a frame in `divider`; the heading, a name, in `text-strong`; the
+ * `panel` with its text in `text` and a frame of `--frame-width`, in `divider` here and in
+ * `window-frame` where it stands as the window, by the rule below; the heading, a name, in `text-strong`; the
  * labels of its fields, the names of the groups of actions and the time beside an action in
  * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
  * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
