@@ -234,9 +234,9 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323 · D-329 · D-439 · D-337 · D-450
+- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323 · D-329 · D-439 · D-337 · D-450 · D-461
 - **Invariant:** none
-- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; przycisk „Oceń na 12 ziarnach” na czas liczenia oceny wyłączony i z napisem „Oceniam…”, choć na serwer nie czeka; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
+- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; przycisk „Oceń na 12 ziarnach” na czas liczenia oceny wyłączony i z napisem „Oceniam…”, choć na serwer nie czeka; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania; kafelek pustego miejsca wyposażenia pokazuje bladą nazwę miejsca w `text-label`, a wybrany ma ramkę w `selected`.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
 
 Wspólne kontrolki stoją w `src/browser/view/controls/`, a ekrany budują z nich
@@ -384,6 +384,24 @@ Kontrolki odstępujące od tej listy stanów:
   z tłem komórki; nazwa jaśnieje zamiast tła, jak nazwa otwartej komórki w starym Loopie (D-40).
   Cel dotyku w układzie telefonu trzyma jak każdy przycisk. Komórka zdrowia, która nie jest
   przyciskiem, nie jest kontrolką i stanów nie ma.
+- `src/browser/view/controls/react-button.tsx`
+  — kafelek miejsca wyposażenia, rodzaj wspólnego przycisku (D-44, D-461): kwadrat, który
+  zamiast tekstu niesie ikonę przedmiotu, jaki miejsce trzyma, albo bladą nazwę miejsca, gdy
+  miejsce jest puste. Default — bez własnego tła, ramka w `control-border`, ikona rysowana maską
+  w `text-strong`, bo obok niej nie ma tekstu (D-43). Hover — tło `highlight`, jak u każdego
+  przycisku, ramka i rola treści bez zmiany; tor paska, który kazał komórce wiersza ciała
+  odejść od tego, tu nie stoi. Visible focus — obwódka z reguły Visible focus. Wybrany w swojej
+  grupie — ramka w `selected`, jak wybrana komórka wyboru, i `aria-pressed`, a treść w tej samej
+  roli co niewybranego; wybrany jest najwyżej jeden kafelek grupy. Disabled — treść w
+  `text-disabled`, ramka w `control-border`, jak u każdego wyłączonego przycisku. Empty —
+  kafelek miejsca, które nic nie trzyma: pusta jest treść kafelka, nie lista, więc stan to
+  blada nazwa miejsca w `text-label` zamiast ikony, jak puste pole z podpowiedzią w `text-label`.
+  Error nie dotyczy, bo kafelek nie ma wpisu; loading nie dotyczy, bo kafelek nie czeka na
+  serwer, a kontrolka tego rodzaju nie ma tekstu oczekiwania. Powód odstępstwa: wspólny
+  przycisk ma sam tekst, a kafelek ma kształt kwadratu i treść, którą jest ikona albo nazwa,
+  więc jego stany stoją tu osobno, a nie wynikają z postaci zwykłego przycisku. Cel dotyku
+  w układzie telefonu trzyma jak każdy przycisk, kwadratem o obu bokach co najmniej
+  `--touch-target-min`.
 
 Kontrolka, która odstępuje od listy stanów, stoi tu ze swoją ścieżką i powodem;
 reguła nie powtarza listy kontrolek, którą trzyma kod. Przegląd porównuje stany
@@ -1097,30 +1115,86 @@ between them).
 
 ### The screen Postać
 
-- **Decision:** D-445 · D-446 · D-447 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-389 · D-39 · D-40 · D-43 · D-44 · D-396
+- **Decision:** D-445 · D-446 · D-447 · D-454 · D-461 · D-462 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-288 · D-289 · D-291 · D-389 · D-39 · D-40 · D-43 · D-44 · D-396
 - **Invariant:** none
-- **Good:** Lewy blok z ludzikiem na płaskim tle bloku, obok niego imię w `text-strong`, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
-- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik na kawałku polany albo z tekstem na nim; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
+- **Good:** Lewy blok z imieniem w `text-strong` u góry, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`, a pod ramką sekcja „Wyposażenie” z nagłówkiem w `text-label`: ludzik dwa razy większy niż na pasie obozu, na płaskim tle bloku, pośrodku ośmiu kwadratowych kafelków — po lewej „Głowa”, „Tułów” i „Nogi”, po prawej „Ręka główna” i „Druga ręka”, pod nim trzy kieszenie — z samą ikoną patyka w `text-strong` na kafelku ręki głównej i z bladymi nazwami miejsc w `text-label` na pustych; po dotknięciu kafelka ręki jego ramka w `selected`, a pod kafelkami „Ręka główna: patyk” w `text-strong` i komórki wyboru, wśród nich „Zdejmij” bez ikony, a gdy skrzynka jest pełna, wyszarzone z powodem „skrzynka pełna” w `text-secondary`; przy postaci w pętli nad kafelkami „Postać jest w pętli. Zmiana działa od następnego przejścia.” w `text-secondary`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
+- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik obok imienia u góry lewego bloku albo w wielkości ludzika z pasa obozu; ludzik na kawałku polany albo z tekstem na nim; nazwa przedmiotu albo liczba napisana na kafelku z ikoną; wybrany kafelek zaznaczony tłem `highlight` zamiast ramki w `selected`; blada nazwa miejsca w `text-disabled`, jakby miejsca nie dało się użyć; kafelek miejsca, do którego nic nie pasuje, ukryty do chwili, gdy gracz ma pasujący przedmiot; kafelek jako `<button>` ekranu z klasą własną albo kafelek niższy albo węższy niż `--touch-target-min` w układzie telefonu; „Zdejmij” z ikoną; wyszarzona komórka wyboru bez powodu; sekcja „Wyposażenie” w prawym bloku nad „Umiejętnościami”; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte i kafelek wybrany przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
 
 Ekran Postać (`#/postac/{n}`, D-281) ma dwa obszary, każdy osobny (D-282), i każdy stoi w bloku
 `screen-area`, jak kolumny ekranów Siedziba, Mapy, Wiedza i Przejście: na tle `panel` z cienką ramką
 w `divider`. Lewy obszar jest wąski, prawy szeroki — ta sama proporcja co kolumny ekranów Mapy i
 Wiedza, jedna czwarta i trzy czwarte szerokości w układzie komputera — a w układzie telefonu, w oknie
-węższym niż 1280 px, lewy stoi nad prawym (D-396).
+węższym niż 1280 px, lewy stoi nad prawym (D-396), więc sekcja „Wyposażenie” lewego obszaru stoi
+wtedy nad „Umiejętnościami” prawego.
 
-- Lewy obszar, u góry: ludzik postaci (D-445), ten sam obrazek, w tej samej wielkości i w tym samym
-  takcie co ta postać na pasie obozu Siedziby, nieruchomy pod ustawieniem ograniczenia ruchu, bez
-  polany, wprost na płaskim tle bloku (D-272). Jest obrazkiem: bez tekstu, bez reakcji na kliknięcie
-  i klawiaturę, ukryty przed czytnikami ekranu, jak pas obozu (D-389).
-- Obok ludzika (D-446): imię jako nagłówek w `text-strong`, łamane w swoim wierszu (reguła A name
-  typed by the player breaks in its row); pod nim jeden wiersz z „pokolenie {n}” od drugiego
-  pokolenia (D-218), znaczkiem archetypu i nazwą archetypu, wszystko w `text-secondary`, a znaczek
-  rysowany maską w kolorze nazwy obok (D-43); pod nim wiersz wskrzeszenia w `text-secondary`,
-  a przy zerze użyć w `danger` (D-217).
+- Lewy obszar, u góry (D-446): imię jako nagłówek ekranu w `text-strong`, łamane w swoim wierszu
+  (reguła A name typed by the player breaks in its row); pod nim jeden wiersz z „pokolenie {n}” od
+  drugiego pokolenia (D-218), znaczkiem archetypu i nazwą archetypu, wszystko w `text-secondary`,
+  a znaczek rysowany maską w kolorze nazwy obok (D-43); pod nim wiersz wskrzeszenia w `text-secondary`,
+  a przy zerze użyć w `danger` (D-217). Imię i oba wiersze stoją osobno od ludzika, który stoi niżej,
+  w sekcji „Wyposażenie”.
 - Pod nimi ramka tego, co postać robi (D-447): zawsze obecna, bez nagłówka, prostokąt obrysowany
   cienką linią w `divider` wewnątrz bloku. Pierwszy wiersz w `text` — „W obozie”, „Przejście: …” albo
   wiersz pętli z przyciskiem niszczącym „Zatrzymaj” (D-244, D-44); po zatrzymaniu pętli pod „W obozie”
   wiersz „Pętla zatrzymana …” w `text-secondary` (D-245). Innych przycisków w ramce nie ma.
+- Pod ramką sekcja „Wyposażenie” (D-461): nagłówek „Wyposażenie” w `text-label`, jak „Umiejętności”
+  w prawym obszarze, ale sekcja stoi zawsze, od utworzenia postaci, bo każda postać ma wyposażenie
+  — „Umiejętności” stoją dopiero, gdy gracz zna drzewo (D-199). Między nagłówkiem a kafelkami stoi,
+  w `text-secondary` jako wyjaśnienie (D-40), jedno z dwóch zdań, gdy zachodzi jego przypadek:
+  - przy postaci w pętli zarobkowej „Postać jest w pętli. Zmiana działa od następnego przejścia.”;
+    kafelki pokazują wtedy wyposażenie ustawione na jej następne przejście, a ekran nie dokłada
+    drugiego rzędu z tym, co postać trzyma w trwającym przejściu (D-462);
+  - przy postaci, której przejście ręczne stoi w grze niezakończone — idzie, czeka w pauzie albo
+    skończyło się i czeka na „Restart” albo „Zakończ” — „Przejście na mapie {mapa} jest niezakończone.
+    Wyposażenie zmienisz po jego zakończeniu.”, jak zdanie nad „Umiejętnościami” (D-287); kafelki tej
+    postaci są wtedy wyłączone, a kafelki innych postaci zostają do wyboru.
+- Ludzik postaci (D-445) stoi w sekcji pośrodku kafelków miejsc: ten sam obrazek i w tym samym takcie
+  klatek co ta postać na pasie obozu Siedziby, ale dwa razy większy, nieruchomy pod ustawieniem
+  ograniczenia ruchu, bez polany, wprost na płaskim tle bloku (D-272). Stoi tak samo, cokolwiek
+  postać robi. Jest obrazkiem: bez tekstu na nim i nad nim, bez reakcji na kliknięcie i klawiaturę,
+  ukryty przed czytnikami ekranu, jak pas obozu (D-389).
+- Kafelki miejsc (D-461, D-454): osiem, każdy kwadratem, czyli o równej szerokości i wysokości — to
+  wymiar układu, którego D-43 nie liczy. Po lewej stronie ludzika stoją „Głowa”, „Tułów” i „Nogi”,
+  po prawej „Ręka główna” i „Druga ręka”, pod ludzikiem w rzędzie trzy kieszenie. Stoi każde miejsce,
+  także to, do którego nic z danych gry jeszcze nie pasuje: jest wtedy puste (D-454).
+  - Kafelek miejsca, które coś trzyma, pokazuje samą ikonę przedmiotu z danych gry, tę samą co przy
+    rzeczy w obszarze Zrozumienie ekranu Wiedza, rysowaną maską w `text-strong`, bo obok niej nie
+    ma tekstu (D-43, jak ikona nad głową maga); nazwy przedmiotu ani liczby na nim nie ma, nazwę
+    przedmiotu czyta czytnik ekranu.
+  - Kafelek miejsca, które nic nie trzyma, pokazuje bladą nazwę miejsca w `text-label`: bladość daje
+    rola, nie przezroczystość ani nowy kolor. Nie jest w `text-disabled`, bo `text-disabled` mówi,
+    że tego nie da się teraz użyć, a puste miejsce da się wybrać.
+  - Kafelek wybrany ma ramkę w `selected`, jak wybrana komórka wyboru (D-40), i `aria-pressed`;
+    jego treść zostaje w swojej roli, więc wybrane puste miejsce dalej ma bladą nazwę. Wybrany jest
+    najwyżej jeden z ośmiu. Kafelek wyłączony, przy niezakończonym przejściu ręcznym, ma treść
+    w `text-disabled`.
+- Wybór pod kafelkami (D-461): dotknięcie kafelka wybiera go i otwiera pod kafelkami wybór, dotknięcie
+  innego kafelka przenosi wybór na niego, a drugie dotknięcie wybranego go zamyka; wybór przedmiotu
+  albo „Zdejmij” też zamyka wybór. Każde wejście na ekran zaczyna bez wybranego kafelka, jak drzewa
+  zaczynają zwinięte.
+  - Nad komórkami stoi nagłówek „{miejsce}: {rzecz}”, a przy pustym miejscu „{miejsce}: nic”,
+    w `text-strong`, bo to nazwa, na którą patrzy się najpierw (D-40).
+  - Komórki to komórki wyboru wspólnej kontrolki, te same, których używa wybór czynności w edytorze
+    programu (reguła States of shared controls, D-288): jedna na każdy przedmiot ze skrzynki, który
+    pasuje do miejsca, z ikoną przedmiotu rysowaną maską w kolorze nazwy obok (D-291, D-43), nazwą
+    i liczbą sztuk, jakie ma skrzynka, obie w roli nazwy; a gdy miejsce coś trzyma, komórka „Zdejmij”
+    bez ikony, bo ikonę ma każda czynność programu (D-291), a „Zdejmij” czynnością programu nie jest.
+    Przedmiotu, którego nie ma w skrzynce, wybór nie pokazuje.
+  - Komórka, której nie da się wybrać, jest wyszarzona z powodem w `text-secondary`, jak wyszarzona
+    komórka wyboru w oknie reguły (D-289): „Zdejmij” z powodem „skrzynka pełna”.
+  - Gdy do miejsca nic ze skrzynki nie pasuje, stoi jedno zdanie „W skrzynce nie ma nic, co tu
+    pasuje.” w `text-secondary`, jak puste listy ekranu Mapy, a przy zajętym miejscu obok niego
+    komórka „Zdejmij”.
+- Kafelek jest wspólną kontrolką (D-44, D-461): rodzajem wspólnego przycisku z
+  `src/browser/view/controls/react-button.tsx`, nigdy `<button>` ekranu z klasą własną; jego
+  wygląd stoi we wspólnym arkuszu `src/browser/styles.css`, a stany pokazuje strona wszystkich stanów
+  (reguła States of shared controls). Ekran daje mu tylko miejsce w układzie sekcji. W układzie
+  telefonu kafelek i komórka wyboru trzymają cel dotyku `--touch-target-min` (reguła Everything is
+  done by touch, and every control holds the touch target), a kafelek, który jest kwadratem, ma
+  oba boki co najmniej tej wielkości; ludzik z kafelkami po obu jego stronach mieści się przy
+  obszarze strony 360 px w szerokości sekcji i nic się nie przewija w bok (reguła Nothing scrolls to
+  the side in the phone layout, and no text crosses its frame). Reguły układu telefonu sekcji sprawdza agent
+  w przeglądarce, nie test (reguła Two layouts and one threshold between them).
 - Prawy obszar: nagłówek „Umiejętności” w `text-label`; obszaru nie ma, póki gracz nie zna żadnego
   drzewa (D-199). Zdanie o niezakończonym przejściu stoi pod nagłówkiem w `text-secondary` (D-287).
 - Wiersz drzewa (D-199) w kolumnach, oddzielony od sąsiednich cienką linią w `divider`: zwijak —
@@ -1507,14 +1581,18 @@ design token”).
 
 ### The body row of a map run
 
-- **Decision:** D-337 · D-450 · D-311 · D-178 · D-39 · D-40 · D-42 · D-44 · D-04 · D-396 · D-407 · D-317 · D-322 · D-57 · D-125
+- **Decision:** D-337 · D-450 · D-311 · D-178 · D-39 · D-40 · D-42 · D-44 · D-04 · D-396 · D-407 · D-317 · D-322 · D-57 · D-125 · D-455
 - **Invariant:** none
-- **Good:** Komórka sytości poniżej progu: „Sytość” po lewej i „14 %” po prawej w `danger`, pod nimi pasek w `satiety-fill` na torze w `highlight`, pulsujący w swoim kolorze, a pod paskiem „głoduje” w `danger`; komórka temperatury ze skalą w trzech strefach, z kreską o jasnym środku w `text-strong` i ciemnych bokach w `scale-marker` i z ramką w `warming-frame` przy ognisku; po kliknięciu „Sytość” jej objaśnienie stoi tuż pod czterema komórkami, nad plecakiem, a drugie kliknięcie je zamyka; „−21 · wilk” w komórce zdrowia, pod jej paskiem, po starciu z wilkiem przy tempie 4×; przy obszarze strony 360 px cztery komórki w dwóch rzędach po dwie, bez przewijania w bok.
-- **Bad:** Wypełnienie paska sytości zmieniające kolor na `danger` przy alarmie; pasek pod plecakiem; skala temperatury bez strefy przegrzania albo ze strefami, które się stykają bez przerwy; kreska cała ciemna, której w środku strefy nie odróżnić od przerwy; pulsująca albo przesuwająca się ramka komórki temperatury; pulsowanie, które staje w pauzie gracza; cios znaleziony porównaniem zdrowia z poprzednim odczytem; dwa objaśnienia otwarte naraz albo objaśnienie pod plecakiem; tło `highlight` pod kursorem na przycisku komórki; „Energia natury 0” w `danger`; czas, odstęp albo kolor wiersza ciała wpisany w jego arkusz zamiast tokenu.
+- **Good:** Komórka sytości poniżej progu: „Sytość” po lewej i „14 %” po prawej w `danger`, pod nimi pasek w `satiety-fill` na torze w `highlight`, pulsujący w swoim kolorze, a pod paskiem „głoduje” w `danger`; komórka temperatury ze skalą w trzech strefach, z kreską o jasnym środku w `text-strong` i ciemnych bokach w `scale-marker` i z ramką w `warming-frame` przy ognisku; po kliknięciu „Sytość” jej objaśnienie stoi tuż pod czterema komórkami, nad plecakiem, a drugie kliknięcie je zamyka; „−21 · wilk” w komórce zdrowia, pod jej paskiem, po starciu z wilkiem przy tempie 4×; pod wierszem plecaka wiersz „Wyposażenie: patyk w ręku, 2 × opatrunek pod ręką”, tym samym tekstem i bez paska; przy obszarze strony 360 px cztery komórki w dwóch rzędach po dwie, bez przewijania w bok.
+- **Bad:** Wypełnienie paska sytości zmieniające kolor na `danger` przy alarmie; pasek pod plecakiem; skala temperatury bez strefy przegrzania albo ze strefami, które się stykają bez przerwy; kreska cała ciemna, której w środku strefy nie odróżnić od przerwy; pulsująca albo przesuwająca się ramka komórki temperatury; pulsowanie, które staje w pauzie gracza; cios znaleziony porównaniem zdrowia z poprzednim odczytem; dwa objaśnienia otwarte naraz albo objaśnienie pod plecakiem; tło `highlight` pod kursorem na przycisku komórki; „Energia natury 0” w `danger`; wiersz wyposażenia nad wierszem plecaka, z paskiem albo z kieszeniami przed ręką; czas, odstęp albo kolor wiersza ciała wpisany w jego arkusz zamiast tokenu.
 
 Wiersz ciała stoi w obszarze świata ekranu przejścia, pod „Teraz” i „Potem” (D-311): cztery
 wartości ciała — temperatura, sytość, zdrowie i energia natury — każda w komórce, a pod nimi wiersz
-plecaka, który jest samym tekstem i nie ma paska. Komponent to `src/browser/view/body-row-cells.tsx`,
+plecaka, który jest samym tekstem i nie ma paska, a pod wierszem plecaka wiersz wyposażenia (D-311):
+tym samym tekstem co wiersz plecaka, w tej samej roli i wielkości, bez paska, z ręką przed kieszeniami
+— „Wyposażenie: patyk w ręku, 2 × opatrunek pod ręką”, „Wyposażenie: 2 × opatrunek pod ręką”,
+„Wyposażenie: patyk w ręku” i, gdy postać nic nie trzyma, „Wyposażenie: nic”. Wyposażenie nie wchodzi
+do wiersza plecaka (D-455). Komponent to `src/browser/view/body-row-cells.tsx`,
 liczby, skale, dopiski i słowa objaśnień składa `src/browser/view/body-row.ts`, znacznik ciosu
 `src/browser/view/body-blow.ts`, wspólny wygląd komórki stoi w `src/browser/styles.css` (strona
 wszystkich stanów czyta tylko ten arkusz, reguła A stylesheet of its own for each screen and each
