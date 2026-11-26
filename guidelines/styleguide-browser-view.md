@@ -1473,8 +1473,9 @@ Paski i skala (D-337, D-39, D-40, D-42):
   w strefie wychłodzenia dokładnie wtedy, gdy temperatura jest w alarmie; strefa przegrzania jest
   liczbą rysunku, bo gra przegrzania nie ma. Kreska temperatury teraz, w `scale-marker`, ma
   szerokość `--bar-width` i wysokość skali, nie wychodzi poza skalę, a poniżej lewego końca skali
-  stoi przy nim. Kreska jest ciemna, a przerwa między strefami pokazuje ciemny `panel`, więc przy
-  temperaturze tuż przy granicy stref kreska zlewa się z przerwą; liczba niesie wtedy wartość;
+  stoi przy nim. Kreska jest ciemna, a przerwy między strefami pokazują
+  ciemny `panel`, więc kreska w środku strefy wygląda jak jeszcze jedna przerwa; od przerwy
+  odróżnia ją tylko szerokość i ledwie ciemniejszy odcień, a wartość niesie wtedy liczba;
 - długość wypełnienia i miejsce kreski zmieniają się płynnie, w czasie, który stoi w regule
   w `src/browser/run-screen.css`, a przy pierwszym rysowaniu wiersza i pod systemowym ustawieniem
   ograniczenia ruchu stają od razu.
