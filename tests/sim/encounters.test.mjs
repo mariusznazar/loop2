@@ -543,12 +543,21 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
     ["activityFinished", "tileRevealed", "attacked", "discovered"],
   );
   assert.deepEqual(result.state.discovery, {
-    actions: ["walkTo", "gather", "patrol", "strikeWithStick", "kick", "dodge"],
+    actions: [
+      "walkTo",
+      "gather",
+      "patrol",
+      "strikeWithStick",
+      "kick",
+      "dodge",
+      "equip",
+    ],
     conditions: [
       "hereBelow",
       "itemBelow",
       "healthBelow",
       "opponentHealthBelow",
+      "emptyPlace",
     ],
     items: ["stick"],
     trees: ["smallItemGathering", "oneHandedCombat", "kicking", "dodging"],
@@ -587,8 +596,13 @@ test("first chill and attack in one minute keep the automatic exploration rule b
   assert.deepEqual(result.state.ruleCounts, { 1: 0 });
   assert.equal(result.state.run.current, null);
   assert.deepEqual(result.state.discovery, {
-    actions: ["wander", "strikeWithStick", "kick", "dodge"],
-    conditions: ["temperatureBelow", "healthBelow", "opponentHealthBelow"],
+    actions: ["wander", "strikeWithStick", "kick", "dodge", "equip"],
+    conditions: [
+      "temperatureBelow",
+      "healthBelow",
+      "opponentHealthBelow",
+      "emptyPlace",
+    ],
     items: [],
     trees: ["oneHandedCombat", "kicking", "dodging"],
     creatures: ["wolf"],
