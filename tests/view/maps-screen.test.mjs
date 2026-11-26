@@ -95,7 +95,7 @@ const propsOf = (state, mapId = null, nowMs = NOW, cache = null) => ({
   state,
   nowMs,
   mapId,
-  readRecord: (ids) => cache?.read(ids) ?? null,
+  readRecord: (ids) => cache?.read(ids, state) ?? null,
   readMapRecord: () => null,
 });
 
@@ -119,19 +119,26 @@ function mapStorage() {
 
 /**
  * The judging cache of the account `accountId`'s game made at `madeAtMs`, opened on `storage` with
- * `state` as the loaded game.
+ * `state` as the loaded game. A read or a write the case gives no game state takes the loaded game, as at
+ * a page whose game state at hand is the one it opened the cache with.
  */
 function cacheOn(
   storage,
   state,
   { accountId = ACCOUNT, madeAtMs = MADE, afterRefusedSave = false } = {},
 ) {
-  return openJudgingCache({
+  const opened = { ...state, madeAtMs };
+  const cache = openJudgingCache({
     accountId,
-    state: { ...state, madeAtMs },
+    state: opened,
     afterRefusedSave,
     storage,
   });
+  return {
+    ...cache,
+    read: (ids, at = opened) => cache.read(ids, at),
+    remember: (ids, given, at = opened) => cache.remember(ids, given, at),
+  };
 }
 
 /**

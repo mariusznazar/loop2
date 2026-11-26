@@ -97,15 +97,23 @@ function refusingStorage(initial = {}) {
   };
 }
 
-/** Opens the cache on `storage` with `state` as the loaded game. */
+/**
+ * Opens the cache on `storage` with `state` as the loaded game. A read or a write the case gives no game
+ * state takes the loaded game, as at a page whose game state at hand is the one it opened the cache with.
+ */
 function open(storage, state = game(), over = {}) {
-  return openJudgingCache({
+  const cache = openJudgingCache({
     accountId: ACCOUNT,
     state,
     afterRefusedSave: false,
     storage,
     ...over,
   });
+  return {
+    ...cache,
+    read: (ids, at = state) => cache.read(ids, at),
+    remember: (ids, given, at = state) => cache.remember(ids, given, at),
+  };
 }
 
 const keysOf = (storage) => [...storage.held.keys()].sort();
@@ -137,15 +145,6 @@ test("a judging is stored with the count of its character in the game state it r
       .gearChanges,
     0,
   );
-});
-
-test("where no state is given the state the cache was opened with is the one the judging read and the one at hand", () => {
-  // decision: D-463 "The value of a remembered judging holds the count of its character in the game state the judging read (D-441), and the judging stands beside the list „Program:” only while that count equals the count the game state gives its character, so that a change of the gear made by the player erases every judging remembered for that character, on every map (D-440)."
-  const storage = mapStorage();
-  const cache = open(storage, game({ ala: 4 }));
-  cache.remember(ALA, record(5));
-  assert.equal(JSON.parse(storage.held.get(ALA_KEY)).gearChanges, 4);
-  assert.deepEqual(cache.read(ALA), record(5));
 });
 
 // Catches a judging that stands after a change of the gear, one that stands for a count below as well as

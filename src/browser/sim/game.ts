@@ -658,8 +658,7 @@ export function setPace(state: GameState, pace: Pace): GameResult {
  * death settled at an earlier real moment after another never moves back (D-240); the settlement
  * holds the uses spent after it. With none left the character loses all its practice and ranks and its
  * generation number grows by one, the uses and their moment unchanged. The gear goes as
- * `teamAtRunEnd` gives it from `runGear`, the gear the map run left, the character's own where none is
- * given: taken where no use is left at `nowMs`, a character with no practice included, and given back
+ * `teamAtRunEnd` gives it from `runGear`, the gear the map run left: taken where no use is left at `nowMs`, a character with no practice included, and given back
  * otherwise, the death that spends the last use included (D-190). `nowMs` is taken as a safe
  * integer; the caller checks it. A safe `nowMs` that carries a moment of the clock beyond the safe
  * integers is still a RangeError (D-386).
@@ -669,7 +668,7 @@ export function teamAfterDeath(
   died: Character,
   gathered: Practice,
   nowMs: number,
-  runGear: Gear = died.gear,
+  runGear: Gear,
 ): { team: Team; settlement: DeathSettlement } {
   const { spent, nextReturnMs } = usesAt(team, nowMs);
   const noneLeft = spent >= BALANCE.resurrectionUses;

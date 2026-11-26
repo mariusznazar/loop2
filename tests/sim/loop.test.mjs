@@ -1309,14 +1309,21 @@ test("no function of the earning loop changes a value passed to it, an earning l
   const character = team.characters[0];
   assertPure(
     "teamAfterDeath with a use left",
-    () => teamAfterDeath(team, character, {}, T0),
+    () => teamAfterDeath(team, character, {}, T0, character.gear),
     team,
     character,
   );
   const used = structuredClone(usedUpUntil(practised, T0 + 1).team);
   assertPure(
     "teamAfterDeath with none left",
-    () => teamAfterDeath(used, used.characters[0], { eating: 1 }, T0),
+    () =>
+      teamAfterDeath(
+        used,
+        used.characters[0],
+        { eating: 1 },
+        T0,
+        used.characters[0].gear,
+      ),
     used,
   );
   const knowing = structuredClone(started);
@@ -1353,7 +1360,13 @@ test("what a death does to the team is one rule for a manual map run and an earn
     ["no practice, a use left", game(), "noPractice"],
     ["no practice, none left", usedUpUntil(game(), T0 + 1), "noPractice"],
   ]) {
-    const viaFunction = teamAfterDeath(state.team, ala(state), {}, T0);
+    const viaFunction = teamAfterDeath(
+      state.team,
+      ala(state),
+      {},
+      T0,
+      ala(state).gear,
+    );
     assert.equal(viaFunction.settlement.kind, kind, name);
     const loopDead = advanceLoopRun(
       dyingNext(startLoop(state, FOREST, T0).state),
@@ -1382,15 +1395,15 @@ test("a character with no practice in its skills has practice when its earning l
   const bare = game().team.characters[0];
   const team = game().team;
   assert.equal(
-    teamAfterDeath(team, bare, {}, T0).settlement.kind,
+    teamAfterDeath(team, bare, {}, T0, bare.gear).settlement.kind,
     "noPractice",
   );
   assert.equal(
-    teamAfterDeath(team, bare, { eating: 1 }, T0).settlement.kind,
+    teamAfterDeath(team, bare, { eating: 1 }, T0, bare.gear).settlement.kind,
     "resurrectionUsed",
   );
   assert.equal(
-    teamAfterDeath(team, bare, { eating: 0 }, T0).settlement.kind,
+    teamAfterDeath(team, bare, { eating: 0 }, T0, bare.gear).settlement.kind,
     "noPractice",
   );
 });

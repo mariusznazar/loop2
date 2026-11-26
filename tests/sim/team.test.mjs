@@ -246,7 +246,13 @@ function withUses(state, spent, nextMs) {
 
 /** What the death of the team's character `index` at the real moment `nowMs` does to the team. */
 const dies = (team, index, nowMs) =>
-  teamAfterDeath(team, team.characters[index], {}, nowMs);
+  teamAfterDeath(
+    team,
+    team.characters[index],
+    {},
+    nowMs,
+    team.characters[index].gear,
+  );
 
 /** The uses of the team's resurrection at a moment, as a pair: the uses left and the moment of the next return. */
 function stock(team, nowMs) {

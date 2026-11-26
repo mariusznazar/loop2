@@ -116,15 +116,25 @@ function brokenStorage() {
   };
 }
 
-/** Opens the cache on `storage`; `madeAtMs` is the moment of the game state it is opened with. */
+/**
+ * Opens the cache on `storage`; `madeAtMs` is the moment of the game state it is opened with. A read or a
+ * write of a judging the case gives no game state takes that one, as at a page whose game state at hand is
+ * the one it opened the cache with.
+ */
 function open(storage, { madeAtMs = MADE, state, ...over } = {}) {
-  return openJudgingCache({
+  const opened = state ?? loaded({ madeAtMs });
+  const cache = openJudgingCache({
     accountId: ACCOUNT,
-    state: state ?? loaded({ madeAtMs }),
+    state: opened,
     afterRefusedSave: false,
     storage,
     ...over,
   });
+  return {
+    ...cache,
+    read: (ids, at = opened) => cache.read(ids, at),
+    remember: (ids, given, at = opened) => cache.remember(ids, given, at),
+  };
 }
 
 /** The keys a storage holds, sorted. */

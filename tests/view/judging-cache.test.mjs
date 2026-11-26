@@ -124,15 +124,25 @@ function brokenStorage() {
   };
 }
 
-/** Opens the cache on `storage`; `madeAtMs` is the moment of the game state it is opened with. */
+/**
+ * Opens the cache on `storage`; `madeAtMs` is the moment of the game state it is opened with. A read or a
+ * write the case gives no game state takes that one, as at a page whose game state at hand is the one it
+ * opened the cache with.
+ */
 function open(storage, { madeAtMs = MADE, state, ...over } = {}) {
-  return openJudgingCache({
+  const opened = state ?? loaded({ madeAtMs });
+  const cache = openJudgingCache({
     accountId: ACCOUNT,
-    state: state ?? loaded({ madeAtMs }),
+    state: opened,
     afterRefusedSave: false,
     storage,
     ...over,
   });
+  return {
+    ...cache,
+    read: (ids, at = opened) => cache.read(ids, at),
+    remember: (ids, given, at = opened) => cache.remember(ids, given, at),
+  };
 }
 
 /** A fingerprint of the form the simulation gives, written by hand: sixteen lower-case hexadecimal digits. */
@@ -661,6 +671,27 @@ for (const [name, value] of BAD_VALUES) {
     assert.equal(storage.held.get(LAS_KEY), value);
   });
 }
+
+// Catches a reading that refuses a crafted count of gear changes only because it differs from the count of
+// the game at hand: each count below is read against a game whose character holds that very value, so
+// only the check of the form refuses it.
+test("a stored count of gear changes that is no whole number from 0 reads as none even against a game whose character holds that very value", () => {
+  // invariant: judging-cache-reading
+  // decision: D-441 "A value of another form, one whose results do not number the seeds of a judging in the game's data, or one under a key of another version of the stored form shows nothing, as where nothing is remembered, and a key of another version is neither read, written nor removed."
+  for (const [name, count] of [
+    ["below 0", -1],
+    ["with a fraction", 0.5],
+    ["a text", "0"],
+    ["null", null],
+  ]) {
+    const value = JSON.stringify({ ...VALID, gearChanges: count });
+    const storage = mapStorage({ [LAS_KEY]: value });
+    const state = loaded({ gearChanges: count });
+    const cache = open(storage, { state });
+    assert.equal(cache.read(LAS, state), null, name);
+    assert.equal(storage.held.get(LAS_KEY), value, name);
+  }
+});
 
 test("a storage that answers a reading with no text reads as none", () => {
   // invariant: judging-cache-reading

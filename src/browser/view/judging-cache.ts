@@ -40,16 +40,15 @@ export type JudgingCache = {
    * The record stored for the triple, or null where none is stored, the stored value is not one the cache
    * wrote, or the count of the player's gear changes it holds (D-463) differs from the count the character
    * has in `state`, the game state at hand, or the character is not on the team in it: the judging does
-   * not stand then. Where no state is given, the state the cache was opened with is the one at hand.
+   * not stand then.
    */
-  read(ids: JudgingIds, state?: GameState): JudgingRecord | null;
+  read(ids: JudgingIds, state: GameState): JudgingRecord | null;
   /**
    * Stores the record for the triple together with the count of the player's gear changes the character
    * has in `state`, the game state the judging read (D-463), 0 where it is not on the team there; where the
-   * storage refuses it, the open page still reads it. Where no state is given, the state the cache was
-   * opened with is the one the judging read.
+   * storage refuses it, the open page still reads it.
    */
-  remember(ids: JudgingIds, record: JudgingRecord, state?: GameState): void;
+  remember(ids: JudgingIds, record: JudgingRecord, state: GameState): void;
   /**
    * The record of the map, or null where none is stored, the stored value is not one the cache wrote, or
    * the record was made at other numbers of the creature than those given: it shows nothing then.
@@ -513,7 +512,7 @@ export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
     return highest;
   }
   return {
-    read(ids, state = opening.state) {
+    read(ids, state) {
       const key = keyOf(accountId, madeAtMs, ids);
       const held =
         memory.get(key) ??
@@ -525,7 +524,7 @@ export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
         ? copyOf(held.record)
         : null;
     },
-    remember(ids, record, state = opening.state) {
+    remember(ids, record, state) {
       const key = keyOf(accountId, madeAtMs, ids);
       const held = {
         record: copyOf(record),
