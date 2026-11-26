@@ -80,8 +80,8 @@ const ENERGY_EXPLANATION =
   "Czary kosztują energię natury; pusta energia nie odbiera zdrowia, zamyka tylko czary. Energia wraca o 0,5 na minutę, ale tylko przy sytości od 60 %, najwyżej do 100.";
 
 test("a click on the satiety cell opens its explanation under the four cells, and a second click closes it", async () => {
-  // decision: D-450 "A click on the cell of temperature, satiety or nature energy opens, right under the four cells and above the backpack, the explanation of its value"
-  // decision: D-450 "a second click on that cell closes it"
+  // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
+  // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
   // Breaks: the cell is no button, or its click opens nothing, or the explanation stands under the backpack.
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
@@ -113,7 +113,7 @@ test("a click on the satiety cell opens its explanation under the four cells, an
 });
 
 test("a click on another cell switches the explanation, and at most one stands open", async () => {
-  // decision: D-450 "a click on another of those cells switches to that cell's explanation, so that at most one explanation stands open"
+  // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
   // Breaks: two explanations stand open at once, or the click on another cell leaves the first open.
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
@@ -132,7 +132,7 @@ test("a click on another cell switches the explanation, and at most one stands o
 });
 
 test("the health cell is no button and opens no explanation", async () => {
-  // decision: D-337 "the health cell, which is no button and holds the place of their frame"
+  // decision: D-337 "The cells of temperature, satiety and nature energy are buttons that open the explanation of their"
   // Breaks: health given a button or a click handler, so that a click opens an explanation for it.
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
@@ -146,7 +146,7 @@ test("the health cell is no button and opens no explanation", async () => {
 });
 
 test("an open explanation stays open while the screen draws the game state anew", async () => {
-  // decision: D-407 "the state of one screen lives in the component of that screen"
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`, and the state of one screen lives in the component of that screen."
   // Breaks: the open state kept outside the component, or reset by a new draw of the same run.
   await withPage(async ({ document }) => {
     const base = sent();
