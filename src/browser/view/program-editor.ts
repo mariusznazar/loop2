@@ -364,7 +364,8 @@ export function dropGroup(
  * A new condition of `kind`: a kind that takes a number starts with the data's default, one that
  * names a resource with the first of `resources`, „Zapas poniżej” with the item the data names as
  * its default where `items` holds it, otherwise with the first of `items`. Null where there is
- * nothing to name.
+ * nothing to name, and for a kind none of the cases names, so that a kind added to the data before
+ * the editor names it gives no condition.
  */
 function newCondition(
   kind: ConditionKind,
@@ -391,6 +392,8 @@ function newCondition(
     case "healthBelow":
     case "opponentHealthBelow":
       return { kind, value };
+    default:
+      return null;
   }
 }
 

@@ -171,7 +171,10 @@ function at(x: number): MageGoal {
   return { kind: "at", place: { x, y: SCENE.groundLine } };
 }
 
-/** Where the mage goes at the current activity; in combat and after an end it stays. */
+/**
+ * Where the mage goes at the current activity; in combat and after an end it stays, and so it does for
+ * a kind of action none of the cases names, until the scene gives it a place of its own.
+ */
 function goalOf(run: GameMapRun): MageGoal {
   const { current } = run;
   if (run.death !== null || run.completion !== null || current === null)
@@ -201,6 +204,8 @@ function goalOf(run: GameMapRun): MageGoal {
     case "strikeWithStick":
     case "kick":
     case "dodge":
+      return STAYS;
+    default:
       return STAYS;
   }
 }
