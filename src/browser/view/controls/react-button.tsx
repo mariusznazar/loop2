@@ -49,14 +49,16 @@ export type CellParts = {
  * The parts of a cell of the body row, in the order D-337 gives: the name at the left and the number
  * at the right on one line, the bar under them and the note under the bar. The button of a cell draws
  * them, and so does the cell that is no button, health, so that the four cells stand alike
- * (`styles.css`).
+ * (`styles.css`). A space stands between the name and the number and before the note, so that the
+ * text of the cell, which is the button's name for a reader of the screen, reads them apart; in the
+ * flex boxes of the cell a space alone between two parts draws nothing.
  */
 export function ValueCellParts({ cell }: { cell: CellParts }) {
   const { bar } = cell;
   return (
     <>
       <span className="value-cell-head">
-        <span className="value-cell-name">{cell.name}</span>
+        <span className="value-cell-name">{cell.name}</span>{" "}
         <span className="value-cell-number">{cell.number}</span>
       </span>
       {"scale" in bar ? (
@@ -70,7 +72,10 @@ export function ValueCellParts({ cell }: { cell: CellParts }) {
         </span>
       )}
       {cell.note === null ? null : (
-        <span className="value-cell-note">{cell.note}</span>
+        <>
+          {" "}
+          <span className="value-cell-note">{cell.note}</span>
+        </>
       )}
     </>
   );
@@ -86,6 +91,8 @@ type ReactButtonCommon = {
    * left out, it says nothing of that.
    */
   expanded?: boolean;
+  /** The id of the block the button opens and closes, while that block stands; left out, it names none. */
+  controls?: string;
   /**
    * Given, the button is one of a group and says whether it is the selected one; left out, it
    * belongs to no group and says nothing of selection.
@@ -127,6 +134,7 @@ export function ReactButton(props: ReactButtonProps) {
     label,
     submit,
     expanded,
+    controls,
     selected,
     waitingText,
     disabled,
@@ -144,6 +152,7 @@ export function ReactButton(props: ReactButtonProps) {
         .join(" ")}
       aria-label={label}
       aria-expanded={expanded}
+      aria-controls={controls}
       aria-pressed={selected === undefined ? undefined : selected}
       aria-busy={waiting ? "true" : undefined}
       disabled={waiting || disabled}

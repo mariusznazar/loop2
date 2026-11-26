@@ -19,7 +19,7 @@
  * it, as it does when the screen is hidden. How game time stands comes as the scene's standing, marked on
  * the row for the stylesheet. Nothing runs when the module is imported.
  */
-import { useState, type CSSProperties } from "react";
+import { useId, useState, type CSSProperties } from "react";
 import { MAPS } from "../sim/data/maps.js";
 import type { GameEvent } from "../sim/game.js";
 import type { MapRun, Pace } from "../sim/types.js";
@@ -200,17 +200,20 @@ function HealthCell({
 
 /**
  * One cell: the shared button of a cell, or for health, which is no button, the same parts in a block.
- * The button says whether its explanation stands open, and a click on it reports to the row (D-450).
+ * The button says whether its explanation stands open and, while it does, names it by its id, and a
+ * click on it reports to the row (D-450).
  */
 function BodyCell({
   cell,
   expanded,
+  explanationId,
   onToggle,
   blow,
   onBlowOver,
 }: {
   cell: BodyRowCell;
   expanded: boolean;
+  explanationId: string;
   onToggle: () => void;
   blow: ShownBlow | null;
   onBlowOver: (serial: number) => void;
@@ -223,6 +226,7 @@ function BodyCell({
       kind="value-cell"
       cell={parts}
       expanded={expanded}
+      controls={expanded ? explanationId : undefined}
       onClick={onToggle}
     />
   );
@@ -240,6 +244,7 @@ export function BodyRowCells({
   standing,
 }: BodyRowCellsProps) {
   const [open, setOpen] = useState<BodyCellId | null>(null);
+  const explanationId = useId();
   // Advanced while rendering, as the props change, as the scene does: what the row keeps of the blows
   // meets the events of this reading, and the render that follows draws from what it then keeps. The
   // events of the first draw are the ones already seen, so a first draw, a reload and a load show none.
@@ -270,6 +275,7 @@ export function BodyRowCells({
                 key={cell.id}
                 cell={cell}
                 expanded={open === cell.id}
+                explanationId={explanationId}
                 onToggle={() => toggle(cell.id)}
                 blow={cell.id === "health" ? blows.shown : null}
                 onBlowOver={blowOver}
@@ -279,7 +285,9 @@ export function BodyRowCells({
         ))}
       </div>
       {explanation === null ? null : (
-        <p className="body-explanation">{explanation}</p>
+        <p className="body-explanation" id={explanationId}>
+          {explanation}
+        </p>
       )}
       <p className="backpack-text">{backpackText(run.character)}</p>
     </div>

@@ -110,10 +110,15 @@ test("a click on the satiety cell opens its explanation under the four cells, an
       container.querySelector(".backpack-text"),
     );
     assert.equal(satiety.getAttribute("aria-expanded"), "true");
+    // The open cell names its explanation, which has an id of its own on the page.
+    assert.ok(open.id !== "", "the explanation has an id");
+    assert.equal(document.querySelectorAll(`[id="${open.id}"]`).length, 1);
+    assert.equal(satiety.getAttribute("aria-controls"), open.id);
 
     await press(satiety);
     assert.equal(explanationOf(container), null);
     assert.equal(satiety.getAttribute("aria-expanded"), "false");
+    assert.equal(satiety.hasAttribute("aria-controls"), false);
   });
 });
 
@@ -133,6 +138,13 @@ test("a click on another cell switches the explanation, and at most one stands o
     assert.equal(temperature.getAttribute("aria-expanded"), "false");
     assert.equal(satiety.getAttribute("aria-expanded"), "false");
     assert.equal(energy.getAttribute("aria-expanded"), "true");
+    // Only the open cell names the explanation; the others name nothing that stands.
+    assert.equal(
+      energy.getAttribute("aria-controls"),
+      explanationOf(container).id,
+    );
+    assert.equal(temperature.hasAttribute("aria-controls"), false);
+    assert.equal(satiety.hasAttribute("aria-controls"), false);
   });
 });
 

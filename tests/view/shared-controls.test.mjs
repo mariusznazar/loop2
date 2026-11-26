@@ -535,6 +535,46 @@ test("a button of a cell holds the name and the number on one line, a bar under 
   });
 });
 
+// Breaks: parts drawn as adjacent spans with nothing between them, whose text — the button's name for a
+// reader of the screen — runs together as „Sytość14głoduje”; and a button that does not name the block
+// it opens by aria-controls, or names one where it is given none.
+test("the parts of a cell stand apart in its text, and a button given the id of the block it opens names it by aria-controls", async () => {
+  // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337): it carries the name of a value at its left and its number at its right on one line, a bar under them and a note under the bar, and says whether the explanation of its value stands open (D-450)."
+  await withPage(async ({ document }) => {
+    const cell = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: CELL,
+          expanded: true,
+          controls: "explanation-1",
+        }),
+      ),
+    );
+    assert.equal(cell.textContent, "Sytość 14 głoduje");
+    assert.equal(cell.getAttribute("aria-controls"), "explanation-1");
+    const noNote = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, {
+          kind: "value-cell",
+          cell: { ...CELL, note: null },
+        }),
+      ),
+    );
+    assert.equal(noNote.textContent, "Sytość 14");
+    assert.equal(noNote.hasAttribute("aria-controls"), false);
+    const plain = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "Anuluj", controls: "panel-2" }),
+      ),
+    );
+    assert.equal(plain.getAttribute("aria-controls"), "panel-2");
+  });
+});
+
 // Breaks: a button that draws an empty note under a value that has none, which takes a line of the cell.
 test("a button of a cell with no note draws none, and one given a scale draws it in place of the fill", async () => {
   // decision: D-44 "Besides the kinds above, the button has the kind of the button of a cell of the body row, of which the cells of temperature, satiety and nature energy are built (D-337): it carries the name of a value at its left and its number at its right on one line, a bar under them and a note under the bar, and says whether the explanation of its value stands open (D-450)."
