@@ -9,11 +9,13 @@
 import { createRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { ConditionNumber } from "../sim/program.js";
+import { RESOURCES } from "../sim/data/resources.js";
 import { ReactButton } from "../view/controls/react-button.js";
 import type {
   CellBar,
   CellParts,
   ReactButtonKind,
+  TileFace,
 } from "../view/controls/react-button.js";
 import { ReactNumberField } from "../view/controls/react-number-field.js";
 import type { NumberRule } from "../view/controls/react-number-field.js";
@@ -73,7 +75,7 @@ type Loading = string | readonly [string, string | null];
 
 /** The kinds and flags that make a button the kind a row of the page shows. */
 type ButtonLook = {
-  kind?: Exclude<ReactButtonKind, "value-cell">;
+  kind?: Exclude<ReactButtonKind, "value-cell" | "tile">;
   submit?: boolean;
   selected?: boolean;
 };
@@ -179,6 +181,48 @@ function pickCellSample(chosen: boolean) {
     );
   };
 }
+
+/** Why a state does not apply to a tile of the gear, in the words of the styleguide's rule. */
+const TILE_NOT_APPLYING = {
+  error: "Nie dotyczy: kafelek nie ma wpisu, który mógłby być błędny.",
+  loading:
+    "Nie dotyczy: kafelek nie czeka na serwer, a kontrolka tego rodzaju nie ma tekstu oczekiwania (D-461).",
+  emptyItem:
+    "Nie dotyczy: kafelek z przedmiotem ma ikonę; pusty kafelek miejsca jest w wierszu niżej (D-461).",
+};
+
+/** The icon file of the made-up item of the tile samples: the first resource's, never named here (D-18). */
+const TILE_ICON = Object.values(RESOURCES)[0].icon;
+
+/**
+ * A tile of a slot of the gear in each state, chosen or not (D-44, D-461). A tile that holds an item
+ * shows its icon, and it does not apply in the state empty; a tile of an empty slot shows its pale
+ * name, which is its state empty, so that state applies to it. The item and the slot are made up.
+ */
+function tileSample(
+  face: TileFace,
+  selected: boolean,
+  emptyReason: string | null,
+) {
+  return (state: State): ReactNode => {
+    if (state === "error") return reason(TILE_NOT_APPLYING.error);
+    if (state === "loading") return reason(TILE_NOT_APPLYING.loading);
+    if (state === "empty" && emptyReason !== null) return reason(emptyReason);
+    return (
+      <Forced state={state}>
+        <ReactButton
+          kind="tile"
+          tile={face}
+          selected={selected}
+          disabled={state === "disabled"}
+        />
+      </Forced>
+    );
+  };
+}
+
+const ITEM_TILE: TileFace = { icon: TILE_ICON, name: "Przykładowy przedmiot" };
+const SLOT_TILE: TileFace = { slotName: "Ręka główna" };
 
 /** The select list in a state; it keeps the position chosen in its own state, as a screen would. */
 function SelectListSample({ state }: { state: State }) {
@@ -360,6 +404,16 @@ const CONTROLS: readonly (readonly [string, (state: State) => ReactNode])[] = [
   ],
   ["Komórka wyboru", pickCellSample(false)],
   ["Komórka wyboru wybrana", pickCellSample(true)],
+  [
+    "Kafelek z przedmiotem",
+    tileSample(ITEM_TILE, false, TILE_NOT_APPLYING.emptyItem),
+  ],
+  [
+    "Kafelek z przedmiotem wybrany",
+    tileSample(ITEM_TILE, true, TILE_NOT_APPLYING.emptyItem),
+  ],
+  ["Kafelek pustego miejsca", tileSample(SLOT_TILE, false, null)],
+  ["Kafelek pustego miejsca wybrany", tileSample(SLOT_TILE, true, null)],
   [
     "Komórka wiersza ciała",
     cellSample({ share: 0.7, fillRole: "satiety-fill" }),
