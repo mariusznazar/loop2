@@ -12603,6 +12603,190 @@ Beside the judgings the browser keeps the record of D-440 in its lasting storage
 *Rationale:* the saved game state is the one place whose limit costs the player's progress, since a save over it is not kept (D-208), and a player who judges much, across many maps, would push the save past it. A remembered judging only spares a judging made again, and a judging can be made again at any moment at no cost to the character, so the browser keeps it beside the game and never in it. It is no game state: nothing of it goes back into the game state, the game is whole without it and a judging made again gives it anew, so D-211, which keeps the unsaved game state out of the browser's lasting storage, does not bind it, and the price D-211 names for such storage, a new path of code and a decision about the browser's storage, is paid here; the server still holds each player's whole saved game state and computes nothing of the game (D-07), and the browser API client keeps no state (D-117), since the view alone reaches the storage. The account and the game name the key, so a judging of one account never shows for another and one of a game discarded (D-206) or started anew (D-402) never shows in the game after it; the game state names its game by the moment it was made, which every device reads from the saved game state, since nothing else it holds tells one game of an account from another. One value for each triple lets two tabs write without losing each other's judgings and a corrupt value lose one judging alone, and a tab reads the storage at each draw of the screen, so it shows another tab's judging at its next draw. The check at reading against the game state at hand gives the same answer after a reload, in another tab and on every device, and the content revision and the generation number make each change of a program and each death that takes practice erase in effect what D-440 erases. The fingerprint of the content makes a judging stand only beside the content it judged: the content revision tells that a content changed and changed back (D-440), and the fingerprint tells another content that reached the same content revision after a change lost with a refused or an unsent save, which the count alone cannot tell. After a refused save the judgings of this browser may belong to changes the server never received, and a judging above the loaded game's own content revision or generation number, or under a program or character number the loaded game has not yet given, can come only from a save that never reached the server (the game state holds the next program number and the next character number, so a number it has not yet given is one only a lost save made), so all of them go when the game opens, and a program or a character made later cannot meet a value of the number it takes; the values of an account's older games go then too, so the storage does not grow with each reset. Accepted with it: another device and a browser whose data were cleared show no badge and no count until a judging there, „Puść w pętlę” judging anew at every first click whatever is remembered (D-243); after a refused save the badges of that game in that browser are gone until it is judged again; values of a deleted program, of an older content revision or of a map gone from the data stay in the storage, unread, until the triple is judged again or the account's next new game in that browser; a full storage keeps new judgings for the open page alone; on a shared computer the next person's browser holds the account's opaque identifier, numbers, identifiers of maps, kinds of results and items, which tell nothing anyone can use in the game; and one more field in each stored value, a fingerprint of a program's content, which must stay the same for every content the content revision counts as no change and differ for every change it counts, but for a chance of a collision of at most one in 2^52, in which a judging of one content stands beside another content with the same fingerprint. The record of D-440 is a value of its own beside the judgings, so that a program's judging and the character's practice never take it along when they go; accepted with it, for the record: a second family of keys with its own version, and a record that can show the result of a program that no longer exists.
 *Rejected:* the judgings in the saved game state — a player who judges much pushes the save past its limit and loses progress, and with hundreds of maps the limit would be passed anyway; a shortened judging in the saved game state, the judgings used least recently removed before the save reaches its limit — the judgings stay in the one place whose limit costs the player's progress, and some go to keep under it; one value for each game — the whole record rewritten at each judging, a judging lost when two tabs judge, and one corrupt value losing every judging of the game; a value for each game beside one for each triple — two places to keep agreeing; a key naming the account alone, the page clearing the account's judgings whenever it makes a new game — a reset or a discarded save made on another device is loaded here, not made here, so nothing clears and the judgings of the old game show in the new one; a random token from the view in place of the moment the game was made — the same cost and a text to check at the load, with no gain; the judgings cleared at „Wyloguj” — the badges vanish at every logout on the player's own device, for data that tells another person nothing they can use.
 
+## Gear of a character
+
+Where a character's gear, what it wears, wields and has at hand apart from its backpack, stays, how the player changes it, how a map run takes it and gives it back, and how the screen Postać shows it.
+
+### D-451 — Where does an action take the piece it uses from?
+
+A character has gear apart from its backpack: what it wears, what it wields and what it has at hand. An action that uses a piece of a kind kept piece by piece uses the piece the gear holds.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-23 · TODO — the decision "Which items are single pieces with numbers of their own?", expected in the change that makes items single pieces with numbers of their own
+- **Verification:** tests: a character holding gear apart from its backpack, in the game state and in the saved game state, the backpack's cap and the actions that take pieces from the backpack counting and taking nothing of it, and the strike taking its stick from the gear. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character whose main hand holds a stick and whose backpack holds none, the strike taking the stick from the hand; an action that uses an item kept piece by piece taking the piece the slot of the gear holds
+  - violates: a stick of the main hand counted among the pieces of the backpack's cap; an action that uses an item kept piece by piece and takes from the backpack a piece that a rule of the game, such as the best one, or a program naming a property or a piece, picks, while the gear holds a piece of that item
+- **Origin:** none
+
+*Rationale:* It is the standard gear of a character: what the character has on, what it works with and what lies at hand, apart from what it carries.
+*Rejected:* a fixed rule of the game picking the piece, such as the best one — the player cannot say which piece is used up first; the program picking a piece by a property, such as the strongest — another choice at every action in the program editor; the program naming one piece — the rule of the program dies with the piece.
+
+### D-452 — Whose is the gear, and where does the player put it on from?
+
+A character's gear belongs to the character and stays at it between map runs, but for a death that D-190 says takes it; the player puts a piece of an item on from the chest on the screen Postać, and a piece taken off returns to the chest. The gear goes with the character into every map run, a manual one and one of an earning loop, and comes back with it. The trip plan of a program holds no gear, switching the program changes none, and an earning loop does not refill it from the chest between its map runs.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-451 · derives from D-50
+- **Verification:** tests: the gear a character holds apart from its backpack and the chest, kept in the saved game state; a piece put on leaving the chest for the slot and a piece taken off returning to the chest; the gear going with the character into a manual map run and into every map run of its earning loop, whatever the trip plan takes, and coming back with it; the trip plan taking no gear and a switch of the program changing none; an earning loop refilling no slot from the chest. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character whose program is switched keeping the stick of its main hand; an earning loop whose next map run starts with the stick the player put on and nothing more
+  - violates: a list of gear in the trip plan of a program; an earning loop that takes a stick from the chest into an empty hand at the start of a map run
+- **Origin:** none
+
+*Rationale:* the gear is what the character has on, works with and keeps at hand, so it stays at the character and goes where the character goes; a list of the trip plan would let it exist only while a program stands in force, and the screen Postać could show nothing outside a map run but the gear of the program chosen for the character. The player chooses what stands in each slot, so the game picks nothing from the chest on the player's behalf. Accepted with it: an earning loop does not refill the gear on its own, so where nothing is put into a slot it stays empty from one map run of the loop to the next, and a switch of the program changes no gear.
+*Rejected:* the gear as a third list of the trip plan of a program, taken from the chest at the start of every map run and put back at its completion — outside a map run the character has nothing, so the screen Postać shows at best the gear of the program chosen for the character, and the gear depends on the program, not on the character; and once items are pieces with numbers of their own, a rule has to choose which piece to take from the chest, a rule of the game such as the best one or a program naming a piece, which D-451 refuses.
+
+### D-453 — When may the player change a character's gear?
+
+The player changes a character's gear on the screen Postać outside an unfinished manual map run of that character, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too. At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-452
+- **Verification:** tests: a change of the gear refused while a manual map run of that character goes, waits in a pause or has ended, and made at the camp and at a character in an earning loop; a change at a character in an earning loop acting from its next map run while the map run going on keeps the gear it started with; the gear of another character changing while a manual map run of one waits. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a stick put on at a character in an earning loop, the map run going on keeping the gear it started with and the next map run starting with the stick
+  - violates: a change of the gear at the character of a manual map run that waits in a pause; a stick put on at a character in an earning loop that stands in the hand of the map run going on
+- **Origin:** none
+
+*Rationale:* a change of the gear follows the pattern of buying a branch rank (D-200): the map run going on keeps what it started with and the change acts from the next one, so the player can change the weapon of a character in an earning loop without stopping the loop. Accepted with it: the map run going on holds its own gear beside the gear the player set for the next one, which is more state of the game and more code; and a character in an unfinished manual map run keeps its gear unchanged until that map run ends, as it can buy no rank meanwhile.
+*Rejected:* the gear changed only where the character is at the camp, not in its earning loop — to change the weapon of a character in an earning loop the player stops the loop, and the next „Puść w pętlę” judges the program first.
+
+### D-454 — Does the screen Postać show a slot of the gear that nothing fits?
+
+The screen Postać shows every slot of the gear, a slot that no item of the game fits yet included: it stands there and is empty.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-451
+- **Verification:** tests: each slot of the gear standing on the screen Postać with its name when empty, a slot that no item of the data fits among them. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: the second hand standing on the screen as the empty tile of a slot with its pale name while no item of the data fits it
+  - violates: a slot left off the screen until the player has an item that fits it
+- **Origin:** none
+
+*Rationale:* the player sees at once every place the character's gear has, and the section does not change its look when the first item that fits a slot appears. Accepted with it: slots stand empty with nothing to choose for them until items that fit them come.
+*Rejected:* a slot left off the screen until the player has an item that fits it — the player does not know the slot exists, and the section changes its look when the first fitting item appears.
+
+### D-455 — Is the gear a backpack?
+
+The gear is no backpack: a piece in the gear takes no room of the backpack's cap (D-64), is counted by no condition „Zapas poniżej” and by no line of the backpack on the screen of a map run, and is taken by none of the actions that take pieces from the backpack — „Zasil — ognisko”, „Zapal — patyk”, „Wytwórz — ognisko”, „Wytwórz”, „Zjedz — jagoda” and „Opatrz”.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-451 · derives from D-64
+- **Verification:** tests: a stick in the main hand counted neither by the cap of the backpack nor by „Zapas poniżej” nor by the line of the backpack, burnt by no „Zasil — ognisko” and lit by no „Zapal — patyk”; an action that takes pieces from the backpack taking none from the gear. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character with a full backpack of 15 pieces and a stick in its main hand, the stick standing outside the cap and staying in the hand when „Zasil — ognisko” takes its fuel
+  - violates: „Zapas poniżej 1 szt. · Patyk” counting the stick of the main hand and so not holding for a character whose only stick lies there
+- **Origin:** none
+
+*Rationale:* a piece in the gear is what the character works with, not what it carries; counted in the backpack it would take room of the cap from what the character carries, and a campfire could burn the stick of the hand.
+*Rejected:* none considered
+
+### D-456 — Which slots does the gear have, and which item fits which?
+
+The gear has eight slots, each holding one piece: „Ręka główna”, „Druga ręka”, „Głowa”, „Tułów”, „Nogi” and three pockets of the belt, each slot being of one place, the three pockets of the place „Kieszeń”. The data of each item name the place it fits: the stick fits the main hand and the bandage a pocket. „Uderz — patyk” takes its stick from the main hand and from no other slot.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-451
+- **Verification:** tests: the data's eight slots, each of one place and holding one piece, the three pockets of one place; the stick fitting the main hand and the bandage a pocket, and a piece refused in a slot whose place it does not fit; the strike taking its stick from the main hand and from no pocket or other slot. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a pocket refusing a stick and the main hand refusing a bandage
+  - violates: the strike taking a stick from a pocket; a pocket holding three bandages as a count of pieces in one slot
+- **Origin:** none
+
+*Rationale:* the gear has from the start the places of a character in a game of roles, so items of later kinds find their place with no change of its shape. The head, the torso and the legs are what the character has on, the hands what it wields and the pockets what it has at hand. A slot holds one piece, so that a piece with numbers of its own needs no stack to split. Accepted with it: slots stand with nothing that fits them; three pockets is a number set before the numbers of the maps that need them are; and the split into the main hand and the second settles the weapon held in two hands before there are items.
+*Rejected:* two equal hands, „Prawa ręka” and „Lewa ręka”, the stick fitting both, the strike taking it from the right and, where the right lacks it, from the left — it settles now which hand a strike takes from and which hand a refill fills, and later in which hand a weapon wears out; a pocket holding several pieces of one item, up to five bandages — a slot then holds a count of pieces, not a piece, which is more state of the game and more on the screen, a dozen or more pieces stand outside the backpack's cap, and once items are pieces with numbers of their own a stack in a pocket has to be split; two or four pockets — with two, fewer bandages at hand, with four, more pieces outside the backpack's cap.
+
+### D-457 — When does an empty slot of the gear take a piece from the backpack?
+
+An empty slot of the gear stays empty until a rule puts something on it or the character uses an action that takes a piece from that slot. That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-451 · derives from D-456
+- **Verification:** tests: a strike at an empty main hand taking one stick from the backpack into the hand and striking in the same turn; an empty slot left empty by every other act and by the start and the end of a map run; a strike with no stick in the hand or the backpack passed over. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character entering a map run with an empty main hand and a stick in the backpack, the hand staying empty until the first strike, which takes the stick into it
+  - violates: a stick moved from the backpack into an empty main hand at the entry to a map run, with no action having used it
+- **Origin:** none
+
+*Rationale:* where an empty hand is refilled only when an action needs the piece, the rule of a program that says what goes into the hand, standing above the strike, decides it, and without such a rule the strike takes the stick itself, as the strike of the predecessor game took its weapon from the backpack. Accepted with it: until the first strike the hand is empty, so the line of the gear on the screen of a map run says „nic” though the strike works.
+*Rejected:* the refill at once, whenever a slot empties, at the entry to a map run or after a piece wears out — the game puts a piece of the same kind from the backpack into it and a rule of a program serves only to change it for another item, so that a rule such as „when the main hand is empty” would hardly ever apply, at the entry with an empty hand the game itself would pick a kind where several fit, and the pockets would fill themselves with bandages from the backpack and come back with the character though they stand on no list of what it brings out.
+
+### D-458 — Which action puts a piece on the gear, and what does it do?
+
+The action „Załóż — {rzecz}”, one for all slots, takes one piece of its item from the backpack into the slot the item fits, into the first empty pocket for an item of a pocket, and puts the piece that slot held, if any, into the backpack, so that the count of the backpack's pieces never rises.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-451 · derives from D-443 · derives from D-456
+- **Verification:** tests: „Załóż — patyk” taking a stick from the backpack into the main hand and putting the stick the hand held into the backpack; „Załóż — opatrunek” taking a bandage into the first empty pocket; the count of the backpack's pieces never rising by it. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character with a stick in the hand and another in the backpack, „Załóż — patyk” leaving one stick in the hand and one in the backpack
+  - violates: „Załóż — patyk” that takes a stick from a pocket; an action „Weź do ręki — patyk” beside „Załóż — patyk” for the same item
+- **Origin:** none
+
+*Rationale:* the backpack is where the pieces stand that the character carries, and a rule of a program puts on what the character carries; one action serves every slot, so the program editor has one row for one thing. Accepted with it: „Załóż — patyk” reads better for clothes than for a stick.
+*Rejected:* the rule taking the piece from the gear — it moves a piece from a pocket to the hand and the backpack feeds the gear only by the refill of an action, so a stick has to fit a pocket too, as a spare weapon at the belt, the pockets are shared between the bandages and a spare weapon, and the rule does not reach the backpack, so it puts on nothing but what the refill takes by itself; two actions, „Weź do ręki — {rzecz}” for the hands and „Załóż — {rzecz}” for the rest — two rows of the editor for one thing.
+
+### D-459 — What does the condition „Puste — {miejsce}” ask?
+
+The condition „Puste — {miejsce}” holds when the place it names holds nothing; „Puste — Kieszeń” holds when at least one pocket is empty. A program names a place of the gear only by its kind, never by the number or the position of a pocket, and the targets of the condition are the places some item of the data fits, a place gaining its target when the first item starts to fit it.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-451 · derives from D-443 · derives from D-456
+- **Verification:** tests: the condition holding when the main hand is empty and failing when it holds a piece, „Kieszeń” holding it with one empty pocket among three; the targets of the condition standing at the places some item fits, the main hand and the pocket today, in the check of a program and in the pick of the editor and of the rule panel; a program naming a pocket by its number or position refused. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: the rule „Puste — Kieszeń” → „Załóż — opatrunek” putting bandages into the pockets one by one until the pockets are full
+  - violates: a condition „Puste — Kieszeń 2”; a condition „Puste — Głowa” offered while no item of the data fits the head
+- **Origin:** none
+
+*Rationale:* a rule that puts something on when nothing is in the hand needs exactly this condition, and one condition for every place serves it. A program names a thing of the world by its kind, so the three pockets are one target, and the targets follow the items of the data as those of an action do. Accepted with it: the condition does not say „no club in the hand though a stick is there”, which a later change may add with a second weapon.
+*Rejected:* from the start a condition „Nie ma w miejscu — {rzecz}” — two picks in one condition, with no use of it today.
+
+### D-460 — How is the gear of a character in an earning loop merged at the end of a map run?
+
+At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left. A slot counts as changed from the first piece the player puts on it or takes off it, whether or not it holds again the item it held at the start of the map run.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-452 · derives from D-453
+- **Verification:** tests: the end of a map run of an earning loop at a character whose slots the player changed, the changed slot keeping the player's piece and the piece the map run left there going to the chest, or lost with a full chest, and any other slot taking what the map run left; a slot the player emptied and filled again counting as changed. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a player who changed the main hand of a character in an earning loop while a map run took a bandage into a pocket, the main hand keeping the player's piece and the pocket the bandage
+  - violates: the player's change of one slot putting the whole gear of the map run into the chest; a slot that the player emptied and filled with another stick counted as unchanged
+- **Origin:** none
+
+*Rationale:* a change the player made stands for what the player wants in that slot, and a slot the player did not touch stays as the map run left it, so a stick the program took into the hand and the bandages put into the pockets are not sent to the chest for a slot the player said nothing of. A slot counts as changed by the use of its tile and not by a difference from its state at the start: the player takes off a stick and puts on another from the chest, the slot looks unchanged, and the stick from the chest would vanish. Accepted with it: a piece may be lost when the chest is full, the slot by slot rule is harder to explain than „your choice wins”, and the player learns of a piece lost with a full chest only from the chronicle.
+*Rejected:* the choice of the player replacing the whole gear — the stick that the program took into the hand and the bandages in the pockets land in the chest, though the player said nothing of those slots.
+
+### D-461 — How does the player change the gear on the screen Postać?
+
+The player changes the gear by touching the tile of a slot, which opens under it a pick in the cells of the pick of an action in the program editor: the items of the chest that fit the slot, each with its icon, its name and the number of its pieces in the chest, and „Zdejmij” where the slot holds something. Choosing an item moves one piece of it from the chest into the slot and the piece the slot held back into the chest, and „Zdejmij” moves the piece of the slot into the chest.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-452 · derives from D-453
+- **Verification:** tests: the tile of a slot opening under it the pick of the fitting items of the chest, each with its icon, name and number of pieces, and „Zdejmij” where the slot holds something; the choice of an item moving a piece from the chest into the slot and the piece the slot held into the chest; „Zdejmij” moving the piece of the slot into the chest. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a touch of the tile of the slot „Ręka główna” opening a pick with „Patyk” and its number of pieces and, where the hand holds a stick, „Zdejmij”
+  - violates: a drop-down list in the row of each slot; a grid of the chest's items standing under the figure with no choice of the slot
+- **Origin:** none
+
+*Rationale:* the screen of a character in a game of roles stands the figure in the middle and the slots around it, so the player sees what each holds; the pick under the tile gives the choice of the slot and of the item together, and the items stand on the screen as cells with icons, not behind a closed list. Accepted with it: the pick takes room in the narrow left area of the screen, and the player reaches an item with two touches, the tile and the cell.
+*Rejected:* in the row of each slot a drop-down list with „nic” and the items of the chest that fit — the slots then look like a form and not like a game; buttons „Załóż” and „Zdejmij” in each row — where more than one item fits a slot „Załóż” needs a pick of its own; the tiles laid out in the shape of a figure, the head on top, the torso with the hands at its sides, the legs, the belt with its pockets, and the figure left at the top of the screen — less of a game, the shape comes from the laying out of the tiles alone; the tiles in three captioned groups, „W rękach”, „Na sobie” and „Pod ręką” — it looks like a panel, not like a figure; the same with a grid of the chest's items from which an item is dragged to its slot, a touch working too — two ways of handling to build and check in both layouts, and the narrow left area does not hold a grid beside the figure; the same with a standing grid under the figure of the items that fit some slot, a touch on an item putting it on its place and a touch on a held slot taking it off — the player does not choose the slot, an item that fits several slots goes to the first free one, one touch by mistake takes an item off, and the grid grows with every item.
+
+### D-462 — What do the tiles of a character in an earning loop show?
+
+At a character in an earning loop the tiles of the gear show the gear set for its next map run, with the sentence „Postać jest w pętli. Zmiana działa od następnego przejścia.” standing above them.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-453
+- **Verification:** tests: the tiles of a character in an earning loop showing the gear set for its next map run, with the sentence above them, also while the map run going on holds other gear. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a character in an earning loop whose map run going on holds a stick the player took off for the next one, the tile of its main hand standing empty under the sentence
+  - violates: a second row of icons „Teraz w przejściu: …” under the tiles; tiles that show the gear of the map run going on
+- **Origin:** none
+
+*Rationale:* the tiles show what the player can change, which acts from the next map run (D-453), and the sentence says why what the character holds in the map run going on is not what the tiles show. Accepted with it: the screen does not show what the character holds in the map run going on of its earning loop.
+*Rejected:* a second, smaller row of icons, „Teraz w przejściu: …”, under the tiles.
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
