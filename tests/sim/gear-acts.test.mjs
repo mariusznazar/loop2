@@ -256,7 +256,7 @@ function loopHoldingStick(pieces) {
 
 test("taking off in an earning loop the piece the map run going on holds puts nothing into the chest at once, and needs no room in it", () => {
   // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
-  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice."
+  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes into no chest by this choice: the merge at the end of that map run (D-460) settles where it goes."
   // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
   for (const [label, pieces] of [
     ["an empty chest", {}],
@@ -280,7 +280,7 @@ test("taking off in an earning loop the piece the map run going on holds puts no
 
 test("putting a piece on in an earning loop over the piece the map run going on holds takes one from the chest and puts the held one into none", () => {
   // decision: D-460 "While that map run goes on, a piece the player puts on at the character leaves the chest at once and returns to it at once where the player takes it off, and the piece that map run holds in a slot the player has not yet changed goes into no chest, and needs no room in it, until this merge."
-  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice."
+  // decision: D-461 "Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes into no chest by this choice: the merge at the end of that map run (D-460) settles where it goes."
   // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
   const looped = loopHoldingStick({ stick: 2 });
   const put = putOnPiece(looped, ANNA, "mainHand", "stick");

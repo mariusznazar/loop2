@@ -87,7 +87,7 @@ test("eight kicks defeat the wolf after six bites, leaving 58 health", () => {
 test("no feasible combat rule loses each action and the fifteenth bite kills", () => {
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
-  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+  // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const program = programFromRules();
   const run = runWithProgram(program);
   const result = resolveCombat(run, "wolf", program);

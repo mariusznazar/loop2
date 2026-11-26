@@ -7055,7 +7055,7 @@ A stick stays in the main hand after a strike, with its condition unchanged.
 
 ### D-146 — What ends an encounter?
 
-The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike. The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten. A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands.
+The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike. The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten. A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -7063,8 +7063,8 @@ The encounter ends immediately when either side reaches zero health: a creature 
 - **Verification:** tests: an encounter ending as either side reaches zero health, a creature at
   zero counting a beaten attack and a character at zero dying of combat in the minute of the turns
   without answering the lethal strike; 40 turns of at most one action of each side, after which the
-  creature leaves and the attack stays unbeaten; a character with no feasible combat rule giving up
-  its action of the turn; every resolved encounter starting the cooldown again; combat wounds
+  creature leaves and the attack stays unbeaten; a character with no feasible rule whose action it
+  can carry out in combat giving up its action of the turn; every resolved encounter starting the cooldown again; combat wounds
   leaving the streak as it stands.
 - **Origin:** none
 
@@ -8794,12 +8794,15 @@ When „Zakończ” or „Restart” ends a map run before completion, or „Zat
 - **Verification:** invariants: trip-run-end. tests: the gear of a character staying with it at a
   completion beyond the bring list and an exit cap of 0, and after „Zakończ”, „Restart” and
   „Zatrzymaj”, as it stood at the end of the map run, a piece the map run took from the backpack into
-  the gear included. For a piece the map run put from the gear into the backpack, an agent compares a
-  change with the part no invariant and no test holds yet:
+  the gear included. For a piece the map run put from the gear into the backpack, and for the gear
+  counted toward an exit cap above 0, an agent compares a change with the part no invariant and no
+  test holds yet:
   - complies: a stick put from the hand into the backpack by „Załóż” in the map run lost with the
-    backpack at „Zakończ” and left out of the chest at a completion that lists it on no bring list
+    backpack at „Zakończ” and left out of the chest at a completion that lists it on no bring list;
+    a character with a stick in its main hand completing a map whose exit cap is 4 with four pieces
+    of its bring list in the backpack, the stick staying in the hand
   - violates: „Zakończ” that leaves a stick the map run put from the hand into the backpack with the
-    character
+    character; an exit cap that counts the pieces of the gear toward its number
 - **Origin:** none
 
 *Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out, and what a character carries is lost with an attempt that ends before completion, as it is in death (D-190). Accepted with it: „Zakończ” after the character has brought a stock onto a map not yet solved loses that stock, and the player cannot view the earning-loop map run that „Zatrzymaj” cut off. The gear is what the character wears, wields and has at hand, not what it carries (D-455), so the ends of a map run that cost the backpack its contents cost the gear nothing, and it goes into a map run and out of it with the character (D-452): a piece the map run took into the gear is no loot to leave through the plan, and one put back into the backpack is a carried item like any other.
@@ -8871,6 +8874,11 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
   exit, each from zero up, set one apart from the other or left unset; gathering during the run
   bounded by the character's carrying capacity whatever the caps; a character entering a map whose
   entry cap is 0 with the gear in its slots whole and leaving a map whose exit cap is 0 with it.
+  For the gear counted toward a cap above 0, an agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a character with a stick in its main hand entering a map whose entry cap is 4 with
+    four pieces of its trip plan, the stick staying in the hand
+  - violates: an entry cap or an exit cap that counts the pieces of the gear toward its number
 - **Origin:** none
 
 *Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset. Two fields, each of which may be unset, are the predecessor game's shape, and the map's cap acts at the boundaries of the map run, at entry and at completion, without stopping gathering, since the backpack's cap is the character's carrying capacity (D-64). Accepted with it: code, tests and a message that the player does not see while no current map sets a cap, the cost for which D-136 rejects a kind of solving condition no map asks for; and two cuts to check by tests instead of one. The caps cut the trip plan, which the map run takes from the chest and gives back to it, and the gear belongs to the character and not to the plan (D-452), so the caps leave it out. Accepted with it: a character enters a map whose entry cap is 0 with its gear, so a map that is to keep gear out needs a rule of its own in its data.
@@ -12818,7 +12826,7 @@ At the end of a map run of an earning loop the character's gear is merged slot b
 
 ### D-461 — How does the player change the gear on the screen Postać?
 
-The player changes the gear by touching the tile of a slot, which opens under it a pick in the cells of the pick of an action in the program editor: the items of the chest that fit the slot, each with its icon, its name and the number of its pieces in the chest, and „Zdejmij” where the slot holds something. Choosing an item moves one piece of it from the chest into the slot and the piece the slot held back into the chest, and „Zdejmij” moves the piece of the slot into the chest. Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes to the chest by the merge at the end of that map run (D-460), not by this choice.
+The player changes the gear by touching the tile of a slot, which opens under it a pick in the cells of the pick of an action in the program editor: the items of the chest that fit the slot, each with its icon, its name and the number of its pieces in the chest, and „Zdejmij” where the slot holds something. Choosing an item moves one piece of it from the chest into the slot and the piece the slot held back into the chest, and „Zdejmij” moves the piece of the slot into the chest. Where the slot holds a piece that the map run going on of an earning loop holds, that piece goes into no chest by this choice: the merge at the end of that map run (D-460) settles where it goes.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
