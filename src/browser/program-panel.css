@@ -445,13 +445,16 @@
  * computer layout and the width of the screen in the phone layout. It is as tall as its content and
  * lies over the rows below it; `rule-window.tsx` takes those rows out of the reach of the keyboard and
  * the mouse and makes the list as tall as the window where the window reaches below its end. No
- * backdrop stands behind it.
+ * backdrop stands behind it. Its frame in `window-frame` and the shadow under it, as loop's window
+ * over the screen has, set it off from the column it lies on, which is on `panel` as it is (D-40).
  */
 .rule-list-panel .rule-panel {
   position: absolute;
   left: 0;
   right: 0;
   z-index: 1;
+  border-color: var(--window-frame);
+  box-shadow: var(--window-shadow);
 }
 
 /* The sentence of the window of a group, under its condition: an explanation, in `text-secondary` (D-40). */

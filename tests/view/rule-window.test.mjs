@@ -215,10 +215,12 @@ test("the window of a rule reads „Reguła {n.m} w grupie „{nazwa}””, tha
 
 // Breaks: the window as a block in the flow of the list, which moves the rows under it down; a
 // backdrop or a modal mark, which would cut the rows above and below it off; the bar of the phone
-// layout drawn in the computer layout.
-test("the window is a dialog named by its heading, not modal, laid over the rows from directly under its row, and the computer layout draws no bar", async () => {
+// layout drawn in the computer layout; the window framed in `divider` with no shadow, on `panel` as
+// the column it lies on, so that it reads as a continuation of that column.
+test("the window is a dialog named by its heading, not modal, laid over the rows from directly under its row in a frame of its role with a shadow, and the computer layout draws no bar", async () => {
   // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   // decision: D-288 "In the computer layout „↑”, „↓” and „Usuń” of a rule stand in its row and „↑” and „↓” of a rule group in its header, and the window holds none of them."
+  // decision: D-40 "`window-frame` means that this block is a window lying over the screen beneath it"
   await withPage(async (page) => {
     const style = page.document.createElement("style");
     style.textContent = gameStylesheetText();
@@ -238,6 +240,23 @@ test("the window is a dialog named by its heading, not modal, laid over the rows
     );
     const view = page.window;
     assert.equal(view.getComputedStyle(shown).position, "absolute");
+    // jsdom drops a `var()` standing in a shorthand from the computed style, so the frame is read
+    // from the last rule of the stylesheet that matches the window and declares its colour.
+    const frame = [...style.sheet.cssRules]
+      .filter(
+        (each) =>
+          each.selectorText !== undefined &&
+          shown.matches(each.selectorText) &&
+          each.style.getPropertyValue("border-color") !== "",
+      )
+      .at(-1)
+      ?.style.getPropertyValue("border-color");
+    assert.equal(frame, "var(--window-frame)", "the window framed in its role");
+    assert.equal(
+      view.getComputedStyle(shown).boxShadow,
+      "var(--window-shadow)",
+      "a shadow under the window",
+    );
     assert.equal(
       view.getComputedStyle(shown.querySelector(".rule-panel-bar")).display,
       "none",

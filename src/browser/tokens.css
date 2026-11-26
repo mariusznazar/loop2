@@ -19,6 +19,8 @@
   --divider: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the lines between sections */
   --control-border: #71717b; /* Source: changed for the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) on page, panel and highlight, which loop's frame #3f3f46 misses: the colour of labels of loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page */
   --selected: #d4d4d8; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the frame of the selected button */
+  --window-frame: #71717b; /* Source: the agent's choice, which the human's remark on task edytor-programu-modale before its request leaves to it, 2026-11-26: loop's frame of a window over the screen (border-zinc-700, #3f3f46), src/components/probe/Sheet.tsx of branch origin/test 715026e of the repository loop, misses the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) against panel and highlight, so the grey of labels of loop that control-border takes for the same threshold, kept at 3.67:1 on panel and 3.09:1 on highlight */
+  --window-shadow: 0 12px 28px rgb(0 0 0 / 60%); /* Source: loop, the shadow of a window over the screen, shadow-[0_12px_28px_rgba(0,0,0,0.6)], src/components/probe/Sheet.tsx of branch origin/test 715026e of the repository loop; the agent's choice, which the human's remark on task edytor-programu-modale before its request leaves to it, 2026-11-26 */
   --condition-unmet: #27272a; /* Source: loop, the dark bar of a rule whose condition does not hold (border-zinc-800, #27272a); no threshold of contrast; Mariusz's choice, 2026-11-03 */
 
   /* Text */
