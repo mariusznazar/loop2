@@ -62,43 +62,53 @@
 }
 
 /*
- * The scale of temperature of the sample (D-40, D-42): three zones side by side, each in its role, and
- * the marker of the value, a short line over the zones that reaches past them. Its widths are
- * percentages of the scale, which D-43 leaves out.
+ * The scale of temperature of the sample, drawn as the screen draws it (run-screen.css, D-337, D-40,
+ * D-42), which this page may not link: three zones in their roles, as wide as 5 : 4 : 2, with a gap of
+ * `--frame-width` between two, through which the `panel` under the button shows, and the marker of the
+ * value as high as the scale and no higher — a light core in `text-strong` between two dark sides in
+ * `scale-marker`. The marker stands at about 37 °C, 7/11 of the way, in the middle of the safe zone,
+ * where it must tell from a gap. Its place is a percentage of the scale, which D-43 leaves out.
  */
 .sample-scale {
   position: relative;
   display: flex;
+  gap: var(--frame-width);
   height: 100%;
 }
 
 .sample-scale-zone {
   display: block;
+  flex-shrink: 1;
+  flex-basis: 0;
   height: 100%;
 }
 
 .sample-scale-zone.chill-zone {
-  width: 30%;
+  flex-grow: 5;
   background-color: var(--chill-zone);
 }
 
 .sample-scale-zone.safe-zone {
-  width: 40%;
+  flex-grow: 4;
   background-color: var(--safe-zone);
 }
 
 .sample-scale-zone.danger {
-  width: 30%;
+  flex-grow: 2;
   background-color: var(--danger);
 }
 
 .sample-scale-marker {
   position: absolute;
-  top: calc(var(--space-2xs) * -1);
-  bottom: calc(var(--space-2xs) * -1);
-  left: 45%;
+  top: 0;
+  bottom: 0;
+  left: 63%;
   width: var(--bar-width);
-  background-color: var(--scale-marker);
+  border-style: none solid;
+  border-width: 0 var(--frame-width);
+  border-left-color: var(--scale-marker);
+  border-right-color: var(--scale-marker);
+  background-color: var(--text-strong);
 }
 
 /* A section may be narrower than its table, which then scrolls inside its panel. */

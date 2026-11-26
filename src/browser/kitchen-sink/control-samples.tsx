@@ -112,8 +112,9 @@ function buttonSample(text: string, look: ButtonLook, loading: Loading) {
 
 /**
  * The scale of temperature of a cell, made up: three zones and the marker of the value on them, as
- * the screen draws the scale (D-40, D-42). Its colours are the roles of the zones and the marker,
- * and its positions are the page's own (`kitchen-sink.css`).
+ * the screen draws the scale (D-337, D-40, D-42): the zones as wide as 5 : 4 : 2 with gaps between
+ * them, the marker with its light core at about 37 °C. Its rules are the page's own
+ * (`kitchen-sink.css`), since the page links no stylesheet of a screen.
  */
 function SampleScale() {
   return (

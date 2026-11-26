@@ -718,9 +718,12 @@
  * at its right, its track three zones in `chill-zone`, `safe-zone` and `danger`, each as wide as its
  * share of the scale, which TypeScript gives in `--zone-share` from the zones of the body row, with a
  * gap of `--frame-width` between two, through which the `panel` of the area shows, so that a zone
- * touches only the background and the marker. The marker of the temperature now, in `scale-marker`,
- * is `--bar-width` wide and as high as the scale, which is the height of a bar; it stands `--share` of
- * the way along the scale less its own width, so at the right end it does not cross the scale.
+ * touches only the background and the marker. The marker of the temperature now is as high as the
+ * scale, which is the height of a bar: a light core in `text-strong`, `--bar-width` wide, between two
+ * dark sides in `scale-marker`, each `--frame-width` wide (D-40). The gaps show the dark `panel`, so a
+ * marker dark through would look like one more gap; its light core tells it from a gap in the middle
+ * of a zone and at its edge, and only its dark sides touch the zones (D-42). It stands `--share` of the
+ * way along the scale less its own width, so at the right end it does not cross the scale.
  */
 .body-scale {
   position: relative;
@@ -752,9 +755,13 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: calc(var(--share) * (100% - var(--bar-width)));
+  left: calc(var(--share) * (100% - var(--bar-width) - 2 * var(--frame-width)));
   width: var(--bar-width);
-  background-color: var(--scale-marker);
+  border-style: none solid;
+  border-width: 0 var(--frame-width);
+  border-left-color: var(--scale-marker);
+  border-right-color: var(--scale-marker);
+  background-color: var(--text-strong);
 }
 
 /*

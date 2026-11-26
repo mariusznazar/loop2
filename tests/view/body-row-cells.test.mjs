@@ -383,10 +383,26 @@ test("temperature stands on a scale of three zones, 5 : 4 : 2, with the marker a
       `the zones stand as 5 : 4 : 2, not ${widths.join(" : ")}`,
     );
     assert.equal(overheating, 1);
+    // The marker: a light core between two dark sides, so that it tells from a gap between two zones,
+    // which shows the dark `panel`; a marker dark through looks like one more gap.
+    // decision: D-40 "On the scale of temperature the chill zone stands in the role `chill-zone`, which means that the body is chilled at that temperature, the safe zone in the role `safe-zone`, a neutral grey, which means that the body is safe at that temperature, and the marker of the temperature now in the role `scale-marker`, dark, which means where the value stands on its scale, on both sides of a light core in `text-strong`"
     const marker = scaleOf(container).querySelector(".body-scale-marker");
-    assert.equal(
-      window.getComputedStyle(marker).backgroundColor,
-      "var(--scale-marker)",
+    const markerStyle = window.getComputedStyle(marker);
+    assert.deepEqual(
+      [
+        markerStyle.backgroundColor,
+        markerStyle.borderLeftStyle,
+        markerStyle.borderLeftColor,
+        markerStyle.borderRightStyle,
+        markerStyle.borderRightColor,
+      ],
+      [
+        "var(--text-strong)",
+        "solid",
+        "var(--scale-marker)",
+        "solid",
+        "var(--scale-marker)",
+      ],
     );
 
     /** The marker's place on the scale and the zone named as the one it stands in. */
