@@ -3,7 +3,7 @@
  * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335, D-337, D-349): from the top the
  * scene, the rows „Teraz” and „Potem”, the body row, each value in a
  * cell of its own with the minutes its need lasts under temperature and satiety (D-337), with the
- * backpack, the lines of a solved map, of the practice and of the preview of the bring plan between the
+ * backpack, the line of the gear under it (D-311, D-455), the lines of a solved map, of the practice and of the preview of the bring plan between the
  * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
  * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
  * its map run in place, the events of the simulation call that returned it, which it hands to the
@@ -18,6 +18,7 @@ import type { GameEvent } from "../sim/game.js";
 import type { GameState, RuleId } from "../sim/types.js";
 import { BodyRowCells } from "./body-row-cells.js";
 import { practiceText } from "./character-skills.js";
+import { gearLine } from "./gear-lines.js";
 import { NowRows } from "./now-rows.js";
 import { Scene } from "./scene.js";
 import { standingOf } from "./scene-picture.js";
@@ -97,6 +98,7 @@ export function WorldArea({
         pace={state.pace}
         standing={standingOf(state, run)}
       />
+      <p className="backpack-text">{gearLine(run.character.gear)}</p>
       {solved === null ? null : <p className="trip-result">{solved}</p>}
       {practice === "" ? null : (
         <p

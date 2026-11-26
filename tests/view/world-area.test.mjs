@@ -230,6 +230,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "now-row",
       "next-row",
       "body-row",
+      "backpack-text",
       "trip-result",
       "run-practice unpaid",
       "trip-result",
@@ -242,18 +243,18 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "the paragraph of the last encounter stands nowhere in the world area",
     );
     assert.equal(
-      parts[4][1],
+      parts[5][1],
       "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.",
     );
     // The run pays no practice (D-189), so its line says what the practice is and that it does not
     // enter the skills (D-201).
     assert.equal(
-      parts[5][1],
+      parts[6][1],
       "Wprawa zebrana w tym przejściu, która nie wejdzie do umiejętności: Eksploracja +12",
     );
     // A run going on on a solved map shows the preview of what it brings out, as any map run does (D-186,
     // D-189): the three sticks the bring list asks for.
-    assert.equal(parts[6][1], "Wyniesie: patyk 3");
+    assert.equal(parts[7][1], "Wyniesie: patyk 3");
 
     // Completed: no deposit line under „Potem” (D-185: the window holds it); the solved line stays,
     // and the preview is gone.
@@ -263,13 +264,14 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "now-row",
       "next-row",
       "body-row",
+      "backpack-text",
       "trip-result",
       "world-drawing",
       "tile-line",
     ]);
     const ended = partsOf(container);
     assert.equal(
-      ended[4][1],
+      ended[5][1],
       "Mapa jest już rozwiązana: to przejście nie płaci wprawy; zapas bierze ze skrzynki i wynosi do niej jak każde inne.",
     );
     assert.ok(
@@ -288,6 +290,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "now-row",
       "next-row",
       "body-row",
+      "backpack-text",
       "run-practice",
       "world-drawing",
       "tile-line",
@@ -311,6 +314,42 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
         "the line of a death with no practice stands nowhere in the world area",
       );
     }
+  });
+});
+
+// Catches the line of gear drawn anywhere but right under the backpack line, in another class or text than
+// the backpack's, or naming the pockets before the main hand, and the line left off a map run (D-311, D-455).
+test("the line of gear stands right under the backpack line, in its class and text, naming the main hand first", async () => {
+  // decision: D-311 "Under the line of the backpack stands the line of the gear, in the same text as the line of the backpack, naming the main hand first and the pockets after it"
+  await withPage(async ({ document }) => {
+    const base = sent();
+    const held = withRun(base, {
+      character: {
+        ...base.run.character,
+        gear: {
+          ...base.run.character.gear,
+          mainHand: "stick",
+          pocket1: "bandage",
+          pocket2: "bandage",
+        },
+      },
+    });
+    const { container, show } = await draw(document, held);
+    const names = classesOf(container);
+    assert.equal(names[names.indexOf("body-row") + 1], "backpack-text");
+    const line = partsOf(container)[names.indexOf("backpack-text")];
+    assert.equal(line[1], "Wyposażenie: patyk w ręku, 2 × opatrunek pod ręką");
+    assert.equal(
+      worldOf(container).querySelector(".body-row .backpack-text").textContent,
+      "Plecak 5/15: patyk 5",
+    );
+
+    // A character holding nothing, on the same screen.
+    await show(base);
+    assert.equal(
+      partsOf(container)[classesOf(container).indexOf("backpack-text")][1],
+      "Wyposażenie: nic",
+    );
   });
 });
 
