@@ -322,6 +322,7 @@ test("each action names its group and each condition its section and place in th
       ["strikeWithStick", "foodAndCombat"],
       ["kick", "foodAndCombat"],
       ["dodge", "foodAndCombat"],
+      ["equip", "foodAndCombat"],
       ["craft", "crafting"],
     ],
   );
@@ -665,6 +666,7 @@ test("the character skills grow the listed pairs of verb and target, and the wal
     "walkTo",
     "walkToCampfire",
     "tend",
+    "equip",
     "craft",
   ]);
 });
@@ -744,10 +746,10 @@ const ROWS = [
     items: [],
   },
   {
-    // The first creature attack reveals the combat health conditions and the condition on an empty place.
-    // D-459: the condition „Puste — {miejsce}” is revealed by the first wolf attack.
+    // The first creature attack reveals the combat health conditions, the condition on an empty place
+    // and the action that puts a piece on the gear (D-143, D-458, D-459).
     event: { kind: "attacked", creature: "wolf" },
-    actions: ["strikeWithStick", "kick", "dodge"],
+    actions: ["strikeWithStick", "kick", "dodge", "equip"],
     conditions: ["healthBelow", "opponentHealthBelow", "emptyPlace"],
     items: [],
   },
@@ -772,6 +774,7 @@ test("each revealing event reveals exactly the actions, conditions and items of 
   // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-143 "It brings the action „Załóż” and the condition „Puste” into the Understanding with them."
   // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   for (const row of ROWS) {
     const label = JSON.stringify(row.event);
