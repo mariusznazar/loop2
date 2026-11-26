@@ -366,15 +366,32 @@ test("a completion of an earning loop's map run keeps the player's choice in a c
   assert.deepEqual(after.loops[ALA].run.character.gear, RUN_LEFT);
 });
 
-test("a slot the player emptied keeps its emptiness, and one emptied and filled again counts as changed", () => {
-  // decision: D-460 "A slot counts as changed from the first piece the player puts on it or takes off it, whether or not it holds again the item it held at the start of the map run."
-  const started = startLoop(
-    changing(game(), ALA, { gear: STICK_IN_HAND }),
+/**
+ * Ala in an earning loop of Las with the stick in her main hand at its start, so the map run going on
+ * holds that stick too, and the chest holding `chest`.
+ */
+function loopWithStick(state, chest = {}) {
+  return startLoop(
+    changing(withChest(state, chest), ALA, { gear: STICK_IN_HAND }),
     FOREST,
     T0,
   ).state;
-  const emptied = takeOffPiece(started, ALA, "mainHand").state;
-  assert.deepEqual(emptied.team.chest.pieces, { stick: 1 }, "precondition");
+}
+
+test("a slot the player emptied keeps its emptiness and the map run's stick reaches the chest once, at the end, and one emptied and filled again counts as changed", () => {
+  // decision: D-460 "A slot counts as changed from the first piece the player puts on it or takes off it, whether or not it holds again the item it held at the start of the map run."
+  // decision: D-460 "At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left."
+  // Two sticks in all: the one in the hand, which the map run going on holds, and one in the chest.
+  const emptied = takeOffPiece(
+    loopWithStick(game(), { stick: 1 }),
+    ALA,
+    "mainHand",
+  ).state;
+  assert.deepEqual(
+    emptied.team.chest.pieces,
+    { stick: 1 },
+    "precondition: the map run's stick is not in the chest while the map run goes on",
+  );
   const afterEmptied = endedLoopRun(
     looped(emptied, (run) => completingNext(leaving(run, RUN_LEFT))),
   );
@@ -387,6 +404,104 @@ test("a slot the player emptied keeps its emptiness, and one emptied and filled 
   );
   assert.deepEqual(ala(afterRefilled).gear, RUN_LEFT);
   assert.deepEqual(afterRefilled.team.chest.pieces, { stick: 1 });
+});
+
+test("a stick put on in an earning loop over the map run's stick stays in the hand, and the map run's stick reaches the chest at the end", () => {
+  // decision: D-460 "At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left."
+  // Two sticks in all: the one in the hand and one in the chest, which the player puts on.
+  const exchanged = putOnPiece(
+    loopWithStick(game(), { stick: 1 }),
+    ALA,
+    "mainHand",
+    "stick",
+  ).state;
+  assert.deepEqual(exchanged.team.chest.pieces, {}, "precondition");
+  const after = endedLoopRun(looped(exchanged, completingNext));
+  assert.deepEqual(ala(after).gear, STICK_IN_HAND);
+  assert.deepEqual(after.team.chest.pieces, { stick: 1 });
+});
+
+test("a death with no use left takes the map run's stick that the player took off or exchanged for the next map run, and leaves the player's own", () => {
+  // decision: D-190 "The gear of a character, which is no part of what it carried (D-183), is taken by a death when the resurrection has no use left to spend on it, and by no other: a death that uses up the last use takes none of it, and the death of a character with no practice yet, which uses up no use, takes it when no use is left, though it takes nothing else besides what it carried."
+  // decision: D-460 "At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left."
+  const takeOff = (state) => takeOffPiece(state, ALA, "mainHand").state;
+  const putOn = (state) => putOnPiece(state, ALA, "mainHand", "stick").state;
+  for (const [label, prepare, chest, act, gear] of [
+    ["practice, taken off", practised, {}, takeOff, EMPTY_GEAR],
+    ["practice, exchanged", practised, { stick: 1 }, putOn, STICK_IN_HAND],
+    ["no practice, taken off", (state) => state, {}, takeOff, EMPTY_GEAR],
+    [
+      "no practice, exchanged",
+      (state) => state,
+      { stick: 1 },
+      putOn,
+      STICK_IN_HAND,
+    ],
+  ]) {
+    const acted = act(loopWithStick(noneLeft(prepare(game())), chest));
+    assert.deepEqual(acted.team.chest.pieces, {}, `${label}: precondition`);
+    const after = endedLoopRun(looped(acted, dyingNext));
+    assert.deepEqual(ala(after).gear, gear, label);
+    assert.deepEqual(after.team.chest.pieces, {}, `${label}: chest`);
+  }
+});
+
+/** The sticks the player owns outside a map run: those of the chest and the one in Ala's main hand. */
+const ownedSticks = (state) =>
+  (state.team.chest.pieces.stick ?? 0) +
+  (ala(state).gear.mainHand === "stick" ? 1 : 0);
+
+/** Every sequence of up to `length` of the player's two acts on the main hand, the empty one included. */
+function actSequences(length) {
+  const acts = {
+    on: (state) => putOnPiece(state, ALA, "mainHand", "stick").state,
+    off: (state) => takeOffPiece(state, ALA, "mainHand").state,
+  };
+  let sequences = [[]];
+  const all = [[]];
+  for (let step = 0; step < length; step += 1) {
+    sequences = sequences.flatMap((sequence) =>
+      Object.keys(acts).map((name) => [...sequence, name]),
+    );
+    all.push(...sequences);
+  }
+  return all.map((names) => ({
+    label: names.join(" ") || "no act",
+    run: (state) => names.reduce((current, name) => acts[name](current), state),
+  }));
+}
+
+test("no sequence of the player's acts in an earning loop and no end of its map run makes a stick or loses one but at a death that takes the gear", () => {
+  // decision: D-460 "At the end of a map run of an earning loop the character's gear is merged slot by slot: a slot the player changed since that map run started keeps the player's choice, and the piece the map run left in it goes to the chest, or is lost where the chest has no room, as loot beyond the free room of the chest is; any other slot takes what the map run left."
+  // decision: D-190 "The gear of a character, which is no part of what it carried (D-183), is taken by a death when the resurrection has no use left to spend on it, and by no other: a death that uses up the last use takes none of it, and the death of a character with no practice yet, which uses up no use, takes it when no use is left, though it takes nothing else besides what it carried."
+  // The empty program takes nothing and its map run keeps the gear it entered with, so the sticks the
+  // player owns are those of the chest and the hand, and a death that takes the gear takes the stick
+  // the map run going on entered with.
+  const ends = [
+    ["a completion", (state) => state, completingNext, false],
+    ["a death with a use left", practised, dyingNext, false],
+    ["a death with none left", (s) => noneLeft(practised(s)), dyingNext, true],
+    ["a death with no practice and none left", noneLeft, dyingNext, true],
+  ];
+  const sequences = actSequences(3);
+  for (const hand of [EMPTY_GEAR, STICK_IN_HAND])
+    for (const sticks of [0, 1, 2])
+      for (const [end, prepare, ending, takes] of ends)
+        for (const { label, run } of sequences) {
+          const name = `${hand.mainHand ?? "no stick"} in the hand, ${sticks} in the chest, ${label}, ${end}`;
+          const start = startLoop(
+            changing(prepare(game({ stick: sticks })), ALA, { gear: hand }),
+            FOREST,
+            T0,
+          ).state;
+          const owned = ownedSticks(start);
+          const entered = hand.mainHand === "stick" ? 1 : 0;
+          const acted = run(start);
+          const after = endedLoopRun(looped(acted, ending));
+          assert.equal(ownedSticks(after), owned - (takes ? entered : 0), name);
+          const stopped = stopLoop(acted, ALA).state;
+          assert.equal(ownedSticks(stopped), owned, `${name}, Zatrzymaj`);
+        }
 });
 
 test("the map run's piece in a changed slot is lost where the chest has no room, and goes in up to the room there is", () => {

@@ -66,6 +66,24 @@ function sharedRefusal(
 }
 
 /**
+ * Whether the piece `slot` of the character holds is the piece the map run going on of its earning loop
+ * holds as well: at a character in an earning loop, a slot the player has not changed since that map run
+ * started holds the piece the map run entered with (D-453). That piece reaches the chest only through the
+ * merge at the end of the map run (D-460), so an act on the slot puts it into the chest neither at once
+ * nor later by itself, and needs no room of the chest for it.
+ */
+function heldByLoopRun(
+  state: GameState,
+  character: Character,
+  slot: GearSlot,
+): boolean {
+  return (
+    state.loops[character.id] !== undefined &&
+    !character.changedSlots.includes(slot)
+  );
+}
+
+/**
  * The state after an act on `before`'s gear: the gear and the chest as given, the slot marked as
  * changed by the player at a character in an earning loop (D-453, D-460) and the count of the gear
  * changes raised by one (D-463). The character's place in the team's list stays.
@@ -106,8 +124,10 @@ function acted(
 
 /**
  * Puts `item` from the chest on `slot` of the character's gear. The piece the slot held goes back to
- * the chest. Refused where the chest lacks the item, where the item does not fit the slot, and for
- * the character of a manual map run (D-287, D-453); the chest is read before the act.
+ * the chest, but for a piece the map run going on of the character's earning loop holds, which reaches
+ * the chest at the end of that map run (`heldByLoopRun`). Refused where the chest lacks the item, where
+ * the item does not fit the slot, and for the character of a manual map run (D-287, D-453); the chest is
+ * read before the act.
  */
 export function putOnPiece(
   state: GameState,
@@ -123,7 +143,8 @@ export function putOnPiece(
   if (!fitsSlot(item, slot)) return refused(state, "wrongPlace");
   const pieces = { ...state.team.chest.pieces };
   const held = character.gear[slot];
-  if (held !== null) pieces[held] = (pieces[held] ?? 0) + 1;
+  if (held !== null && !heldByLoopRun(state, character, slot))
+    pieces[held] = (pieces[held] ?? 0) + 1;
   const left = (pieces[item] ?? 0) - 1;
   if (left > 0) pieces[item] = left;
   else delete pieces[item];
@@ -136,9 +157,16 @@ export function putOnPiece(
   );
 }
 
+/** Whether the chest has no room for one more piece. */
+function chestFull(state: GameState): boolean {
+  return pieceCount(state.team.chest.pieces) + 1 > BALANCE.chestCapacity;
+}
+
 /**
- * Takes the piece of `slot` off the character's gear into the chest. Refused on an empty slot, where
- * the chest has no room (the reason „skrzynka pełna”), and for the character of a manual map run.
+ * Takes the piece of `slot` off the character's gear into the chest; a piece the map run going on of the
+ * character's earning loop holds goes into none and needs no room there, since it reaches the chest at
+ * the end of that map run (`heldByLoopRun`). Refused on an empty slot, where the chest has no room for
+ * the piece (the reason „skrzynka pełna”), and for the character of a manual map run.
  */
 export function takeOffPiece(
   state: GameState,
@@ -150,12 +178,14 @@ export function takeOffPiece(
   const character = characterOf(state, characterId)!;
   const held = character.gear[slot];
   if (held === null) return refused(state, "emptySlot");
-  if (pieceCount(state.team.chest.pieces) + 1 > BALANCE.chestCapacity)
-    return refused(state, "chestFull");
-  const pieces = {
-    ...state.team.chest.pieces,
-    [held]: (state.team.chest.pieces[held] ?? 0) + 1,
-  };
+  const runs = heldByLoopRun(state, character, slot);
+  if (!runs && chestFull(state)) return refused(state, "chestFull");
+  const pieces = runs
+    ? { ...state.team.chest.pieces }
+    : {
+        ...state.team.chest.pieces,
+        [held]: (state.team.chest.pieces[held] ?? 0) + 1,
+      };
   return acted(
     state,
     character,
@@ -168,7 +198,8 @@ export function takeOffPiece(
 /**
  * What the pick of `slot` on the screen Postać shows (D-456): the items of the chest that fit the
  * slot, in the order of the data, each with the pieces the chest holds of it, and whether „Zdejmij”
- * acts, with its reason where it does not. Null for an unknown character or slot.
+ * acts, with its reason where it does not, as `takeOffPiece` refuses it. Null for an unknown character
+ * or slot.
  */
 export function gearPick(
   state: GameState,
@@ -186,7 +217,7 @@ export function gearPick(
   let takeOff: GearRefusal | null = null;
   if (state.run?.character.id === characterId) takeOff = "manualRun";
   else if (character.gear[slot] === null) takeOff = "emptySlot";
-  else if (pieceCount(state.team.chest.pieces) + 1 > BALANCE.chestCapacity)
+  else if (!heldByLoopRun(state, character, slot) && chestFull(state))
     takeOff = "chestFull";
   return { options, takeOff };
 }

@@ -229,6 +229,71 @@ test("the map run going on in an earning loop keeps the gear it started with", (
   assert.equal(result.state.loops[ANNA].run, looped.loops[ANNA].run);
 });
 
+/** The state with the chest of its team holding `pieces`. */
+function withChest(state, pieces) {
+  return {
+    ...state,
+    team: { ...state.team, chest: { pieces: { ...pieces } } },
+  };
+}
+
+/** Anna with a stick put on at the camp, then in an earning loop, the chest then holding `pieces`. */
+function loopHoldingStick(pieces) {
+  const worn = putOnPiece(
+    twoCharacters({ stick: 1 }),
+    ANNA,
+    "mainHand",
+    "stick",
+  ).state;
+  return withChest(withLoopOfAnna(worn), pieces);
+}
+
+test("taking off in an earning loop the piece the map run going on holds puts nothing into the chest at once, and needs no room in it", () => {
+  // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
+  for (const [label, pieces] of [
+    ["an empty chest", {}],
+    ["a full chest of 60 berries", { berry: 60 }],
+  ]) {
+    const looped = loopHoldingStick(pieces);
+    assert.equal(
+      looped.loops[ANNA].run.character.gear.mainHand,
+      "stick",
+      `${label}: precondition`,
+    );
+    const taken = takeOffPiece(looped, ANNA, "mainHand");
+    assert.equal(taken.refusal, null, label);
+    assert.deepEqual(taken.state.team.chest.pieces, pieces, label);
+    assert.equal(character(taken.state, ANNA).gear.mainHand, null, label);
+    assert.deepEqual(character(taken.state, ANNA).changedSlots, ["mainHand"]);
+    assert.equal(character(taken.state, ANNA).gearChanges, 2, label);
+    assert.equal(gearPick(looped, ANNA, "mainHand").takeOff, null, label);
+  }
+});
+
+test("putting a piece on in an earning loop over the piece the map run going on holds takes one from the chest and puts the held one into none", () => {
+  // decision: D-453 "At a character in an earning loop the change acts from its next map run, while the map run going on keeps the gear it started with."
+  const looped = loopHoldingStick({ stick: 2 });
+  const put = putOnPiece(looped, ANNA, "mainHand", "stick");
+  assert.equal(put.refusal, null);
+  assert.deepEqual(put.state.team.chest.pieces, { stick: 1 });
+  assert.equal(character(put.state, ANNA).gear.mainHand, "stick");
+  assert.deepEqual(character(put.state, ANNA).changedSlots, ["mainHand"]);
+  // The piece now in the slot is the player's own, so exchanging it returns it to the chest at once.
+  const again = putOnPiece(put.state, ANNA, "mainHand", "stick");
+  assert.deepEqual(again.state.team.chest.pieces, { stick: 1 });
+});
+
+test("a piece the player put on in an earning loop needs room in the chest to come off, and the pick says skrzynka pełna", () => {
+  const looped = withLoopOfAnna(twoCharacters({ stick: 1, berry: 59 }));
+  const put = putOnPiece(looped, ANNA, "mainHand", "stick").state;
+  const full = withChest(put, { berry: 60 });
+  assert.equal(takeOffPiece(full, ANNA, "mainHand").refusal, "chestFull");
+  assert.equal(gearPick(full, ANNA, "mainHand").takeOff, "chestFull");
+  const room = withChest(put, { berry: 59 });
+  const taken = takeOffPiece(room, ANNA, "mainHand");
+  assert.deepEqual(taken.state.team.chest.pieces, { berry: 59, stick: 1 });
+});
+
 test("Bob's earning loop beside a manual map run of Anna: Bob's act goes on, Anna's is refused", () => {
   const looped = startLoop(
     twoCharacters({ stick: 2 }),
