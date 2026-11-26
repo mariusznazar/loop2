@@ -19,8 +19,8 @@ import type {
   Understanding,
 } from "../sim/types.js";
 import { discoveryBandText } from "./discovery-band-text.js";
-import { deathText, WAIT_TEXT } from "./now-lines.js";
-import { actionSentence, ruleNumber, ruleSentence } from "./program-editor.js";
+import { deathText, startWords, WAIT_TEXT } from "./now-lines.js";
+import { ruleNumber, ruleSentence } from "./program-editor.js";
 
 /**
  * The kind of an entry, which decides both the filter that shows it and the role of its text:
@@ -364,7 +364,7 @@ export function eventEntry(
         minute: event.minute,
         text:
           event.activity.kind === "rule"
-            ? actionSentence(event.activity.action)
+            ? startWords(event.activity.action)
             : WAIT_TEXT,
         role: "text",
       };

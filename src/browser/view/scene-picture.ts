@@ -583,8 +583,8 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
 }
 
 /**
- * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating and
- * tending).
+ * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating,
+ * tending and putting a piece on the gear, D-458).
  */
 const USES_BACKPACK: ReadonlySet<string> = new Set([
   "craftCampfire",
@@ -594,6 +594,7 @@ const USES_BACKPACK: ReadonlySet<string> = new Set([
   "eat",
   "craft",
   "tend",
+  "equip",
 ]);
 
 /**

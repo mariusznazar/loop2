@@ -1,6 +1,7 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { CREATURES } from "../sim/data/creatures.js";
+import { GEAR_PLACES } from "../sim/data/gear.js";
 import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { Condition, LastCombat } from "../sim/types.js";
@@ -49,8 +50,15 @@ function actionText(combat: LastCombat): string[] {
     }
     const character = exchange.characterAction;
     if (character) {
+      // The refill of an empty main hand is an element of its own, before the strike (D-457).
+      if (character.refill) actions.push(`Mag ${GEAR_PLACES.mainHand.refill}`);
       if (character.action.kind === "dodge") {
         actions.push("Mag odskakuje");
+      } else if (character.action.kind === "equip") {
+        // „Załóż” has no creature health to show: it puts the piece on and takes the turn (D-458).
+        actions.push(
+          `Mag ${ACTIONS.equip.status.toLowerCase()} ${ITEMS[character.action.item].name}`,
+        );
       } else {
         const action = ACTIONS[character.action.kind].status.toLowerCase();
         actions.push(
