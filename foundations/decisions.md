@@ -11015,7 +11015,7 @@ pointer show the name of their value in `text-strong`, their background unchange
   alarm and frame until the tests of the change that brought them hold them, an agent compares a
   change with the part no test holds:
   - complies: the notes under temperature and satiety in `text-secondary`, smaller than the values
-    above them; „Sytość” at the left and „14” at the right of its cell, in `danger`, over a bar
+    above them; „Sytość” at the left and „14 %” at the right of its cell, in `danger`, over a bar
     filled to 14 % that pulses, „głoduje” under it; the marker at the left end of the scale at
     28,4 °C, pulsing with the chill zone; „Zdrowie 30” in `danger` with its bar pulsing; the frame
     of the temperature cell amber at a campfire at 37,0 °C, and bluish away from fire on Las —
@@ -11341,8 +11341,8 @@ the marker reads the blows from the events, as the scene reads its effects, show
 combat as one sum, which comes at once, and shows no blow at a first draw, a reload or a load, when
 no event comes; at the paces where the scene shows no text of its effects the marker shows none
 either, and a blow is dropped there as loop drops it. While game time stands the marker stands, as in
-loop. Accepted with it: the sum does not say how many blows there were, and at 4× the text goes
-before it can be read as it is at 1×.
+loop. The text fades in the same real time at every pace, so at 4× it reads as it does at 1×.
+Accepted with it: the sum does not say how many blows there were.
 *Rejected:* the bar alone, with nothing more — no cost, but on the side-by-side of the screenshots
 loop's cells do more; the bar and the blow marker in the health cell, with no explanations — a new
 motion judged by the criterion on flashing and still under reduced motion, and the game keeping the
