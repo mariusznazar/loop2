@@ -1,0 +1,65 @@
+name: AI Reviewer
+description: Reviews the diff of a pull request against six criteria and gives a verdict
+
+inputs:
+  api-key:
+    description: OpenAI API key
+    required: true
+  model:
+    description: Model of the review
+    required: true
+  pr-title:
+    description: Title of the pull request
+    required: true
+  pr-body:
+    description: Description of the pull request
+    required: false
+    default: ""
+  diff-file:
+    description: Path of the file with the diff
+    required: true
+  base-ref:
+    description: Base branch, the source of the guidelines
+    required: true
+
+outputs:
+  verdict:
+    description: pass, fail or skipped
+    value: ${{ steps.agent.outputs.verdict }}
+  comment-file:
+    description: Path of the file with the pull request comment
+    value: ${{ steps.agent.outputs.comment-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install the agent
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: npm ci --ignore-scripts --no-audit --no-fund --prefix "$ACTION_PATH"
+
+    - name: Test the agent
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm test
+
+    - name: Run code review
+      id: agent
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        OPENAI_API_KEY: ${{ inputs.api-key }}
+        REVIEW_MODEL: ${{ inputs.model }}
+        PR_TITLE: ${{ inputs.pr-title }}
+        PR_BODY: ${{ inputs.pr-body }}
+        DIFF_FILE: ${{ inputs.diff-file }}
+        BASE_REF: ${{ inputs.base-ref }}
+        COMMENT_FILE: ${{ runner.temp }}/review-comment.md
+      run: |
+        if [ -z "$OPENAI_API_KEY" ]; then
+          echo "::error::The OPENAI_API_KEY secret is empty"
+          exit 1
+        fi
+        node "$ACTION_PATH/review.mjs"
+        echo "comment-file=$COMMENT_FILE" >> "$GITHUB_OUTPUT"
