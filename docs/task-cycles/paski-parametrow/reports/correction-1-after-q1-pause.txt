@@ -1,2 +1,0 @@
-paused: frames 247 distinct 1 first ('paused', '0.730', 'none', 'paused') last ('paused', '0.730', 'none', 'paused') span 1500ms
-resumed: frames 248 distinct 117 first ('going', '0.720', 'none', 'running') last ('going', None, None, None) span 1501ms

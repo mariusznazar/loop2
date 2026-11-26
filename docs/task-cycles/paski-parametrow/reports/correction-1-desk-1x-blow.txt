@@ -1,8 +1,0 @@
-shot 6867 timedOut None samples 180 with text 143
-text '−21 · wilk' first t 0 last t 1384
-first rect [581.9, 480.2, 638, 498.3] last rect [581.9, 468.2, 638, 486.3] last opacity 0.00
-cell translates ['-0.195529px', '-0.349294px', '-0.583765px', '-0.663294px', '-0.714px', '-0.901412px'] ... blow marks ['None', 'odd'] standing ['going'] play ['None', 'running']
-cells [[145, 452.4, 307, 501.3], [315, 452.4, 477, 501.3], [485, 452.4, 647, 501.3], [655, 452.4, 817, 501.3]] bar [494, 475.5, 638, 479.5]
-violations [] count 0
-minutes ['Minuta 165', 'Minuta 166', 'Minuta 167'] .. ['Minuta 170', 'Minuta 171', 'Minuta 172']
-after Minuta 172 (pauza) | Zdrowie 79
