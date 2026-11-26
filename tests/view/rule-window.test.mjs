@@ -215,9 +215,10 @@ test("the window of a rule reads „Reguła {n.m} w grupie „{nazwa}””, tha
 
 // Breaks: the window as a block in the flow of the list, which moves the rows under it down; a
 // backdrop or a modal mark, which would cut the rows above and below it off; the bar of the phone
-// layout drawn in the computer layout; the window framed in `divider` with no shadow, on `panel` as
-// the column it lies on, so that it reads as a continuation of that column.
-test("the window is a dialog named by its heading, not modal, laid over the rows from directly under its row in a frame of its role with a shadow, and the computer layout draws no bar", async () => {
+// layout drawn in the computer layout; the window framed in `divider`, on `panel` as the column it lies
+// on, so that it reads as a continuation of that column; a shadow of the window, which darkens the
+// text of the rows under its lower edge, which stay in reach, below the threshold of D-42.
+test("the window is a dialog named by its heading, not modal, laid over the rows from directly under its row in a frame of its role and with no shadow, and the computer layout draws no bar", async () => {
   // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   // decision: D-288 "In the computer layout „↑”, „↓” and „Usuń” of a rule stand in its row and „↑” and „↓” of a rule group in its header, and the window holds none of them."
   // decision: D-40 "`window-frame` means that this block is a window lying over the screen beneath it"
@@ -254,8 +255,8 @@ test("the window is a dialog named by its heading, not modal, laid over the rows
     assert.equal(frame, "var(--window-frame)", "the window framed in its role");
     assert.equal(
       view.getComputedStyle(shown).boxShadow,
-      "var(--window-shadow)",
-      "a shadow under the window",
+      "none",
+      "no shadow over the rows under the window",
     );
     assert.equal(
       view.getComputedStyle(shown.querySelector(".rule-panel-bar")).display,
