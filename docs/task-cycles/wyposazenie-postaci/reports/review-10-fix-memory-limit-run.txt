@@ -1,0 +1,53 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/memory-limit.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a child growing on a stuck main thread is killed before its own stop and says why on standard error (1069.2996ms)
+✔ a killed child reads as a failed run with its sentence through node --test (1155.737ms)
+✔ a killed child reads as a failed run with its sentence through scripts/test-node-file.mjs (1171.0258ms)
+✔ a child under its limit ends well and nothing kills it (2154.8959ms)
+✔ the tree holds no file that goes round the harness of a document imitation (2264.8052ms)
+✔ the guard refuses jsdom taken by named import outside the harness (0.3197ms)
+✔ the guard refuses jsdom/lib/api.js taken by named import outside the harness (0.1331ms)
+✔ the guard refuses happy-dom taken by named import outside the harness (0.0892ms)
+✔ the guard refuses jsdom taken by bare import outside the harness (0.1834ms)
+✔ the guard refuses jsdom/lib/api.js taken by bare import outside the harness (0.208ms)
+✔ the guard refuses happy-dom taken by bare import outside the harness (0.0894ms)
+✔ the guard refuses jsdom taken by import over lines outside the harness (0.1527ms)
+✔ the guard refuses jsdom/lib/api.js taken by import over lines outside the harness (0.0673ms)
+✔ the guard refuses happy-dom taken by import over lines outside the harness (0.0813ms)
+✔ the guard refuses jsdom taken by re-export outside the harness (0.1047ms)
+✔ the guard refuses jsdom/lib/api.js taken by re-export outside the harness (0.0457ms)
+✔ the guard refuses happy-dom taken by re-export outside the harness (0.0322ms)
+✔ the guard refuses jsdom taken by dynamic import outside the harness (0.0517ms)
+✔ the guard refuses jsdom/lib/api.js taken by dynamic import outside the harness (0.0334ms)
+✔ the guard refuses happy-dom taken by dynamic import outside the harness (0.0348ms)
+✔ the guard refuses jsdom taken by dynamic import over lines outside the harness (0.0427ms)
+✔ the guard refuses jsdom/lib/api.js taken by dynamic import over lines outside the harness (0.0312ms)
+✔ the guard refuses happy-dom taken by dynamic import over lines outside the harness (0.0387ms)
+✔ the guard refuses jsdom taken by require outside the harness (0.0564ms)
+✔ the guard refuses jsdom/lib/api.js taken by require outside the harness (0.0338ms)
+✔ the guard refuses happy-dom taken by require outside the harness (0.0425ms)
+✔ the guard refuses an imitation in a file that only shares the harness's name (0.0829ms)
+✔ the guard refuses assert taken by default import beside the harness (0.0671ms)
+✔ the guard refuses node:assert taken by default import beside the harness (0.0354ms)
+✔ the guard refuses node:assert/strict taken by default import beside the harness (0.0365ms)
+✔ the guard refuses assert taken by named import beside the harness (0.0437ms)
+✔ the guard refuses node:assert taken by named import beside the harness (0.0375ms)
+✔ the guard refuses node:assert/strict taken by named import beside the harness (0.0291ms)
+✔ the guard refuses assert taken by dynamic import beside the harness (0.0523ms)
+✔ the guard refuses node:assert taken by dynamic import beside the harness (0.0471ms)
+✔ the guard refuses node:assert/strict taken by dynamic import beside the harness (0.0413ms)
+✔ the guard leaves the harness its imitation, and Node's assert to a file without the harness (0.1045ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7924.8954

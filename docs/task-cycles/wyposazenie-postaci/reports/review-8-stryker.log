@@ -1,0 +1,209 @@
+20:11:52 (24060) INFO ProjectReader Found 3 of 672 file(s) to be mutated.
+20:11:53 (24060) INFO Instrumenter Instrumented 3 source file(s) with 104 mutant(s)
+20:11:53 (24060) INFO ConcurrencyTokenProvider Creating 4 test runner process(es).
+20:11:54 (24060) INFO Sandbox Running build command "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json" in ".runs\review-8\head\.stryker-tmp\sandbox-BStS5i".
+20:11:56 (24060) INFO DryRunExecutor Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+20:12:24 (24060) INFO DryRunExecutor Initial test run succeeded. Ran 52 tests in 28 seconds (net 24198.773999999998 ms, overhead 4272.226000000002 ms).
+
+All tests
+  acceptance.test.mjs
+    ✘ tests/sim/acceptance.test.mjs (covered 0)
+  action-targets.test.mjs
+    ✘ tests/sim/action-targets.test.mjs (covered 0)
+  actions.test.mjs
+    ✘ tests/sim/actions.test.mjs (covered 0)
+  body.test.mjs
+    ✘ tests/sim/body.test.mjs (covered 0)
+  campfire.test.mjs
+    ✘ tests/sim/campfire.test.mjs (covered 0)
+  catch-up.test.mjs
+    ✓ tests/sim/catch-up.test.mjs (killed 24)
+  combat.test.mjs
+    ✓ tests/sim/combat.test.mjs (killed 9)
+  completion.test.mjs
+    ✘ tests/sim/completion.test.mjs (covered 0)
+  conditions.test.mjs
+    ✘ tests/sim/conditions.test.mjs (covered 0)
+  content-revision.test.mjs
+    ~ tests/sim/content-revision.test.mjs (covered 4)
+  copy-actions.test.mjs
+    ✘ tests/sim/copy-actions.test.mjs (covered 0)
+  copy.test.mjs
+    ✘ tests/sim/copy.test.mjs (covered 0)
+  craft-and-tend.test.mjs
+    ✓ tests/sim/craft-and-tend.test.mjs (killed 1)
+  data.test.mjs
+    ✘ tests/sim/data.test.mjs (covered 0)
+  death.test.mjs
+    ~ tests/sim/death.test.mjs (covered 16)
+  discovery.test.mjs
+    ✓ tests/sim/discovery.test.mjs (killed 2)
+  encounters.test.mjs
+    ~ tests/sim/encounters.test.mjs (covered 39)
+  first-map-balance.test.mjs
+    ✘ tests/sim/first-map-balance.test.mjs (covered 0)
+  flow.test.mjs
+    ✘ tests/sim/flow.test.mjs (covered 0)
+  gather.test.mjs
+    ✘ tests/sim/gather.test.mjs (covered 0)
+  gear-acts.test.mjs
+    ✘ tests/sim/gear-acts.test.mjs (covered 0)
+  gear-combat-wear.test.mjs
+    ✓ tests/sim/gear-combat-wear.test.mjs (killed 9)
+  gear-combat.test.mjs
+    ✓ tests/sim/gear-combat.test.mjs (killed 1)
+  gear-condition.test.mjs
+    ~ tests/sim/gear-condition.test.mjs (covered 13)
+  gear-state.test.mjs
+    ✘ tests/sim/gear-state.test.mjs (covered 0)
+  gear-transfer.test.mjs
+    ✘ tests/sim/gear-transfer.test.mjs (covered 0)
+  gear-wear.test.mjs
+    ✘ tests/sim/gear-wear.test.mjs (covered 0)
+  hex.test.mjs
+    ✘ tests/sim/hex.test.mjs (covered 0)
+  judging-record.test.mjs
+    ~ tests/sim/judging-record.test.mjs (covered 4)
+  judging.test.mjs
+    ~ tests/sim/judging.test.mjs (covered 38)
+  layout.test.mjs
+    ✘ tests/sim/layout.test.mjs (covered 0)
+  loop-record.test.mjs
+    ~ tests/sim/loop-record.test.mjs (covered 16)
+  loop.test.mjs
+    ✓ tests/sim/loop.test.mjs (killed 3)
+  map-card.test.mjs
+    ✘ tests/sim/map-card.test.mjs (covered 0)
+  new-account-first-pass.test.mjs
+    ✘ tests/sim/new-account-first-pass.test.mjs (covered 0)
+  previous-programs.test.mjs
+    ~ tests/sim/previous-programs.test.mjs (covered 4)
+  program-counts.test.mjs
+    ✘ tests/sim/program-counts.test.mjs (covered 0)
+  program-list.test.mjs
+    ~ tests/sim/program-list.test.mjs (covered 4)
+  program.test.mjs
+    ✘ tests/sim/program.test.mjs (covered 0)
+  purity.test.mjs
+    ✘ tests/sim/purity.test.mjs (covered 0)
+  random.test.mjs
+    ✘ tests/sim/random.test.mjs (covered 0)
+  repertoire.test.mjs
+    ✘ tests/sim/repertoire.test.mjs (covered 0)
+  rule-signs.test.mjs
+    ~ tests/sim/rule-signs.test.mjs (covered 38)
+  run-record.test.mjs
+    ✘ tests/sim/run-record.test.mjs (covered 0)
+  saved-game.test.mjs
+    ✓ tests/sim/saved-game.test.mjs (killed 40)
+  skills.test.mjs
+    ✓ tests/sim/skills.test.mjs (killed 6)
+  streak.test.mjs
+    ✘ tests/sim/streak.test.mjs (covered 0)
+  team.test.mjs
+    ~ tests/sim/team.test.mjs (covered 16)
+  time.test.mjs
+    ✘ tests/sim/time.test.mjs (covered 0)
+  traits.test.mjs
+    ✘ tests/sim/traits.test.mjs (covered 0)
+  trip.test.mjs
+    ✘ tests/sim/trip.test.mjs (covered 0)
+  world.test.mjs
+    ✘ tests/sim/world.test.mjs (covered 0)
+
+[NoCoverage] StringLiteral
+src/browser/sim/combat.ts:133:25
+-           throw new Error("combat: selected equip cannot be carried out");
++           throw new Error("");
+
+[NoCoverage] StringLiteral
+src/browser/sim/combat.ts:138:25
+-           throw new Error("combat: selected action has no combat effect");
++           throw new Error("");
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:132:11
+-         if (put === null)
++         if (false)
+Tests ran:
+    tests/sim/gear-combat-wear.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:137:11
+-         if (!effect)
++         if (false)
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/combat.test.mjs
+    tests/sim/craft-and-tend.test.mjs
+  and 6 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:146:13
+-           if (damage > 0) practice = practiced(practice, action.kind);
++           if (true) practice = practiced(practice, action.kind);
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/combat.test.mjs
+    tests/sim/craft-and-tend.test.mjs
+  and 6 more tests!
+
+
+[Survived] EqualityOperator
+src/browser/sim/combat.ts:146:13
+-           if (damage > 0) practice = practiced(practice, action.kind);
++           if (damage >= 0) practice = practiced(practice, action.kind);
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/combat.test.mjs
+    tests/sim/craft-and-tend.test.mjs
+  and 6 more tests!
+
+
+[Survived] BooleanLiteral
+src/browser/sim/saved-game.ts:329:9
+-     kick: true,
++     kick: false,
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/content-revision.test.mjs
+    tests/sim/death.test.mjs
+  and 8 more tests!
+
+
+[Survived] BooleanLiteral
+src/browser/sim/saved-game.ts:328:20
+-     strikeWithStick: true,
++     strikeWithStick: false,
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/content-revision.test.mjs
+    tests/sim/death.test.mjs
+  and 8 more tests!
+
+
+[Survived] BooleanLiteral
+src/browser/sim/saved-game.ts:330:10
+-     dodge: true,
++     dodge: false,
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/content-revision.test.mjs
+    tests/sim/death.test.mjs
+  and 8 more tests!
+
+
+Ran 2.39 tests per mutant on average.
+---------------|------------------|----------|-----------|------------|----------|----------|
+               | % Mutation score |          |           |            |          |          |
+File           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+All files      |  91.35 |   93.14 |       95 |         0 |          7 |        2 |        0 |
+ combat.ts     |  81.82 |   87.10 |       27 |         0 |          4 |        2 |        0 |
+ program.ts    | 100.00 |  100.00 |       15 |         0 |          0 |        0 |        0 |
+ saved-game.ts |  94.64 |   94.64 |       53 |         0 |          3 |        0 |        0 |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+20:16:53 (24060) INFO JsonReporter Your report can be found at: file:///.runs/review-8/head/.runs/stryker/mutation.json
+20:16:53 (24060) INFO MutationTestExecutor Done in 5 minutes and 0 seconds.
