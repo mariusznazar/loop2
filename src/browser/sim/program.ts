@@ -519,12 +519,15 @@ export function combatItem(kind: Action["kind"]): ItemId | null {
 }
 
 /**
- * Why a rule's action cannot be carried out in combat: null where it can. Only a combat action can,
- * and one that uses an item needs a piece of it in the main hand or, where the hand is empty, in the
- * backpack (D-380).
+ * Why a rule's action cannot be carried out in combat: null where it can. Only an action of combat
+ * can, and one the data mark as also carried out in combat, „Załóż”, which is refused as it is outside
+ * it (D-140, D-380, D-458); an action of combat that uses an item needs a piece of it in the main hand
+ * or, where the hand is empty, in the backpack (D-380).
  */
 function combatRefusal(run: RunView, action: Action): string | null {
-  if (!(ACTIONS[action.kind] as ActionDef).combat) return "trwa walka";
+  const def = ACTIONS[action.kind] as ActionDef;
+  if (def.alsoInCombat) return actionRefusal(run, action);
+  if (!def.combat) return "trwa walka";
   const item = combatItem(action.kind);
   if (item !== null && combatPiece(run.character, item) === null)
     return `brakuje 1 × ${itemName(item)}`;

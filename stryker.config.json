@@ -34,6 +34,7 @@
       "tests/sim/flow.test.mjs",
       "tests/sim/gather.test.mjs",
       "tests/sim/gear-acts.test.mjs",
+      "tests/sim/gear-combat-wear.test.mjs",
       "tests/sim/gear-combat.test.mjs",
       "tests/sim/gear-condition.test.mjs",
       "tests/sim/gear-state.test.mjs",

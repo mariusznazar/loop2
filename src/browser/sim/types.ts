@@ -142,9 +142,16 @@ export type CombatCreatureAction =
   | { kind: "strike"; damage: number; characterHealth: number }
   | { kind: "dodge" };
 
+/** The kinds of the actions of combat: the ones only a fight carries out (D-140). */
+export type CombatVerbKind = "strikeWithStick" | "kick" | "dodge";
+
+/**
+ * An action of the character in a combat turn: an action of combat, or „Załóż”, which takes a turn of
+ * its own there as it takes its minutes outside a fight (D-140, D-458).
+ */
 export type CombatCharacterAction = {
   ruleId: RuleId;
-  action: Extract<Action, { kind: "strikeWithStick" | "kick" | "dodge" }>;
+  action: Extract<Action, { kind: CombatVerbKind | "equip" }>;
   /**
    * Whether the action first took a piece from the backpack into the empty slot it uses, in the same
    * turn (D-457): the strike taking a stick into an empty main hand.
@@ -351,9 +358,7 @@ export type CompletionSettlement =
  * kind of an ordinary action of the data (one that is no combat action), a wait, or a fight.
  */
 export type MinuteKind =
-  | Exclude<Action["kind"], CombatCharacterAction["action"]["kind"]>
-  | "wait"
-  | "combat";
+  Exclude<Action["kind"], CombatVerbKind> | "wait" | "combat";
 
 /** The game minutes of a manual map run by what the character was doing: every kind, 0 included. */
 export type MinutesByAction = Record<MinuteKind, number>;

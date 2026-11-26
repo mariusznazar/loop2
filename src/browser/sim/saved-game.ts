@@ -48,6 +48,7 @@ import type {
   CombatExchange,
   CombatOutcome,
   CombatResult,
+  CombatVerbKind,
   Completion,
   CompletionSettlement,
   CurrentActivity,
@@ -322,18 +323,22 @@ const COMBAT_OUTCOMES: Record<CombatOutcome, true> = {
   creatureDeparted: true,
 };
 
-type CombatActionKind = CombatCharacterAction["action"]["kind"];
-
-const COMBAT_ACTIONS: Record<CombatActionKind, true> = {
+/** The actions only a fight carries out (D-140): no game minute outside one counts to any of them. */
+const COMBAT_VERBS: Record<CombatVerbKind, true> = {
   strikeWithStick: true,
   kick: true,
   dodge: true,
 };
 
-function isCombatAction(
+function isCombatVerb(
   value: Action,
-): value is CombatCharacterAction["action"] {
-  return Object.hasOwn(COMBAT_ACTIONS, value.kind);
+): value is Extract<Action, { kind: CombatVerbKind }> {
+  return Object.hasOwn(COMBAT_VERBS, value.kind);
+}
+
+/** An action of a turn of the character: an action of combat, or „Załóż”, which takes a turn there. */
+function isTurnAction(value: Action): value is CombatCharacterAction["action"] {
+  return isCombatVerb(value) || value.kind === "equip";
 }
 
 /** The actions that move the character to a neighbouring tile, so their activity holds its target. */
@@ -701,8 +706,9 @@ function currentActivity(value: unknown, place: Place): CurrentActivity {
   const endMinute = count(read.endMinute);
   if (startMinute > place.minute || endMinute <= startMinute) refuse();
   const stepTo = read.stepTo === null ? null : place.onMap(read.stepTo);
-  // The pick starts no combat action outside a fight, so no game minute counts to one.
-  if (doing.kind === "rule" && isCombatAction(doing.action)) refuse();
+  // The pick starts no action of combat outside a fight, so no game minute counts to one; „Załóż” is
+  // no such action and goes on as any ordinary one does.
+  if (doing.kind === "rule" && isCombatVerb(doing.action)) refuse();
   const moves = doing.kind === "rule" && MOVES[doing.action.kind] === true;
   if (moves !== (stepTo !== null)) refuse();
   if (stepTo && hexDistance(stepTo, place.at) !== 1) refuse();
@@ -741,8 +747,9 @@ const CREATURE_ACTIONS: {
 };
 
 /**
- * A character's action of a combat record: a combat action, with the mark of a refill, which only an
- * action that uses an item makes (D-457).
+ * A character's action of a combat record: an action of combat or „Załóż”, with the mark of a refill,
+ * which only an action that uses an item makes (D-457), and the damage of an action that deals none:
+ * „Załóż” deals 0.
  */
 function characterAction(value: unknown): CombatCharacterAction {
   const read = fields(value, [
@@ -754,14 +761,16 @@ function characterAction(value: unknown): CombatCharacterAction {
     "characterHealth",
   ]);
   const acted = action(read.action);
-  if (!isCombatAction(acted)) refuse();
+  if (!isTurnAction(acted)) refuse();
   const refill = flag(read.refill);
   if (refill && combatItem(acted.kind) === null) refuse();
+  const damage = finite(read.damage, 0);
+  if (acted.kind === "equip" && damage !== 0) refuse();
   return {
     ruleId: identity(read.ruleId),
     action: acted,
     refill,
-    damage: finite(read.damage, 0),
+    damage,
     creatureHealth: finite(read.creatureHealth, 0),
     characterHealth: finite(read.characterHealth, 0),
   };

@@ -85,13 +85,17 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // of its gear changes, and the character of each map run holds the gear of that map run. The result
 // of an encounter holds the gear and the backpack its turns left, and each action of the character in
 // it the mark of a refill, which says whether the action took its piece from the backpack into the
-// empty main hand first (D-144, D-457). This document was rewritten with the result's gear, backpack
-// and mark without raising the version, since no saved game state of version 11 exists anywhere yet:
-// the change that brought version 11 has reached no server. It fills
+// empty main hand first (D-144, D-457). An action of a turn may also be „Załóż”, which takes a turn of
+// its own in a fight as it takes its minutes outside one (D-140, D-458), and the record of a manual map
+// run counts the minutes of that action as a kind of their own, `equip`. This document was rewritten
+// with the result's gear, backpack and mark, the turn of „Załóż” and its kind of minutes without
+// raising the version, since no saved game state of version 11 exists anywhere yet: the change that
+// brought version 11 has reached no server. It fills
 // every optional branch of the game state, the new ones among them: a character holding a stick in
 // its main hand and a bandage in a pocket, a character of an earning loop with a changed slot, a
 // character with an empty gear, map runs whose gear differs from their character's, and a combat
-// record whose first strike took a stick into the hand and whose later ones did not. It also
+// record whose first strike took a stick into the hand, whose later ones did not, and one of whose
+// turns put a bandage on. It also
 // fills the others: the chest, the Understanding, the report's chest and the trip lists naming the
 // bandage, programs of content revision 0 and above, an earning loop whose two counts stand above 0
 // with the run below the longest, a map run with a campfire, a burning item, a combat record, a copy
@@ -857,8 +861,8 @@ const loopOf10 = (id) => ({
 
 /**
  * The record of the map run of the document of the current version, written out by hand: 212 game
- * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage and
- * 5 the tending with one, the longest streak of 40 above the streak going on (16) and below the game
+ * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage, 5
+ * the tending with one and 4 the putting of pieces on the gear, the longest streak of 40 above the streak going on (16) and below the game
  * minute, and the sticks the character took from the chest at the start.
  */
 const RUN_RECORD = {
@@ -867,7 +871,7 @@ const RUN_RECORD = {
     explore: 40,
     wander: 30,
     walkTo: 20,
-    walkToCampfire: 10,
+    walkToCampfire: 6,
     gather: 55,
     patrol: 0,
     craftCampfire: 20,
@@ -876,6 +880,7 @@ const RUN_RECORD = {
     feedCampfire: 5,
     eat: 5,
     tend: 5,
+    equip: 4,
     craft: 10,
     wait: 2,
     combat: 5,
@@ -965,21 +970,37 @@ const runGeared = (run, gear) => ({
 
 /**
  * The last combat of the map run of the current version: that of version 10, whose first strike took
- * a stick from the backpack into the empty main hand and whose three later strikes took none, with
- * the gear and the backpack the turns left: the stick in the hand, the bandages in two pockets, and
- * six pieces in the backpack, within the carrying capacity of 15.
+ * a stick from the backpack into the empty main hand and whose three later strikes took none, with a
+ * turn of „Załóż” putting a bandage on in the second turn, and the gear and the backpack the turns left:
+ * the stick in the hand, the bandages in two pockets, and six pieces in the backpack, within the
+ * carrying capacity of 15.
  */
 const COMBAT_V10 = DOCUMENT_V10.game.run.lastCombat;
+// The turn of „Załóż”: the character puts a bandage on in the turn in which version 10 had no action
+// of the character. It deals nothing, so the wolf's health stays at 18 and the character's at 79. The
+// number of its rule, 7, is read as a number and compared with no rule of the copy.
+const EQUIP_TURN = {
+  ruleId: 7,
+  action: { kind: "equip", item: "bandage" },
+  refill: false,
+  damage: 0,
+  creatureHealth: 18,
+  characterHealth: 79,
+};
 const LAST_COMBAT = {
   ...COMBAT_V10,
   result: {
     ...COMBAT_V10.result,
+    ruleStarts: { ...COMBAT_V10.result.ruleStarts, 7: 1 },
     exchanges: COMBAT_V10.result.exchanges.map((exchange, index) => ({
       ...exchange,
-      characterAction: exchange.characterAction && {
-        ...exchange.characterAction,
-        refill: index === 0,
-      },
+      characterAction:
+        index === 1
+          ? EQUIP_TURN
+          : exchange.characterAction && {
+              ...exchange.characterAction,
+              refill: index === 0,
+            },
     })),
     gear: {
       ...EMPTY_GEAR,
@@ -1004,6 +1025,11 @@ const DOCUMENT = {
   version: 11,
   game: {
     ...DOCUMENT_V10.game,
+    understanding: {
+      ...DOCUMENT_V10.game.understanding,
+      actions: [...DOCUMENT_V10.game.understanding.actions, "equip"],
+      conditions: [...DOCUMENT_V10.game.understanding.conditions, "emptyPlace"],
+    },
     team: {
       ...DOCUMENT_V10.game.team,
       characters: [
@@ -2909,6 +2935,25 @@ Object.assign(CRAFTED, {
     delete document.game.run.minutesByAction.tend;
     document.game.run.minutesByAction.gather += 5;
   },
+  "the game minutes by action without „Załóż”": (document) => {
+    delete document.game.run.minutesByAction.equip;
+    document.game.run.minutesByAction.gather += 4;
+  },
+  "the game minutes by action with „Załóż” below 0": (document) => {
+    document.game.run.minutesByAction.equip = -1;
+    document.game.run.minutesByAction.gather = 60;
+  },
+  "the game minutes by action with „Załóż” fractional": (document) => {
+    document.game.run.minutesByAction.equip = 3.5;
+    document.game.run.minutesByAction.gather = 55.5;
+  },
+  "the game minutes by action with „Załóż” as text": (document) =>
+    (document.game.run.minutesByAction.equip = "4"),
+  "the game minutes by action with „Załóż” of none": (document) =>
+    (document.game.run.minutesByAction.equip = null),
+  "the game minutes by action summing to less with „Załóż” counted": (
+    document,
+  ) => (document.game.run.minutesByAction.equip = 3),
   "the game minutes by action of version 9: neither verb": (document) => {
     delete document.game.run.minutesByAction.craft;
     delete document.game.run.minutesByAction.tend;
@@ -3121,10 +3166,44 @@ Object.assign(CRAFTED, {
     }),
   "a refill mark on an exchange with no action of the character": (document) =>
     (fought(document).exchanges[1].refill = true),
+  // „Załóż” in a turn of a combat record: its item a stick or a bandage as in any program, no refill
+  // and no damage, since it takes a piece from the backpack into a slot and deals nothing.
+  "a turn of „Załóż” with a refill mark": (document) =>
+    (fought(document).exchanges[1].characterAction.refill = true),
+  "a turn of „Załóż” with damage": (document) =>
+    (fought(document).exchanges[1].characterAction.damage = 6),
+  "a turn of „Załóż” with a fractional damage": (document) =>
+    (fought(document).exchanges[1].characterAction.damage = 0.5),
+  "a turn of „Załóż” with no item": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+    }),
+  "a turn of „Załóż” with an item the data lack": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "sword",
+    }),
+  "a turn of „Załóż” with an item that fits no place of the gear": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "moss",
+    }),
+  "a turn of „Załóż” with a field beyond its kind and item": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "bandage",
+      resource: "moss",
+    }),
+  "an action no turn carries out in place of a turn of the character": (
+    document,
+  ) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "wander",
+    }),
 });
 
 /**
- * The places an action of „Wytwórz” or „Opatrz” stands in a document: a rule of a program, of a copy,
+ * The places an action of „Wytwórz”, „Opatrz” or „Załóż” stands in a document: a rule of a program, of a copy,
  * of a base and of an earning loop's program, and the activity going on of the map run and of an
  * earning loop. Each sets the action `action` of `kind` where the document has one of that kind.
  */
@@ -3151,12 +3230,24 @@ const VERB_PLACES = {
     (olaLoop(document).run.current.activity.action = action),
 };
 
-const VERB_NAMES = { craft: "„Wytwórz”", tend: "„Opatrz”" };
+const VERB_NAMES = {
+  craft: "„Wytwórz”",
+  tend: "„Opatrz”",
+  equip: "„Załóż”",
+};
 
 /** The targets no verb takes: the items without its property, an identifier the data lack, a value no identifier. */
 const NOT_TARGETS = {
   craft: ["moss", "stick", "fiber", "berry"],
   tend: ["moss", "stick", "fiber", "berry"],
+  equip: ["moss", "fiber", "berry"],
+};
+
+/** What the data give an item that a verb takes as its target: the property its targets are the items of. */
+const TARGET_PROPERTY = {
+  craft: "recipe",
+  tend: "healing",
+  equip: "place of the gear",
 };
 
 const NOT_ITEMS = {
@@ -3174,12 +3265,12 @@ const NOT_ITEMS = {
 };
 
 for (const [place, set] of Object.entries(VERB_PLACES)) {
-  for (const kind of ["craft", "tend"]) {
+  for (const kind of ["craft", "tend", "equip"]) {
     const verb = VERB_NAMES[kind];
     const refused = {
       ...Object.fromEntries(
         NOT_TARGETS[kind].map((item) => [
-          `${item}, which the data give no ${kind === "craft" ? "recipe" : "healing"}`,
+          `${item}, which the data give no ${TARGET_PROPERTY[kind]}`,
           { kind, item },
         ]),
       ),
@@ -3200,10 +3291,10 @@ for (const [place, set] of Object.entries(VERB_PLACES)) {
 }
 
 // invariant: save-version
-test("each place of an action holds „Wytwórz” and „Opatrz” with the bandage, and loads", () => {
+test("each place of an action holds „Wytwórz”, „Opatrz” and „Załóż” with the bandage, and loads", () => {
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
   for (const [place, set] of Object.entries(VERB_PLACES)) {
-    for (const kind of ["craft", "tend"]) {
+    for (const kind of ["craft", "tend", "equip"]) {
       const document = changed((copy) =>
         set(copy, kind, { kind, item: "bandage" }),
       );

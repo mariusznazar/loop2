@@ -7,6 +7,7 @@ import {
   combatItem,
   combatPiece,
   conditionHolds,
+  equipped,
   type RunView,
 } from "./program.js";
 import { practiced, skillBonus } from "./skills.js";
@@ -15,6 +16,7 @@ import type {
   CombatCreatureAction,
   CombatExchange,
   CombatResult,
+  CombatVerbKind,
   CreatureId,
   MapRun,
   Program,
@@ -45,7 +47,7 @@ function chooseCreatureAction(
  */
 function wielding(
   character: RunCharacter,
-  kind: CombatCharacterAction["action"]["kind"],
+  kind: CombatVerbKind,
 ): { character: RunCharacter; refill: boolean } {
   const item = combatItem(kind);
   if (item === null || combatPiece(character, item) !== "refill")
@@ -120,29 +122,39 @@ export function resolveCombat(
     }
 
     ruleStarts[rule.id] = (ruleStarts[rule.id] ?? 0) + 1;
-    const effect = (ACTIONS[rule.action.kind] as ActionDef).combat;
-    if (!effect)
-      throw new Error("combat: selected action has no combat effect");
     const action = { ...rule.action } as CombatCharacterAction["action"];
-    const armed = wielding(character, action.kind);
-    character = armed.character;
 
     let damage = 0;
-    if ("damage" in effect) {
-      damage =
-        effect.damage +
-        skillBonus(run.character.skills, "damage", rule.action.kind);
-      if (damage > 0) practice = practiced(practice, rule.action.kind);
-      creatureHealth = Math.max(0, creatureHealth - damage);
+    let refill = false;
+    if (action.kind === "equip") {
+      // „Załóż” takes the turn and changes the gear and the backpack at once: no damage, no practice.
+      const put = equipped(character, action.item);
+      if (put === null)
+        throw new Error("combat: selected equip cannot be carried out");
+      character = { ...character, ...put };
     } else {
-      pendingReduction =
-        effect.reducesNextDamageBy +
-        skillBonus(run.character.skills, "reduction");
+      const effect = (ACTIONS[action.kind] as ActionDef).combat;
+      if (!effect)
+        throw new Error("combat: selected action has no combat effect");
+      const armed = wielding(character, action.kind);
+      character = armed.character;
+      refill = armed.refill;
+      if ("damage" in effect) {
+        damage =
+          effect.damage +
+          skillBonus(run.character.skills, "damage", action.kind);
+        if (damage > 0) practice = practiced(practice, action.kind);
+        creatureHealth = Math.max(0, creatureHealth - damage);
+      } else {
+        pendingReduction =
+          effect.reducesNextDamageBy +
+          skillBonus(run.character.skills, "reduction");
+      }
     }
     const characterAction: CombatCharacterAction = {
       ruleId: rule.id,
       action,
-      refill: armed.refill,
+      refill,
       damage,
       creatureHealth,
       characterHealth,
