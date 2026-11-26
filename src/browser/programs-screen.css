@@ -84,3 +84,11 @@
     background: transparent;
   }
 }
+
+/*
+ * The area of the program panel on Programy is the box the window of a rule or of a rule group takes
+ * its width from: it stands over the editor (`program-panel.css`, D-288).
+ */
+.program-panel.screen-area {
+  position: relative;
+}

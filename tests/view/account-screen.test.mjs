@@ -4718,7 +4718,7 @@ test("a game built again after a conflict stays on the screen the address names,
 // panel left standing while nothing is open.
 test("on Programy the list and the editor are the two areas, and an open group draws its panel inside the program panel, directly under its header", async () => {
   // decision: D-282 "Each column of a screen is an area of its own"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await reloadedAt(held, "#/programy", twoPrograms());
@@ -4757,7 +4757,7 @@ test("on Programy the list and the editor are the two areas, and an open group d
       "the panel is inside the program panel",
     );
 
-    await press(buttonLabelled(screen, "Zamknij panel"));
+    await press(buttonLabelled(screen, "Zamknij okno"));
     assert.equal(byClass(screen, "rule-panel").length, 0, "closed");
     assert.equal(byClass(screen, "rule-list-panel").length, 0);
   });

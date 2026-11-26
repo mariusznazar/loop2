@@ -372,7 +372,7 @@ test("the screen draws the map run it was given, the copy of that map run in its
 test("an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
   // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
-  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-288 "It is as tall as its content and stands directly under the row of the rule or the header of the rule group that opened it, lying over the rows below it"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -415,7 +415,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
       assert.equal(Boolean(chronicle()), picked === "Kronika");
       assert.ok(drawing() && shown(drawing()), "the drawing stays");
 
-      await press(buttonLabelled(program, "Zamknij panel"));
+      await press(buttonLabelled(program, "Zamknij okno"));
       assert.equal(byClass(element, "rule-panel").length, 0);
       assert.ok(tabs(), `${picked}: the tabs stand`);
       assert.equal(
@@ -473,7 +473,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
     assert.ok(panel && shown(panel), "the panel stands in the program");
     assert.equal(
       panel.querySelector(".rule-panel-heading")?.textContent,
-      "Reguła 1.2",
+      "Reguła 1.2 w grupie „Program”",
     );
     assert.ok(
       program

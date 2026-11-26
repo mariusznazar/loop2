@@ -30,8 +30,6 @@ import {
   copyHasUnsavedChanges,
   programById,
   programHasChangesCopyLacks,
-  programName,
-  suggestedProgramName,
 } from "../sim/programs.js";
 import { mapRunEnded } from "../sim/run.js";
 import type {
@@ -56,6 +54,7 @@ import {
   type EndQuestionControls,
 } from "./end-question.js";
 import { offeredItems } from "./program-editor.js";
+import { type Naming, useNaming } from "./program-naming.js";
 import { RuleListView, type RuleListTarget } from "./rule-list.js";
 import { RulePanelView, type RulePanelOpen } from "./rule-panel.js";
 import {
@@ -191,6 +190,15 @@ export type ProgramPanel = {
 const COPY_VALUE = "copy";
 const COPY_TEXT = "Kopia w przejściu";
 const NO_GROUPS: readonly GroupId[] = [];
+
+/** The reading of a panel given no question of „Zakończ”: it holds none, and never changes. */
+const NO_QUESTION: RunScreenReading = {
+  subscribe: () => () => undefined,
+  snapshot: (() => {
+    const none = { question: null, windowShown: false };
+    return () => none;
+  })(),
+};
 
 /** The message under the name field for each name the name rule refuses (D-169). */
 export const NAME_MESSAGES: Record<ProgramNameRefusal, string> = {
@@ -332,13 +340,6 @@ function holdingTarget(
 function runNoteText(run: NonNullable<GameState["run"]>): string {
   return `Zmiany tutaj nie dotykają przejścia na mapie ${MAPS[run.mapId].name}.`;
 }
-
-/** What the name field is open for: a rename of a saved program, or the save of the copy as a new one. */
-type NamePurpose =
-  { kind: "rename"; programId: ProgramId } | { kind: "saveNew" };
-
-/** The name field open: for what, the text in it, and the program shown it was opened under. */
-type Naming = { key: string; purpose: NamePurpose; value: string };
 
 /**
  * The row or header whose rule panel stands open, with the program shown it was opened under; the
@@ -605,25 +606,20 @@ export function ProgramPanelView({
   opening = null,
 }: ProgramPanelViewProps) {
   const key = shownValue(shown);
-  const [namingState, setNaming] = useState<Naming | null>(null);
   const [openState, setOpen] = useState<OpenRule | null>(null);
   const [openingSeen, setOpeningSeen] = useState(opening);
+  const { question } = useRunScreenSnapshot(endQuestion?.state ?? NO_QUESTION);
+  const [questionSeen, setQuestionSeen] = useState(question);
   const memory = useSyncExternalStore(folding.subscribe, folding.snapshot);
   const list = useRef<HTMLSelectElement>(null);
   const renameButton = useRef<HTMLButtonElement>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
-  const nameInput = useRef<HTMLInputElement>(null);
   const editing = useRef<HTMLDivElement>(null);
-  // Set by what opens the name field and by what closes the rule panel, so the commit that follows
-  // moves the focus: a control that leaves the page loses it.
-  const focusName = useRef(false);
+  // Set by what closes the rule panel, so the commit that follows moves the focus: a control that
+  // leaves the page loses it.
   const focusClosed = useRef<RuleListTarget | null>(null);
 
   useLayoutEffect(() => {
-    if (focusName.current) {
-      focusName.current = false;
-      nameInput.current?.focus();
-    }
     const closed = focusClosed.current;
     if (closed !== null) {
       focusClosed.current = null;
@@ -645,17 +641,26 @@ export function ProgramPanelView({
   const content = shownContent(state, shown);
   const copyShown = shown.kind === "copy" && run !== null;
   const unsaved = copyShown && copyHasUnsavedChanges(state);
+  const {
+    naming,
+    refusal,
+    nameInput,
+    toggleRename,
+    toggleSaveNew,
+    saveName,
+    changeName,
+  } = useNaming({
+    state,
+    shown,
+    key,
+    copyShown,
+    unsaved,
+    actions,
+    list,
+    renameButton,
+  });
 
-  // The name field and the open rule belong to the program shown: another shown leaves them, and a
-  // name field for the save of the copy leaves with the copy's changes.
-  let naming = namingState;
-  if (
-    naming !== null &&
-    (naming.key !== key || (naming.purpose.kind === "saveNew" && !unsaved))
-  ) {
-    naming = null;
-    setNaming(null);
-  }
+  // The open rule belongs to the program shown: another shown leaves it.
   let open = openState;
   // A request of the boundary opens its rule under the program shown, once.
   if (opening !== openingSeen) {
@@ -663,6 +668,15 @@ export function ProgramPanelView({
     if (opening !== null) {
       open = { key, target: opening };
       setOpen(open);
+    }
+  }
+  // The question „Zapisać, odrzucić, wrócić?” closes the window as it appears, so that it is seen and
+  // takes the focus.
+  if (question !== questionSeen) {
+    setQuestionSeen(question);
+    if (question !== null && open !== null) {
+      open = null;
+      setOpen(null);
     }
   }
   if (open !== null && open.key !== key) {
@@ -674,61 +688,6 @@ export function ProgramPanelView({
     open === null ? null : holdingTarget(content.program, open.target);
   if (open !== null && followed === null) setOpen(null);
   const folded = memory.get(key) ?? NO_GROUPS;
-
-  const checked =
-    naming === null
-      ? null
-      : programName(
-          state.programs,
-          naming.value,
-          naming.purpose.kind === "rename"
-            ? naming.purpose.programId
-            : undefined,
-        );
-  const refusal = checked !== null && !checked.ok ? checked.reason : null;
-
-  function openName(purpose: NamePurpose, value: string): void {
-    focusName.current = true;
-    setNaming({ key, purpose, value });
-  }
-
-  function toggleRename(): void {
-    // The same action again leaves the field without saving.
-    if (naming?.purpose.kind === "rename") {
-      setNaming(null);
-      return;
-    }
-    if (shown.kind !== "saved") return;
-    const saved = programById(state.programs, shown.programId);
-    if (saved) openName({ kind: "rename", programId: saved.id }, saved.name);
-  }
-
-  function toggleSaveNew(): void {
-    if (!copyShown || !unsaved) return;
-    if (naming?.purpose.kind === "saveNew") {
-      setNaming(null);
-      return;
-    }
-    openName({ kind: "saveNew" }, suggestedProgramName(state.programs));
-  }
-
-  function saveName(): void {
-    if (naming === null || refusal !== null) return;
-    const { purpose, value } = naming;
-    setNaming(null);
-    if (purpose.kind === "rename") {
-      actions.renameProgram(purpose.programId, value);
-      renameButton.current?.focus();
-    } else {
-      actions.saveCopyAsNew(value);
-      // „Zapisz jako nowy program” is inactive now; focus goes to the list.
-      list.current?.focus();
-    }
-  }
-
-  function changeName(value: string): void {
-    if (naming !== null) setNaming({ ...naming, value });
-  }
 
   function remove(): void {
     if (shown.kind !== "saved" || state.programs.length === 1) return;

@@ -56,7 +56,13 @@
   overflow-x: auto;
 }
 
+/*
+ * The area of the program is the box the window of a rule or of a rule group takes its width from: it
+ * stands over the column of the program and, in the phone layout, across the width of the screen
+ * (`program-panel.css`, D-311).
+ */
 .screen-area.run-program {
+  position: relative;
   align-self: stretch;
 }
 

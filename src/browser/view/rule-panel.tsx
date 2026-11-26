@@ -1,7 +1,10 @@
 /**
- * The rule panel of the program editor in React (D-288, D-289, D-290, D-293, D-296, D-299, D-300,
- * D-302, D-306). It stands in the rule list, under the row or header it changes, and changes one
- * program rule, or one rule group: for a rule its fields condition, number, target of the
+ * The rule panel of the program editor in React, the window of a rule or of a rule group (D-288,
+ * D-289, D-290, D-293, D-296, D-299, D-300, D-302, D-306). The rule list seats it directly under the
+ * row or header it changes, and the stylesheet lays it over the rows below as a window
+ * (`program-panel.css`); the parts that make it a window — its heading, the sentence of a group, the
+ * bar of the phone layout and the reach of the rows it lies over — are those of `rule-window.tsx`. It
+ * changes one program rule, or one rule group: for a rule its fields condition, number, target of the
  * condition, action and target of the action, each standing only where the rule has it; for a group
  * its name and its condition with the condition's number and target. One field at a time shows its
  * pick, a grid of pick cells in the groups and sections of the data, the others their value, so the
@@ -9,13 +12,15 @@
  * the game state, and moves to the next field; a pick of the value held commits nothing and moves on
  * too. In a grid the arrow keys move among the cells, a greyed one included so that its reason can be
  * read, Enter picks and does nothing on a greyed cell, and only one cell of the grid is in the order
- * of Tab, so Tab leaves the grid. „✕” and Escape ask the page to close the panel through `onClose`;
- * opening another rule is the page's, by `open`. The rule list draws the panel in place, through
- * `RulePanelView`. Nothing runs when the module is imported.
+ * of Tab, so Tab leaves the grid. „✕” and Escape, read in the window, ask the page to close it through
+ * `onClose`, after the field that holds the focus has confirmed what was typed into it; opening another
+ * rule is the page's, by `open`. The window takes no backdrop, marks itself as no modal dialog and
+ * traps no focus (D-370 is its pattern). Nothing runs when the module is imported.
  */
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent, RefObject } from "react";
 import { ACTIONS } from "../sim/data/actions.js";
+import type { MoveHint } from "./chronicle-entries.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { conditionNumber } from "../sim/program.js";
 import type {
@@ -41,13 +46,11 @@ import {
   conditionPick,
   conditionTargetPick,
   fieldAfter,
-  groupNumber,
   offeredItems,
   offeredResources,
   readNumberField,
   renameGroup,
   ruleFields,
-  ruleNumber,
   withActionItem,
   withActionKind,
   withActionResource,
@@ -59,6 +62,12 @@ import {
   type PickSection,
   type RuleField,
 } from "./program-editor.js";
+import {
+  GROUP_CONDITION_SENTENCE,
+  RuleWindowBar,
+  ruleWindowHeading,
+  useCoverBelow,
+} from "./rule-window.js";
 
 /** What the panel shows: a rule, or with a null rule a rule group, opened on `field`, the condition when left out. */
 export type RulePanelOpen = {
@@ -80,8 +89,11 @@ export type RulePanelProps = {
 };
 
 export type RulePanelHandlers = {
-  /** Called with the whole new program after each change. */
-  onCommit: (program: Program) => void;
+  /**
+   * Called with the whole new program after each change, with the hint of a move where „↑” or „↓” of
+   * the window moved its rule or its group (the chronicle reads it).
+   */
+  onCommit: (program: Program, move?: MoveHint) => void;
   /** Called when the player asks to close the panel, by „✕” or Escape. */
   onClose: () => void;
 };
@@ -665,6 +677,9 @@ export function RulePanelView({
 
   const grid = useRef<HTMLDivElement>(null);
   const numberInput = useRef<HTMLInputElement>(null);
+  const own = useRef<HTMLElement>(null);
+  const headingId = useId();
+  useCoverBelow(own);
   // The field the focus goes to once it stands drawn: the one opened, or the next after a pick.
   const pendingFocus = useRef<RuleField | null>(null);
   const focusedKey = useRef<string | null>(null);
@@ -742,24 +757,38 @@ export function RulePanelView({
     if (next !== null) onCommit(next);
   }
 
-  const heading =
-    index === null
-      ? `Grupa ${groupNumber(groupIndex)}`
-      : `Reguła ${ruleNumber(groupIndex, index)}`;
+  /**
+   * „✕” and Escape: the field typed into that holds the focus — the number or the group's name — first
+   * confirms what was typed into it, as leaving it does (D-306), and then the page closes the window.
+   */
+  function close(): void {
+    const focused = own.current?.ownerDocument.activeElement;
+    if (
+      focused instanceof HTMLElement &&
+      focused.matches("input") &&
+      own.current?.contains(focused) === true
+    )
+      focused.blur();
+    onClose();
+  }
 
   return (
     <section
       className="rule-panel"
-      aria-label={heading}
+      ref={own}
+      role="dialog"
+      aria-labelledby={headingId}
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
         event.preventDefault();
-        onClose();
+        close();
       }}
     >
       <div className="rule-panel-top">
-        <h3 className="rule-panel-heading">{heading}</h3>
-        <ReactButton text="✕" label="Zamknij panel" onClick={onClose} />
+        <h3 className="rule-panel-heading" id={headingId}>
+          {ruleWindowHeading(groupIndex, group.name, index)}
+        </h3>
+        <ReactButton text="✕" label="Zamknij okno" onClick={close} />
       </div>
       {copy ? <p className="rule-panel-note">{COPY_NOTE}</p> : null}
       {index === null ? (
@@ -790,6 +819,16 @@ export function RulePanelView({
           onCommitNumber={commitNumber}
         />
       ))}
+      {index === null ? (
+        <p className="rule-panel-explain">{GROUP_CONDITION_SENTENCE}</p>
+      ) : null}
+      <RuleWindowBar
+        program={program}
+        groupId={groupId}
+        ruleId={open.ruleId}
+        own={own}
+        onCommit={onCommit}
+      />
     </section>
   );
 }

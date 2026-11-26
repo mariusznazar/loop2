@@ -91,13 +91,14 @@
 }
 
 /*
- * The rule panel in the rule list (D-288): directly under the row of the rule it changes, as an item
- * of the list of rules, or directly under the header of the group it changes. The panel draws its own
- * frame and padding, so the place adds only the gap that parts it from the rows around it.
+ * The place of the window of a rule or of a rule group in the rule list (D-288, styleguide rule "The
+ * window of a rule and of a rule group"): directly under the row of the rule it changes, as an item of
+ * the list of rules, or directly under the header of the group it changes. The place takes no height,
+ * so the list under it does not change; the window in it lies over the rows below.
  */
 .rule-list-panel {
   list-style: none;
-  margin: var(--space-xs) 0;
+  margin: 0;
 }
 
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
@@ -418,7 +419,8 @@
 
 /*
  * The rule panel (styleguide rule "Program editor", D-288, D-290, D-293, D-302, D-306): a block on
- * `panel` with its text in `text` and a frame in `divider`; the heading, a name, in `text-strong`; the
+ * `panel` with its text in `text` and a frame of `--frame-width`, in `divider` here and in
+ * `window-frame` where it stands as the window, by the rule below; the heading, a name, in `text-strong`; the
  * labels of its fields, the names of the groups of actions and the time beside an action in
  * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
  * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
@@ -436,6 +438,46 @@
   border: var(--frame-width) solid var(--divider);
 }
 
+/*
+ * The rule panel is a window (D-288, D-311, styleguide rule "The window of a rule and of a rule
+ * group"): it keeps the top of its place, directly under the row or the header that opened it, and
+ * takes its width from the area of the program, the nearest positioned box around it (`run-screen.css`
+ * on the screen of a map run, `programs-screen.css` on Programy) — the column of the program in the
+ * computer layout and the width of the screen in the phone layout. It is as tall as its content and
+ * lies over the rows below it; `rule-window.tsx` takes those rows out of the reach of the keyboard and
+ * the mouse and makes the list as tall as the window where the window reaches below its end. No
+ * backdrop stands behind it. Its frame in `window-frame` sets it off from the column it lies on, which
+ * is on `panel` as it is (D-40); it casts no shadow, since a shadow would darken the rows under its
+ * lower edge, which stay in reach, below the contrast their text keeps (D-42).
+ */
+.rule-list-panel .rule-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  border-color: var(--window-frame);
+}
+
+/* The sentence of the window of a group, under its condition: an explanation, in `text-secondary` (D-40). */
+.rule-panel-explain {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/*
+ * The bar at the bottom of the window, „↑” and „↓” at its left and the deletion at its right, apart from
+ * „✕” of the heading by a line in `divider`: drawn in the phone layout alone (the block below), since in
+ * the computer layout the arrows and the deletion stand in the row and the header (D-288, D-296).
+ */
+.rule-panel-bar {
+  display: none;
+}
+
+.rule-panel-arrows {
+  display: inline-flex;
+  gap: var(--space-xs);
+}
+
 .rule-panel-top {
   display: flex;
   align-items: center;
@@ -443,7 +485,11 @@
   gap: var(--space-s);
 }
 
+/* The heading names the group, a name typed by the player: a name with no space breaks inside the window
+ * (styleguide rule "A name typed by the player breaks in its row"). */
 .rule-panel-heading {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
@@ -514,18 +560,17 @@
 }
 
 /*
- * The rows and headers of the rule list in the phone layout (D-396, D-288): a row of a rule and the header
- * of a group are controls the keyboard reaches, so each holds the touch target of the minimum high
- * and wide, as the buttons in them do (styles.css). The buttons already make a row higher than the
- * minimum; the rule keeps that so where a row holds none. The buttons stand on a line of their own
- * under the text, the arrows at its left and the other buttons at its right, so the middle of a row,
- * where a tap most often lands, is far from every button. Chromium gives a tap that lands a few pixels
- * from a button to that button unless an element that takes clicks and holds no button lies under the
- * finger, and passes over the row, which holds the buttons; so no part of a row outside its buttons is
- * bare row (D-306, D-296): the text is a box over the whole first line, its padding taking the row's
- * own, and on the line of the buttons a gap before the arrows, a gap between two buttons and the
- * spacer between the groups (`rule-list-gap`, drawn only here) take the place of the gaps of the flex
- * rows. Nothing in a row is wider than the row.
+ * The rows and headers of the rule list in the phone layout (D-396, D-288, D-296): a row of a rule and
+ * the header of a group are controls the keyboard reaches, so each holds the touch target of the
+ * minimum high and wide. A row is its text alone, and a header its text and „▾”, which folds the
+ * group: the arrows and „Usuń” of a rule and the arrows and „✕” of a group stand in its window (the bar
+ * of the window, below), so no tap beside a row reaches a button that moves or deletes. Chromium gives a
+ * tap that lands a few pixels from a button to that button unless an element that takes clicks and
+ * holds no button lies under the finger, and passes over the header, which holds „▾”; so no part of a
+ * row or a header outside its button is bare (D-306, D-296): the text is a box over the line, its
+ * padding taking the row's own, and in a header the gap before „▾” (`rule-list-gap`, drawn only here)
+ * stands between them. A thin line in `divider` parts the rows of rules. Nothing in a row is wider
+ * than the row.
  *
  * The pick of the rule panel stands in two columns in every field, as the conditions do (D-290): four
  * to a line leave a cell about 70 px wide at a page area 360 px wide, too narrow for the word
@@ -539,7 +584,7 @@
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
     padding: 0;
-    row-gap: 0;
+    gap: 0;
   }
 
   .rule-list-body {
@@ -558,8 +603,31 @@
     gap: 0;
   }
 
-  .rule-list-controls {
-    flex-basis: 100%;
+  /* A row holds no button; a header its text and, at the end of its line, the gap and „▾”. */
+  .rule-list-row .rule-list-controls,
+  .rule-list-header .rule-list-arrows,
+  .rule-list-header .rule-list-spacer {
+    display: none;
+  }
+
+  /* The last two parts of a header's buttons: the gap before „✕” and „✕” itself, which stand in the window. */
+  .rule-list-header .rule-list-controls > :nth-last-child(-n + 2) {
+    display: none;
+  }
+
+  .rule-list-header .rule-list-body {
+    flex: 1 1 0;
+  }
+
+  /*
+   * The gap and „▾” fill the height of the header, „▾” its text centred in it: in a header of two lines
+   * or more a strip above or below a centred „▾” would be bare, and Chromium gives a tap there to „▾”,
+   * folding the group where the player meant to open it (D-296).
+   */
+  .rule-list-header .rule-list-controls {
+    flex: none;
+    align-self: stretch;
+    align-items: stretch;
     margin-left: 0;
   }
 
@@ -570,12 +638,25 @@
     width: var(--space-xs);
   }
 
-  .rule-list-spacer {
-    flex: 1 1 auto;
+  .rule-list-rules > .rule-list-row ~ .rule-list-row {
+    border-top: var(--frame-width) solid var(--divider);
   }
 
   .rule-panel-cells {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rule-panel-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding-top: var(--space-s);
+    border-top: var(--frame-width) solid var(--divider);
+  }
+
+  .rule-panel-arrows {
+    gap: var(--space-s);
   }
 }
 

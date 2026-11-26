@@ -4,8 +4,8 @@
  * (guidelines/styleguide-browser-view.md, "Every value with its source"). "loop" is the running
  * game https://kantarion.bieda.it/, read 2026-10-20 from the rendered page; "Mariusz's choice" is
  * a value Mariusz chose, with the date of the choice; "the agent's choice" is a value whose choice
- * the accepted text of a task left to the agent, with the date, the threshold that bounds it and
- * where the value is read from.
+ * the accepted text of a task, or the human's remark on a task before its request, left to the
+ * agent, with the date, the threshold that bounds it and where the value is read from.
  */
 :root {
   /* Backgrounds */
@@ -19,6 +19,7 @@
   --divider: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the lines between sections */
   --control-border: #71717b; /* Source: changed for the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) on page, panel and highlight, which loop's frame #3f3f46 misses: the colour of labels of loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page */
   --selected: #d4d4d8; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the frame of the selected button */
+  --window-frame: #71717b; /* Source: the agent's choice, which the human's remark on task edytor-programu-modale before its request leaves to it, 2026-11-26: loop's frame of a window over the screen (border-zinc-700, #3f3f46), src/components/probe/Sheet.tsx of branch origin/test 715026e of the repository loop, misses the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) against panel and highlight, so the grey of labels of loop that control-border takes for the same threshold, loop https://kantarion.bieda.it/ read 2026-10-20 from the rendered page, kept at 3.67:1 on panel, 3.09:1 on highlight, 3.13:1 on rule-winning, 3.07:1 on rule-running and 4.12:1 on page */
   --condition-unmet: #27272a; /* Source: loop, the dark bar of a rule whose condition does not hold (border-zinc-800, #27272a); no threshold of contrast; Mariusz's choice, 2026-11-03 */
 
   /* Text */

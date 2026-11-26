@@ -1,16 +1,16 @@
 """Invariant design-token-contrast: In `src/browser/tokens.css`, each of `text-strong`, `text`,
-`text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change`
-has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`,
-`rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of
-those five, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`,
-`tile-revealed` has at least 3:1 against `tile-hidden`, `text-disabled`, the track of the bar of
-practice of a tree on the screen Postać, has at least 2:1 against `panel`, the background of the
-area it stands in, `positive`, `satiety-fill` and `text-strong`, the fills of the bars of the body
-row, have at least 3:1 against `highlight`, their track, each of `chill-zone`, `safe-zone` and
-`danger`, the zones of the scale of temperature, and `warming-frame` has at least 3:1 against
-`panel`, and `scale-marker` has at least 3:1 against each of `chill-zone`, `safe-zone` and
-`danger`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast
-ratio.
+`text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has
+a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`, `rule-winning` and
+`rule-running`, `control-border`, `focus` and `window-frame`, the frame of the window of a rule or
+of a rule group, have at least 3:1 against each of those five, `character` has at least 3:1 against
+`tile-revealed` and against `tile-hidden`, `tile-revealed` has at least 3:1 against `tile-hidden`,
+`text-disabled`, the track of the bar of practice of a tree on the screen Postać, has at least 2:1
+against `panel`, the background of the area it stands in, `positive`, `satiety-fill` and
+`text-strong`, the fills of the bars of the body row, have at least 3:1 against `highlight`, their
+track, each of `chill-zone`, `safe-zone` and `danger`, the zones of the scale of temperature, and
+`warming-frame` has at least 3:1 against `panel`, and `scale-marker` has at least 3:1 against each
+of `chill-zone`, `safe-zone` and `danger`, each ratio computed from the values of those roles as
+WCAG 2.2 defines the contrast ratio.
 
 The file is read from the working tree as text; nothing is built, rendered or computed by the
 cascade.
@@ -37,11 +37,12 @@ Covers: every pair of the sentence on the file's values; and controls: the ratio
 colour pairs (black on white 21, mid grey #808080 on white 3.949 and on black 5.317, #a0a0a0 on
 white 2.615, a dark grey on black through the linear branch 1.061), made-up token text whose pairs
 all pass, with `text-disabled` at 2.817:1 on every background, above its floor and below 3:1, and
-the marker of the scale in white at 3.949:1 on each zone in mid grey, and made-up token text
-failing each kind of pair, the track's at 1.846:1 on `panel`, a fill of the body row at 1.846:1 on
-its track, a zone and the warming frame at 1.846:1 on `panel` and the marker at 1:1 on a zone among
-them, missing a role, a role of the body row among them, declaring one only inside a comment,
-declaring one twice and giving one a value that is no `#rrggbb`.
+the marker of the scale in white at 3.949:1 on each zone in mid grey, and made-up token text failing
+each kind of pair, the track's at 1.846:1 on `panel`, a fill of the body row at 1.846:1 on its
+track, a zone and the warming frame at 1.846:1 on `panel`, the marker at 1:1 on a zone and the frame
+of the window at 1.846:1 on `panel` and on `rule-winning` among them, missing a role, a role of the
+body row among them, declaring one only inside a comment, declaring one twice and giving one a value
+that is no `#rrggbb`.
 
 Does NOT cover: colours that touch on a screen without being a pair of the sentence, the bar of
 a program rule (`condition-unmet`) among them, which has no threshold, and two zones of the scale
@@ -83,7 +84,7 @@ PAIRS = tuple(
     [(role, background, TEXT_THRESHOLD) for role in TEXT_ROLES for background in BACKGROUNDS]
     + [
         (role, background, NON_TEXT_THRESHOLD)
-        for role in ("control-border", "focus")
+        for role in ("control-border", "focus", "window-frame")
         for background in BACKGROUNDS
     ]
     + [
@@ -185,6 +186,7 @@ PASSING = {
     "warming-frame": "#808080",
     # 3.949:1 on each zone in mid grey, `danger` among them.
     "scale-marker": "#ffffff",
+    "window-frame": "#808080",
 }
 
 
@@ -273,6 +275,14 @@ FLAGGED = {
     "the warming frame at 1.846:1 on panel": (
         changed({"warming-frame": "#3a3a3a"}),
         "--warming-frame #3a3a3a on --panel",
+    ),
+    "the frame of the window at 1.846:1 on panel": (
+        changed({"window-frame": "#3a3a3a"}),
+        "--window-frame #3a3a3a on --panel",
+    ),
+    "the frame of the window at 1.846:1 on rule-winning": (
+        changed({"window-frame": "#3a3a3a"}),
+        "--window-frame #3a3a3a on --rule-winning",
     ),
     "the marker of the scale at 1:1 on the safe zone": (
         changed({"scale-marker": "#808080"}),

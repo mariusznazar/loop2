@@ -286,7 +286,7 @@ test("the cells of the pick of a target of „Wytwórz” show the time of each 
 // Catches a pick of a target of an item verb handed to the function of a resource, which changes
 // nothing for an item, the verb lost with the target, or a pick of the target held committing.
 test("a pick in the field of the target of „Wytwórz” or „Opatrz” changes the rule's target and keeps its verb, and a pick of the held target changes nothing", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
   await withSplint(async () => {
     for (const [kind, held, other, otherCell] of [
@@ -316,8 +316,8 @@ test("a pick in the field of the target of „Wytwórz” or „Opatrz” change
 // Catches a pick of the verb that does not move on to the field of its target, a target left out of
 // the grid it opens, or a panel and a row that do not follow the program the pick made.
 test("a pick of „Wytwórz” moves on to the field of its target, the bandage chosen with its price and time, and the row of the rule reads the verb and its target", async () => {
-  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
-  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+  // decision: D-306 "A click on a program rule's row opens the window of the rule on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the window stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const editor = await mountEditor(page, programOf({ kind: "explore" }));
     await press(rowOf(page.root, 1).querySelector(".rule-condition"));
