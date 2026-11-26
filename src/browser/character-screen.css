@@ -1,7 +1,7 @@
 /*
- * The stylesheet of the screen Postać (D-421): its two areas, the figure, the name and the facts of a
- * character with its resurrection line, the frame of what the character does, and the section
- * „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
+ * The stylesheet of the screen Postać (D-421): its two areas, the name and the facts of a character with
+ * its resurrection line, the frame of what the character does, the section „Wyposażenie” with the
+ * figure, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
  * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
@@ -36,20 +36,29 @@
 }
 
 /*
- * The figure of the character (D-445) at the top of the left area, beside the name: a box whose size
- * TypeScript gives from the data, with the idle sheet inside it at its place, on the flat background of
- * the area. The sheet's frames are those of `.scene-sheet` of run-screen.css, which the picture band of
- * Siedziba draws its characters with too. They change at the beat of the frames of the scene and of the
- * picture band, 160 ms (D-319, D-389), by the keyframes `scene-frames` of styles.css, and only where the
- * system's setting asks for no less motion; under that setting the figure stands on its first frame.
+ * The section „Wyposażenie” (D-461) under the frame of what the character does, in the left area, from
+ * the creation of the character. Its heading is a heading of a section as „Umiejętności” has, in
+ * `text-label` (D-40; rule of `.character-screen-skills h3` below). The body of the section holds the
+ * figure of the character (D-445) in the middle of its width.
  */
-.character-head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-m);
-  margin-bottom: var(--space-m);
+.character-screen-gear {
+  margin-top: var(--space-m);
 }
 
+.character-gear-body {
+  display: flex;
+  justify-content: center;
+}
+
+/*
+ * The figure of the character (D-445) in the section „Wyposażenie”: a box whose size TypeScript gives
+ * from the data, at twice the size of the picture band, with the idle sheet inside it at its place, on the
+ * flat background of the area. The sheet's frames are those of `.scene-sheet` of run-screen.css, which
+ * the picture band of Siedziba draws its characters with too. They change at the beat of the frames of
+ * the scene and of the picture band, 160 ms (D-319, D-389), by the keyframes `scene-frames` of
+ * styles.css, and only where the system's setting asks for no less motion; under that setting the figure
+ * stands on its first frame.
+ */
 .character-figure {
   position: relative;
   flex: none;
@@ -69,8 +78,10 @@
   }
 }
 
+/* The name and the facts stand at the top of the left area, above the frame of what the character does (D-446). */
 .character-facts {
   min-width: 0;
+  margin-bottom: var(--space-m);
 }
 
 /* The heading is the name of the character, typed by the player: a name with no space breaks inside the
@@ -148,7 +159,8 @@
   color: var(--text-secondary);
 }
 
-/* The section „Umiejętności”, its name in `text-label` (D-40), the sentence of an unfinished map run in `text-secondary` (D-287). */
+/* The sections „Wyposażenie” and „Umiejętności”, their names in `text-label` (D-40), the sentence of an unfinished map run in `text-secondary` (D-287). */
+.character-screen-gear h3,
 .character-screen-skills h3 {
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-label);

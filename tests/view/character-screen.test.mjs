@@ -18,6 +18,7 @@ import {
   setPaused,
 } from "../../dist/browser/sim/game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
+import { CHARACTER_FIGURE } from "../../dist/browser/sim/data/scene.js";
 import { campDrawing } from "../../dist/browser/view/camp-picture.js";
 import { createCharacterScreen } from "../../dist/browser/view/character-screen.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
@@ -129,13 +130,25 @@ function computed(element, property) {
 // --- the screen -----------------------------------------------------------------------------
 
 // Catches a line of facts without the archetype's icon, an icon not taken from the archetype's data,
-// facts out of the order the decision gives, and a generation shown at 1.
-test("the screen names the character, gives the generation from 2 up only, the archetype's icon from its data and the archetype's name, and the resurrection line under them", async () => {
-  // decision: D-446 "Beside the figure of a character (D-445) stand the character's name as the heading of the screen, under it one line with „pokolenie {n}” from generation number 2 up (D-218), the icon of the character's archetype and the archetype's name, and under that line the line of the resurrection (D-217)"
+// facts out of the order the decision gives, a generation shown at 1, and the facts standing beside
+// the figure or under the frame of what the character does instead of above it.
+test("the screen names the character at the top of the left area, above the frame of what the character does, gives the generation from 2 up only, the archetype's icon from its data and the archetype's name, and the resurrection line under them", async () => {
+  // decision: D-446 "At the top of the left area of the screen Postać, above the frame of what the character does (D-447), stand the character's name as the heading of the screen, under it one line with „pokolenie {n}” from generation number 2 up (D-218), the icon of the character's archetype and the archetype's name, and under that line the line of the resurrection (D-217)"
   // decision: D-446 "The icon of an archetype is an icon of game-icons.net (D-27) whose file the archetype's data names, and it stands before the archetype's name, drawn as a mask in the colour of that name"
   // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(stateWith()));
+    const area = page.root.querySelector(".character-identity");
+    assert.deepEqual(
+      [...area.children].map((child) => child.className),
+      ["character-facts", "character-screen-status", "character-screen-gear"],
+      "the facts first, above the frame of what the character does, and the figure's section after it",
+    );
+    assert.equal(
+      area.querySelector(".character-facts .character-figure"),
+      null,
+      "the figure does not stand beside the name",
+    );
     assert.equal(text(page.root, ".character-screen-name"), "Ala");
     const archetype = page.root.querySelector(".character-screen-archetype");
     assert.equal(archetype.textContent, ARCHETYPES[CREATED_ARCHETYPE].name);
@@ -393,11 +406,12 @@ test("a purchase leaves focus on its button, which stays buyable after it", asyn
 
 // --- the left area: the figure and the frame of what the character does ----------------------
 
-// Catches a figure drawn from another sheet or at another scale than the character's in the picture
-// band, a figure gone while the character is away from the camp, and a figure that takes the keyboard
-// or holds text.
-test("the figure stands first in the left area, before the name, drawn from the character's sheet in the picture band at twice its pixels, in the camp, in a map run and in an earning loop, a picture with no control and no text", async () => {
-  // decision: D-445 "At the top of the left area of the screen Postać, beside the character's name, stands the figure of the character: the same picture as that character in the picture band of Siedziba (D-389), at the same size, moving in the frames of its idle sheet at the scene's fixed beat with no loop of drawing and standing still under the system's setting for reduced motion"
+// Catches a figure drawn from another sheet or at another scale than twice the character's in the
+// picture band (the band draws a pixel of its pictures at 2 px, so the figure's pixel is 4 px), a
+// figure still at the top of the area beside the name, a figure gone while the character is away from
+// the camp, and a figure that takes the keyboard or holds text.
+test("the figure stands in the section „Wyposażenie” under the frame of what the character does, drawn from the character's sheet in the picture band at twice its size, in the camp, in a map run and in an earning loop, a picture with no control and no text", async () => {
+  // decision: D-445 "In the section „Wyposażenie” of the left area of the screen Postać, in the middle of the tiles of the slots of the gear (D-461), stands the figure of the character: the same picture as that character in the picture band of Siedziba (D-389), at twice its size, moving in the frames of its idle sheet at the scene's fixed beat with no loop of drawing and standing still under the system's setting for reduced motion"
   // decision: D-445 "It stands whatever the character does — in the camp, in a manual map run going, paused or ended, and in an earning loop — always in the same pose, with no clearing under it, on the flat background of its area"
   // decision: D-445 "It is a picture, not a control, taking no click and no key, hidden from readers of the screen, with no text on it or over it"
   // decision: D-272 "A picture of the game stands behind the login card, in a band at the top of Siedziba, as the scene and as the figure of a character at the top of the screen Postać, which stands with no clearing under it, on the flat background of its area, and text stands on a solid background, never on a picture"
@@ -409,19 +423,34 @@ test("the figure stands first in the left area, before the name, drawn from the 
     const { screen } = await mount(page, propsOf(camp));
     const figure = () => page.root.querySelector(".character-figure");
     const check = () => {
-      const area = page.root.querySelector(".character-identity");
-      const head = area.firstElementChild;
-      assert.deepEqual(
-        [...head.children].map((child) => child.className),
-        ["character-figure", "character-facts"],
+      const gear = page.root.querySelector(".character-screen-gear");
+      assert.equal(gear.tagName, "SECTION");
+      assert.equal(gear.querySelector("h3").textContent, "Wyposażenie");
+      assert.ok(
+        gear.contains(figure()),
+        "the figure stands in the section „Wyposażenie”",
+      );
+      assert.equal(
+        page.root.querySelectorAll(".character-figure").length,
+        1,
+        "and nowhere else",
       );
       assert.equal(
         figure().querySelector("img").getAttribute("src"),
         sheet.href,
       );
+      // The band draws a pixel of its pictures at 2 px; the figure at twice that, 4 px.
       const sprite = figure().querySelector(".character-figure-sprite");
-      assert.equal(sprite.style.width, `${sheet.width * 2}px`);
-      assert.equal(sprite.style.height, `${sheet.height * 2}px`);
+      assert.equal(sprite.style.width, `${sheet.width * 4}px`);
+      assert.equal(sprite.style.height, `${sheet.height * 4}px`);
+      assert.equal(figure().style.width, `${CHARACTER_FIGURE.width * 4}px`);
+      assert.equal(figure().style.height, `${CHARACTER_FIGURE.height * 4}px`);
+      assert.equal(
+        sprite.style.left,
+        `${((CHARACTER_FIGURE.width - sheet.width) / 2) * 4}px`,
+        "the sheet stands centred across the box",
+      );
+      assert.equal(sprite.style.bottom, "0px");
       assert.equal(figure().getAttribute("aria-hidden"), "true");
       assert.equal(figure().textContent, "");
       assert.equal(
@@ -444,6 +473,27 @@ test("the figure stands first in the left area, before the name, drawn from the 
       screen.update(propsOf(stateWith({}, { loops: { [ID]: LOOP } }))),
     );
     check();
+  });
+});
+
+// Catches a section „Wyposażenie” that waits for something to stand — a known tree, a piece held — and a
+// heading in another role than the one of „Umiejętności”.
+test("the section „Wyposażenie” stands from the creation of the character, before any tree is known, with its heading in text-label like „Umiejętności”", async () => {
+  await withPage(async (page) => {
+    const bare = withTrees(stateWith(), []);
+    const { screen } = await mount(page, propsOf(bare));
+    const heading = () => page.root.querySelector(".character-screen-gear h3");
+    assert.equal(heading().textContent, "Wyposażenie");
+    assert.equal(page.root.querySelector(".character-screen-skills"), null);
+    assert.equal(computed(heading(), "color"), "var(--text-label)");
+    await inAct(() => screen.update(propsOf(knowingTwo())));
+    const skills = page.root.querySelector(".character-screen-skills h3");
+    assert.equal(
+      computed(heading(), "color"),
+      computed(skills, "color"),
+      "the same role as the heading of „Umiejętności”",
+    );
+    assert.equal(heading().textContent, "Wyposażenie");
   });
 });
 
