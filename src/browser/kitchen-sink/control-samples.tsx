@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import type { ConditionNumber } from "../sim/program.js";
 import { ReactButton } from "../view/controls/react-button.js";
 import type {
+  CellBar,
   CellParts,
   ReactButtonKind,
 } from "../view/controls/react-button.js";
@@ -109,32 +110,49 @@ function buttonSample(text: string, look: ButtonLook, loading: Loading) {
   };
 }
 
+/**
+ * The scale of temperature of a cell, made up: three zones and the marker of the value on them, as
+ * the screen draws the scale (D-40, D-42). Its colours are the roles of the zones and the marker,
+ * and its positions are the page's own (`kitchen-sink.css`).
+ */
+function SampleScale() {
+  return (
+    <span className="sample-scale">
+      <span className="sample-scale-zone chill-zone" />
+      <span className="sample-scale-zone safe-zone" />
+      <span className="sample-scale-zone danger" />
+      <span className="sample-scale-marker" />
+    </span>
+  );
+}
+
 /** The made-up cell of the body row that the samples of the button of a cell draw. */
-const SAMPLE_CELL: CellParts = {
+const SAMPLE_CELL: Omit<CellParts, "bar"> = {
   name: "Sytość",
   number: "70",
-  bar: { share: 0.7, fillRole: "satiety-fill" },
   note: "Dopisek",
 };
 
 /**
- * The button of a cell of the body row in each state (D-44, D-450). A cell holds a value, never an
- * entry, and waits for no server, so the states error, empty and loading do not apply to it; the
- * reasons are those of the plain button, which the same facts make.
+ * The button of a cell of the body row in each state, with the bar it is given (D-44, D-450). A
+ * cell holds a value, never an entry, and waits for no server, so the states error, empty and
+ * loading do not apply to it; the reasons are those of the plain button, which the same facts make.
  */
-function cellSample(state: State): ReactNode {
-  if (state === "error") return reason(NOT_APPLYING.buttonError);
-  if (state === "empty") return reason(NOT_APPLYING.buttonEmpty);
-  if (state === "loading") return reason(NOT_APPLYING.buttonLoading);
-  return (
-    <Forced state={state}>
-      <ReactButton
-        kind="value-cell"
-        cell={SAMPLE_CELL}
-        disabled={state === "disabled"}
-      />
-    </Forced>
-  );
+function cellSample(bar: CellBar) {
+  return (state: State): ReactNode => {
+    if (state === "error") return reason(NOT_APPLYING.buttonError);
+    if (state === "empty") return reason(NOT_APPLYING.buttonEmpty);
+    if (state === "loading") return reason(NOT_APPLYING.buttonLoading);
+    return (
+      <Forced state={state}>
+        <ReactButton
+          kind="value-cell"
+          cell={{ ...SAMPLE_CELL, bar }}
+          disabled={state === "disabled"}
+        />
+      </Forced>
+    );
+  };
 }
 
 /**
@@ -341,7 +359,11 @@ const CONTROLS: readonly (readonly [string, (state: State) => ReactNode])[] = [
   ],
   ["Komórka wyboru", pickCellSample(false)],
   ["Komórka wyboru wybrana", pickCellSample(true)],
-  ["Komórka wiersza ciała", cellSample],
+  [
+    "Komórka wiersza ciała",
+    cellSample({ share: 0.7, fillRole: "satiety-fill" }),
+  ],
+  ["Komórka wiersza ciała ze skalą", cellSample({ scale: <SampleScale /> })],
   ["Lista wyboru", selectListSample],
   [
     "Pole liczby",

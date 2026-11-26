@@ -61,6 +61,46 @@
   color: var(--text-strong);
 }
 
+/*
+ * The scale of temperature of the sample (D-40, D-42): three zones side by side, each in its role, and
+ * the marker of the value, a short line over the zones that reaches past them. Its widths are
+ * percentages of the scale, which D-43 leaves out.
+ */
+.sample-scale {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.sample-scale-zone {
+  display: block;
+  height: 100%;
+}
+
+.sample-scale-zone.chill-zone {
+  width: 30%;
+  background-color: var(--chill-zone);
+}
+
+.sample-scale-zone.safe-zone {
+  width: 40%;
+  background-color: var(--safe-zone);
+}
+
+.sample-scale-zone.danger {
+  width: 30%;
+  background-color: var(--danger);
+}
+
+.sample-scale-marker {
+  position: absolute;
+  top: calc(var(--space-2xs) * -1);
+  bottom: calc(var(--space-2xs) * -1);
+  left: 45%;
+  width: var(--bar-width);
+  background-color: var(--scale-marker);
+}
+
 /* A section may be narrower than its table, which then scrolls inside its panel. */
 .sample-section {
   min-width: 0;
