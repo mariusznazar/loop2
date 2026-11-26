@@ -615,10 +615,15 @@
     flex: 1 1 0;
   }
 
+  /*
+   * The gap and „▾” fill the height of the header, „▾” its text centred in it: in a header of two lines
+   * or more a strip above or below a centred „▾” would be bare, and Chromium gives a tap there to „▾”,
+   * folding the group where the player meant to open it (D-296).
+   */
   .rule-list-header .rule-list-controls {
     flex: none;
     align-self: stretch;
-    align-items: center;
+    align-items: stretch;
     margin-left: 0;
   }
 

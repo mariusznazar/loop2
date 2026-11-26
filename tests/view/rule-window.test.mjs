@@ -299,14 +299,20 @@ test("the rows the window lies over are out of reach while it stands, those abov
 });
 
 // Breaks: the list watched for a change of its size, which the window itself makes as it grows the
-// list to hold it, so that Chromium calls the watch again in the same frame and reports an error of a
-// loop, which the game takes for a failure („Coś w grze się zepsuło”); and a watch left behind when the
-// window goes.
-test("the window watches its own size alone, never the list it makes grow, and stops watching when it closes", async () => {
+// list to hold it; or the boxes laid inside the watch's own callback, where the height it sets may take
+// the page's scrollbar away and widen the window in the same frame. Either way Chromium reports an
+// error of a loop, which the game takes for a failure („Coś w grze się zepsuło”). Also breaks: a change
+// of the window's size never laid, and a watch left behind when the window goes.
+test("the window watches its own size alone, lays a change of it in the next frame and not in the watch's callback, and stops watching when it closes", async () => {
   await withPage(async (page) => {
     const watched = [];
     let stopped = 0;
+    let changed = null;
+    const frames = [];
     page.window.ResizeObserver = class {
+      constructor(callback) {
+        changed = callback;
+      }
       observe(element) {
         watched.push(element);
       }
@@ -314,6 +320,14 @@ test("the window watches its own size alone, never the list it makes grow, and s
         stopped += 1;
       }
     };
+    page.window.requestAnimationFrame = (callback) => frames.push(callback);
+    page.window.cancelAnimationFrame = () => {};
+    const windowBox = [120, 150];
+    layOut(page.window, [
+      [".rule-panel", windowBox],
+      [".rule-list", [0, 440]],
+      ['[data-rule="3"]', [200, 240]],
+    ]);
     const game = await wiredPanel(page, gameWith(), "programs");
     await openRow(game.root, 2);
     assert.ok(watched.length > 0, "precondition: the window watches");
@@ -321,6 +335,16 @@ test("the window watches its own size alone, never the list it makes grow, and s
       watched.every((element) => element === windowOf(game.root)),
       "only the window is watched",
     );
+    const row3 = () => rowOf(game.root, 3).hasAttribute("inert");
+    assert.equal(row3(), false, "precondition: row 3 below the window");
+
+    windowBox[1] = 300;
+    await inAct(() => changed([]));
+    assert.equal(row3(), false, "nothing laid in the watch's callback");
+    assert.equal(frames.length, 1, "one frame asked for");
+    await inAct(() => frames.shift()());
+    assert.equal(row3(), true, "laid in the next frame");
+
     await press(buttonNamed(windowOf(game.root), "✕"));
     assert.ok(stopped >= watched.length, "every watch stopped");
   });
@@ -338,8 +362,17 @@ test("„↑” and „↓” of the window of a rule move it one place, across 
       "run",
     );
     await openRow(game.root, 2);
+    await press(
+      windowOf(game.root).querySelector('button[aria-label^="Czynność:"]'),
+    );
+    const actionPick = () =>
+      windowOf(game.root).querySelector(
+        '[role="group"][aria-label="Czynność"]',
+      );
+    assert.ok(actionPick(), "precondition: the window stands on the action");
     await press(barButton(game.root, "↓"));
     assert.deepEqual(idsOf(game.state.run.copy.program), [[1], [2, 3]]);
+    assert.ok(actionPick(), "the window stays on the same field");
     assert.deepEqual(game.hints, [{ kind: "rule", ruleId: 2 }]);
     assert.equal(headingOf(game.root), "Reguła 2.1 w grupie „Druga”");
     assert.ok(

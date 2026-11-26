@@ -70,9 +70,9 @@ const REACHABLE =
  * Keeps the rows the window `own` lies over out of the reach of the keyboard and the mouse while it
  * stands (`inert`): each part of the rule list after the window in the document whose box lies under
  * the window's. Where the window reaches below the end of the list, the list grows to hold it, so
- * nothing outside the list stands under the window. It reads the boxes after every commit and
- * whenever the window changes its size, a change of the page's width among the causes, and gives
- * every part back its reach when the window goes. A page laid out by no browser gives every box at
+ * nothing outside the list stands under the window. It reads the boxes after every commit and, in the
+ * next frame, whenever the window changes its size, a change of the page's width among the causes,
+ * and gives every part back its reach when the window goes. A page laid out by no browser gives every box at
  * zero, and then nothing lies under the window.
  */
 export function useCoverBelow(own: RefObject<HTMLElement | null>): void {
@@ -95,13 +95,28 @@ export function useCoverBelow(own: RefObject<HTMLElement | null>): void {
       }
     };
     lay();
-    const Observer = list.ownerDocument.defaultView?.ResizeObserver;
-    const observer = Observer === undefined ? null : new Observer(lay);
-    // The window alone: the list changes its own size here, and a size this callback changes would
-    // call it again in the same frame, which the browser reports as an error of a loop.
+    const view = list.ownerDocument.defaultView;
+    // A change of the window's size is laid in the next frame, never in the watch's own callback: the
+    // height this sets may take the page's scrollbar away and so widen the window in the same frame,
+    // which the browser reports as an error of a loop, and the game takes it for a failure.
+    let frame: number | null = null;
+    const later = (): void => {
+      if (view == null || frame !== null) return;
+      frame = view.requestAnimationFrame(() => {
+        frame = null;
+        lay();
+      });
+    };
+    const observer =
+      view?.ResizeObserver === undefined
+        ? null
+        : new view.ResizeObserver(later);
+    // The window alone: the list changes its own size here, and watching it too would call the watch
+    // again for a size it made itself.
     observer?.observe(window);
     return () => {
       observer?.disconnect();
+      if (frame !== null) view?.cancelAnimationFrame(frame);
       list.style.minHeight = "";
       for (const part of list.querySelectorAll(REACHABLE))
         part.removeAttribute("inert");
