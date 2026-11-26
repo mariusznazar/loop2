@@ -2,7 +2,7 @@
 // picks its place, the action „Załóż” picks its item with no price, on jsdom through
 // tests/view/page-document.mjs (D-264). The look of the cells and the focus ring are the browser
 // check's (D-88); here the cells, their names, their marks and the keys that move among them are read.
-import { assert, inAct, press, withPage } from "./page-document.mjs";
+import { assert, inAct, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
