@@ -1,4 +1,9 @@
-import { backpackCap, backpackCount } from "./character.js";
+import {
+  backpackCap,
+  backpackCount,
+  fitsSlot,
+  gearSlots,
+} from "./character.js";
 import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
@@ -333,6 +338,54 @@ function firstItemFor(use: ItemUse): ItemId {
 }
 
 /**
+ * The slot „Załóż — {rzecz}” puts `item` into (D-458): the first empty slot of the item's place, so
+ * the first empty pocket for an item of a pocket; where none is empty, the one slot of a place that
+ * has only one, whatever it holds. Null where the place has several slots and every one is taken, and
+ * where the item fits no place, which the program check never lets be a target.
+ */
+export function equipSlot(gear: Gear, item: ItemId): GearSlot | null {
+  const slots = gearSlots().filter((slot) => fitsSlot(item, slot));
+  return (
+    slots.find((slot) => gear[slot] === null) ??
+    (slots.length === 1 ? slots[0] : null)
+  );
+}
+
+/**
+ * Why „Załóż — {rzecz}” cannot put a piece of `item` on (D-380, D-458), in the player's words: null
+ * where it can. A reason about the state of a slot stands before the lack in the backpack.
+ */
+function equipRefusal(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): string | null {
+  const slot = equipSlot(character.gear, item);
+  if (slot === null) return "kieszenie pełne";
+  if (character.gear[slot] === item) return `już założone: ${itemName(item)}`;
+  return holds(character.backpack, { item, count: 1 })
+    ? null
+    : lacking(character.backpack, { item, count: 1 });
+}
+
+/**
+ * The gear and the backpack after „Załóż — {rzecz}” puts one piece of `item` from the backpack into
+ * its slot and the piece that slot held, if any, into the backpack (D-458), so the count of the
+ * backpack never rises; null where it cannot, in the cases `equipRefusal` names. Inputs are not changed.
+ */
+export function equipped(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): Pick<RunCharacter, "gear" | "backpack"> | null {
+  const slot = equipSlot(character.gear, item);
+  if (slot === null || equipRefusal(character, item) !== null) return null;
+  const held = character.gear[slot];
+  const backpack = { ...character.backpack };
+  backpack[item] -= 1;
+  if (held !== null) backpack[held] += 1;
+  return { gear: { ...character.gear, [slot]: item }, backpack };
+}
+
+/**
  * Why an action cannot start now outside combat, in the words of the player: null where it can.
  * The first of these that holds is given: combat, then the world and the backpack, then the nature
  * energy a spell costs, then a branch the character did not buy. Never draws: the wander generator
@@ -426,6 +479,8 @@ function worldRefusal(run: RunView, action: Action): string | null {
       return holds(backpack, { item: action.item, count: 1 })
         ? null
         : lacking(backpack, { item: action.item, count: 1 });
+    case "equip":
+      return equipRefusal(run.character, action.item);
     case "strikeWithStick":
     case "kick":
     case "dodge":

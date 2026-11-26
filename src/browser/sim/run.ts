@@ -35,6 +35,7 @@ import {
   campfireLightCount,
   campfireTarget,
   chooseActivity,
+  equipped,
   itemFor,
   natureEnergyCost,
   walkTarget,
@@ -153,6 +154,7 @@ function startActivity(
       case "feedCampfire":
       case "eat":
       case "tend":
+      case "equip":
         minutes = ACTIONS[action.kind].minutes;
         break;
       case "craft":
@@ -256,8 +258,10 @@ type Landing = Pick<
  * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59);
  * „Wytwórz” takes the recipe's pieces of its target and puts one piece of the target in, needing no
  * room, as the recipe uses at least one piece; „Opatrz” takes one piece of its target and raises
- * health by the target's healing, not above full health (D-145). Where what the action needs is no
- * longer there, nothing changes — health full at the end of „Opatrz” included.
+ * health by the target's healing, not above full health (D-145); „Załóż” moves one piece of its
+ * target from the backpack into the slot it fits and the piece the slot held into the backpack
+ * (D-458). Where what the action needs is no longer there, nothing changes — health full at the end
+ * of „Opatrz” included.
  */
 function landUse(state: Landing, action: Action): Landing {
   const { character } = state;
@@ -350,6 +354,11 @@ function landUse(state: Landing, action: Action): Landing {
           backpack: { ...crafted, [action.item]: crafted[action.item] + 1 },
         },
       };
+    }
+    case "equip": {
+      const put = equipped(character, action.item);
+      if (put === null) return state;
+      return { ...state, character: { ...character, ...put } };
     }
     case "tend": {
       const healing = ITEMS[action.item].healing;

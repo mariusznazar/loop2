@@ -29,9 +29,9 @@ Reading of the sentence:
   unchanged (written out below as BASE); the program the state holds is the copy of the map run
   during a map run, and outside a map run the program of the list the team goes with;
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
-  with valid fields — the two kinds that take an item, `tend` and `craft`, with the bandage —
-  including all ten condition kinds on groups, is taken in as offered (the control that shows
-  refusal is no blanket refusal);
+  with valid fields — the three kinds that take an item, `tend`, `equip` and `craft`, with the
+  bandage — including all ten condition kinds on groups, is taken in as offered (the control that
+  shows refusal is no blanket refusal);
 - the load of a saved game state refuses a program as `setProgram` does: a saved document whose
   program, at the one place it stands, holds a kind the data do not list is not loaded (`loadSavedGame`
   gives no game state), where the document with the valid program there is loaded and holds the
@@ -129,6 +129,7 @@ ACTION_KINDS = (
     "strikeWithStick",
     "kick",
     "dodge",
+    "equip",
     "craft",
 )
 
@@ -166,6 +167,7 @@ VALID = program_from_rules(
         rule({"kind": "healthBelow", "value": 50}, {"kind": "strikeWithStick"}),
         rule({"kind": "opponentHealthBelow", "value": 10}, {"kind": "kick"}),
         rule(ALWAYS, {"kind": "dodge"}),
+        rule(ALWAYS, {"kind": "equip", "item": "bandage"}),
         rule(ALWAYS, {"kind": "craft", "item": "bandage"}),
     ]
 )

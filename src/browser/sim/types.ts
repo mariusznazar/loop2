@@ -70,6 +70,8 @@ export type Action =
   | { kind: "strikeWithStick" }
   | { kind: "kick" }
   | { kind: "dodge" }
+  /** „Załóż — {rzecz}”: puts a piece of the item on from the backpack into the slot it fits (D-458). */
+  | { kind: "equip"; item: ItemId }
   | { kind: "craft"; item: ItemId };
 
 /** Stable within a program, including after a rule moves to another group. */

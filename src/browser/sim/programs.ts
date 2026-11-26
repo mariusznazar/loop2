@@ -201,6 +201,7 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
     // two fields alone.
     case "craft":
     case "tend":
+    case "equip":
       return { kind: value.kind, item: checkTarget(value.kind, value.item) };
     // The actions on the campfire and the backpack name nothing: the simulation picks the
     // campfire on the character's tile, or the nearest one, and the pieces they use.

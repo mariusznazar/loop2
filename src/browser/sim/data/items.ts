@@ -52,9 +52,10 @@ export type ItemDef = {
 
 /**
  * The properties of an item's row that give an action its item targets: the items an action takes
- * as its target are those whose row holds the property its row in actions.ts names.
+ * as its target are those whose row holds the property its row in actions.ts names. `fits`, the
+ * place of the gear an item fits, gives „Załóż” its targets (D-458).
  */
-export type TargetProperty = "recipe" | "healing";
+export type TargetProperty = "recipe" | "healing" | "fits";
 
 /** The words of an item that is a resource, taken from its resource row, so no word stands twice. */
 function wordsOf(resource: ResourceId) {

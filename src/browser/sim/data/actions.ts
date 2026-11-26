@@ -35,6 +35,12 @@ export type ActionDef = {
   natureEnergy?: number;
   /** Combat-only effect; absent actions belong to ordinary map time. */
   combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
+  /**
+   * Present for an ordinary action that can also be carried out in combat, taking a turn there as it
+   * takes its minutes outside it (D-140): it is no action of combat, so it has no combat effect, and
+   * its time is what `minutes` says wherever it is carried out.
+   */
+  alsoInCombat?: true;
   /** File name in assets/icons, without the extension: the icon the action shows wherever it stands. */
   icon: string;
   /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
@@ -216,6 +222,18 @@ export const ACTIONS = {
     combat: { reducesNextDamageBy: 5 },
     icon: "dodge",
     iconTitle: "Dodge icon",
+  },
+  // „Załóż” takes the targets of the items whose row names a place of the gear, and uses nothing up.
+  equip: {
+    label: "Załóż",
+    group: "foodAndCombat",
+    status: "Zakłada",
+    minutes: 1,
+    itemTargets: { property: "fits" },
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    alsoInCombat: true,
+    icon: "gloves",
+    iconTitle: "Gloves icon",
   },
   // „Wytwórz” takes the targets of the items that hold a recipe, and its minutes from that recipe.
   craft: {

@@ -38,6 +38,7 @@
       "tests/sim/gear-condition.test.mjs",
       "tests/sim/gear-state.test.mjs",
       "tests/sim/gear-transfer.test.mjs",
+      "tests/sim/gear-wear.test.mjs",
       "tests/sim/hex.test.mjs",
       "tests/sim/judging-record.test.mjs",
       "tests/sim/judging.test.mjs",
