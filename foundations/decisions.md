@@ -12875,6 +12875,23 @@ At a character in an earning loop the tiles of the gear show the gear set for it
 *Rationale:* the tiles show what the player can change, which acts from the next map run (D-453), and the sentence says why what the character holds in the map run going on is not what the tiles show. Accepted with it: the screen does not show what the character holds in the map run going on of its earning loop.
 *Rejected:* a second, smaller row of icons, „Teraz w przejściu: …”, under the tiles.
 
+### D-463 — How does the game state count the gear changes the player makes?
+
+The game state counts at each character, from 0, the gear changes the player makes on the screen Postać (D-461): each putting on, exchanging and taking off of a piece counts one, a change with which the character comes back from a map run (D-460) and a death that takes its gear (D-190) count none, and the count never goes down. The value of a remembered judging holds the count of its character in the game state the judging read (D-441), and the judging stands beside the list „Program:” only while that count equals the count the game state gives its character, so that a change of the gear made by the player erases every judging remembered for that character, on every map (D-440).
+
+The count is a part of the stored form of a judging, whose version rises with it, so a value stored without it shows nothing; when the page opens the remembered judgings of a game it removes also the values of this game whose count stands above that of their character in the loaded game, as it does for the generation number (D-441).
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-440 · derives from D-441 · derives from D-461
+- **Verification:** tests: the count of a character's gear changes in the game state and in the saved game state, from 0 at a new character, one higher after each putting on, exchanging and taking off of a piece by the player on the screen Postać, and left as it is by a refused change, by a refill of a slot or a „Załóż” in a map run, by the return of a character from a map run of its earning loop and by the death of a character with no practice that takes its gear; a judging stored with the count of its character and read again by a cache opened anew, standing beside „Program:” only while the count equals that of the character in the game state, and gone, on every map of that character and no other, after a change of the gear the player made; a value stored without the count, under the key of the version before, showing nothing; the opening removing the values of this game whose count stands above that of their character in the loaded game. For the part no test holds yet, an agent compares a change with the decision:
+  - complies: a stick taken off on the screen Postać raising the count of its character by one, so that no judging stands beside that character on any map, while a map run of its earning loop in which a strike took a stick into an empty hand leaves the count and the judgings as they were
+  - violates: a change of the gear made by the player that leaves the count where it was; a count that rises at the return of a map run; the page removing the character's judgings from the browser at the change, with no count in the stored value
+- **Origin:** none
+
+*Rationale:* the badge beside a character must not stand after the player took off the stick the program was judged with (D-440), and it must not depend on which tab, device or page made the change. A count that the game state holds and the stored judging carries is read against the game state at hand, as the content revision (D-442) and the generation number are, so a reload, another tab and another device give the same answer; the count only rises, so a value above the loaded game's own can come only from a save that never reached the server, and the opening removes it. Accepted with it: one more field in the game state and in each stored value; the version of the stored form rises, so the judgings stored before it show nothing once and the player judges anew at each map; a change of the gear that is later lost with a refused or an unsent save leaves a judging above the count, which the opening removes.
+*Rejected:* unknown.
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
