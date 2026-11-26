@@ -1,0 +1,87 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/judging-cache-record.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ an offered number is stored as one value of its own, under a key of its own version, with the creature's numbers, and read again by a cache opened anew (4.0882ms)
+✔ a value written by hand in the stored form is read, and the edges of the number are admitted (0.3488ms)
+✔ nothing is read where no judging offered a number, as on another device, and a first judging that took nothing makes the record 0 (0.3391ms)
+✔ a number offered below or at the record leaves it and writes nothing, and one above raises it (0.3651ms)
+✔ a record made at other numbers of the creature shows nothing, and the next offer replaces it, though lower (0.3174ms)
+✔ the record stays where the judgings of its map go: a judging remembered above the loaded game is removed at the opening, the record is not, and nothing a judging does touches it (0.961ms)
+✔ the judgings and the record share a storage and read nothing of each other (0.3691ms)
+✔ two caches on one storage, as two tabs of one game, see each other's record, and the lower offer of a tab never lowers it (0.2064ms)
+✔ a record of another account, of another game of the account or under a key of another version is never read, written or removed (0.3283ms)
+✔ an account whose identifier holds the separator of a key shares no record with another account (0.442ms)
+✔ a value of the stored form is read as the number it holds, the control of the cases that follow (0.146ms)
+✔ a stored value that is an empty text reads as none, throws nothing and stays where it is (0.241ms)
+✔ a stored value that is a text that is no JSON reads as none, throws nothing and stays where it is (0.1471ms)
+✔ a stored value that is a cut value reads as none, throws nothing and stays where it is (0.093ms)
+✔ a stored value that is null reads as none, throws nothing and stays where it is (0.059ms)
+✔ a stored value that is a number reads as none, throws nothing and stays where it is (0.0648ms)
+✔ a stored value that is a text reads as none, throws nothing and stays where it is (0.0522ms)
+✔ a stored value that is a list reads as none, throws nothing and stays where it is (0.0894ms)
+✔ a stored value that is a list of the three values reads as none, throws nothing and stays where it is (0.0566ms)
+✔ a stored value that is an empty object reads as none, throws nothing and stays where it is (0.0558ms)
+✔ a stored value that is a value without damage reads as none, throws nothing and stays where it is (0.0607ms)
+✔ a stored value that is a value without health reads as none, throws nothing and stays where it is (0.0537ms)
+✔ a stored value that is a value without strikeDamage reads as none, throws nothing and stays where it is (0.0533ms)
+✔ a stored value that is a value with one more field reads as none, throws nothing and stays where it is (0.0498ms)
+✔ a stored value that is a value with a field called __proto__ besides the three reads as none, throws nothing and stays where it is (0.0497ms)
+✔ a stored value that is a value with a field called constructor besides the three reads as none, throws nothing and stays where it is (0.8022ms)
+✔ a stored value that is a value whose three fields are named by a prototype reads as none, throws nothing and stays where it is (0.1003ms)
+✔ a stored value that is a damage below 0 reads as none, throws nothing and stays where it is (0.0779ms)
+✔ a stored value that is a damage with a fraction reads as none, throws nothing and stays where it is (0.0613ms)
+✔ a stored value that is a damage that is a text reads as none, throws nothing and stays where it is (0.0628ms)
+✔ a stored value that is a damage that is null reads as none, throws nothing and stays where it is (0.0436ms)
+✔ a stored value that is a damage that is a list reads as none, throws nothing and stays where it is (0.0515ms)
+✔ a stored value that is a damage past the safe integers reads as none, throws nothing and stays where it is (0.042ms)
+✔ a stored value that is a damage too large for a number reads as none, throws nothing and stays where it is (0.0387ms)
+✔ a stored value that is a damage above the creature's whole health reads as none, throws nothing and stays where it is (0.0402ms)
+✔ a stored value that is a health of 0 reads as none, throws nothing and stays where it is (0.0463ms)
+✔ a stored value that is a health below 0 reads as none, throws nothing and stays where it is (0.0687ms)
+✔ a stored value that is a health with a fraction reads as none, throws nothing and stays where it is (0.0458ms)
+✔ a stored value that is a health that is a text reads as none, throws nothing and stays where it is (0.0617ms)
+✔ a stored value that is a health past the safe integers reads as none, throws nothing and stays where it is (0.0416ms)
+✔ a stored value that is a blow below 0 reads as none, throws nothing and stays where it is (0.0597ms)
+✔ a stored value that is a blow with a fraction reads as none, throws nothing and stays where it is (0.0457ms)
+✔ a stored value that is a blow that is a text reads as none, throws nothing and stays where it is (0.0409ms)
+✔ a stored value that is a blow that is null reads as none, throws nothing and stays where it is (0.0536ms)
+✔ a stored value that is a blow past the safe integers reads as none, throws nothing and stays where it is (0.0516ms)
+✔ a stored value that is a valid value padded past the bound a value may have reads as none, throws nothing and stays where it is (0.0343ms)
+✔ a stored value that is a valid value with a long text before it reads as none, throws nothing and stays where it is (0.0353ms)
+✔ a storage that answers a reading with no text reads as none (0.3265ms)
+✔ a bad value under the key is replaced by the next offer, and a record of the stored form is never lowered by one that is bad (0.1538ms)
+✔ an offer of a damage below 0 stores nothing and throws nothing (0.0908ms)
+✔ an offer of a damage with a fraction stores nothing and throws nothing (0.0443ms)
+✔ an offer of a damage that is NaN stores nothing and throws nothing (0.0364ms)
+✔ an offer of a damage that is infinite stores nothing and throws nothing (0.0338ms)
+✔ an offer of a damage past the safe integers stores nothing and throws nothing (0.0353ms)
+✔ an offer of a damage above the creature's whole health stores nothing and throws nothing (0.0328ms)
+✔ an offer of a health of 0 stores nothing and throws nothing (0.0344ms)
+✔ an offer of a health that is NaN stores nothing and throws nothing (0.033ms)
+✔ an offer of a health with a fraction stores nothing and throws nothing (0.0355ms)
+✔ an offer of a blow below 0 stores nothing and throws nothing (0.0389ms)
+✔ an offer of a blow that is NaN stores nothing and throws nothing (0.0346ms)
+✔ an offer of a blow that is no number stores nothing and throws nothing (0.0375ms)
+✔ a write the storage refuses leaves the record for the open page, leaves the stored record where it is, and throws nothing (0.221ms)
+✔ a write the storage refuses and a removal it refuses too still leave the record for the open page (0.1007ms)
+✔ a write that succeeds after a refused one takes the record out of the page's memory, so the storage answers again, and a higher number of another tab stands over the page's (0.1529ms)
+✔ a storage whose every call throws opens, takes and gives a record for the open page, and throws nothing (0.2679ms)
+✔ no storage at all keeps a record for the open page alone (0.0877ms)
+✔ opening a game removes the records of the same account under the moment of another game, and leaves other accounts', other versions' and the judgings' (0.1507ms)
+✔ a game built after a refused save has every record of this game removed too, and other accounts' and other versions' left (0.5546ms)
+✔ opening with a storage that refuses to list its keys or to remove a value throws nothing and still reads (0.2337ms)
+✔ opening leaves the game state it was given as it was (0.335ms)
+ℹ tests 70
+ℹ suites 0
+ℹ pass 70
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.295
+exit 0
