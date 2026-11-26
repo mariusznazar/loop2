@@ -1551,8 +1551,8 @@ Ruch wiersza:
   i D-43 ich nie liczy, jak czasów ruchu sceny; czy staną się tokenami, ten przewodnik nie rozstrzyga.
 
 Przycisk komórki w stanach wspólnych kontrolek stoi w regule States of shared controls, na liście
-kontrolek odstępujących, z powodem, a jego próbki — przycisk w spoczynku, pod kursorem, otwarty, przy
-fokusie i wyłączony, z paskiem i ze skalą — na stronie wszystkich stanów (D-45). Układ telefonu przy
+kontrolek odstępujących, z powodem, a jego próbki — w stanach wspólnej kontrolki, raz z paskiem, raz ze
+skalą — na stronie wszystkich stanów (D-45). Układ telefonu przy
 obszarze strony 360 px sprawdza pomiar ze skilla `.claude/skills/loop2-play/SKILL.md` na wierszu
 z objaśnieniem otwartym i ze znacznikiem ciosu pokazanym (reguły Nothing scrolls to the side in the
 phone layout, and no text crosses its frame i A change is checked in both layouts). Przegląd zmiany
