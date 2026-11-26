@@ -111,6 +111,7 @@ CONDITION_KINDS = (
     "awayFromCampfire",
     "healthBelow",
     "opponentHealthBelow",
+    "emptyPlace",
 )
 ACTION_KINDS = (
     "explore",

@@ -41,8 +41,8 @@ export type ConditionSectionId = (typeof CONDITION_SECTIONS)[number];
 
 /**
  * The closed list of conditions. „Tu leży mniej niż” names a resource of the map, „Zapas poniżej”
- * an item of the backpack; the conditions on the campfire name none — the simulation reads the
- * nearest campfire, or the one on the character's tile.
+ * an item of the backpack, „Puste” a place of the gear; the conditions on the campfire name none — the
+ * simulation reads the nearest campfire, or the one on the character's tile.
  */
 export const CONDITIONS = {
   always: { label: "Zawsze", section: "start", place: 1 },
@@ -140,5 +140,11 @@ export const CONDITIONS = {
     section: "world",
     place: 4,
     revealedBy: { kind: "campfireCrafted" },
+  },
+  emptyPlace: {
+    label: "Puste",
+    section: "body",
+    place: 5,
+    revealedBy: { kind: "attacked", creature: "wolf" },
   },
 } as const satisfies Record<string, ConditionDef>;

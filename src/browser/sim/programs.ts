@@ -2,7 +2,8 @@ import { itemTargets, type ItemAction } from "./action-targets.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import type { GameResult } from "./game.js";
-import { conditionNumber, onStep } from "./program.js";
+import { conditionNumber, fittedPlaces, onStep } from "./program.js";
+import type { GearPlace } from "./data/gear.js";
 import { mapRunEnded, type GameEvent } from "./run.js";
 import type {
   Action,
@@ -84,6 +85,22 @@ function checkTarget(kind: ItemAction["kind"], value: unknown): ItemId {
 }
 
 /**
+ * A place of the gear that the condition „Puste — {miejsce}” names: one some item of the data fits at
+ * this call (D-459). A place is named by its kind only, so a pocket's number or position is refused.
+ */
+function checkPlace(value: unknown): GearPlace {
+  if (
+    typeof value !== "string" ||
+    !fittedPlaces().some((place) => place === value)
+  ) {
+    throw new ProgramCheckError(
+      `program: place ${shown(value)} is not a place some item of the data fits`,
+    );
+  }
+  return value as GearPlace;
+}
+
+/**
  * How far a number may lie from its step's grid and still be taken, as a part of the step: binary
  * rounding, never a number the player could type.
  */
@@ -152,6 +169,8 @@ function checkCondition(
       return { kind: value.kind, value: checkNumber(value.kind, value.value) };
     case "awayFromCampfire":
       return { kind: "awayFromCampfire" };
+    case "emptyPlace":
+      return { kind: "emptyPlace", place: checkPlace(value.place) };
     default:
       throw new ProgramCheckError(
         `program: condition kind ${shown(value.kind)} is not on the closed list`,

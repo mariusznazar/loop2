@@ -2,7 +2,7 @@ import type { ArchetypeId } from "./data/archetypes.js";
 import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
 import type { CreatureId } from "./data/creatures.js";
-import type { GearSlot } from "./data/gear.js";
+import type { GearPlace, GearSlot } from "./data/gear.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
@@ -44,7 +44,9 @@ export type Condition =
   | { kind: "campfireLeftBelow"; value: number }
   | { kind: "healthBelow"; value: number }
   | { kind: "opponentHealthBelow"; value: number }
-  | { kind: "awayFromCampfire" };
+  | { kind: "awayFromCampfire" }
+  /** „Puste — {miejsce}”: holds where the place of the gear it names holds nothing (D-459). */
+  | { kind: "emptyPlace"; place: GearPlace };
 
 /** Health values for the side whose rule is being checked and its opponent, when present. */
 export type ConditionContext = {

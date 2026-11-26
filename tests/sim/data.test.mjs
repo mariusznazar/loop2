@@ -335,6 +335,7 @@ test("each action names its group and each condition its section and place in th
     hereBelow: ["world", 2],
     campfireLeftBelow: ["world", 3],
     awayFromCampfire: ["world", 4],
+    emptyPlace: ["body", 5],
     opponentHealthBelow: ["opponent", 1],
   };
   assert.deepEqual(
@@ -743,10 +744,11 @@ const ROWS = [
     items: [],
   },
   {
-    // The first creature attack reveals the combat health conditions.
+    // The first creature attack reveals the combat health conditions and the condition on an empty place.
+    // D-459: the condition „Puste — {miejsce}” is revealed by the first wolf attack.
     event: { kind: "attacked", creature: "wolf" },
     actions: ["strikeWithStick", "kick", "dodge"],
-    conditions: ["healthBelow", "opponentHealthBelow"],
+    conditions: ["healthBelow", "opponentHealthBelow", "emptyPlace"],
     items: [],
   },
   {

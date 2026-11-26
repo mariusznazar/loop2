@@ -3,7 +3,13 @@ import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
-import { WIELDING_SLOT } from "./data/gear.js";
+import {
+  GEAR_PLACES,
+  GEAR_SLOTS,
+  WIELDING_SLOT,
+  type GearPlace,
+  type GearSlot,
+} from "./data/gear.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import { RESOURCES } from "./data/resources.js";
@@ -22,6 +28,7 @@ import type {
   CharacterSkills,
   Condition,
   ConditionContext,
+  Gear,
   GroupId,
   Hex,
   ItemId,
@@ -211,6 +218,29 @@ function nearestCampfireMinutes(run: RunView): number {
   return campfire?.minutesLeft ?? 0;
 }
 
+/**
+ * The places of the gear that some item of the data fits, in the order of the places (D-459): the
+ * targets of the condition „Puste — {miejsce}”, read from the items' rows at each call, so a place
+ * gains its target when an item starts to fit it.
+ */
+export function fittedPlaces(): GearPlace[] {
+  const fitted = new Set(Object.values(ITEMS).map((item) => item.fits));
+  return (Object.keys(GEAR_PLACES) as GearPlace[]).filter((place) =>
+    fitted.has(place),
+  );
+}
+
+/**
+ * Whether a place of the gear holds nothing (D-459): one of its slots is empty, so „Kieszeń” holds
+ * while one of the three pockets is empty. A place no slot has is never empty; the program check
+ * refuses such a place before it is ever read.
+ */
+function placeHasEmptySlot(gear: Gear, place: GearPlace): boolean {
+  return (Object.keys(GEAR_SLOTS) as GearSlot[]).some(
+    (slot) => GEAR_SLOTS[slot] === place && gear[slot] === null,
+  );
+}
+
 /** Whether a condition of a program rule holds now. */
 export function conditionHolds(
   run: RunView,
@@ -220,6 +250,8 @@ export function conditionHolds(
   switch (condition.kind) {
     case "always":
       return true;
+    case "emptyPlace":
+      return placeHasEmptySlot(run.character.gear, condition.place);
     case "hereBelow":
       return stockHere(run, condition.resource) < condition.value;
     case "temperatureBelow":
