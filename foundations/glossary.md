@@ -173,7 +173,7 @@ A beaten attack is an attack in which the creature reaches zero health in combat
 
 ## combat turn
 
-A combat turn is an exchange in which each side has at most one action, the character none when it finds no feasible combat rule (D-146), ending early when either side dies before the other side’s response.
+A combat turn is an exchange in which each side has at most one action, the character none when it finds no feasible rule whose action it can carry out in combat (D-140, D-146), ending early when either side dies before the other side’s response.
 
 - **Not:** none
 

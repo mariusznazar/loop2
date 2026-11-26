@@ -20,6 +20,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/sim/data/campfire.ts` | copy | — |
 | `src/browser/sim/data/conditions.ts` | copy | — |
 | `src/browser/sim/data/creatures.ts` | copy | — |
+| `src/browser/sim/data/gear.ts` | copy | — |
 | `src/browser/sim/data/items.ts` | copy | — |
 | `src/browser/sim/data/maps.ts` | copy | — |
 | `src/browser/sim/data/revelations.ts` | copy | — |
