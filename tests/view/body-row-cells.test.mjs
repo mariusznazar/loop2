@@ -294,7 +294,7 @@ test("each cell holds its name and number on one line, the bar or the scale unde
 // 100, from the game's data: 82 → 0.82, 40 → 0.4, 90 → 0.9, then 12 → 0.12, 30 → 0.3 and 0 → 0.
 test("the bars of satiety, health and nature energy fill to the share of their value in the colour of the value, on a track in highlight, also below a threshold", async () => {
   // decision: D-337 "The bar of satiety is empty at 0 and full at 100, that of health full at the starting health and that of nature energy full at its cap, both from the game's data, each of them empty at 0"
-  // decision: D-39 "`positive` also stands as the fill of the bar of health in the body row (D-337), on a track in `highlight`"
+  // decision: D-39 "`positive` also stands as the fill of the bar of health in the body row (D-337), on a track in `highlight`, with a contrast ratio of at least 3:1 against it at full opacity, and `warning` stands in no bar of the body row either: the orange fill of the bar of satiety takes the role `satiety-fill`"
   // decision: D-40 "The bars of satiety, health and nature energy in the body row (D-337) have their track in `highlight`, as the bar of a requirement in the header has, and the fill of the bar of nature energy stands in `text-strong`, white, though it is no text"
   await withPage(async ({ document, window }) => {
     const base = sent();

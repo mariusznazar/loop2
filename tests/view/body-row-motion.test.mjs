@@ -354,6 +354,7 @@ test("while game time stands the pulse goes on, and the shake and the text of a 
 // again from the same events at a later reading, which a clock redraw does five times a second.
 test("a blow among the events of the first draw gives no marker, and the same events drawn again give none", async () => {
   // decision: D-450 "At a creature's blow the health cell shakes and shows the fading „−{n} · {stworzenie}”, read from the events the simulation returned (D-04) and never at a first draw of the screen, after a reload or after a load"
+  // decision: D-04 "For the blow marker of the health cell of the body row (D-450) the browser view also draws from the events the simulation returned, as it does for the scene"
   await withPage(async ({ document }) => {
     const state = bodied({ health: 60 });
     const events = wolfCombat();

@@ -87,6 +87,7 @@ const ENERGY_EXPLANATION =
 test("a click on the satiety cell opens its explanation under the four cells, and a second click closes it", async () => {
   // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
   // decision: D-450 "A click on the cell of temperature, satiety or nature energy (D-337) opens, right under the four"
+  // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row with a bar under each of its values and the minutes each need lasts, the explanation of a value right under its cells while the player has one open (D-450), the backpack and the lines below them"
   // Breaks: the cell is no button, or its click opens nothing, or the explanation stands under the backpack.
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
@@ -163,6 +164,7 @@ test("the health cell is no button and opens no explanation", async () => {
 });
 
 test("an open explanation stays open while the screen draws the game state anew", async () => {
+  // decision: D-04 "For the blow marker of the health cell of the body row (D-450) the browser view also draws from the events the simulation returned, as it does for the scene, and which explanation of the body row stands open is the state of the own component of the screen of a map run (D-407)."
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`, and the state of one screen lives in the component of that screen."
   // Breaks: the open state kept outside the component, or reset by a new draw of the same run.
   await withPage(async ({ document }) => {

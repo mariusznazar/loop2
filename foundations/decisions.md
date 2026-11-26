@@ -99,7 +99,10 @@ game of an account from another (D-441).
   a loaded game keeping its own moment through the save and the load; the screen Mapy drawing the
   mark beside „Program:” from the judging the browser keeps in its lasting storage, under the
   account's identifier and the moment the game state names its game by, again after a reload and
-  none under another account or another game's moment. For whether the game runs in
+  none under another account or another game's moment; the marker of a creature's blow in the health
+  cell of the body row read from the events of a simulation call, none at a first draw of the row,
+  and the open explanation of the body row kept in the state of its component through a new drawing
+  of the map run. For whether the game runs in
   the browser, for the shape of the simulation's functions that pass game time and for how the
   browser view uses the game state, an agent compares the change with the part no invariant and no
   test holds:
@@ -118,9 +121,9 @@ game of an account from another (D-441).
     the copy from the copy before the player's act and the copy after it, and the entry of a loss of
     the streak from an event the simulation returned; the scene starting the turn of a mage that is
     walking from the place the browser gives for it; the game view keeping whether the end-of-run
-    window is open as a memory of the page; the health cell of the body row showing a blow from the
-    events of a combat the simulation returned, and the body row keeping its open explanation in the
-    state of its component
+    window is open as a memory of the page; the health cell of the body row reading nothing of its
+    previous health, and the body row keeping its open explanation in the state of its component, out
+    of the game state and the save
   - violates: a screen of the game written as a Godot scene; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
@@ -5028,9 +5031,9 @@ The frame of the button of the temperature cell takes the role `warming-frame`, 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. tests: the fill, the name and the numbers of a met requirement of the solving condition in the header in `positive`, on a track in `highlight`, through the real stylesheet, and a met requirement marked `positive` after a completion; „Odbierz” drawn as the button of the kind `positive`. An agent compares a change with the part no invariant and no test holds, the uses in the body row included until the tests of the change that brought them hold them:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` at rest and under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the bar of the picked row of the catalog of maps in `positive`; the plaque of a discovery in the scene on `panel` with its frame in `discovery`; the bar of health in the body row filled in `positive` and that of satiety in `satiety-fill`; „30” of health in `danger`; the frame of the temperature cell in `warming-frame` at a campfire, its text in `text`;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge; the bar of satiety filled in `warning`; the frame of the temperature cell at a campfire in `discovery`, or in the colour of the text inside it.
+- **Verification:** invariants: design-token-contrast. tests: the fill, the name and the numbers of a met requirement of the solving condition in the header in `positive`, on a track in `highlight`, through the real stylesheet, and a met requirement marked `positive` after a completion; „Odbierz” drawn as the button of the kind `positive`; the fill of the bar of health in the body row in `positive` and that of satiety in `satiety-fill`, each on a track in `highlight`; the number of a value of the body row below its threshold, health below 35 included, and the zone of overheating of the scale of temperature in `danger`; the frame of the temperature cell in `warming-frame` by a fire and in `chill-zone` away from it, whatever the colour of the text inside it. An agent compares a change with the part no invariant and no test holds:
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` at rest and under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the bar of the picked row of the catalog of maps in `positive`; the plaque of a discovery in the scene on `panel` with its frame in `discovery`.
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
 - **Origin:** none
 
 *Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own, though at the start it may share the value of the yellow of `discovery`. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision, and as it is not yet known what will change in the interface, the meanings stay as they are for now. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row; the 4.5:1 those two roles already keep on every background is more than the 3:1 the bar needs, so the bar adds no pair to check. D-279 has a frame or a bar at a text take the colour of that text; the bar of a rule speaks of the state of the rule and not of the text beside it, and whichever colour it takes differs from the colour of that text, so it is no such bar. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on. The bar of a requirement of the solving condition turns `positive` once the requirement is met, as in loop, since the requirement is then in order. The picked row of the catalog of maps takes the green bar of the predecessor game's picked row, since its card is the one open on the right, which is active now, and on a side-by-side of the two screens the predecessor's row stood out more; a chosen button or tab stays on `selected` (D-40). The plaque of a discovery takes the colour that says in text that something new was discovered, as a frame, so that what comes out of the forest at a discovery tells from the badge of an action by its colour and keeps the threshold of a part that is no text, against the `panel` it stands on. The bars of the body row take the colours of their values, health green, satiety orange, nature energy white and temperature from blue to red through a neutral grey, so that four bars side by side tell which value each is: health takes `positive`, which already fills the bars of the game; satiety takes an orange of its own, since `warning` says that something is not carried out and stays out of every bar; the zone of overheating and the number of a value below its threshold take `danger`, since the character may be lost there, and low health after a fight threatens that too. The frame of the temperature cell at a fire takes the amber of loop's warm bar in a role of its own, though it may share the value of `discovery`, so that `discovery` keeps saying only that something new was discovered and a change of it does not move the frame; the bluish frame takes the blue of the chill zone, which says the same thing of the body. That frame speaks of what acts on the character, as the state bar of a rule speaks of the rule, so it is no frame at a text and keeps its colour whatever the text inside it.
@@ -5047,9 +5050,9 @@ The bars of satiety, health and nature energy in the body row (D-337) have their
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. tests: the icons of the drawing of the map and the icon flying to the mage in `text-strong`, through the real stylesheet; the bar of a requirement of the solving condition in the header with its track in `highlight` and, while the requirement is not met, its fill in `text`; the bar of the practice of a tree on the screen Postać with its track in `text-disabled` and its fill in `text`, and the points of the tree in `text-strong`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds, the uses in the body row included until the tests of the change that brought them hold them:
-  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the plaque of the icon flying to the mage in `panel`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`; the bar of satiety on a track in `highlight`; the fill of the bar of nature energy in `text-strong`; the zones of the scale of temperature in `chill-zone`, `safe-zone` and `danger` and its marker with dark sides in `scale-marker` and a light core in `text-strong`; the cell of satiety under the pointer with its name in `text-strong` and its background unchanged;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`; the bar of health on a track in `text-disabled`; the cell of temperature under the pointer on the background `highlight`; the marker of the scale in `page`; the marker of the scale dark through, with no light core.
+- **Verification:** invariants: design-token-contrast. tests: the icons of the drawing of the map and the icon flying to the mage in `text-strong`, through the real stylesheet; the bar of a requirement of the solving condition in the header with its track in `highlight` and, while the requirement is not met, its fill in `text`; the bar of the practice of a tree on the screen Postać with its track in `text-disabled` and its fill in `text`, and the points of the tree in `text-strong`, through the real stylesheet; the bars of satiety, health and nature energy on a track in `highlight` and the fill of the bar of nature energy in `text-strong`; the zones of the scale of temperature in `chill-zone`, `safe-zone` and `danger` and its marker with dark sides in `scale-marker` and a light core in `text-strong`; the button of a cell of the body row keeping its background under the pointer and lightening its name to `text-strong` under the pointer and while its explanation stands open, a plain button taking `highlight`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
+  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the plaque of the icon flying to the mage in `panel`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`.
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`.
 - **Origin:** none
 
 *Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The roles come from the greys of loop: the white of names and the near-white of numbers merge into `text-strong`, and `text-label` takes the grey of labels and inactive tabs and the uses of loop's darkest grey for dates and sections, while that grey's uses at things that cannot be used now go to `text-disabled`. A control has no background of its own, so the one under it shows, and its text is `text`; under the pointer it takes `highlight` and its frame stays. A chosen button or tab is shown by `selected`, not by the green of `positive`, which says that something works or is active, not that something is chosen. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. A frame or a bar at a text takes the colour of that text and is part of it, so the frame of the main button of a form and the bar at a sentence, like the frame of a wrong field in the colour of its message, give no role of the kind text a use outside text, and the text of a secondary action in `text-secondary` is a note like any other. Accepted with it: the backgrounds of the two rules take the green and the blue of loop on the panel with their opacity lowered only as far as the text threshold needs, so they are paler than loop's and the margin over the threshold is small, a later change of the panel or of a label may call for a new value, and the dark bar has the same value as `highlight`, `divider` and `tile-edge` and is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar, and on a marked row the bar looks like none. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. The bar of the practice of a tree takes a darker track and a light fill, as the light bar on a dark track of the skills of loop does, and the points to spend take the light text of names, so that they are looked at first. Its track takes `text-disabled`, the darkest grey of the roles that stands out from the `panel` of the area the bar stands in, since a track in `highlight` there, at about 1.2:1, can hardly be seen while a tree has no practice yet, and the bar stands twice as thick as the bar of the header, as the bar over the mage's head does. Accepted with it: `text-disabled` stands at a track, which is no text and nothing that cannot be used now, and the bar of a tree differs from the bar of a requirement in the header in the grey of its track. The icon in the badge is lighter than the same icon in a cell of the rule picker that is not chosen, where it stands by ordinary text. Accepted with it: a role of the kind text stands at something that is no text, and the icons of the drawing of the map stand in `text-strong` on `tile-revealed`, a background outside the five that the contrast of the roles is held for, so a later change of `tile-revealed` can lessen their legibility with no check showing it. The bars of the body row take the dark track of loop's bars and of the bar of a requirement in the header, against which each coloured fill stands out by more than 3:1, while on the darker grey of the bar of practice the blue and the red would fall below it; the white of the energy takes the lightest role, that of names. The chill zone and the safe zone take roles of their own, a blue and a neutral grey, since no role says that the body is chilled or safe, and the marker a dark role of its own, since `page`, of the same darkness, says that here is the game and nothing of a marker. The gaps between the zones show the dark `panel`, so a marker dark through looked like one more gap in the middle of a zone and merged with a gap at its edge; its core takes the light of `text-strong`, the colour of a value looked at first, which no gap has, while only its dark sides touch the zones and keep their threshold, since no light colour keeps 3:1 against the blue, the grey and the red at once. Accepted with it: a role of the kind text stands in a part of a drawing, as it does in the bar of nature energy, and the marker is a little wider than a bare line. The button of a cell of the body row keeps its background under the pointer, since an empty track in `highlight` would vanish into it, and its name lightens instead, as the name of loop's open cell does. Accepted with it: the cell under the pointer and the open cell look the same, and the explanation under the row tells which one is open; an empty or nearly empty bar almost vanishes against the block.
@@ -5079,9 +5082,9 @@ In the body row (D-337) each fill of a bar, `positive`, `satiety-fill` and `text
 - **Scope:** browser-view
 - **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-three-flashes · wcag-focus-visible
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast · browser-view-focus-outline. An agent compares a change with the decision:
+- **Verification:** invariants: design-token-contrast · browser-view-focus-outline. tests: the pulse of a fill of the body row below its threshold from full opacity to the dim opacity and back in 1.1 s, smoothly and with no end, and none under the system's setting for reduced motion; the shake of the health cell once in 0.34 s and the fading text of a blow once in 1.3 s. An agent compares a change with the part no invariant and no test holds:
   - complies: a review that judges a new screen's contrast, flashing and focus by the four criteria and nothing more of WCAG; a scene whose effects change a part of its area, or a layer over all of it that blends by `color` and keeps the picture's brightness, with no light or dark flash of the whole area; the fill of satiety below 30 pulsing down to 40 % of its opacity on its track in `highlight`, below 3:1 in its dim phase, while its full colour keeps 3:1; a gap in `panel` between the chill zone and the safe zone;
-  - violates: a review that holds a change back for a success criterion of WCAG other than the four, without a change of this decision; an effect that lights and darkens the whole area of the scene, or a large part of it, more than three times in a second; a fill of a bar of the body row below 3:1 against `highlight` in its full colour; the chill zone and the safe zone touching with no gap between them; a pulse of a fill going from full to dim more than three times in a second.
+  - violates: a review that holds a change back for a success criterion of WCAG other than the four, without a change of this decision; an effect that lights and darkens the whole area of the scene, or a large part of it, more than three times in a second; the chill zone and the safe zone touching with no gap between them; the dim phase of the pulse of a fill at another opacity than 40 %.
 - **Origin:** none
 
 *Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. Four criteria are taken for now, and it is not known when the rest will be taken up. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with. A scene scaled up passes the area below which flashing is allowed, and the setting for reduced motion does not answer that, so the criterion on flashing is kept as its own. The frame of a discovery's plaque is a part of a graphic that identifies what the plaque shows, so it takes the threshold of 3:1, which `discovery` has with room on `panel`. The track of the bar of practice of a tree needs no threshold of WCAG, since the numbers of the tree stand beside the bar, but its empty run is what shows a new character's trees as bars, and a grey moved toward `panel` would fade them with every check passing; so the pair keeps a floor of 2:1, below the 2.3:1 it had when the floor was set, which does not reach the text that `text-disabled` writes elsewhere. The bars of the body row, its scale, its marker and the frame of the temperature cell are parts of graphics that show a value or a state, so each takes the threshold of 3:1 against what it touches, the fills against their track, as the bars the game already has do; the zones of the scale touch the background and the marker alone, so no pair of two zones is needed, which lets the blue and the red stand at the ends of one scale. The pulse of the alarm dims a fill below the threshold for a moment, as loop's alarm does, and it takes the exception since its full colour keeps the threshold and the red number and the note carry the alarm all along; the pulse and the shake of a blow move small parts of the screen, slower than the criterion on flashing counts.
@@ -5113,8 +5116,8 @@ Besides the kinds above, the button has the kind of the button of a cell of the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds, the button of a cell of the body row included until the tests of the change that brought it hold it:
-  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; the cell of satiety made with the shared button of a cell of the body row, saying by `aria-expanded` whether its explanation stands open; „Zakończ”, „Restart” and „Zacznij od zera” on the background `highlight` under the pointer with their text staying in `danger`, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the text of a destructive button in `danger` at rest, that of a plain button in `text` and that of a disabled destructive button in `text-disabled`, through the real stylesheet; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence; the button of a cell of the body row holding the name of a value at its left and its number at its right on one line, a bar, or a scale, under them and a note under the bar, saying by `aria-expanded` whether its explanation stands open, and its background and the role of its name under the pointer and while it stands open as D-40 gives them. An agent compares a change with the part no test holds:
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; the cell of satiety made with the shared button of a cell of the body row; „Zakończ”, „Restart” and „Zacznij od zera” on the background `highlight` under the pointer with their text staying in `danger`, in the computer layout and in the phone layout alike; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
   - violates: a module that creates and styles a `<button>` of its own; the cells of the body row made as a `<button>` of the screen with a class of its own; „Porzuć zmiany” made as a plain button; a destructive button with a look of its own in the phone layout; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
 
@@ -7234,14 +7237,10 @@ the explanation of the energy (D-450).
 - **Relations:** derives from D-125 · derives from D-337
 - **Verification:** tests: the body row ending with „Energia natury {n}”, from game minute zero,
   before „Energia natury poniżej” is discovered; the energy cut down to a whole number, 89.5 shown
-  as „Energia natury 89”; the energy never in `danger`, at 0, 90 and 100. For the role the energy
-  stands in other than `danger`, and for its cell until the tests of the change that brought it hold
-  it, an agent compares a change with the part no test holds:
-  - complies: „Energia natury 0” and „Energia natury 100” in the colour of `text`, as „Zdrowie 40”
-    is; „Energia natury” at the left of its cell and „89” at its right, over a bar in `text-strong`
-    filled to 89 %, opening the explanation of the energy on a click
-  - violates: „Energia natury” in `warning` or `positive` at some value of the energy; the cell of
-    nature energy with no bar, or with its bar in `positive`
+  as „Energia natury 89”; the number of the energy in `text` at 0 and 90 and never in `danger` at 0,
+  90 and 100; its cell standing as the other cells do, its name at the left and its number at its right, under
+  them a bar in `text-strong` filled to its share of the cap, and a click on it opening the
+  explanation of the energy.
 - **Origin:** none
 
 *Rationale:* the player reads the energy that opens and closes the spells beside the values of the
@@ -10704,8 +10703,9 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   tabs, the tabs „Kronika” and „Teren” holding the chronicle or the table of revealed tiles one at a
   time as the player picks, „Kronika” picked at every send, and the editing of a rule or a rule
   group opening in the program right under its row; the world from the top: the scene, „Teraz” and
-  „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; the
-  header holding the character's name, the map's name, the clock, the bar of the solving condition,
+  „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; a bar
+  under each value of the body row and the explanation of a value open right under its cells and
+  above the backpack; the header holding the character's name, the map's name, the clock, the bar of the solving condition,
   „Pauza” or „Wznów”, the paces, and after the end „Koniec przejścia”, which opens the window,
   „Restart”, the warning of a cut trip plan after it and „Zakończ”; the window in place of the screen after a
   death and a completion, the header and the areas hidden under it, the lines of the end standing in
@@ -10714,18 +10714,15 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   scene's effect of the end has played, the scene uncovered while it plays, and at once at an entry
   on the screen, after a reload or a load and under reduced motion. For the two columns and the
   place of the window under the menu bar, an agent compares a change with the part no invariant and
-  no test holds, and for the bars of the body row and the place of an open explanation until the
-  tests of the change that brought them hold them:
+  no test holds:
   - complies: on the screen of a map run of Las in a window 1280 px wide, the world and under it the
     area with the tabs in the left column and the program in the right column; in the phone layout
     at a page area 360 px wide the world, the program and the area with the tabs in one column, one
     above the other; after a completion the window standing under the menu bar and the row of
-    warnings, the menu bar in sight above it; the open explanation of satiety standing between the
-    cells of the body row and the backpack
+    warnings, the menu bar in sight above it
   - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
     the column of the program or in a third column of their own; two columns of the screen in the
-    phone layout; the window covering the menu bar or the row of warnings; the open explanation of a
-    value standing under the backpack or in the chronicle; the body row with no bars
+    phone layout; the window covering the menu bar or the row of warnings
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -11004,26 +11001,33 @@ pointer show the name of their value in `text-strong`, their background unchange
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-125
-- **Verification:** tests: each value of the body row in a cell of its own, a note under temperature
-  and under satiety, none under health and nature energy and none in the line of its value; under
-  temperature the first that holds of „marznie” in `danger` below 35 °C, „przy ogniu” while a stick
-  or a campfire burns on the character's tile, „nie stygnie” on a map that does not cool the body and
-  „bez ognia {n} min”; under satiety „głoduje” in `danger` below 30 and „bez jedzenia {n} min”
-  otherwise; {n} the whole game minutes, rounded down, left until the body is chilled or starves, 0
-  at the threshold; the notes standing from game minute zero and after a death and a completion, on
-  the state of the stopped game minute. For the look of the notes, and for the cells, bars, scale,
-  alarm and frame until the tests of the change that brought them hold them, an agent compares a
+- **Verification:** tests: each value of the body row in a cell of its own, its name at the left
+  and its number at the right on one line, a bar, or for temperature the scale, under them and its
+  note under the bar, the backpack a line with no bar; a note under temperature and under satiety,
+  none under health and nature energy and none in the line of its value; under temperature the first
+  that holds of „marznie” in `danger` below 35 °C, „przy ogniu” while a stick or a campfire burns on
+  the character's tile, „nie stygnie” on a map that does not cool the body and „bez ognia {n} min”;
+  under satiety „głoduje” in `danger` below 30 and „bez jedzenia {n} min” otherwise; {n} the whole
+  game minutes, rounded down, left until the body is chilled or starves, 0 at the threshold; the
+  notes standing from game minute zero and after a death and a completion, on the state of the
+  stopped game minute; the bars of satiety, health and nature energy empty at 0 and full at 100, at
+  the starting health and at the cap of the energy, from the game's data, each in the colour of its
+  value, also below its threshold; temperature on a scale of three zones from 30 to 41 °C, as wide as
+  5 : 4 : 2, with 37.0 °C inside the safe zone and the marker at the temperature now, at the left end
+  below 30 °C, with the zone it stands in named; the number of a value in `danger` below its
+  threshold, temperature below 35 °C, satiety below 30 and health below 35, and that of nature energy
+  never; the fill below its threshold pulsing, on the scale the marker with its zone, standing still
+  under the system's setting for reduced motion, the pulse going on while game time stands and none
+  at the frame of the temperature cell; that frame amber by a fire, at 37,0 °C too, bluish away from
+  fire on a map that cools the body and plain on a map that does not cool it; the cells of
+  temperature, satiety and nature energy buttons, the health cell none and holding the place of their
+  frame; the name of the open cell and of the cell under the pointer in `text-strong`, their
+  background unchanged. For the look of the notes and the height of the marker, an agent compares a
   change with the part no test holds:
   - complies: the notes under temperature and satiety in `text-secondary`, smaller than the values
-    above them; „Sytość” at the left and „14 %” at the right of its cell, in `danger`, over a bar
-    filled to 14 % that pulses, „głoduje” under it; the marker at the left end of the scale at
-    28,4 °C, pulsing with the chill zone; „Zdrowie 30” in `danger` with its bar pulsing; the frame
-    of the temperature cell amber at a campfire at 37,0 °C, and bluish away from fire on Las —
-    głębiej; the pulse going on in the player's pause while the scene stands still
-  - violates: a note in the size of its value; „bez ognia 79 min” in `text`; the fill of satiety
-    turning red below 30; a bar under the backpack; the scale ending at 37 °C; a pulse at the
-    frame of the temperature cell; the pulse standing in the player's pause; „Energia natury 0” in
-    `danger`
+    above them; the marker of the scale as high as the bar
+  - violates: a note in the size of its value; „bez ognia 79 min” in `text`; the marker of the scale
+    standing out over or under the bar
 - **Origin:** none
 
 *Rationale:* the minutes stand under the value they concern and read at a fast pace; the words and
@@ -11319,18 +11323,17 @@ setting for reduced motion the cell does not shake and the text stands still and
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-337 · derives from D-04
-- **Verification:** an agent compares a change with the decision until the tests of the change that
-  brought it hold it:
-  - complies: a click on „Sytość” opening under the cells its explanation, with the threshold 30 and
-    the rate of satiety's fall from the game's data, a click on
-    „Temperatura” then standing its explanation in that place, and a second click on „Temperatura”
-    closing it; „−21 · wilk” over the health cell after a combat with a wolf whose three blows took
-    7 each, at 4×; the marker of a blow standing still at its first frame in the player's pause and
-    going on at „Wznów”
-  - violates: two explanations standing open at once; the explanation standing under the backpack;
-    „−7 · wilk” three times for one combat; a marker at 16×; a marker after a reload of a map run in
-    which the character lost health; a marker found by comparing health with its previous reading;
-    the health cell shaking under the system's setting for reduced motion
+- **Verification:** tests: a click on the cell of temperature, satiety or nature energy opening
+  between the four cells and the backpack the explanation of its value, with its threshold, what
+  happens below it and how fast the value changes, from the game's data, a second click on that cell
+  closing it, a click on another of those cells switching to its explanation, never two open at once,
+  and the health cell opening none; for a combat the one marker „−{n} · {stworzenie}” in the health
+  cell, with the sum of the creature's blows where it is at least 2, a killing blow included, at 1×,
+  2× and 4× and none at 8× and 16×, none for a call with no blow, none at a first draw of the row or
+  at a drawing again of the same events, a new blow replacing the marker and starting the shake anew,
+  the marker gone when its animation ends; the shake and the text standing where they reached while
+  game time stands, a marker that comes then standing at its first frame, and going on when time goes
+  on; under the system's setting for reduced motion no shake and the text standing still and going.
 - **Origin:** none
 
 *Rationale:* the explanations and the blow are what loop's cells do besides their bars, and the cells

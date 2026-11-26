@@ -46,6 +46,7 @@ const WOLF_COMBAT = [
 test("a combat of a wolf whose three blows took 7 each gives one marker „−21 · wilk”, at 1×, 2× and 4×", () => {
   // decision: D-450 "At a creature's blow the health cell shakes and shows the fading „−{n} · {stworzenie}”, read from the events the simulation returned (D-04) and never at a first draw of the screen, after a reload or after a load: one marker for a combat, {n} being the sum of the creature's blows in it"
   // decision: D-450 "The marker shows at the paces 1×, 2× and 4×"
+  // decision: D-04 "For the blow marker of the health cell of the body row (D-450) the browser view also draws from the events the simulation returned, as it does for the scene"
   // D-450 gives „−21 · wilk” for this very combat; the name is the wolf's in the data.
   for (const pace of [1, 2, 4]) {
     assert.deepEqual(blowMarker(WOLF_COMBAT, WOLF, pace), {
