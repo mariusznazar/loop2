@@ -302,10 +302,10 @@ header .failure-line {
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
  * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
  * control that waits for a server: the button disabled under a changed text and the fields of its
- * form disabled, which the disabled rules below draw (D-44). The button has five looks beside the
+ * form disabled, which the disabled rules below draw (D-44). The button has six looks beside the
  * plain one: the destructive button, the button in `positive`, the button selected in its group,
- * the secondary action and the tab, each below, and the main look of the button that sends a form
- * or is of the kind `main`.
+ * the secondary action, the tab and the button of a cell of the body row, each below, and the main
+ * look of the button that sends a form or is of the kind `main`.
  */
 .button,
 .select-list,
@@ -455,6 +455,115 @@ header .failure-line {
 
 /* A tab while the form waits: the text in `text-disabled`; the line of the choice is kept. */
 .button.tab:disabled {
+  color: var(--text-disabled);
+}
+
+/*
+ * The button of a cell of the body row (D-44, D-337, D-450): the name of a value at its left and its
+ * number at its right on one line, a bar under them and a note under the bar, in a column. The React
+ * button of the kind `value-cell` draws these parts. Its frame is the plain button's, in
+ * `control-border`, and it has no background of its own; the touch target of the phone layout is the
+ * one every `.button` holds in the block `@media (width < 1280px)` below. Under the pointer it takes
+ * no background `highlight`, which every other button takes, since the track of its bar stands in that
+ * colour and an empty bar would vanish into it; its name lightens to `text-strong` instead, under the
+ * pointer and while the explanation of its value stands open, so the cell under the pointer and the
+ * open cell look alike (D-40). The bar is twice `--bar-width` thick, as the bar of practice of a
+ * tree, on a track in `highlight`, its fill as long as the share the screen gives in `--share` and in
+ * the role it names; the length of a track is a layout dimension, which D-43 leaves out. A value that
+ * stands on a scale of its own, temperature, has the scale the screen draws in place of the track.
+ */
+.button.value-cell,
+.value-cell-static {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  border-style: solid;
+  border-width: var(--frame-width);
+  padding-top: var(--space-2xs);
+  padding-bottom: var(--space-2xs);
+  padding-left: var(--space-s);
+  padding-right: var(--space-s);
+  text-align: left;
+}
+
+/*
+ * The cell that is no button, health (D-337): it stands in the same parts as the button of a cell and
+ * holds the place of its frame, the frame transparent, so that the four cells of the row stand even.
+ * This rule of a screen's element stands here, beside the kind it copies, by the exception D-421 gives
+ * for what cannot be divided without changing its text: a copy of the parts in the sheet of the
+ * screen would be a second rule of one look, which drifts from the first.
+ */
+.value-cell-static {
+  border-color: transparent;
+  font-size: var(--font-size-detail);
+}
+
+.value-cell-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-s);
+}
+
+.value-cell-name {
+  min-width: 0;
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.value-cell-number {
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.value-cell-bar,
+.value-cell-scale {
+  display: block;
+  height: calc(var(--bar-width) * 2);
+}
+
+.value-cell-bar {
+  background-color: var(--highlight);
+}
+
+.value-cell-fill {
+  display: block;
+  width: calc(var(--share) * 100%);
+  height: 100%;
+}
+
+.value-cell-fill.positive {
+  background-color: var(--positive);
+}
+
+.value-cell-fill.satiety-fill {
+  background-color: var(--satiety-fill);
+}
+
+.value-cell-fill.text-strong {
+  background-color: var(--text-strong);
+}
+
+.value-cell-note {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+.button.value-cell:hover:not(:disabled) {
+  background: transparent;
+}
+
+.button.value-cell:hover:not(:disabled) .value-cell-name,
+.button.value-cell[aria-expanded="true"] .value-cell-name {
+  color: var(--text-strong);
+}
+
+/* A cell that is locked looks as every disabled button does: all its text in `text-disabled`. */
+.button.value-cell:disabled .value-cell-name,
+.button.value-cell:disabled .value-cell-number,
+.button.value-cell:disabled .value-cell-note {
   color: var(--text-disabled);
 }
 
