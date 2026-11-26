@@ -23,6 +23,9 @@ import { BodyRowCells } from "../../dist/browser/view/body-row-cells.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
+
+/** What the world area gives the row besides the run, at a reading with no blow: no events, 1×, going. */
+const STILL = { events: [], pace: 1, standing: "going" };
 const entry = (item, count) => ({ item, count });
 const PLAN = { take: [entry("stick", 5)], bring: [entry("stick", 3)] };
 
@@ -63,7 +66,9 @@ async function draw(document, state, extra = {}) {
   const root = createRoot(container);
   const show = (next, more = {}) =>
     inAct(() =>
-      root.render(createElement(BodyRowCells, { run: next.run, ...more })),
+      root.render(
+        createElement(BodyRowCells, { run: next.run, ...STILL, ...more }),
+      ),
     );
   await show(state, extra);
   return { container, show };

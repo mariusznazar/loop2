@@ -46,16 +46,13 @@ import {
 export type BodyRowCellsProps = {
   /** The map run whose body and character the row shows. */
   run: MapRun;
-  /** The events of the simulation call that returned `run`, where a blow is read from; none where the row is drawn without a call. */
-  events?: readonly GameEvent[];
-  /** The pace in force, which decides whether a blow shows (D-450); 1 where none is given. */
-  pace?: Pace;
-  /** How the scene stands, so how game time stands: the row's motion that stands with it reads it; going where none is given. */
-  standing?: SceneStanding;
+  /** The events of the simulation call that returned `run`, where a blow is read from (D-04). */
+  events: readonly GameEvent[];
+  /** The pace in force, which decides whether a blow shows (D-450). */
+  pace: Pace;
+  /** How the scene stands, so how game time stands: the row's motion that stands with it reads it. */
+  standing: SceneStanding;
 };
-
-/** Events of no simulation call, one value, so a row drawn without events sees no new ones. */
-const NO_EVENTS: readonly GameEvent[] = [];
 
 /** The marker of the last blow the row shows: its words and the number of the blow, which a new blow raises. */
 type ShownBlow = { text: string; serial: number };
@@ -238,9 +235,9 @@ function BodyCell({
  */
 export function BodyRowCells({
   run,
-  events = NO_EVENTS,
-  pace = 1,
-  standing = "going",
+  events,
+  pace,
+  standing,
 }: BodyRowCellsProps) {
   const [open, setOpen] = useState<BodyCellId | null>(null);
   // Advanced while rendering, as the props change, as the scene does: what the row keeps of the blows
