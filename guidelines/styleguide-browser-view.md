@@ -22,6 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                                                                               | —          | D-40     |
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
+| `window-frame`    | other      | To jest okno, które leży nad ekranem pod nim: ramka okna reguły i okna grupy w edytorze programu, z co najmniej 3:1 wobec `panel` i `highlight`; pod oknem stoi cień `--window-shadow`, który nie jest rolą. | —          | D-40 · D-42 |
 | `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu; stoi też jako wypełnienie paska energii natury w wierszu ciała, choć wypełnienie nie jest tekstem, z co najmniej 3:1 wobec toru w `highlight` przy pełnym kryciu, i jako nazwa wartości w przycisku komórki wiersza ciała pod kursorem i wtedy, gdy jej objaśnienie stoi otwarte; stoi też jako jasny środek kreski temperatury teraz na skali temperatury w wierszu ciała, między jej ciemnymi bokami, choć nie jest tekstem.                                                                                                                                                                      | —          | D-40 · D-43 |
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, i jako wypełnienie paska wprawy drzewa na ekranie Postać, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
@@ -199,6 +200,8 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
 - `condition-unmet`, pasek reguły, której warunek nie jest spełniony, nie ma
   progu, a pasek w `positive` i w `warning` nie dokłada pary, bo te role
   mają już próg 4,5:1 na pięciu tłach;
+- `window-frame`, ramka okna reguły i okna grupy, ma co najmniej 3:1 wobec `panel`, tła okna
+  i kolumny, na której leży, i wobec `highlight`, tła wiersza otwartego, którego dotyka (D-42);
 - `character` ma co najmniej 3:1 na `tile-revealed` i na `tile-hidden`;
 - `tile-revealed` ma co najmniej 3:1 wobec `tile-hidden`;
 - wypełnienia pasków wiersza ciała — `positive` zdrowia, `satiety-fill` sytości
@@ -482,9 +485,10 @@ wybór przyjęty tekst zadania zostawił agentowi (2026-11-26):
   z zimna z jej kryciem oraz dwa kolory drobinek światła — komentarz `Source:` niesie wybór Mariusza
   z datą, 2026-11-12, a przy kolorze drobinki podaje też piksel nazwanego obrazka paczki Pixel Crawler,
   z którego kolor odczytano;
-- dla wartości, której wybór przyjęty tekst zadania zostawia agentowi — dziś
-  wypełnienie sytości, strefy wychłodzenia i bezpieczna oraz kreska skali
-  temperatury w wierszu ciała — komentarz `Source:` niesie wybór agenta
+- dla wartości, której wybór przyjęty tekst zadania albo uwaga człowieka do zadania
+  przed prośbą o scalenie zostawia agentowi — dziś wypełnienie sytości, strefy
+  wychłodzenia i bezpieczna oraz kreska skali temperatury w wierszu ciała, a także
+  ramka i cień okna reguły — komentarz `Source:` niesie wybór agenta
   („the agent's choice”) z zadaniem, które go zostawia, z datą wyboru i z progiem
   kontrastu z D-42, który wartość ogranicza, oraz miejsce, z którego wartość
   odczytano: kolor gry loop z jej wyrenderowanej strony albo z kodu wersji
@@ -1226,7 +1230,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 - **Decision:** D-288 · D-296 · D-306 · D-311 · D-350 · D-303 · D-302 · D-44 · D-370 · D-39 · D-40 · D-43 · D-47 · D-396
 - **Invariant:** none
 - **Good:** Dotknięcie wiersza „1.2” otwiera tuż pod nim okno „Reguła 1.2 w grupie „Ogień””, które leży na wierszach „1.3” i niżej, a wiersz „1.1” nad oknem i wiersze pod jego dolną krawędzią da się dotknąć; w układzie telefonu na dole okna, pod linią w `divider`, „↑” i „↓” z lewej i „Usuń” w `danger` z prawej, z dala od „✕” w nagłówku okna; Escape w polu liczby potwierdza wpisaną liczbę i zamyka okno, a fokus wraca na wiersz.
-- **Bad:** Okno z przygaszoną zasłoną albo z `aria-modal`; Tab, który trafia w przycisk wiersza pod oknem; okno na środku ekranu albo nad światem; wiersze pod oknem zepchnięte w dół; okno, które wychodzi poza obszar programu na zakładki „Kronika” i „Teren”; „✕” jako przycisk, który usuwa grupę w jej oknie; strzałki albo „Usuń” w oknie w układzie komputera.
+- **Bad:** Okno w ramce `divider` bez cienia, które czyta się jak ciąg dalszy kolumny programu; okno z przygaszoną zasłoną albo z `aria-modal`; Tab, który trafia w przycisk wiersza pod oknem; okno na środku ekranu albo nad światem; wiersze pod oknem zepchnięte w dół; okno, które wychodzi poza obszar programu na zakładki „Kronika” i „Teren”; „✕” jako przycisk, który usuwa grupę w jej oknie; strzałki albo „Usuń” w oknie w układzie komputera.
 
 Okno reguły i okno grupy to `section.rule-panel` z `src/browser/view/rule-panel.tsx`; to, co
 czyni z niego okno — nagłówek, zdanie grupy, dolny pasek i wyłączenie wierszy pod nim — stoi
@@ -1259,8 +1263,10 @@ Gdzie stoi i co przykrywa:
 
 Jak wygląda:
 
-- Tło `panel`, tekst w `text`, ramka w `divider` o grubości `--frame-width`, jak okno końca
-  przejścia (D-40); nie wnosi nowej roli ani wartości.
+- Tło `panel`, tekst w `text`, ramka w `window-frame` o grubości `--frame-width` i pod oknem
+  cień `--window-shadow`, jak okno nad ekranem w starym Loopie (D-40). Okno leży na kolumnie, która
+  też stoi na `panel`, więc ramka w `divider`, prawie w kolorze tła, zlewała je z kolumną; jasna
+  ramka i cień mówią, że to warstwa nad listą, a pod nią leżą wiersze.
 - Nagłówek w `text-strong`: „Grupa {n} „{nazwa grupy}”” albo „Reguła {n.m} w grupie „{nazwa grupy}””,
   z nazwą zapisaną w grupie, a przy nazwie pustej albo z samych spacji „Grupa {n}” i „Reguła {n.m}”.
   Nazwę wpisał gracz, więc łamie się w nagłówku (reguła A name typed by the player breaks in its
