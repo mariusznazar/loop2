@@ -7,14 +7,13 @@
 // jsdom through tests/view/page-document.mjs (D-264), over the real simulation. The values written by
 // hand are the stored form of version 3 of the cache. The crafted counts — missing, of another type,
 // negative, fractional, beyond the safe integers — are cases of tests/view/judging-cache.test.mjs.
-import assert from "node:assert/strict";
+import { assert, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
 import { putOnPiece, takeOffPiece } from "../../dist/browser/sim/gear.js";
 import { editProgram } from "../../dist/browser/sim/programs.js";
 import { openJudgingCache } from "../../dist/browser/view/judging-cache.js";
 import { createMapsEntry } from "../../dist/browser/view/maps-entry.js";
-import { inAct, press, withPage } from "./page-document.mjs";
 import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
