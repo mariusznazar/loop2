@@ -8428,7 +8428,7 @@ The screen Programy holds on the left the list of the player's programs and on t
     right in the computer layout
 - **Origin:** none
 
-*Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
+*Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the window of a rule opens under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the window under its row there costs it no width.
 *Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy, though a fix would then work from every place; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits; the panel of a rule beside the editor on Programy — the editor would have two ways of opening the panel, by screen, the player would see the same rule edited once beside and once on the list, and in a narrow window the panel would still land under the whole editor.
 
 ### D-167 — What can the player do with the list of programs?
@@ -9688,7 +9688,9 @@ button that deletes the group stands in the window of the group and reads „Usu
     header and on its text opening the group and moving no group; the header holding its text and
     „▾” alone, „Usuń z regułami” standing at the bottom of the window of the group
   - violates: a tap at the centre of a group's header in the phone layout landing on „▾” and
-    folding the group; „✕” of the group in its header in the phone layout
+    folding the group; in a header of two lines or more in the phone layout a strip above or below
+    „▾” that is neither „▾” nor a part taking the tap of its own, so that a tap there folds the
+    group; „✕” of the group in its header in the phone layout
 - **Origin:** none
 
 *Rationale:* a window changes a group, as one changes a rule, so the header stays a line to read, as

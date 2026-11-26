@@ -329,7 +329,7 @@ playwright-cli --raw run-code --filename .playwright-cli/send-state.js
    `browser_run_code_unsafe` the same function with the document pasted in as `saved`.
 5. `playwright-cli reload`. The team now holds „Agent”; click „Mapy”, the row „Skraj lasu” and „Wejdź” at
    „Agent”. The screen of the map run stands, with the rule list; click „+ reguła” (or a rule's row) to
-   open the rule panel, which opens under the row of that rule and leaves the tabs as they were. Click
+   open the window of that rule, which opens under its row and leaves the tabs as they were. Click
    the value of the field „Czynność”: its pick holds the cells „Uderz — patyk”, „Kopnij”, „Odskocz” and
    „Obchód”.
 
