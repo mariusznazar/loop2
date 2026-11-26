@@ -13,6 +13,7 @@ import {
   backpackCap,
   backpackCount,
   newBackpack,
+  newGear,
   newTraits,
 } from "./character.js";
 import { ACTIONS } from "./data/actions.js";
@@ -52,6 +53,7 @@ import type {
   CreatureId,
   CurrentActivity,
   DeathCause,
+  Gear,
   Hex,
   ItemId,
   MapId,
@@ -386,7 +388,8 @@ function finishUse(state: Landing, action: Action): Landing {
 
 /**
  * A new map run at minute 0: the layout drawn from the seed, the first activity chosen. The
- * character carries the given traits, or those of a new character, and the entry equipment.
+ * character carries the given traits, or those of a new character, and the entry equipment, and
+ * holds a copy of the given gear, the empty gear where none is given.
  */
 export function newMapRun(
   map: MapDef,
@@ -396,6 +399,7 @@ export function newMapRun(
   traits: Traits = newTraits(),
   skills: CharacterSkills = {},
   backpack: Backpack = newBackpack(),
+  gear: Gear = newGear(),
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
@@ -410,6 +414,7 @@ export function newMapRun(
       traits: { ...traits },
       skills: copySkills(skills),
       backpack: { ...backpack },
+      gear: { ...gear },
     },
     body: startingBody(),
     natureEnergy: startingNatureEnergy(),

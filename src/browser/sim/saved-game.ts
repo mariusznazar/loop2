@@ -13,6 +13,8 @@ import {
   type BranchId,
   type SkillId,
 } from "./data/skills.js";
+import { fitsSlot, gearSlots } from "./character.js";
+import { GEAR_SLOTS } from "./data/gear.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
@@ -49,6 +51,7 @@ import type {
   EarningLoop,
   GameMapRun,
   GameState,
+  Gear,
   Hex,
   ItemId,
   LastCombat,
@@ -75,11 +78,12 @@ import type {
 
 /**
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
- * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, and
- * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
- * record of a manual map run: a new action or a removed one changes those keys.
+ * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, of the
+ * slots of the gear of the data, which `Gear` enumerates, and of the ordinary actions of the data,
+ * whose kinds are the keys of `minutesByAction` in the record of a manual map run: a new action or a
+ * removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 10;
+export const SAVED_GAME_VERSION = 11;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -525,7 +529,9 @@ function resurrectionUses(
 
 /**
  * The team: its characters, numbers each once and below the next one, its chest and the uses of its
- * one resurrection that are spent, with the moment the next returns.
+ * one resurrection that are spent, with the moment the next returns. Each character holds its gear,
+ * the slots of the data the player changed, each once, which the game reads against the earning loops
+ * once it has read them, and the count of its gear changes, a safe integer from 0 (D-463).
  */
 function team(
   value: unknown,
@@ -547,6 +553,9 @@ function team(
       "traits",
       "skills",
       "generation",
+      "gear",
+      "changedSlots",
+      "gearChanges",
     ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
@@ -559,6 +568,9 @@ function team(
       traits: traits(character.traits),
       skills: characterSkills(character.skills, archetypeId, trees),
       generation: identity(character.generation),
+      gear: gear(character.gear),
+      changedSlots: uniqueOf(character.changedSlots, GEAR_SLOTS),
+      gearChanges: count(character.gearChanges),
     };
   });
   return {
@@ -609,6 +621,27 @@ function backpack(value: unknown): Backpack {
   return Object.fromEntries(
     ITEM_IDS.map((item) => [item, count(read[item])]),
   ) as Backpack;
+}
+
+const SLOTS = gearSlots();
+
+/**
+ * A gear (D-456): each slot of the data present and no other, each holding none or one item of the
+ * data that fits the slot's place.
+ */
+function gear(value: unknown): Gear {
+  const read = fields(value, SLOTS);
+  const held = {} as Gear;
+  for (const slot of SLOTS) {
+    if (read[slot] === null) {
+      held[slot] = null;
+      continue;
+    }
+    const item = oneOf(read[slot], ITEMS);
+    if (!fitsSlot(item, slot)) refuse();
+    held[slot] = item;
+  }
+  return held;
 }
 
 /** Nature energy from 0 up to the cap of the data (invariant nature-energy-range). */
@@ -969,6 +1002,7 @@ function plainMapRun(
     "at",
     "traits",
     "backpack",
+    "gear",
   ]);
   const id = identity(carried.id);
   const owner = records.characters.get(id);
@@ -979,6 +1013,7 @@ function plainMapRun(
     at: onMap(carried.at),
     traits: traits(carried.traits),
     backpack: backpack(carried.backpack),
+    gear: gear(carried.gear),
   };
 
   const campfires = list(read.campfires).map((item): Campfire => {
@@ -1347,6 +1382,14 @@ function game(value: unknown): GameState {
   const manual = run ? [run.character.id] : [];
   const loops = earningLoops(read.loops, records, manual);
   const looping = Object.keys(loops).map(Number);
+  // The slots the player changed are marked against an earning loop's map run going on (D-460).
+  if (
+    theTeam.characters.some(
+      (character) =>
+        character.changedSlots.length > 0 && !looping.includes(character.id),
+    )
+  )
+    refuse();
 
   return {
     programs,

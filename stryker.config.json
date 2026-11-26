@@ -33,6 +33,7 @@
       "tests/sim/first-map-balance.test.mjs",
       "tests/sim/flow.test.mjs",
       "tests/sim/gather.test.mjs",
+      "tests/sim/gear-state.test.mjs",
       "tests/sim/hex.test.mjs",
       "tests/sim/judging-record.test.mjs",
       "tests/sim/judging.test.mjs",

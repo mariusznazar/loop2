@@ -1,3 +1,4 @@
+import type { GearPlace } from "./gear.js";
 import type { Revelation } from "./revelations.js";
 import { RESOURCES, type ResourceId } from "./resources.js";
 
@@ -45,6 +46,8 @@ export type ItemDef = {
     /** Health one piece restores. */
     health: number;
   };
+  /** Present for an item a slot of the gear can hold: the one place of the gear it fits (D-456). */
+  fits?: GearPlace;
 };
 
 /**
@@ -81,6 +84,7 @@ const ITEM_ROWS = {
     revealedBy: { kind: "tileHolds", item: "stick" },
     fuel: { burnMinutes: 20 },
     lightable: { burnMinutes: 3, warmth: 0.15 },
+    fits: "mainHand",
   },
   berry: {
     ...wordsOf("berry"),
@@ -103,6 +107,7 @@ const ITEM_ROWS = {
     revealedBy: { kind: "gathered", item: "moss" },
     recipe: { uses: [{ item: "moss", count: 2 }], minutes: 10 },
     healing: { health: 25 },
+    fits: "pocket",
   },
 } as const satisfies Record<ResourceId, ItemRow> & Record<string, ItemRow>;
 

@@ -2,6 +2,7 @@ import type { ArchetypeId } from "./data/archetypes.js";
 import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
 import type { CreatureId } from "./data/creatures.js";
+import type { GearSlot } from "./data/gear.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
@@ -16,7 +17,15 @@ export type CharacterSkills = Partial<
 >;
 export type Practice = Partial<Record<SkillId, number>>;
 
-export type { ArchetypeId, CreatureId, ItemId, MapId, ResourceId, Traits };
+export type {
+  ArchetypeId,
+  CreatureId,
+  GearSlot,
+  ItemId,
+  MapId,
+  ResourceId,
+  Traits,
+};
 
 /** A multiplier of the game minutes per real second that the player picks, from the data. */
 export type Pace = (typeof BALANCE.paces)[number];
@@ -214,8 +223,14 @@ export type Body = {
 export type Backpack = Record<ItemId, number>;
 
 /**
+ * A character's gear (D-451, D-456): each slot of the data holding the one item it holds, an item
+ * that fits the slot's place, or none. It is no backpack (D-455).
+ */
+export type Gear = Record<GearSlot, ItemId | null>;
+
+/**
  * The character of a map run: the team's character it is, by its id, where it stands, its own copy
- * of the character's traits for the map run and what it carries.
+ * of the character's traits for the map run, what it carries and the gear of the map run.
  */
 export type RunCharacter = {
   skills: CharacterSkills;
@@ -223,6 +238,7 @@ export type RunCharacter = {
   at: Hex;
   traits: Traits;
   backpack: Backpack;
+  gear: Gear;
 };
 
 /** A campfire standing on its tile; a tile holds at most one. */
@@ -456,6 +472,18 @@ export type Character = {
   archetypeId: ArchetypeId;
   traits: Traits;
   generation: number;
+  /**
+   * The gear the game keeps at the character outside a map run (D-452): for a character in an earning
+   * loop the gear of its next map run (D-453). Empty at creation.
+   */
+  gear: Gear;
+  /**
+   * The slots the player changed on the screen Postać since the start of the map run going on of the
+   * character's earning loop, each once (D-460); none at a character with no earning loop.
+   */
+  changedSlots: GearSlot[];
+  /** The gear changes the player made on the screen Postać, from 0; it never goes down (D-463). */
+  gearChanges: number;
 };
 
 /** The team's chest: pieces held, by item; a key absent holds none. */

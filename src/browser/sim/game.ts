@@ -1,4 +1,4 @@
-import { newTraits } from "./character.js";
+import { newGear, newTraits } from "./character.js";
 import { hasNoPractice, newSkills, paidPractice } from "./skills.js";
 import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
@@ -319,8 +319,9 @@ function nowLine(run: GameMapRun): NowLine {
 /**
  * A new map run at minute 0 carrying out `copy`, every count of the copy's rules starting from
  * zero; its equipment leaves the chest as it stands, as every start does (D-179, D-189), and the
- * state of the map at the start marks a run of a solved map, which pays no practice (D-214); events
- * mapRunStarted, activityStarted.
+ * state of the map at the start marks a run of a solved map, which pays no practice (D-214); its
+ * character holds the gear of the team's character whole, whatever the map's entry cap, outside the
+ * trip plan and the chest (D-452, D-187); events mapRunStarted, activityStarted.
  */
 function startRun(
   state: GameState,
@@ -338,10 +339,10 @@ function startRun(
     traits.carryingCapacity,
     mapOf(mapId),
   );
-  const skills =
-    state.run?.character.skills ??
-    state.team.characters.find((character) => character.id === characterId)!
-      .skills;
+  const listed = state.team.characters.find(
+    (character) => character.id === characterId,
+  )!;
+  const skills = state.run?.character.skills ?? listed.skills;
   const started = newMapRun(
     mapOf(mapId),
     seed,
@@ -350,6 +351,7 @@ function startRun(
     traits,
     skills,
     equipment.backpack,
+    listed.gear,
   );
   return {
     state: {
@@ -470,7 +472,8 @@ export function characterName(text: string): string | null {
 /**
  * Creates a character named `name`, trimmed as `characterName` gives it, in the archetype of created
  * characters and with the traits of a new character, at the end of the team's list, bringing no
- * resurrection of its own (the team's is shared); throws on a name that is empty once trimmed.
+ * resurrection of its own (the team's is shared), with an empty gear, no changed slot and no gear
+ * change counted; throws on a name that is empty once trimmed.
  */
 export function createCharacter(state: GameState, name: string): GameResult {
   const trimmed = typeof name === "string" ? characterName(name) : null;
@@ -482,6 +485,9 @@ export function createCharacter(state: GameState, name: string): GameResult {
     traits: newTraits(),
     skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
     generation: 1,
+    gear: newGear(),
+    changedSlots: [],
+    gearChanges: 0,
   };
   return {
     state: {
