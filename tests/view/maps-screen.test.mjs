@@ -236,7 +236,7 @@ test("with no map named the catalog holds the open maps alone, the solved ones f
     const { screen } = await mount(page, propsOf(newTeamOf("Ala")));
     assert.deepEqual(texts(page.root, ".maps-catalog-name"), ["Skraj lasu"]);
     assert.deepEqual(texts(page.root, ".maps-catalog-region-header"), [
-      "Las · 0 z 5",
+      "Las · 0 z 8",
     ]);
     assert.equal(
       text(page.root, ".maps-card-area"),

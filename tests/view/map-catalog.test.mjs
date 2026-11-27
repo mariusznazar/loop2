@@ -3,7 +3,7 @@
 // empty places, the sentence of nothing found, the picked row and the links of the rows. The lines the
 // catalog draws are tested apart in catalog-lines.test.mjs; this file holds what the component adds:
 // the state it keeps, what it draws from the lines, and what a click or a typed text changes. The
-// expected values are written out by hand from the data of Las and its four maps. Real focus and
+// expected values are written out by hand from the data of Las and its maps. Real focus and
 // rendering are the browser check's (D-88).
 import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
@@ -111,10 +111,10 @@ test("the catalog opens on „Dokąd” among three buttons of a group, with the
       "Szukaj mapy albo zasobu",
     );
     assert.deepEqual(texts(page.root, ".maps-catalog-counter"), [
-      "5 poznanych · 4 rozwiązane",
+      "6 poznanych · 4 rozwiązane",
     ]);
     assert.deepEqual(texts(page.root, ".maps-catalog-region-header"), [
-      "Las · 4 z 5",
+      "Las · 4 z 8",
     ]);
   });
 });
@@ -125,7 +125,9 @@ test("a row holds the state circle, the name, the facts in their roles and the i
   // decision: D-325 "A map whose data name a creature for the record shows the number of D-440 in its row."
   await withPage(async (page) => {
     await mount(page, { solvedMaps: FOUR, selected: null });
-    const [lair] = all(page.root, ".maps-list-item");
+    const lair = all(page.root, ".maps-list-item").find(
+      (row) => row.getAttribute("href") === "#/mapy/forestLair",
+    );
     assert.equal(
       lair.querySelector(".maps-catalog-name").textContent,
       "Las — matecznik",
@@ -189,7 +191,7 @@ test("a region with no solved map has no fold row", async () => {
     assert.deepEqual(names(page.root), ["Skraj lasu"]);
     assert.equal(fold(page.root), null);
     assert.deepEqual(texts(page.root, ".maps-catalog-region-header"), [
-      "Las · 0 z 5",
+      "Las · 0 z 8",
     ]);
   });
 });
@@ -234,20 +236,20 @@ test("in „Postęp” each map not yet opened is an empty place with no name, a
     ]);
     assert.deepEqual(
       texts(page.root, ".maps-catalog-region-header"),
-      ["Las · 1 z 5"],
+      ["Las · 1 z 8"],
       "the counter counts the maps not yet opened too",
     );
     assert.deepEqual(names(page.root), ["Skraj lasu", "Las"]);
     const places = all(page.root, ".maps-catalog-empty-place");
-    assert.equal(places.length, 3, "three maps of the region are not opened");
+    assert.equal(places.length, 6, "six maps of the region are not opened");
     assert.deepEqual(
       places.map((place) => place.textContent),
-      ["", "", ""],
+      ["", "", "", "", "", ""],
       "an empty place has no name and no text",
     );
     assert.deepEqual(
       places.map((place) => place.getAttribute("aria-hidden")),
-      ["true", "true", "true"],
+      ["true", "true", "true", "true", "true", "true"],
     );
     assert.equal(places[0].querySelector("a"), null, "and no link");
     await typeInto(field(page.root), "las");
@@ -315,7 +317,7 @@ test("a typed text finds the open maps by the name of the map or of a resource, 
   // decision: D-325 "The catalog groups the maps by their region, each region with a header and a counter of its solved maps over all its maps in the game's data, those not yet opened included, and offers a search that finds the open maps by a fragment of the name of the map or of a resource, and three views of one list, „Dokąd”, „Co daje” and „Postęp”, in the last of which a map not yet opened stands as an empty place with no name"
   await withPage(async (page) => {
     await mount(page, { solvedMaps: FOUR, selected: null });
-    assert.deepEqual(names(page.root), ["Las — matecznik"]);
+    assert.deepEqual(names(page.root), ["Las — głębiej II", "Las — matecznik"]);
     await typeInto(field(page.root), "  WATA ");
     assert.deepEqual(names(page.root), ["Las — wataha"]);
     assert.equal(
@@ -326,20 +328,28 @@ test("a typed text finds the open maps by the name of the map or of a resource, 
     await typeInto(field(page.root), "las");
     assert.deepEqual(
       names(page.root),
-      ["Las — matecznik", "Skraj lasu", "Las", "Las — głębiej", "Las — wataha"],
-      "the open map first, then the solved ones, which the text unfolds",
+      [
+        "Las — głębiej II",
+        "Las — matecznik",
+        "Skraj lasu",
+        "Las",
+        "Las — głębiej",
+        "Las — wataha",
+      ],
+      "the open maps first, in the data's order, then the solved ones, which the text unfolds",
     );
     assert.equal(fold(page.root).getAttribute("aria-expanded"), "true");
     assert.equal(fold(page.root).disabled, false, "the fold row works");
     await press(fold(page.root));
     assert.deepEqual(
       names(page.root),
-      ["Las — matecznik"],
+      ["Las — głębiej II", "Las — matecznik"],
       "the fold row folds the matches",
     );
     assert.equal(fold(page.root).getAttribute("aria-expanded"), "false");
     await press(fold(page.root));
     assert.deepEqual(names(page.root), [
+      "Las — głębiej II",
       "Las — matecznik",
       "Skraj lasu",
       "Las",
@@ -358,7 +368,7 @@ test("a typed text finds the open maps by the name of the map or of a resource, 
       "and a map that holds none of it is not",
     );
     await typeInto(field(page.root), "");
-    assert.deepEqual(names(page.root), ["Las — matecznik"]);
+    assert.deepEqual(names(page.root), ["Las — głębiej II", "Las — matecznik"]);
     assert.equal(fold(page.root).disabled, false);
     assert.equal(fold(page.root).getAttribute("aria-expanded"), "false");
   });
@@ -490,6 +500,7 @@ test("every row, of every view, is a link to the address of its map", async () =
     assert.deepEqual(
       hrefs(),
       [
+        ["A", "#/mapy/forestDeep2"],
         ["A", "#/mapy/forestLair"],
         ["A", "#/mapy/forestDeep"],
       ],
@@ -497,6 +508,7 @@ test("every row, of every view, is a link to the address of its map", async () =
     );
     await press(fold(page.root));
     assert.deepEqual(hrefs(), [
+      ["A", "#/mapy/forestDeep2"],
       ["A", "#/mapy/forestLair"],
       ["A", "#/mapy/forestEdge"],
       ["A", "#/mapy/forest"],
@@ -511,6 +523,7 @@ test("every row, of every view, is a link to the address of its map", async () =
         "#/mapy/forest",
         "#/mapy/forestDeep",
         "#/mapy/forestPack",
+        "#/mapy/forestDeep2",
         "#/mapy/forestLair",
       ],
       "in the data's order",
@@ -518,7 +531,7 @@ test("every row, of every view, is a link to the address of its map", async () =
     await press(tab(page.root, "Co daje"));
     assert.ok(
       hrefs().every(
-        ([tag, href]) => tag === "A" && /^#\/mapy\/[A-Za-z]+$/.test(href),
+        ([tag, href]) => tag === "A" && /^#\/mapy\/[A-Za-z0-9]+$/.test(href),
       ),
     );
     assert.ok(hrefs().length > 5, "a map stands under each resource it holds");
@@ -535,7 +548,10 @@ test("the record is drawn among the facts of the lair's row in „Dokąd” and 
     const props = { solvedMaps: FOUR, selected: null };
     const { draw } = await mount(page, { ...props, recordOf: () => held });
     const records = () => texts(page.root, ".maps-catalog-record");
-    const lair = () => all(page.root, ".maps-list-item")[0];
+    const lair = () =>
+      all(page.root, ".maps-list-item").find(
+        (row) => row.getAttribute("href") === "#/mapy/forestLair",
+      );
     assert.deepEqual(records(), ["niedźwiedź: 24 ze 120"]);
     assert.deepEqual(
       texts(lair(), ".maps-catalog-fact").at(-1),
