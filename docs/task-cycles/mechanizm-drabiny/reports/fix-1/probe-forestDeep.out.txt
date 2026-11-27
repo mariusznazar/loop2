@@ -1,5 +1,0 @@
-ms 466
-opener forest openerBest 100 withOpener 87.5 own 87.5 harder true
-opener practiceIn {"exploration":1,"smallItemGathering":41,"campfireCrafting":1,"eating":17,"flameSpell":5}
-forestBest real 0 noPractice 0 noStock 0 fresh 0 stock {} true
-forestDeepBest real 87.5 noPractice 87.5 noStock 0 fresh 0 stock {"stick":25,"berry":7} true
