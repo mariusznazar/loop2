@@ -25,6 +25,7 @@ import {
   actionPrice,
   actionRefusal,
   chooseActivity,
+  combatPiece,
   judgeProgram,
 } from "../../dist/browser/sim/program.js";
 import { checkProgram } from "../../dist/browser/sim/programs.js";
@@ -272,6 +273,42 @@ test("in a combat turn „Ucisk” reads the health of the turn: „zdrowie peł
     assert.deepEqual(judged.rules[1], { bar, reason }, name);
     assert.equal(judged.winner?.id, bar === "go" ? 1 : 2, name);
   }
+});
+
+test("the piece of „Ucisk” comes from the first pocket holding its item, else through the first empty pocket from the backpack, and that of a strike from the main hand alone", () => {
+  // decision: D-144 "„Ucisk — {rzecz}” uses up one piece of its item from a pocket of the belt, an empty pocket taking a piece from the backpack (D-457), while „Opatrz” outside combat takes its piece from the backpack."
+  // decision: D-456 "„Uderz — patyk” takes its stick from the main hand and from no other slot."
+  const at = (gear, backpack = {}) => ({
+    gear: { ...EMPTY_GEAR, ...gear },
+    backpack: { ...NO_PIECES, ...backpack },
+  });
+  const cases = [
+    [
+      PRESSURE,
+      at({ pocket2: "bandage", pocket3: "bandage" }, { bandage: 1 }),
+      { slot: "pocket2", refill: false },
+    ],
+    [
+      PRESSURE,
+      at({ pocket1: "bandage" }, { bandage: 1 }),
+      { slot: "pocket1", refill: false },
+    ],
+    [PRESSURE, at({}, { bandage: 1 }), { slot: "pocket1", refill: true }],
+    [PRESSURE, at({}), null],
+    [
+      STRIKE,
+      at({ mainHand: "stick" }, { stick: 1 }),
+      { slot: "mainHand", refill: false },
+    ],
+    [STRIKE, at({}, { stick: 1 }), { slot: "mainHand", refill: true }],
+    [STRIKE, at({ pocket1: "stick" }), null],
+  ];
+  for (const [action, character, piece] of cases)
+    assert.deepEqual(
+      combatPiece(character, action),
+      piece,
+      JSON.stringify([action, character.gear]),
+    );
 });
 
 test("„Ucisk” uses up the bandage of the first pocket holding one, and with none in a pocket takes one from the backpack through the first empty pocket in the same turn", () => {

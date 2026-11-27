@@ -18,7 +18,12 @@ import {
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import { RESOURCES } from "./data/resources.js";
-import { actionMinutes, branchActionAvailable, skillBonus } from "./skills.js";
+import {
+  actionMinutes,
+  branchActionAvailable,
+  skillBonus,
+  targetItem,
+} from "./skills.js";
 import {
   BRANCH_NOT_BOUGHT,
   conditionInRepertoire,
@@ -77,9 +82,9 @@ export type ActionPrice = {
  * The price of an action for a character of `skills`, as the data gives it: what crafting, lighting,
  * feeding and eating use up of the piece the data marks for that use (the same first piece the
  * reason of a rule names, D-310), and the nature energy of a spell (D-175). An action with a target
- * is priced by it, given as `item`: „Wytwórz” by the recipe's pieces of its target, „Opatrz” by one
- * piece of it (D-363, D-443); the bare verb, with no target, uses up nothing. A strike uses up
- * nothing (D-145), nor does any action of walking, gathering or combat. Pure.
+ * is priced by it, given as `item`: „Wytwórz” by the recipe's pieces of its target, „Opatrz” and
+ * „Ucisk” by one piece of it (D-363, D-443); the bare verb, with no target, uses up nothing. A strike
+ * uses up nothing (D-145), nor does any action of walking, gathering or any other of combat. Pure.
  */
 export function actionPrice(
   kind: Action["kind"],
@@ -114,6 +119,7 @@ export function actionPrice(
         );
       break;
     case "tend":
+    case "pressure":
       if (item !== undefined) pieces.push({ item, count: 1 });
       break;
     default:
@@ -484,6 +490,7 @@ function worldRefusal(run: RunView, action: Action): string | null {
     case "strikeWithStick":
     case "kick":
     case "dodge":
+    case "pressure":
       return "tylko w walce";
   }
 }
@@ -497,39 +504,75 @@ export function actionFeasible(run: RunView, action: Action): boolean {
 }
 
 /**
- * Where a combat action that uses `item` takes its piece from (D-144, D-456, D-457): `held` where the
- * main hand holds the item, `refill` where the hand is empty and the backpack holds a piece of it,
- * which the action takes into the hand before it acts, in the same turn, and null where neither is so:
- * no other slot gives the piece.
+ * The item a combat action uses: the item the actions' data give a strike, the target of an action that
+ * heals by its target, as „Ucisk — {rzecz}” does; null for one that uses none.
  */
-export function combatPiece(
-  character: Pick<RunCharacter, "gear" | "backpack">,
-  item: ItemId,
-): "held" | "refill" | null {
-  const held = character.gear[WIELDING_SLOT];
-  if (held === item) return "held";
-  if (held === null && character.backpack[item] > 0) return "refill";
-  return null;
-}
-
-/** The item a combat action uses, from the actions' data; null for one that uses none. */
-export function combatItem(kind: Action["kind"]): ItemId | null {
-  const effect = (ACTIONS[kind] as ActionDef).combat;
-  return effect && "item" in effect && effect.item ? effect.item : null;
+export function combatItem(action: Action): ItemId | null {
+  const effect = (ACTIONS[action.kind] as ActionDef).combat;
+  if (!effect) return null;
+  if ("heals" in effect) return targetItem(action) ?? null;
+  return "item" in effect && effect.item ? effect.item : null;
 }
 
 /**
- * Why a rule's action cannot be carried out in combat: null where it can. Only an action of combat
- * can, and one the data mark as also carried out in combat, „Załóż”, which is refused as it is outside
- * it (D-140, D-380, D-458); an action of combat that uses an item needs a piece of it in the main hand
- * or, where the hand is empty, in the backpack (D-380).
+ * The slots a combat action that uses an item takes its piece from, in their order: those of the place
+ * its data name, the pockets for „Ucisk”, and otherwise the main hand, the one slot „Uderz — patyk”
+ * takes its stick from (D-456).
  */
-function combatRefusal(run: RunView, action: Action): string | null {
+function pieceSlots(kind: Action["kind"]): GearSlot[] {
+  const effect = (ACTIONS[kind] as ActionDef).combat;
+  if (effect && "place" in effect)
+    return gearSlots().filter((slot) => GEAR_SLOTS[slot] === effect.place);
+  return [WIELDING_SLOT];
+}
+
+/**
+ * Where a combat action that uses an item takes its piece from (D-144, D-456, D-457): the first of its
+ * slots that holds the item, with `refill` false; where none does, the first of them that is empty,
+ * with `refill` true, where the backpack holds a piece of the item, which the action takes into that
+ * slot before it acts, in the same turn; and null where neither is so, or the action uses no item: no
+ * other slot gives the piece.
+ */
+export function combatPiece(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  action: Action,
+): { slot: GearSlot; refill: boolean } | null {
+  const item = combatItem(action);
+  if (item === null) return null;
+  const slots = pieceSlots(action.kind);
+  const held = slots.find((slot) => character.gear[slot] === item);
+  if (held !== undefined) return { slot: held, refill: false };
+  const empty = slots.find((slot) => character.gear[slot] === null);
+  if (empty !== undefined && character.backpack[item] > 0)
+    return { slot: empty, refill: true };
+  return null;
+}
+
+/** Whether an action of combat heals by its target, as „Ucisk — {rzecz}” does. */
+export function healsInCombat(kind: Action["kind"]): boolean {
+  const effect = (ACTIONS[kind] as ActionDef).combat;
+  return effect !== undefined && "heals" in effect;
+}
+
+/**
+ * Why a rule's action cannot be carried out in a combat turn at `health`, the health of the side that
+ * picks in that turn: null where it can. Only an action of combat can, and one the data mark as also
+ * carried out in combat, „Załóż”, which is refused as it is outside it (D-140, D-380, D-458); one that
+ * heals is refused at full health first (D-144, D-380); an action of combat that uses an item needs a
+ * piece of it in one of its slots or, where one of them is empty, in the backpack (D-380, D-457).
+ */
+function combatRefusal(
+  run: RunView,
+  action: Action,
+  health: number,
+): string | null {
   const def = ACTIONS[action.kind] as ActionDef;
   if (def.alsoInCombat) return actionRefusal(run, action);
   if (!def.combat) return "trwa walka";
-  const item = combatItem(action.kind);
-  if (item !== null && combatPiece(run.character, item) === null)
+  if (healsInCombat(action.kind) && health >= BALANCE.body.startHealth)
+    return "zdrowie pełne";
+  const item = combatItem(action);
+  if (item !== null && combatPiece(run.character, action) === null)
     return `brakuje 1 × ${itemName(item)}`;
   return null;
 }
@@ -580,7 +623,7 @@ function judgeRule(
   if (!conditionHolds(run, rule.condition, combat))
     return { bar: "unmet", reason: null };
   const reason = combat
-    ? combatRefusal(run, rule.action)
+    ? combatRefusal(run, rule.action, combat.health)
     : actionRefusal(run, rule.action);
   return reason === null
     ? { bar: "go", reason: null }

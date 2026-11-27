@@ -102,14 +102,16 @@ function afterOne(run) {
   return stepMinute(run, forest, IDLE).run;
 }
 
-test("the tree is the last character skill, grows the pairs of „Wytwórz” and „Opatrz” with the bandage, and holds its thresholds and name", () => {
+test("the tree is the last character skill, grows the pairs of „Wytwórz” and „Opatrz” with the bandage and of „Ucisk” with every target, and holds its thresholds and name", () => {
   // decision: D-379 "„Opatrywanie małych ran” at 10, 28, 60 and 110 practice"
   // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows"
+  // decision: D-150 "„Ucisk — {rzecz}” grows „Opatrywanie małych ran”"
   assert.equal(Object.keys(SKILLS).at(-1), "tending");
   assert.equal(SKILLS.tending.name, "Opatrywanie małych ran");
   assert.deepEqual(SKILLS.tending.grownBy, [
     { action: "craft", item: "bandage" },
     { action: "tend", item: "bandage" },
+    { action: "pressure" },
   ]);
   assert.deepEqual(SKILLS.tending.thresholds, [10, 28, 60, 110]);
   assert.equal("revealedBy" in SKILLS.tending, false);
@@ -174,7 +176,7 @@ test("a making of another item, with a target the pair does not name, grows no p
   });
 });
 
-test("the first gathered moss brings „Wytwórz” and the bandage, and the tree enters the Understanding in that minute", () => {
+test("the first gathered moss brings „Wytwórz” and the bandage, and the tree enters the Understanding in that minute with „Ucisk”, which a branch of it opens", () => {
   // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens"
   // decision: D-121 "The first gathered moss brings the bandage and „Wytwórz”"
   const START = {
@@ -213,7 +215,12 @@ test("the first gathered moss brings „Wytwórz” and the bandage, and the tre
   };
   const result = advanceMinutes(prepared, 1);
   assert.deepEqual(result.state.understanding.items, ["bandage"]);
-  assert.deepEqual(result.state.understanding.actions, ["explore", "craft"]);
+  // The actions in the order of the data: „Ucisk” stands before „Wytwórz” there.
+  assert.deepEqual(result.state.understanding.actions, [
+    "explore",
+    "pressure",
+    "craft",
+  ]);
   assert.deepEqual(result.state.understanding.trees, ["tending"]);
 });
 

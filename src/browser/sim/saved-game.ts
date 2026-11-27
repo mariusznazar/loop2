@@ -22,7 +22,7 @@ import {
 import { GEAR_SLOTS } from "./data/gear.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
-import { combatItem } from "./program.js";
+import { combatItem, healsInCombat } from "./program.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
 import { MINUTE_KINDS } from "./run-record.js";
@@ -328,6 +328,7 @@ const COMBAT_VERBS: Record<CombatVerbKind, true> = {
   strikeWithStick: true,
   kick: true,
   dodge: true,
+  pressure: true,
 };
 
 function isCombatVerb(
@@ -748,8 +749,8 @@ const CREATURE_ACTIONS: {
 
 /**
  * A character's action of a combat record: an action of combat or „Załóż”, with the mark of a refill,
- * which only an action that uses an item makes (D-457), and the damage of an action that deals none:
- * „Załóż” deals 0.
+ * which only an action that uses an item makes (D-457), the strike and „Ucisk”, and the damage of an
+ * action that deals none: „Załóż” and „Ucisk” deal 0.
  */
 function characterAction(value: unknown): CombatCharacterAction {
   const read = fields(value, [
@@ -763,9 +764,10 @@ function characterAction(value: unknown): CombatCharacterAction {
   const acted = action(read.action);
   if (!isTurnAction(acted)) refuse();
   const refill = flag(read.refill);
-  if (refill && combatItem(acted.kind) === null) refuse();
+  if (refill && combatItem(acted) === null) refuse();
   const damage = finite(read.damage, 0);
-  if (acted.kind === "equip" && damage !== 0) refuse();
+  if ((acted.kind === "equip" || healsInCombat(acted.kind)) && damage !== 0)
+    refuse();
   return {
     ruleId: identity(read.ruleId),
     action: acted,

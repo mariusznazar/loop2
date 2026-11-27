@@ -77,6 +77,8 @@ const skills = {
     grownBy: [
       { action: "craft", item: "bandage" },
       { action: "tend", item: "bandage" },
+      // „Ucisk” with every target of healing.
+      { action: "pressure" },
     ],
     thresholds: [10, 28, 60, 110],
   },
@@ -252,6 +254,14 @@ export const BRANCHES = {
     costs: [2, 3],
     effect: { kind: "healthRegain", amount: 0.05 },
     preview: { base: 0.05, step: 0.05, unit: "zdrowia na minutę" },
+  },
+  pressure: {
+    skill: "tending",
+    name: "Ucisk",
+    description:
+      "Opatrzenie w trakcie starcia, za turę zamiast za dziesięć minut.",
+    costs: [3],
+    effect: { kind: "action", action: "pressure" },
   },
 } as const satisfies Record<string, BranchDef>;
 

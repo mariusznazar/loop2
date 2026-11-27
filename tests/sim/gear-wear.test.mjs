@@ -472,6 +472,7 @@ test("„Załóż” ends the group „Żywność i walka” of the pick", () =>
     "strikeWithStick",
     "kick",
     "dodge",
+    "pressure",
     "equip",
   ]);
 });
