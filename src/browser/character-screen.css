@@ -25,6 +25,24 @@
 }
 
 /*
+ * „← Siedziba” at the top of the screen, above its two areas (D-280; styleguide rule "The screen
+ * Postać"): a link that stands by itself, its text in `text-label` with no underline, as an item of
+ * the menu bar that does not mark the place, and under the pointer on `highlight` with the role of its
+ * text kept; the focus is the one :focus-visible rule of styles.css (D-47).
+ */
+.character-screen-back {
+  display: inline-block;
+  margin-bottom: var(--space-s);
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--text-label);
+  text-decoration: none;
+}
+
+.character-screen-back:hover {
+  background: var(--highlight);
+}
+
+/*
  * The phone layout (D-396, D-282): in a window narrower than 1280 px the left area stands over the right
  * one. The one column may shrink below the least width of what stands in it (`minmax(0, 1fr)`), so
  * nothing in an area widens the screen past the window.
@@ -32,6 +50,22 @@
 @media (width < 1280px) {
   .screen.character-areas {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* „← Siedziba” stands by itself as a control, so it holds the touch target, its text in the middle of its height. */
+  .character-screen-back {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+/* A device that does not hover keeps no `highlight` on „← Siedziba” once it is touched (D-396). */
+@media (width < 1280px) and (hover: none) {
+  .character-screen-back:hover {
+    background: transparent;
   }
 }
 

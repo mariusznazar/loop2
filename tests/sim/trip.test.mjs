@@ -70,7 +70,7 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   // decision: D-189 "A manual map run that first solves its map pays practice once per map for the player, whichever character completes it; a manual run of a solved map pays no practice; every run pays loot only on completion, an earning-loop run included; a run that ends in death pays neither loot nor practice."
   // decision: D-189 "A manual map run of a map already solved takes its equipment from the chest and brings its loot out to it as every other map run does (D-179), and pays no practice."
   // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   let state = equipped();
   state = {

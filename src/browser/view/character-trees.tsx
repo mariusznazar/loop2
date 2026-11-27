@@ -6,6 +6,8 @@
  * pkt” where points wait. The trees stand folded at each building of the screen; a click on a tree's
  * row, or the keyboard on its fold, a shared button that says whether the tree stands open, opens it
  * to its branches, each with its words and „Kup”. Which trees stand open is this section's own state.
+ * At the character of a manual map run that waits or has ended, a sentence under the heading says
+ * that a rank bought acts from the character's next map run and not from „Restart” (D-287, D-200).
  * Nothing runs when the module is imported.
  */
 import { useState, type CSSProperties } from "react";
@@ -22,21 +24,29 @@ export type CharacterTreesProps = {
   trees: readonly SkillId[];
   /** The practice waiting in the character's earning loop, `{}` for a character in none. */
   waiting: Practice;
-  /** The manual map run of the game state, which stops every purchase while it stands (D-287). */
+  /**
+   * The manual map run of the game state where it is this character's, null otherwise: at its
+   * character alone the section says when a rank bought acts (D-287).
+   */
   run: MapRun | null;
+  /** Whether the game takes a purchase now; a manual map run that goes on stops it (D-200). */
+  purchaseOpen: boolean;
   onBuy: (branch: BranchId) => void;
 };
 
-/** The branches of an open tree, each with its words and „Kup”, which no point or a map run stops. */
+/**
+ * The branches of an open tree, each with its words and „Kup”, which no point, a full branch or a
+ * manual map run going on stops.
+ */
 function Branches({
   character,
   tree,
-  run,
+  purchaseOpen,
   onBuy,
 }: {
   character: Character;
   tree: SkillId;
-  run: MapRun | null;
+  purchaseOpen: boolean;
   onBuy: (branch: BranchId) => void;
 }) {
   return (
@@ -55,7 +65,7 @@ function Branches({
               <ReactButton
                 text="Kup"
                 label={`Kup: ${BRANCHES[branch].name}`}
-                disabled={run !== null || unaffordable}
+                disabled={!purchaseOpen || unaffordable}
                 onClick={() => onBuy(branch)}
               />
             </div>
@@ -71,6 +81,7 @@ export function CharacterTrees({
   trees,
   waiting,
   run,
+  purchaseOpen,
   onBuy,
 }: CharacterTreesProps) {
   const [open, setOpen] = useState<readonly SkillId[]>([]);
@@ -83,7 +94,7 @@ export function CharacterTrees({
       <h3>Umiejętności</h3>
       {run === null ? null : (
         <p className="character-screen-skills-note">
-          {`Przejście na mapie ${MAPS[run.mapId].name} jest niezakończone. Stopnie kupisz po jego zakończeniu.`}
+          {`Przejście na mapie ${MAPS[run.mapId].name} jest niezakończone. Kupiony stopień działa od następnego przejścia tej postaci, także w pętli; „Restart” zaczyna bez niego.`}
         </p>
       )}
       <ul className="character-trees">
@@ -124,7 +135,7 @@ export function CharacterTrees({
                 <Branches
                   character={character}
                   tree={id}
-                  run={run}
+                  purchaseOpen={purchaseOpen}
                   onBuy={onBuy}
                 />
               ) : null}

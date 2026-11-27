@@ -214,13 +214,33 @@ export function paidPractice(
   );
 }
 
-/** Refuses purchases while a map run is in the state, unknown trees, missing skills and unaffordable ranks. */
+/**
+ * Whether the game takes a purchase now (D-200): always but while a manual map run goes on, neither
+ * paused nor ended. A map run that waits in a pause, or has ended and waits for „Restart” or
+ * „Zakończ”, leaves purchases open; it keeps the skills of its start, so a purchase changes nothing
+ * in it. The test of an end is that of `mapRunEnded` in run.ts, which imports this module.
+ */
+export function purchaseOpen(state: GameState): boolean {
+  const run = state.run;
+  return (
+    run === null ||
+    state.paused ||
+    run.death !== null ||
+    run.completion !== null
+  );
+}
+
+/**
+ * Buys the next rank of a branch for a character, into the team's character alone, never into the
+ * map run of the state. Refuses while purchases are closed (`purchaseOpen`), and refuses unknown
+ * trees, missing skills and unaffordable ranks.
+ */
 export function buyBranch(
   state: GameState,
   characterId: number,
   branchId: BranchId,
 ): GameResult {
-  if (state.run) return { state, events: [] };
+  if (!purchaseOpen(state)) return { state, events: [] };
   const branch: BranchDef | undefined = Object.hasOwn(BRANCHES, branchId)
     ? BRANCHES[branchId]
     : undefined;

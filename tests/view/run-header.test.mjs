@@ -119,7 +119,7 @@ test("the header reads the character's name, the map's name, the clock, the bar 
     assert.deepEqual(
       [...header.children].map((child) => child.textContent),
       [
-        "Ala",
+        "← Ala",
         "Las",
         "Minuta 0",
         "Passa 0/480",
@@ -136,7 +136,12 @@ test("the header reads the character's name, the map's name, the clock, the bar 
   });
 });
 
-test("the name is the one of the team member whose map run it is", async () => {
+// D-280, D-311. Catches the name left a plain heading, a link with no arrow, a link to the screen
+// Postać of another character than the map run's, and a link standing anywhere but at the start of
+// the header, in every state of the map run.
+test("the header begins with „← {name}”, a link to the screen Postać of the team member whose map run it is, also while paused and after the end", async () => {
+  // decision: D-280 "The character's name at the start of the header of the screen of a map run is the link „← {imię postaci}” to the screen Postać of that map run's character"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or „Wznów”, the pace, and after the end of the map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”, the name standing at its start as the link „← {imię postaci}” to the screen Postać of that character (D-280)"
   await withPage(async ({ document }) => {
     const program = setProgram(
       withEdgeSolved(newKnowingGame()),
@@ -147,11 +152,24 @@ test("the name is the one of the team member whose map run it is", async () => {
       "Basia",
     ).state;
     const second = send(team, { ...SENT, characterId: 2 }, 1760000000000).state;
-    const { container } = await draw(document, second);
-    assert.equal(
-      container.querySelector(".run-header-name").textContent,
-      "Basia",
-    );
+    const { container, show } = await draw(document, second);
+    for (const [name, state] of [
+      ["going on", second],
+      ["paused", setPaused(second, true).state],
+      ["after a death", dead(second, 312, "cold")],
+    ]) {
+      await show(state);
+      const header = container.querySelector(".run-header");
+      const links = [...header.querySelectorAll("a")];
+      assert.equal(links.length, 1, `${name}: one link in the header`);
+      const [link] = links;
+      assert.equal(link.textContent, "← Basia", name);
+      assert.equal(link.getAttribute("href"), "#/postac/2", name);
+      assert.ok(
+        header.firstElementChild.contains(link),
+        `${name}: the link stands at the start of the header`,
+      );
+    }
   });
 });
 

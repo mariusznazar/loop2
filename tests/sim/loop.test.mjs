@@ -559,7 +559,7 @@ test("editing or deleting the program after the start leaves the earning loop on
 // D-200: a rank bought during the earning loop acts from the next map run; the one going on keeps the
 // skills of its start.
 test("a rank bought during an earning loop reaches the next map run and not the one going on", () => {
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   let state = looping(EMPTY);
   state = changing(state, 1, {
@@ -582,7 +582,7 @@ test("a rank bought during an earning loop reaches the next map run and not the 
 test("an earning loop picks its rules by the skills of its own character, whatever the manual map run beside it has bought", () => {
   // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved; an action or item of a bought branch is open only to the character that bought it"
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   const patrolling = programFromRules(
     rule(ALWAYS, { kind: "patrol", resource: "berry" }),
   );

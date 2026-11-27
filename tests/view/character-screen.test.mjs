@@ -311,7 +311,7 @@ test("the section „Umiejętności” is absent before a tree is known, then sh
 
 test("unknown trees are hidden, purchases update existing buttons and refuse unaffordable and maximum ranks", async () => {
   // decision: D-199 "Below an open tree each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   await withPage(async (page) => {
     let state = withTrees(knowingExploration(), ["exploration"]);
@@ -343,27 +343,49 @@ test("unknown trees are hidden, purchases update existing buttons and refuse una
   });
 });
 
-// D-287 and D-200: while a manual map run waits or has ended, „Kup” is inactive whatever the points,
-// and the section says why in one sentence.
-test("„Kup” is inactive with the sentence under the heading beside a waiting map run and beside an ended one", async () => {
-  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
-  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+/**
+ * Ala, who knows exploration with 3 points, sent to the forest, and Ola with the same points beside
+ * her; the map run goes on, unpaused.
+ */
+function alaRunningBesideOla() {
+  const ala = withTrees(knowingExploration(), ["exploration"]);
+  const both = createCharacter(ala, "Ola").state;
+  const team = {
+    ...both.team,
+    characters: both.team.characters.map((character) => ({
+      ...character,
+      skills: ala.team.characters[0].skills,
+    })),
+  };
+  return send({ ...both, team }, { mapId: "forest", characterId: ID }, 1).state;
+}
+
+const RANK_NOTE =
+  "Przejście na mapie Las jest niezakończone. Kupiony stopień działa od następnego przejścia tej postaci, także w pętli; „Restart” zaczyna bez niego.";
+
+// D-287 and D-200. Catches „Kup” left inactive beside a map run that waits or has ended, a purchase
+// that does not reach the page, the sentence at „Umiejętności” standing at a character the map run
+// is not of, and the old sentence that ranks are bought after the end.
+test("„Kup” is active beside a map run that waits in a pause and beside an ended one, and the sentence of when a rank acts stands at that map run's character alone", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows"
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” of the screen Postać of that map run's character alone „Przejście na mapie {mapa} jest niezakończone. Kupiony stopień działa od następnego przejścia tej postaci, także w pętli; „Restart” zaczyna bez niego.”"
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”"
   await withPage(async (page) => {
-    const started = send(
-      withTrees(knowingExploration(), ["exploration"]),
-      { mapId: "forest", characterId: ID },
-      1,
-    ).state;
+    const started = alaRunningBesideOla();
     const waiting = setPaused(started, true).state;
-    const { screen } = await mount(page, propsOf(waiting));
+    const { screen, calls } = await mount(page, propsOf(waiting));
     await openTree(page.root, "Eksploracja");
     const note = () => text(page.root, ".character-screen-skills-note");
-    assert.equal(
-      note(),
-      "Przejście na mapie Las jest niezakończone. Stopnie kupisz po jego zakończeniu.",
-    );
-    assert.equal(buttonLabelled(page.root, "Kup: Zwiad").disabled, true);
+    assert.equal(note(), RANK_NOTE);
+    const scout = buttonLabelled(page.root, "Kup: Zwiad");
+    assert.equal(scout.disabled, false);
+    await press(scout);
+    assert.deepEqual(calls, [["buy", "scout"]]);
+    // Ola is not the map run's character: „Restart” is nothing to her, so no sentence stands.
+    await inAct(() => screen.update({ ...propsOf(waiting), characterId: 2 }));
+    // The screen keeps which trees stand open across updates, so the tree of exploration stands open.
+    assert.equal(note(), undefined, "no sentence at another character");
+    assert.equal(buttonLabelled(page.root, "Kup: Zwiad").disabled, false);
     // The run dies of cold in game minute 243 and waits for „Zakończ”; a discovery pauses it on the
     // way, so the case resumes it until the death.
     let ended = started;
@@ -373,16 +395,42 @@ test("„Kup” is inactive with the sentence under the heading beside a waiting
     }
     assert.ok(ended.run.death !== null, "the run has ended by death");
     await inAct(() => screen.update(propsOf(ended)));
-    assert.equal(
-      note(),
-      "Przejście na mapie Las jest niezakończone. Stopnie kupisz po jego zakończeniu.",
-    );
+    assert.equal(note(), RANK_NOTE);
+    assert.equal(buttonLabelled(page.root, "Kup: Zwiad").disabled, false);
+  });
+});
+
+// D-200. Catches „Kup” active while the map run goes on, which the simulation refuses: the screen
+// does not show it then, since leaving the run's screen pauses it, but its „Kup” follows the simulation.
+test("„Kup” is inactive while the map run goes on, neither paused nor ended", async () => {
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”, and „Restart” then starts with the skills of the map run it replaces, or, after a death that took the character's practice and ranks, with what the character was left with, so not with a rank bought in that wait; while a manual map run goes on, neither paused nor ended, the game refuses a purchase"
+  await withPage(async (page) => {
+    await mount(page, propsOf(alaRunningBesideOla()));
+    await openTree(page.root, "Eksploracja");
     assert.equal(buttonLabelled(page.root, "Kup: Zwiad").disabled, true);
   });
 });
 
+// D-280. Catches „← Siedziba” missing, standing inside an area rather than at the top of the screen,
+// and leading anywhere but Siedziba.
+test("„← Siedziba” stands at the top of the screen, above its two areas, as a link to Siedziba", async () => {
+  // decision: D-280 "The character's name at the start of the header of the screen of a map run is the link „← {imię postaci}” to the screen Postać of that map run's character, and the link „← Siedziba” at the top of the screen Postać leads to Siedziba"
+  await withPage(async (page) => {
+    await mount(page, propsOf(stateWith()));
+    const screen = page.root.querySelector(".character-screen");
+    const [first, second] = [...screen.children];
+    assert.equal(first.localName, "a");
+    assert.equal(first.textContent, "← Siedziba");
+    assert.equal(first.getAttribute("href"), "#/");
+    assert.ok(
+      second.classList.contains("character-areas"),
+      "the two areas stand under it",
+    );
+  });
+});
+
 test("a purchase leaves focus on its button, which stays buyable after it", async () => {
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   await withPage(async (page) => {
     let state = withTrees(knowingExploration(), ["exploration"]);

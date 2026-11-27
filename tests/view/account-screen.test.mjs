@@ -2699,7 +2699,7 @@ test("the document kept for the same account holds the moment of its reading and
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   // decision: D-243 "Otherwise the new result stands under the character in place of the one that stood there, „Na {k} z 12 ziaren program mapy nie rozwiązuje.” stands above the button in `warning`, the button reads „Puść mimo to”, and a second click starts the earning loop."
@@ -2844,7 +2844,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj” in Siedz
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, and takes the program of that character's list „Program:”"
   // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
@@ -2941,7 +2941,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj” in Siedz
 // one sentence per map instead of one per character, a sentence left on after „Zakończ”, and a
 // sentence of sending that stays in Siedziba.
 test("after the end of a map run every character's „Wejdź” is inactive under the sentence why, and „Zakończ” takes the sentence away", async () => {
-  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź” and, at that map run's character, „Puść w pętlę” stand inactive"
   // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
   // decision: D-55 "The game holds one manual map run at a time: while one character is in a manual map run, the game sends no other on a manual map run"
   await onPage(async ({ root }) => {
@@ -4607,6 +4607,55 @@ test("leaving the screen of a map run that goes on pauses it as „Pauza” does
       assert.ok(returnItem(root), `${name}: „Wróć do przejścia” stands`);
     });
   }
+});
+
+// D-280, D-283, D-200, D-207. Catches a link in the header that leads to another screen than the
+// map run's character's, a leave by it that does not pause the map run, „Kup” on that screen refused
+// in the pause, and a purchase that reaches the map run waiting or is not saved.
+test("„← {name}” in the header of a map run that goes on opens the character's screen Postać with the map run paused, and „Kup” there buys a rank the waiting map run does not take", async () => {
+  // decision: D-280 "The character's name at the start of the header of the screen of a map run is the link „← {imię postaci}” to the screen Postać of that map run's character"
+  // decision: D-283 "Leaving the screen of a manual map run pauses it as „Pauza” does"
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”"
+  const game = send(
+    eatingPoint(),
+    { mapId: "forest", characterId: 1, programId: 1 },
+    0,
+  ).state;
+  await withStillClock(async () => {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "", game);
+      await press(buttonNamed(root, "Wznów"));
+      await held.answer("saveGame", { kind: "saved", revision: 5 });
+      assert.doesNotMatch(clockTextOf(root), / \(pauza\)$/);
+
+      const [link] = byClass(root, "run-header-back");
+      assert.equal(link.textContent, "← Ala");
+      assert.equal(link.getAttribute("href"), "#/postac/1");
+      await follow(address, link.getAttribute("href"));
+      assert.equal(shownScreen(root), "character");
+      const paused = { ...game, paused: true };
+      assert.deepEqual(argsOf(held, "saveGame"), [submission(paused, 5)]);
+      await held.answer("saveGame", { kind: "saved", revision: 6 });
+
+      await press(buttonLabelled(root, "Jedzenie"));
+      const buy = buttonLabelled(root, "Kup: Szybki posiłek");
+      assert.equal(buy.disabled, false, "„Kup” is active in the pause");
+      await press(buy);
+      const bought = buyBranch(paused, 1, "quickMeal").state;
+      assert.notEqual(
+        bought,
+        paused,
+        "precondition: the game takes the purchase",
+      );
+      assert.deepEqual(argsOf(held, "saveGame"), [submission(bought, 6)]);
+      assert.deepEqual(
+        argsOf(held, "saveGame")[0].game.run.character.skills,
+        plain(game.run.character.skills),
+        "the waiting map run keeps the skills of its start",
+      );
+    });
+  });
 });
 
 // D-283's rejected way: a logout or an expiry leaves the game with no change of screen
