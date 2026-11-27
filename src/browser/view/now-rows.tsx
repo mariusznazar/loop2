@@ -4,8 +4,9 @@
  * rule's row. It draws from the game state and from what `nowAndNext` names, and only words and
  * roles. A row that names a rule of the copy is a control, built as the rows of the rule list are:
  * a click, Enter or Space on it asks, through `onShowRule`, to show the rule (D-336); a row that
- * names none is text. „Teraz” keeps one height and cuts a longer text, so its change moves nothing
- * below it. Nothing runs when the module is imported.
+ * names none is text. „Teraz” keeps one height, so its change moves nothing below it: in the computer
+ * layout it cuts a longer text, in the phone layout it wraps it inside that height. Nothing runs when
+ * the module is imported.
  */
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { nowAndNext } from "../sim/game.js";

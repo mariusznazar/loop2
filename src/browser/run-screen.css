@@ -533,7 +533,7 @@
 /*
  * The rows „Teraz” and „Potem” under the scene (D-334, D-335). „Teraz” has a fixed height of one line,
  * a layout dimension (D-43), and cuts a longer text instead of wrapping it, so a change of its text
- * moves nothing below it. The text stands in `text`, in `positive` after a completion and in `warning`
+ * moves nothing below it (the phone layout wraps it inside its height, below). The text stands in `text`, in `positive` after a completion and in `warning`
  * for „Potem” with no winning rule; the label „Potem” and the text at the right stand in `text-label`,
  * as the number and the time of a rule's row do. The icon of the action takes the colour of the text
  * beside it (D-291).
@@ -609,12 +609,17 @@
  * control, a tap on it scrolls the program, so it is at least `--touch-target-min` high, and its text,
  * which the flex row centres, stands in the middle of that height. Both rows hold the minimum whether
  * they name a rule or not, so that a row which gains or loses its rule does not move what is under it.
- * „Teraz” keeps its fixed height, now the minimum, and cuts a longer text as it does in the computer
- * layout; the rows are as wide as the world area, far over the minimum.
+ * „Teraz” keeps its fixed height, now the minimum, and wraps a longer text inside it instead of cutting
+ * it, so the player reads the whole rule that works now, as the minimum holds two lines of the text
+ * and the row moves nothing below it; the rows are as wide as the world area, far over the minimum.
  */
 @media (width < 1280px) {
   .now-row {
     height: var(--touch-target-min);
+  }
+
+  .now-row .now-text {
+    white-space: normal;
   }
 
   .next-row {
