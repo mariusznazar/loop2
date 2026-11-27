@@ -183,6 +183,60 @@ test("health rises by 0.05 where neither chilled nor starving, not above 100", (
   assert.equal(state.run.body.health, 100);
 });
 
+/** A game sent to Las whose body is set at minute 0, its character holding `ranks` of „Szybkie gojenie”. */
+function withQuickHealing(bodyNow, ranks) {
+  const state = withBody(bodyNow);
+  const skills = { tending: { practice: 0, ranks: { quickHealing: ranks } } };
+  return {
+    ...state,
+    run: { ...state.run, character: { ...state.run.character, skills } },
+  };
+}
+
+test("each bought rank of „Szybkie gojenie” adds 0.05 to the health regained in a game minute neither chilled nor starving", () => {
+  // decision: D-387 "regains 0.05 health in a game minute in which it is neither, which is the number of a body with no bought rank of „Szybkie gojenie”, each rank adding 0.05 to it"
+  // decision: D-60 "in a game minute in which it is neither, its health comes back by itself, up to full health"
+  const cases = [
+    [0, 99.05],
+    [1, 99.1],
+    [2, 99.15],
+  ];
+  for (const [ranks, health] of cases) {
+    const state = advanceMinutes(withQuickHealing(body(37, 100, 99), ranks), 1);
+    assert.equal(state.state.run.body.health, health, `${ranks} ranks`);
+  }
+});
+
+test("the health regained with bought ranks of „Szybkie gojenie” stops at full health", () => {
+  // decision: D-60 "in a game minute in which it is neither, its health comes back by itself, up to full health"
+  // decision: D-387 "each rank adding 0.05 to it"
+  const near = advanceMinutes(withQuickHealing(body(37, 100, 99.95), 2), 1);
+  assert.equal(near.state.run.body.health, 100);
+  const full = advanceMinutes(withQuickHealing(body(37, 100, 100), 3), 1);
+  assert.equal(full.state.run.body.health, 100);
+});
+
+test("a minute of combat leaves the body standing still, whatever the bought ranks of „Szybkie gojenie”", () => {
+  // decision: D-60 "During the game minutes of combat the character's needs and health stand still until the combat actions change its health."
+  // decision: D-387 "each rank adding 0.05 to it"
+  const state = withQuickHealing(body(37, 100, 99), 2);
+  const fighting = {
+    ...state,
+    run: {
+      ...state.run,
+      current: null,
+      activeCombat: {
+        creatureId: "wolf",
+        attackMinute: 0,
+        resolveMinute: 5,
+      },
+    },
+  };
+  const next = advanceMinutes(fighting, 1).state;
+  assert.equal(next.run.minute, 1);
+  assert.equal(next.run.body.health, 99);
+});
+
 test("satiety does not fall below 0", () => {
   const { state } = advanceMinutes(withBody(body(37, 0.4, 100)), 2);
   assert.deepEqual(state.run.body, body(36.952, 0, 99.3));

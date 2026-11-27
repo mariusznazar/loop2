@@ -321,6 +321,46 @@ test("„Opatrz” gives back no more than full health", () => {
   assert.equal(done.character.backpack.bandage, 0);
 });
 
+/** The run with its character holding `ranks` of the branches of „Opatrywanie małych ran”. */
+function withTendingRanks(run, ranks) {
+  return {
+    ...run,
+    character: {
+      ...run.character,
+      skills: { tending: { practice: 0, ranks } },
+    },
+  };
+}
+
+test("„Opatrz” gives back the bandage's healing with 5 more for each bought rank of „Mocniejszy zwój”", () => {
+  // decision: D-145 "The health „Opatrz — {rzecz}” gives back is the healing the data give the thing, increased by the bought ranks of „Mocniejszy zwój”."
+  // The minute's own step gives back 0.05, the character being neither chilled nor starving, then
+  // the bandage gives its 25 and 5 for each rank.
+  const cases = [
+    [{}, 45.05],
+    [{ strongerRoll: 1 }, 50.05],
+    [{ strongerRoll: 2 }, 55.05],
+    [{ strongerRoll: 3 }, 60.05],
+  ];
+  for (const [ranks, health] of cases) {
+    const run = withTendingRanks(runWith({ bandage: 1 }, body(20)), ranks);
+    const done = after(carrying(run, TEND), 1);
+    assert.equal(done.body.health, health, JSON.stringify(ranks));
+    assert.equal(done.character.backpack.bandage, 0, JSON.stringify(ranks));
+  }
+});
+
+test("„Opatrz” with bought ranks of „Mocniejszy zwój” gives back no more than full health", () => {
+  // decision: D-145 "never above full health"
+  // decision: D-145 "The health „Opatrz — {rzecz}” gives back is the healing the data give the thing, increased by the bought ranks of „Mocniejszy zwój”."
+  const run = withTendingRanks(runWith({ bandage: 1 }, body(90)), {
+    strongerRoll: 3,
+  });
+  const done = after(carrying(run, TEND), 1);
+  assert.equal(done.body.health, 100);
+  assert.equal(done.character.backpack.bandage, 0);
+});
+
 test("„Opatrz” heals health lost to cold and to hunger alike", () => {
   // decision: D-145 "„Opatrz — {rzecz}” uses up one piece of the thing, an item the data give a healing, and gives back that healing to health whatever took it — cold, hunger or a blow of combat — never above full health."
   // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled"
