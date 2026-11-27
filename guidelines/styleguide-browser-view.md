@@ -1270,10 +1270,8 @@ wtedy nad „Umiejętnościami” prawego.
   w przeglądarce, nie test (reguła Two layouts and one threshold between them).
 - Prawy obszar: nagłówek „Umiejętności” w `text-label`; obszaru nie ma, póki gracz nie zna żadnego
   drzewa (D-199). Tylko przy postaci przejścia ręcznego, które stoi w grze niezakończone, pod
-  nagłówkiem stoi w `text-secondary`, jako wyjaśnienie (D-40), zdanie o tym, od kiedy kupiony stopień
-  działa: „Przejście na mapie {mapa} jest niezakończone. Kupiony stopień działa od następnego
-  przejścia tej postaci, także w pętli; „Restart” zaczyna bez niego.” (D-287, D-200). Przy innej
-  postaci zdania nie ma: „Restart” jej nie dotyczy.
+  nagłówkiem stoi w `text-secondary`, jako wyjaśnienie (D-40), zdanie D-287 o tym, od kiedy kupiony
+  stopień działa (D-200). Przy innej postaci zdania nie ma: „Restart” jej nie dotyczy.
 - Wiersz drzewa (D-199) w kolumnach, oddzielony od sąsiednich cienką linią w `divider`: zwijak —
   zwykły wspólny przycisk „▸”, po rozwinięciu „▾”, z nazwą drzewa jako nazwą dostępną, który mówi
   `aria-expanded` (D-44); nazwa w `text-strong`, zaraz po niej „+{n} pkt czeka w pętli” w `text`, nie

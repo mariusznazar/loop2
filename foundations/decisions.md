@@ -7472,7 +7472,7 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
+Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including the branches it had bought at the start of that map run.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
