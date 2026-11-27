@@ -72,6 +72,14 @@ const skills = {
     grownBy: [{ action: "dodge" }],
     thresholds: [4, 15],
   },
+  tending: {
+    name: "Opatrywanie małych ran",
+    grownBy: [
+      { action: "craft", item: "bandage" },
+      { action: "tend", item: "bandage" },
+    ],
+    thresholds: [10, 28, 60, 110],
+  },
 } as const;
 
 export type SkillId = keyof typeof skills;
@@ -81,7 +89,13 @@ export type BranchEffect =
   | { kind: "duration"; actions: readonly ActionId[]; amount: number }
   | { kind: "damage"; actions: readonly ActionId[]; amount: number }
   | {
-      kind: "gatherChance" | "gatherAmount" | "fuel" | "reduction";
+      kind:
+        | "gatherChance"
+        | "gatherAmount"
+        | "fuel"
+        | "reduction"
+        | "healing"
+        | "healthRegain";
       amount: number;
     }
   | { kind: "cleanFlame" | "scout" }
@@ -214,6 +228,30 @@ export const BRANCHES = {
     costs: [1, 1, 1],
     effect: { kind: "duration", actions: ["eat"], amount: 1 },
     preview: { base: 5, step: -1, unit: "min", minimum: 1 },
+  },
+  strongerRoll: {
+    skill: "tending",
+    name: "Mocniejszy zwój",
+    description: "Opatrunek leczy więcej.",
+    costs: [1, 1, 2],
+    effect: { kind: "healing", amount: 5 },
+    preview: { base: 25, step: 5, unit: "zdrowia" },
+  },
+  deftHand: {
+    skill: "tending",
+    name: "Wprawna dłoń",
+    description: "Opatrujesz szybciej.",
+    costs: [1, 1, 2],
+    effect: { kind: "duration", actions: ["tend"], amount: 2 },
+    preview: { base: 10, step: -2, unit: "min", minimum: 1 },
+  },
+  quickHealing: {
+    skill: "tending",
+    name: "Szybkie gojenie",
+    description: "Rany schodzą same szybciej — cecha, działa zawsze.",
+    costs: [2, 3],
+    effect: { kind: "healthRegain", amount: 0.05 },
+    preview: { base: 0.05, step: 0.05, unit: "zdrowia na minutę" },
   },
 } as const satisfies Record<string, BranchDef>;
 

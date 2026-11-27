@@ -4,7 +4,8 @@
 // effect at its end), D-142 and D-145 (an attack takes nothing from either verb; „Opatrz” heals
 // whatever took health, never above full health, and is no combat verb), D-380 and D-309 (the
 // reasons), D-363 and D-443 (the price and the targets follow the items' rows), D-121 and D-128
-// (what reveals each) and D-193 (no practice) in foundations/decisions.md. The numbers of the
+// (what reveals each) and D-193 (one practice to the tree each ending action grows) in
+// foundations/decisions.md. The numbers of the
 // bandage's row are read from the data (D-82); every other number is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -225,7 +226,8 @@ test("„Wytwórz” takes the recipe's pieces and gives one piece of its target
     moss: 1,
     bandage: 1,
   });
-  assert.deepEqual(done.practice, {}, "neither verb adds practice");
+  // The making ends in effect, so it adds one practice to the tree that the pair of „Wytwórz” and the bandage grows (D-193).
+  assert.deepEqual(done.practice, { tending: 1 }, "making adds one practice");
 });
 
 test("„Wytwórz” needs no revealed tile and no room: with the backpack full it still ends with its piece", () => {
@@ -307,7 +309,8 @@ test("„Opatrz” takes one piece and gives the target's healing at its end, to
   });
   // The minute's own step first gives back 0.05, the character being neither chilled nor starving.
   assert.equal(done.body.health, rounded(50 + 0.05 + HEALING));
-  assert.deepEqual(done.practice, {}, "neither verb adds practice");
+  // The tending ends in effect, so it adds one practice to the tree that the pair of „Opatrz” and the bandage grows (D-193).
+  assert.deepEqual(done.practice, { tending: 1 }, "tending adds one practice");
 });
 
 test("„Opatrz” gives back no more than full health", () => {
@@ -640,7 +643,7 @@ test("the first gathered moss reveals the bandage and „Wytwórz”, and „Opa
       actions: ["craft"],
       conditions: [],
       items: ["bandage"],
-      trees: [],
+      trees: ["tending"],
       creatures: [],
     },
   ]);
@@ -671,7 +674,7 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
       actions: ["tend"],
       conditions: [],
       items: [],
-      trees: [],
+      trees: ["tending"],
       creatures: [],
     },
   ]);

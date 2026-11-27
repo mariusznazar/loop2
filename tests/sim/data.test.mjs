@@ -665,6 +665,13 @@ test("the character skills grow the listed pairs of verb and target, and the wal
       ["Walka bronią jednoręczną", [{ action: "strikeWithStick" }]],
       ["Kopanie", [{ action: "kick" }]],
       ["Unik przed ciosem", [{ action: "dodge" }]],
+      [
+        "Opatrywanie małych ran",
+        [
+          { action: "craft", item: "bandage" },
+          { action: "tend", item: "bandage" },
+        ],
+      ],
     ],
   );
   const grown = Object.values(SKILLS).flatMap((skill) =>
@@ -672,14 +679,7 @@ test("the character skills grow the listed pairs of verb and target, and the wal
   );
   assert.equal(new Set(grown).size, grown.length, "an action in two skills");
   const free = Object.keys(ACTIONS).filter((id) => !grown.includes(id));
-  assert.deepEqual(free, [
-    "wander",
-    "walkTo",
-    "walkToCampfire",
-    "tend",
-    "equip",
-    "craft",
-  ]);
+  assert.deepEqual(free, ["wander", "walkTo", "walkToCampfire", "equip"]);
 });
 
 test("the elemental mage has all listed skills as predispositions", () => {
@@ -689,7 +689,7 @@ test("the elemental mage has all listed skills as predispositions", () => {
     [...ARCHETYPES.elementalMage.predispositions].sort(),
     Object.keys(SKILLS).sort(),
   );
-  assert.equal(Object.keys(SKILLS).length, 8);
+  assert.equal(Object.keys(SKILLS).length, 9);
 });
 
 test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished exploration, and no other tree has an event of its own", () => {

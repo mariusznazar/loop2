@@ -4,6 +4,7 @@
 // stays).
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -292,6 +293,27 @@ test("an action and a condition that name no target need no item", () => {
   };
   assert.equal(actionInRepertoire(bare, { kind: "explore" }), true);
   assert.equal(conditionInRepertoire(bare, { kind: "always" }), true);
+});
+
+test("Wytwórz and Opatrz with the bandage leave the repertoire without the tree's predisposition, and return with it", () => {
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  const understanding = {
+    actions: ["explore", "craft", "tend"],
+    conditions: ["always"],
+    items: ["bandage"],
+    trees: ["tending"],
+    creatures: [],
+  };
+  const predispositions = ARCHETYPES.elementalMage.predispositions;
+  const without = predispositions.filter((skill) => skill !== "tending");
+  assert.deepEqual(repertoireOf(understanding, without), {
+    actions: ["explore"],
+    conditions: ["always"],
+    items: ["bandage"],
+    trees: [],
+    creatures: [],
+  });
+  assert.deepEqual(repertoireOf(understanding, predispositions), understanding);
 });
 
 test("the reduced program keeps identities and order and drops exactly the rules and groups outside the repertoire", () => {

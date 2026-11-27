@@ -118,6 +118,7 @@ test("all cumulative thresholds of D-379 grant exactly one point and level each,
     kicking: [10, 30],
     dodging: [4, 15],
     eating: [15, 40, 80],
+    tending: [10, 28, 60, 110],
   };
   for (const [id, thresholds] of Object.entries(expected)) {
     thresholds.forEach((threshold, index) => {
