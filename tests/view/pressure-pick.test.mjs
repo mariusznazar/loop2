@@ -65,7 +65,7 @@ function withPressureBought(state) {
 }
 
 test("„Ucisk” stands in „Żywność i walka” after „Odskocz” and before „Załóż”, with the icon of „Opatrz”", () => {
-  // decision: D-290 "The pick of the rule panel sets the actions in five named groups: … Żywność i walka — „Zjedz — jagoda”, „Opatrz”, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Ucisk”, „Załóż”"
+  // decision: D-290 "The pick of the rule panel sets the actions in five named groups: Ruch — „Eksploruj”, „Wędruj”, „Idź”, „Idź — ognisko”; Zbieranie — „Zbierz”, „Obchód”; Ogień — „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zasil — ognisko”; Żywność i walka — „Zjedz — jagoda”, „Opatrz”, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Ucisk”, „Załóż”"
   const sections = actionPick(newKnowingGame(), EXPLORE);
   const food = sections.find((section) => section.name === "Żywność i walka");
   assert.ok(food, "the group „Żywność i walka” is in the pick");
@@ -78,7 +78,7 @@ test("„Ucisk” stands in „Żywność i walka” after „Odskocz” and bef
 });
 
 test("„Ucisk” has no price at its cell, and its cell is picked once the branch is bought", () => {
-  // decision: D-363 "An action whose price its target gives, „Wytwórz” and „Opatrz” with an item as the target, shows no price at its cell of the pick of actions … „Ucisk” with an item as the target is such an action too, its cell showing no price"
+  // decision: D-363 "„Ucisk” with an item as the target is such an action too, its cell showing no price"
   const bought = withPressureBought(runningGame());
   assert.equal(actionPriceText(bought, "pressure"), null);
   const cell = cellsOf(actionPick(bought, EXPLORE)).pressure;
@@ -90,7 +90,7 @@ test("„Ucisk” has no price at its cell, and its cell is picked once the bran
 });
 
 test("at its target, „Ucisk” shows the bandage with its price: „Opatrunek (1 opatrunek)”", () => {
-  // decision: D-363 "the pick of its target shows at each target the price of the action with that target, in brackets after the target's name"
+  // decision: D-363 "An action whose price its target gives, „Wytwórz” and „Opatrz” with an item as the target, shows no price at its cell of the pick of actions; the pick of its target shows at each target the price of the action with that target, in brackets after the target's name"
   const targets = actionTargetPick(withPressureBought(runningGame()), PRESSURE);
   const bandage = targets.find((cell) => cell.value === "bandage");
   assert.ok(bandage, "the bandage is a target of „Ucisk”");
@@ -101,7 +101,7 @@ test("at its target, „Ucisk” shows the bandage with its price: „Opatrunek 
 });
 
 test("the chosen „Ucisk” shows its target and its price: „Ucisk — Opatrunek (1 opatrunek)”", () => {
-  // decision: D-363 "„Ucisk” with an item as the target is such an action too … and the action chosen in the panel showing it, such as „Ucisk — Opatrunek (1 opatrunek)”"
+  // decision: D-363 "„Ucisk” with an item as the target is such an action too, its cell showing no price and its target and the action chosen showing it, such as „Ucisk — Opatrunek (1 opatrunek)”"
   assert.equal(
     actionFieldValue(withPressureBought(runningGame()), PRESSURE),
     "Ucisk — Opatrunek (1 opatrunek)",
@@ -109,7 +109,7 @@ test("the chosen „Ucisk” shows its target and its price: „Ucisk — Opatru
 });
 
 test("the time of „Ucisk” is „tura”, in a map run and outside one", () => {
-  // decision: D-293 "„tura” for an action of combat"
+  // decision: D-293 "Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out of the action takes, such as „10 min”, „tura” for an action of combat"
   assert.equal(
     actionTime(withPressureBought(runningGame()), "pressure"),
     "tura",
@@ -118,7 +118,7 @@ test("the time of „Ucisk” is „tura”, in a map run and outside one", () =
 });
 
 test("„Ucisk” stands greyed „gałąź niewykupiona” in a map run of a character without the branch, and „wybierzesz w przejściu postaci, która ją kupiła” with no map run", () => {
-  // decision: D-289 "a branch action the character of the map run has not bought, „gałąź niewykupiona”; such an action while the game holds no map run, „wybierzesz w przejściu postaci, która ją kupiła”"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason: a branch action the character of the map run has not bought, „gałąź niewykupiona”; such an action while the game holds no map run, „wybierzesz w przejściu postaci, która ją kupiła”"
   const during = cellsOf(actionPick(runningGame(), EXPLORE)).pressure;
   assert.deepEqual([during.greyed, during.reason], [true, NOT_BOUGHT]);
   const outside = cellsOf(actionPick(newKnowingGame(), EXPLORE)).pressure;

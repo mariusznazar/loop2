@@ -168,7 +168,7 @@ test("the practice of a run that pays none says what it is and that it will not 
 // of the decimal comma the sentence of a rule takes, and a branch with no number that shows a
 // before-and-after value it does not have.
 test("the four branches of „Opatrywanie małych ran” read their words, values and prices at each rank", () => {
-  // decision: D-199 "a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values, as does „Ucisk”"
+  // decision: D-199 "Below an open tree each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values, as does „Ucisk”"
   // decision: D-379 "Each rank of a branch of „Opatrywanie małych ran” gives the effect below, and the ranks of a branch cost the points listed, in order"
   const tended = (ranks) => ({
     ...createCharacter(newGame(), "Ala").state.team.characters[0],
@@ -231,7 +231,7 @@ test("the four branches of „Opatrywanie małych ran” read their words, value
 // Catches a change to the numerical branches outside „Opatrywanie małych ran” that alters how they
 // read today: their words, their values and their prices as the data give them.
 test("the numerical branches of the other trees read as they do today", () => {
-  // decision: D-199 "a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”"
+  // decision: D-199 "Below an open tree each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   const skilled = (skill, practice, ranks) => ({
     ...createCharacter(newGame(), "Ala").state.team.characters[0],
