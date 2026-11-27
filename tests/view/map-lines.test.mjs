@@ -63,11 +63,16 @@ test("the condition sentence is the solving text of the map's data alone, since 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "When does the game offer a map opened by another map?"
+  // decision: D-466 "Where does a new map stand in the order of the game maps' data?"
   assert.deepEqual(sendMaps(), [
     "forestEdge",
     "forest",
     "forestDeep",
     "forestPack",
+    "forestDeep2",
+    "forestDeep3",
+    "forestDeep4",
     "forestLair",
   ]);
   assert.deepEqual(sendMaps([]), ["forestEdge"]);
@@ -77,15 +82,54 @@ test("the list of maps hides maps until their prerequisites are solved; the edit
     "forest",
     "forestDeep",
   ]);
+  // Las — głębiej opens Las — wataha and the rung Las — głębiej II, in the data's order.
   assert.deepEqual(sendMaps(["forestEdge", "forest", "forestDeep"]), [
     "forestEdge",
     "forest",
     "forestDeep",
     "forestPack",
+    "forestDeep2",
   ]);
   assert.deepEqual(
     sendMaps(["forestEdge", "forest", "forestDeep", "forestPack"]),
-    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"],
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestLair",
+    ],
+  );
+  // Each rung opens the next one only once the one before it is solved.
+  assert.deepEqual(
+    sendMaps(["forestEdge", "forest", "forestDeep", "forestDeep2"]),
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestDeep3",
+    ],
+  );
+  assert.deepEqual(
+    sendMaps([
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestDeep2",
+      "forestDeep3",
+    ]),
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestDeep3",
+      "forestDeep4",
+    ],
   );
 });
 

@@ -432,9 +432,17 @@ test("the way-on buttons after a completion of Las name the map it opens, and no
   assert.deepEqual(wayOnButtons(runOf({ completion: { minute: 480 } })), [
     { mapId: "forestDeep", text: "Otwarte: Las — głębiej →" },
   ]);
+  // Las — głębiej opens Las — wataha and then the rung Las — głębiej II, in the data's order (D-466).
   assert.deepEqual(
     wayOnButtons(runOf({ mapId: "forestDeep", completion: { minute: 540 } })),
-    [{ mapId: "forestPack", text: "Otwarte: Las — wataha →" }],
+    [
+      { mapId: "forestPack", text: "Otwarte: Las — wataha →" },
+      { mapId: "forestDeep2", text: "Otwarte: Las — głębiej II →" },
+    ],
+  );
+  assert.deepEqual(
+    wayOnButtons(runOf({ mapId: "forestDeep2", completion: { minute: 600 } })),
+    [{ mapId: "forestDeep3", text: "Otwarte: Las — głębiej III →" }],
   );
   assert.deepEqual(
     wayOnButtons(runOf({ mapId: "forestLair", completion: { minute: 600 } })),
