@@ -10752,9 +10752,10 @@ the screen, with no text on it or over it.
 *Rationale:* without it Siedziba is a page of text that looks like a form, and a picture band at its
 top gives the game a place to be seen where nothing is to be read; the band stands over the screen's panel,
 outside its text, so the contrast of the text and the order in which the screen is read stay as they
-are (D-272). The picture says what the text under it does not: a character in a manual map run is a
-thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the picture band shows
-the characters that are at the fire and the screen is drawn again at every change of the map run. A team
+are (D-272). The picture shows at a glance who sits at the fire, while the cards of „Drużyna” under it
+say in words what each character does, a manual map run and an earning loop included (D-447), so the
+picture band shows the characters that are at the fire, as the cards say, and the screen is drawn again
+at every change of the map run. A team
 has no limit of characters and the content is at most 1344 px wide, so the band holds as many whole
 characters from the first as fit and the list under it holds all. The band crops the clearing at the
 sides because a pixel picture at a fractional scale has unequal pixels and shakes in motion, as the
@@ -10766,12 +10767,12 @@ way to a character stays its card in „Drużyna” (D-280). Accepted with it: t
 lower by the height of the band; one more picture to compose; the number of characters in the picture
 follows the width of the window; motion beside the text of Siedziba; no shortcut from the picture to a
 character.
-*Rejected:* the band under the heading „Siedziba”, over the report „Gdy cię nie było” — the picture is not
+*Rejected:* the band under the heading „Siedziba”, over the row of the report on earning loops — the picture is not
 the first thing of the screen, the heading standing over it; the band with no clearing, the fire, the chest
 and the characters straight on the page — nothing to compose, but pixel pictures with an outline look like
 stickers on a flat background; every character of the team, always, in the order of creation, those on a
-map and in an earning loop too — a character of a manual map run sits at the fire and nothing on Siedziba says it is
-on the map, a character in an earning loop sits at the fire though the line under it says it walks in an earning loop, and the
+map and in an earning loop too — a character of a manual map run sits at the fire though its card says it is on
+the map, a character in an earning loop sits at the fire though its card says it walks in an earning loop, and the
 picture has no meaning; every character, those away drawn differently, dimmed — a new look whose meaning
 nothing settles, and grey means stopped time and death in the game (D-322), so a dimmed character would read
 as dead; every character, always, closer and closer until they overlap — a crowd in which a mage hides a
