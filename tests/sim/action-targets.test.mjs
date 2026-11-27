@@ -13,6 +13,7 @@ import {
 } from "../../dist/browser/sim/action-targets.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { SKILLS } from "../../dist/browser/sim/data/skills.js";
 import {
   createCharacter,
   newGame,
@@ -435,6 +436,105 @@ test("both verb pairs with the bandage are grown by the tree of tending: open on
       `${verb} adds one practice of tending`,
     );
   }
+});
+
+/** A skill laid in the data that grows „Wytwórz” with the splint alone: a second skill of the verb. */
+const PROBE = {
+  name: "Probe",
+  grownBy: [{ action: "craft", item: "splint" }],
+  thresholds: [1],
+};
+
+/** Runs `body` with the rows laid on the built `ITEMS` and the skill probe on `SKILLS`, and takes them off again. */
+function withProbe(rows, body) {
+  assert.ok(!Object.hasOwn(SKILLS, "probe"), "precondition: no skill probe");
+  SKILLS.probe = PROBE;
+  try {
+    return withItems(rows, body);
+  } finally {
+    delete SKILLS.probe;
+  }
+}
+
+/** The predispositions of the mage of the data less the tree of tending, which grows „Wytwórz — Opatrunek”. */
+const WITHOUT_TENDING = [
+  "exploration",
+  "smallItemGathering",
+  "campfireCrafting",
+  "eating",
+  "flameSpell",
+  "oneHandedCombat",
+  "kicking",
+  "dodging",
+];
+
+const CRAFT_BANDAGE = { kind: "craft", item: "bandage" };
+
+// Each case keeps the kind „Wytwórz” open through a second item with a recipe, laid in the data,
+// for a character whose predispositions lack the tree of tending.
+const SECOND_RECIPE = [
+  {
+    name: "an item with a recipe that no skill grows",
+    lay: (body) => withItems({ board: BOARD }, body),
+    other: "board",
+    predispositions: WITHOUT_TENDING,
+  },
+  {
+    name: "an item with a recipe grown by another skill among the predispositions",
+    lay: (body) => withProbe({ splint: SPLINT }, body),
+    other: "splint",
+    predispositions: [...WITHOUT_TENDING, "probe"],
+  },
+];
+
+for (const { name, lay, other, predispositions } of SECOND_RECIPE) {
+  test(`with ${name}, „Wytwórz — Opatrunek” lies outside the repertoire of a character without the tree of tending, and „Wytwórz” with the other item inside it`, () => {
+    // decision: D-120 "an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+    // decision: D-126 "The simulation passes over a program rule whose condition, action or the target of either lies outside the character's repertoire to the next program rule"
+    // decision: D-310 "the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed cell of the rule panel, or „jeszcze nieodkryte: {name}”."
+    lay(() => {
+      const repertoire = repertoireOf(fullUnderstanding(), predispositions);
+      const craftOther = { kind: "craft", item: other };
+      assert.ok(
+        repertoire.actions.includes("craft"),
+        "precondition: the kind „Wytwórz” stays open through the other item",
+      );
+      assert.equal(actionInRepertoire(repertoire, CRAFT_BANDAGE), false);
+      assert.equal(actionInRepertoire(repertoire, craftOther), true);
+      const program = programFromRules(
+        rule(ALWAYS, CRAFT_BANDAGE),
+        rule(ALWAYS, craftOther),
+      );
+      assert.deepEqual(
+        programRules(programInRepertoire(program, repertoire)).map(
+          (each) => each.id,
+        ),
+        [2],
+        "the rule with the bandage is passed over, the other kept",
+      );
+      const [bandageRule, otherRule] = programRules(program);
+      assert.equal(
+        outsideReason(repertoire, repertoire, bandageRule),
+        "jeszcze nieodkryte: Wytwórz",
+      );
+      assert.equal(outsideReason(repertoire, repertoire, otherRule), null);
+    });
+  });
+}
+
+test("with the tree of tending and without the skill of a second recipe item, „Wytwórz — Opatrunek” lies inside the repertoire and „Wytwórz” with the other item outside it", () => {
+  // decision: D-120 "an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  withProbe({ splint: SPLINT }, () => {
+    const repertoire = repertoireOf(fullUnderstanding(), [
+      ...WITHOUT_TENDING,
+      "tending",
+    ]);
+    assert.equal(actionInRepertoire(repertoire, CRAFT_BANDAGE), true);
+    assert.equal(
+      actionInRepertoire(repertoire, { kind: "craft", item: "splint" }),
+      false,
+    );
+  });
 });
 
 /** The pieces of one making of the bandage, as the data hold them (D-82): the chest and the trip plan carry them. */
