@@ -194,8 +194,8 @@ function withQuickHealing(bodyNow, ranks) {
 }
 
 test("each bought rank of „Szybkie gojenie” adds 0.05 to the health regained in a game minute neither chilled nor starving", () => {
-  // decision: D-387 "regains 0.05 health in a game minute in which it is neither, which is the number of a body with no bought rank of „Szybkie gojenie”, each rank adding 0.05 to it"
-  // decision: D-60 "in a game minute in which it is neither, its health comes back by itself, up to full health"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect: the body starts at 37.0 °C, 100 satiety and 100 health, which are also its caps; in a game minute outside combat it cools by 0.002 °C for each degree its map's ambient temperature lies below 37.0, loses 0.6 satiety, is chilled below 35.0 °C and starving below 30 satiety, loses 0.35 health for being chilled and another 0.35 for starving, and regains 0.05 health in a game minute in which it is neither, which is the number of a body with no bought rank of „Szybkie gojenie”, each rank adding 0.05 to it"
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health"
   const cases = [
     [0, 99.05],
     [1, 99.1],
@@ -208,8 +208,8 @@ test("each bought rank of „Szybkie gojenie” adds 0.05 to the health regained
 });
 
 test("the health regained with bought ranks of „Szybkie gojenie” stops at full health", () => {
-  // decision: D-60 "in a game minute in which it is neither, its health comes back by itself, up to full health"
-  // decision: D-387 "each rank adding 0.05 to it"
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect: the body starts at 37.0 °C, 100 satiety and 100 health, which are also its caps; in a game minute outside combat it cools by 0.002 °C for each degree its map's ambient temperature lies below 37.0, loses 0.6 satiety, is chilled below 35.0 °C and starving below 30 satiety, loses 0.35 health for being chilled and another 0.35 for starving, and regains 0.05 health in a game minute in which it is neither, which is the number of a body with no bought rank of „Szybkie gojenie”, each rank adding 0.05 to it"
   const near = advanceMinutes(withQuickHealing(body(37, 100, 99.95), 2), 1);
   assert.equal(near.state.run.body.health, 100);
   const full = advanceMinutes(withQuickHealing(body(37, 100, 100), 3), 1);
@@ -218,7 +218,7 @@ test("the health regained with bought ranks of „Szybkie gojenie” stops at fu
 
 test("a minute of combat leaves the body standing still, whatever the bought ranks of „Szybkie gojenie”", () => {
   // decision: D-60 "During the game minutes of combat the character's needs and health stand still until the combat actions change its health."
-  // decision: D-387 "each rank adding 0.05 to it"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect: the body starts at 37.0 °C, 100 satiety and 100 health, which are also its caps; in a game minute outside combat it cools by 0.002 °C for each degree its map's ambient temperature lies below 37.0, loses 0.6 satiety, is chilled below 35.0 °C and starving below 30 satiety, loses 0.35 health for being chilled and another 0.35 for starving, and regains 0.05 health in a game minute in which it is neither, which is the number of a body with no bought rank of „Szybkie gojenie”, each rank adding 0.05 to it"
   const state = withQuickHealing(body(37, 100, 99), 2);
   const fighting = {
     ...state,

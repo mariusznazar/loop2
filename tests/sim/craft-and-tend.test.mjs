@@ -351,7 +351,7 @@ test("„Opatrz” gives back the bandage's healing with 5 more for each bought 
 });
 
 test("„Opatrz” with bought ranks of „Mocniejszy zwój” gives back no more than full health", () => {
-  // decision: D-145 "never above full health"
+  // decision: D-145 "„Opatrz — {rzecz}” uses up one piece of the thing, an item the data give a healing, and gives back that healing to health whatever took it — cold, hunger or a blow of combat — never above full health"
   // decision: D-145 "The health „Opatrz — {rzecz}” gives back is the healing the data give the thing, increased by the bought ranks of „Mocniejszy zwój”."
   const run = withTendingRanks(runWith({ bandage: 1 }, body(90)), {
     strongerRoll: 3,
@@ -676,11 +676,13 @@ test("the first gathered moss reveals the bandage and „Wytwórz”, and „Opa
     current: endingNext(run, { kind: "gather", resource: "moss" }),
   }));
   const result = advanceMinutes(state, 1);
+  // D-195: the tree of tending enters with the first moss, together with „Ucisk”, the action a branch
+  // of it opens.
   assert.deepEqual(discoveries(result.events), [
     {
       kind: "discovered",
       minute: 1,
-      actions: ["craft"],
+      actions: ["pressure", "craft"],
       conditions: [],
       items: ["bandage"],
       trees: ["tending"],
@@ -711,7 +713,7 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
     {
       kind: "discovered",
       minute: 1,
-      actions: ["tend"],
+      actions: ["tend", "pressure"],
       conditions: [],
       items: [],
       trees: ["tending"],
@@ -722,6 +724,7 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
     "explore",
     "craft",
     "tend",
+    "pressure",
   ]);
   assert.equal(result.state.run.character.backpack.bandage, 1);
 });

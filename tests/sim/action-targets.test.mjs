@@ -334,7 +334,10 @@ test("the bandage is never accepted as the resource of „Idź”, „Zbierz”,
   }
 });
 
-/** A repertoire of a character with every skill, of an Understanding that holds `items` and every action. */
+/**
+ * A repertoire of a character whose predispositions hold the skills of these tests, the tree of
+ * tending among them (D-120), of an Understanding that holds `items` and every action.
+ */
 function repertoireWith(items) {
   return repertoireOf({ ...fullUnderstanding(), items }, [
     "exploration",
@@ -342,6 +345,7 @@ function repertoireWith(items) {
     "campfireCrafting",
     "eating",
     "flameSpell",
+    "tending",
   ]);
 }
 
@@ -403,24 +407,32 @@ test("the reason of a rule whose item target lies outside the repertoire names t
   });
 });
 
-test("neither verb is grown by a character skill: both are open to every character and add no practice", () => {
-  // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile, is open to every character, and an archetype never filters items."
+test("both verb pairs with the bandage are grown by the tree of tending: open only where it is a predisposition, and each adds one practice to it", () => {
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect"
   const understanding = fullUnderstanding();
   const none = repertoireOf(understanding, []);
+  const tending = repertoireOf(understanding, ["tending"]);
   for (const verb of VERBS) {
-    assert.ok(
+    assert.equal(
       none.actions.includes(verb),
-      `${verb} is open with no predisposition`,
+      false,
+      `${verb} is closed with no predisposition`,
     );
     assert.equal(
       actionInRepertoire(none, { kind: verb, item: "bandage" }),
+      false,
+      `${verb} with no predisposition`,
+    );
+    assert.equal(
+      actionInRepertoire(tending, { kind: verb, item: "bandage" }),
       true,
       verb,
     );
     assert.deepEqual(
-      practiced({ exploration: 4 }, verb),
-      { exploration: 4 },
-      `${verb} adds no practice`,
+      practiced({ exploration: 4 }, verb, "bandage"),
+      { exploration: 4, tending: 1 },
+      `${verb} adds one practice of tending`,
     );
   }
 });

@@ -322,6 +322,7 @@ test("each action names its group and each condition its section and place in th
       ["strikeWithStick", "foodAndCombat"],
       ["kick", "foodAndCombat"],
       ["dodge", "foodAndCombat"],
+      ["pressure", "foodAndCombat"],
       ["equip", "foodAndCombat"],
       ["craft", "crafting"],
     ],
@@ -670,6 +671,7 @@ test("the character skills grow the listed pairs of verb and target, and the wal
         [
           { action: "craft", item: "bandage" },
           { action: "tend", item: "bandage" },
+          { action: "pressure" },
         ],
       ],
     ],
@@ -768,6 +770,13 @@ const ROWS = [
     // D-195: the action is discovered with its tree.
     event: { kind: "treeDiscovered", skill: "smallItemGathering" },
     actions: ["patrol"],
+    conditions: [],
+    items: [],
+  },
+  {
+    // D-195: „Ucisk”, which a branch of the tree of tending opens, is discovered with its tree.
+    event: { kind: "treeDiscovered", skill: "tending" },
+    actions: ["pressure"],
     conditions: [],
     items: [],
   },

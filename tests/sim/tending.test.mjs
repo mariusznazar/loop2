@@ -103,7 +103,7 @@ function afterOne(run) {
 }
 
 test("the tree is the last character skill, grows the pairs of „Wytwórz” and „Opatrz” with the bandage and of „Ucisk” with every target, and holds its thresholds and name", () => {
-  // decision: D-379 "„Opatrywanie małych ran” at 10, 28, 60 and 110 practice"
+  // decision: D-379 "The nine character skills give a level and a point at each of these amounts of practice: „Zbieranie małych przedmiotów” at 30, 80, 160, 280 and 450; „Wytwarzanie ogniska” at 20, 55, 110 and 190; „Rzucanie czaru Płomyk” at 2, 6 and 14; „Eksploracja” at 15, 45, 100 and 200; „Walka bronią jednoręczną” at 15, 40, 100 and 300; „Kopanie” at 10 and 30; „Unik przed ciosem” at 4 and 15; „Jedzenie” at 15, 40 and 80; „Opatrywanie małych ran” at 10, 28, 60 and 110"
   // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows"
   // decision: D-150 "„Ucisk — {rzecz}” grows „Opatrywanie małych ran”"
   assert.equal(Object.keys(SKILLS).at(-1), "tending");
@@ -178,7 +178,7 @@ test("a making of another item, with a target the pair does not name, grows no p
 
 test("the first gathered moss brings „Wytwórz” and the bandage, and the tree enters the Understanding in that minute with „Ucisk”, which a branch of it opens", () => {
   // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens"
-  // decision: D-121 "The first gathered moss brings the bandage and „Wytwórz”"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”, the first gathered moss brings the bandage and „Wytwórz”"
   const START = {
     actions: ["explore"],
     conditions: ["always"],
@@ -232,7 +232,7 @@ function hittingGatherRandom() {
 
 test("a bought Wprawna dłoń shortens Opatrz by two minutes a rank, and leaves Wytwórz as it is", () => {
   // decision: D-374 "An action shortened by bought branches lasts at least one game minute."
-  // decision: D-379 "„Wprawna dłoń” −2 minutes of „Opatrz”, prices 1 · 1 · 2"
+  // decision: D-379 "Each rank of a branch of „Opatrywanie małych ran” gives the effect below, and the ranks of a branch cost the points listed, in order: „Mocniejszy zwój” +5 health from a bandage, prices 1 · 1 · 2; „Wprawna dłoń” −2 minutes of „Opatrz”, prices 1 · 1 · 2"
   assert.ok(ACTIONS.tend.minutes > 4 + MINIMUM_ACTION_MINUTES, "precondition");
   const skills = { tending: { practice: 0, ranks: { deftHand: 2 } } };
   const tending = stepMinute(
@@ -256,7 +256,7 @@ test("a bought Wprawna dłoń shortens Opatrz by two minutes a rank, and leaves 
 });
 
 test("the three numerical branches carry their costs, effects, previews and the words the screen shows", () => {
-  // decision: D-379 "„Mocniejszy zwój” +5 health from a bandage, prices 1 · 1 · 2; „Wprawna dłoń” −2 minutes of „Opatrz”, prices 1 · 1 · 2; „Szybkie gojenie” +0.05 health regained by itself in a game minute, prices 2 · 3; „Ucisk”, price 3"
+  // decision: D-379 "Each rank of a branch of „Opatrywanie małych ran” gives the effect below, and the ranks of a branch cost the points listed, in order: „Mocniejszy zwój” +5 health from a bandage, prices 1 · 1 · 2; „Wprawna dłoń” −2 minutes of „Opatrz”, prices 1 · 1 · 2; „Szybkie gojenie” +0.05 health regained by itself in a game minute, prices 2 · 3; „Ucisk”, price 3"
   assert.deepEqual(BRANCHES.strongerRoll, {
     skill: "tending",
     name: "Mocniejszy zwój",
@@ -284,7 +284,7 @@ test("the three numerical branches carry their costs, effects, previews and the 
 });
 
 test("the healing of a bandage and the health regained by itself grow by their branches' amounts per rank", () => {
-  // decision: D-379 "„Mocniejszy zwój” +5 health from a bandage, prices 1 · 1 · 2; „Szybkie gojenie” +0.05 health regained by itself in a game minute, prices 2 · 3"
+  // decision: D-379 "Each rank of a branch of „Opatrywanie małych ran” gives the effect below, and the ranks of a branch cost the points listed, in order: „Mocniejszy zwój” +5 health from a bandage, prices 1 · 1 · 2; „Wprawna dłoń” −2 minutes of „Opatrz”, prices 1 · 1 · 2; „Szybkie gojenie” +0.05 health regained by itself in a game minute, prices 2 · 3"
   const skills = {
     tending: { practice: 0, ranks: { strongerRoll: 2, quickHealing: 1 } },
   };
