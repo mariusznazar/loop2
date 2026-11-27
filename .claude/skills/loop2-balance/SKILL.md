@@ -31,7 +31,7 @@ with it standard output holds the result alone.
 | `campaign` | Plays one player from an empty account through the game's own actions | header and summary; with `--out` also the log of each campaign |
 | `programs` | Lists the reference programs in the words the game shows the player, each headed by its label `P1`, `P2`... and its identifier: the key to the labels of the map check's table | the list; with `--out DIR` one `<identifier>.json` per program and one file of all of them in words |
 | `check-map` | Checks the maps an overlay adds against every reference program (below) | one Markdown table |
-| `progression` | Measures each map of the game against every reference program, from what the maps before it gave, with no earning loop (below) | one Markdown table and one sentence under it |
+| `progression` | Measures each map of the game against every reference program, from what the maps before it gave, with no earning loop (below) | one Markdown table, one sentence under it, and a second table that sets each map beside its opener |
 | `help` | Lists each command's flags | the usage text |
 
 Each command takes only its own flags. A flag of another command, a missing value, a repeated flag
@@ -40,8 +40,10 @@ or an unknown name stops the command with a sentence on standard error and exit 
 ## Flags
 
 - `--map <id>`: a map of the game, or a map an overlay adds. The game's maps are `forestEdge`
-  (Skraj lasu), `forest` (Las), `forestDeep` (Las — głębiej), `forestPack` (Las — wataha) and
-  `forestLair` (Las — matecznik), named as the game shows them.
+  (Skraj lasu), `forest` (Las), `forestDeep` (Las — głębiej), `forestPack` (Las — wataha), `forestDeep2`,
+  `forestDeep3` and `forestDeep4` (Las — głębiej II, III and IV, the rungs of the ladder that Las —
+  głębiej opens; the game composes their names from the first map of their line) and `forestLair`
+  (Las — matecznik), named as the game shows them.
 - `--program <id or path>`: an identifier of the reference programs (`npm run --silent balance -- programs`
   lists them), or the path of a program file of the game's shape.
 - `--seeds <list>`: a range `1-500`, a list `3,7,12`, or both `1-5,9`. Default `1-100`; `trace`
@@ -170,14 +172,23 @@ in with none of it. A manual run pays no practice and its death is not settled. 
 program needs without opening an action of its rules, as a reference program's comment may name, is
 not bought: read such a row as measured without it.
 
-The table is the map check's without the earning loop's columns: the map, the program's label
+The first table is the map check's without the earning loop's columns: the map, the program's label
 (`P1`, `P2`..., the key to it is `programs`), the share solved, the median game minutes of the solved
 runs, the deaths by cause and the runs at the cap. Under it stands one sentence that says with what
-each map was measured and how many manual runs its stock took. Both go to the person as they are,
-and name no condition, action, rule, skill, branch, rank or item. A map can be solved where its best
+each map was measured and how many manual runs its stock took.
+
+Then comes a second table, with a row for each map that another map opens: the map, its best share
+(`Best share`), whether it can be solved, its opener, the opener's best share, the map's best share
+with the opener's character (`Best share with the opener's character`), and `Harder than the opener`.
+The opener's character is the one the measurement builds for the opener: the practice and ranks from
+the maps before the opener, and its stock. The two shares of a map stand side by side: `Best share` is
+measured from the map's own chain of openers, and the verdict reads only the share with the opener's
+character against the opener's best share. A map that opens nothing has dashes in the opener's cells.
+Both tables go to the person as they are, and name no condition, action, rule, skill, branch, rank or
+item. A map can be solved where its best
 program, with the character built from what the maps before it gave, solves one seed or more of
-1-500. A map is harder than the map that opens it where its best program solves a smaller share of
-the seeds than the best program of the map that opens it does. Las — matecznik, until the change that sets its
+1-500. A map is harder than the map that opens it where, measured with the opener's character, its best
+program solves a smaller share of the seeds than the best program of the map that opens it does (D-448). Las — matecznik, until the change that sets its
 numbers, passes this check where no program solves a seed of it. Read the share of each map's best
 row from the table. A failure of the best program says the map needs an earning loop; a pass can
 let through a map that a player without an equally good program passes more rarely.
@@ -186,6 +197,49 @@ let through a map that a player without an equally good program passes more rare
 open it, and the best program of each is picked among the programs named, so a narrowed run is no
 cut of the whole table. A map the game's data lacks and a program that is no reference program stop the command
 before any measurement.
+
+## Adding a rung of the ladder and checking it
+
+A rung is a game map that differs from the map that opens it by its numbers alone (D-448). It stands
+in the game maps' data, `src/browser/sim/data/maps.ts`, as a row of its own (D-464), and the game
+takes everything the row does not give from the map that opens it. To add a rung:
+
+1. Place the row in the order of the rows (D-466): right after the last map that the rung's opener
+   already opens, and after the line of rungs that grows from that map. The line of rungs is the
+   rungs that map opens, each followed by the rungs they open in turn. Where the opener opens no map
+   yet, the row goes right after the opener.
+2. The row names the map that opens it (`opensAfter`) and gives only the numbers in which it differs:
+   the grid (`width`, `height`), `entrance`, `ambientTemperature`, `stepMinutes`, the caps of what is
+   carried in and out (`carryIn`, `carryOut`), the resources and attackers, each matched to the
+   opener's by identifier and given only the numbers that change, and the solving condition's numbers
+   of the kind the opener has. A resource the rung does not give stays in the row with density 0, so
+   no map run places it. A row that adds a resource, an attacker or a kind of solving condition the
+   opener lacks is refused. A row changes no creature.
+3. The row writes no name. The game composes it from the name of the first map of the line that is no
+   rung, and the Roman numeral of the rung's place in the line: II for the first rung, then III, IV
+   and so on (D-465).
+4. Write by hand the three sentences of the row: `solvingText` (the sentence of the solving
+   condition), `goalText` (one short sentence of what the rung demands) and `completionText` (the text
+   after its solving, which names the rung by its composed name, as in `Las — głębiej II rozwiązany`).
+
+Then check the rung before it enters the game through a merge:
+
+```sh
+npm run --silent balance -- progression --out .runs/<name>.md
+```
+
+Run it on the data of the branch, with no overlay, every reference program and the seeds 1-500 that
+are the default. The rung passes where both hold in the two tables:
+
+- its `Can be solved` is `yes`: its best program solves one seed or more of the 500;
+- its `Harder than the opener` is `yes`.
+
+While tuning, narrow the run with `--maps <id>` (for example `--maps forestDeep2`, which still
+measures the maps that open it) and `--seeds 1-100`; make one full run with every map and the seeds
+1-500 at the end. Where the rung fails, change its numbers only as far as the check needs, and say in
+the request for the merge which numbers changed and why. The description of that request holds the two
+tables with their labels `P1`, `P2`... only; the programs and the attempts stay with the agent (D-428,
+D-429).
 
 ## Where results go
 
@@ -202,5 +256,8 @@ A `sweep` of 500 seeds takes a few seconds; `check-map` for one overlay takes ab
 two narrowed rows about 6 seconds. Each call also builds the game, so a short measurement costs about
 two seconds more.
 
-`progression` for the five maps of the game, every reference program on seeds 1-500, takes about a
-minute and a half.
+One run of `progression --maps forest --out .runs/<name>.md` on seeds 1-100 took about 16 seconds of
+wall-clock time, the build of about two seconds included, measured once with the `time` command. The
+second table adds one more measurement of each map that another map opens, from its opener's
+character: a run that names `forest` measures `forest` twice and its opener `forestEdge` once, and
+prints the rows of `forest` only. The full run over every map on seeds 1-500 was not timed.
