@@ -177,13 +177,15 @@ The first table is the map check's without the earning loop's columns: the map, 
 runs, the deaths by cause and the runs at the cap. Under it stands one sentence that says with what
 each map was measured and how many manual runs its stock took.
 
-Then comes a second table, with a row for each map that another map opens: the map, its best share
+Then comes a second table, with a row for each map whose rows the first table holds, every map of the
+game or those `--maps` names: the map, its best share
 (`Best share`), whether it can be solved, its opener, the opener's best share, the map's best share
 with the opener's character (`Best share with the opener's character`), and `Harder than the opener`.
 The opener's character is the one the measurement builds for the opener: the practice and ranks from
 the maps before the opener, and its stock. The two shares of a map stand side by side: `Best share` is
 measured from the map's own chain of openers, and the verdict reads only the share with the opener's
-character against the opener's best share. A map that opens nothing has dashes in the opener's cells.
+character against the opener's best share. A map that no map opens, as Skraj lasu, has dashes in the
+four cells of the opener, the verdict's included.
 Both tables go to the person as they are, and name no condition, action, rule, skill, branch, rank or
 item. A map can be solved where its best
 program, with the character built from what the maps before it gave, solves one seed or more of
@@ -200,7 +202,8 @@ before any measurement.
 
 ## Adding a rung of the ladder and checking it
 
-A rung is a game map that differs from the map that opens it by its numbers alone (D-448). It stands
+A rung is a game map that differs from the map that opens it by its numbers alone and that the ladder
+mechanism makes from a row naming that map (D-448, D-464). It stands
 in the game maps' data, `src/browser/sim/data/maps.ts`, as a row of its own (D-464), and the game
 takes everything the row does not give from the map that opens it. To add a rung:
 

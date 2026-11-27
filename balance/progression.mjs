@@ -313,7 +313,7 @@ function measureMap({ mapId, before, programIds, seeds, labels, gear }) {
  * The comparison of a map with the map that opens it (D-448): the opener, its best share, the best
  * share of the map measured with the character built for the opener, and whether the map is harder.
  * `measured` holds the maps measured so far, the opener and the maps before it among them. A map that
- * opens nothing gives no comparison, so its fields are null.
+ * no map opens gives no comparison, so its fields are null.
  */
 function withOpenerOf({ mapId, measured, programIds, seeds, labels, gear }) {
   const opener = MAPS[mapId].opensAfter;
@@ -350,9 +350,13 @@ function withOpenerOf({ mapId, measured, programIds, seeds, labels, gear }) {
  * it measured first) every reference program of `programIds`, on `seeds`, from the state the maps
  * before it give, the character of each run, stock runs included, starting with the `gear` given.
  * Gives the `rows` of the requested maps, a row per map and program, and the `maps`
- * with their best program, whether it solves one seed or more, the manual runs its stock took, and
- * the practice the map was measured with and its first solving pays. A map the game's data lacks, and
- * a program that is no reference program, are refused before any measurement.
+ * with their best program, whether it solves one seed or more, the manual runs its stock took, the
+ * practice the map was measured with and its first solving pays, and its comparison with the map that
+ * opens it (D-448): that map's identifier as `opener` and its name as `openerName`, its best share as
+ * `openerBestShare`, the
+ * best share of the map measured with the opener's character as `withOpenerShare`, and `harder`,
+ * whether that share is the smaller, each null where no map opens the map. A map the game's data
+ * lacks, and a program that is no reference program, are refused before any measurement.
  */
 export function measureProgression({
   mapIds = Object.keys(MAPS),
@@ -440,9 +444,10 @@ function yesOrNo(value) {
 }
 
 /**
- * The table of the maps' comparison with their openers: a row per map, its best share, whether it can be
- * solved, its opener, the opener's best share, the map's best share with the opener's character, and
- * whether it is harder than its opener. A map that opens nothing has dashes in the opener's cells.
+ * The table of the maps' comparison with their openers: a row per requested map, its best share, whether
+ * it can be solved, its opener, the opener's best share, the map's best share with the opener's
+ * character, and whether it is harder than its opener. A map that no map opens has dashes in the four
+ * cells of the opener.
  */
 function openerTable(maps, basis) {
   const header = [
