@@ -88,9 +88,12 @@ import type {
  * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, of the
  * slots of the gear of the data, which `Gear` enumerates, and of the ordinary actions of the data,
  * whose kinds are the keys of `minutesByAction` in the record of a manual map run: a new action or a
- * removed one changes those keys.
+ * removed one changes those keys. It rises too where the keys stay and an old document still describes
+ * a game the rules no longer make: a skill's tree enters the Understanding only with a pair discovered
+ * in a minute (D-195), so a game of version 11 in which „Wytwórz” is already discovered would never
+ * get the tree of „Opatrywanie małych ran”, and a record of combat may now hold a turn of „Ucisk”.
  */
-export const SAVED_GAME_VERSION = 11;
+export const SAVED_GAME_VERSION = 12;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };

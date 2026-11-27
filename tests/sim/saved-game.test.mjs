@@ -79,30 +79,39 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // bandage as their target. Its characters and the characters of its map runs hold no gear; the game
 // refuses it as another version since version 11.
 //
-// The document of the current version, version 11, is that of version 10 with the gear of each
-// character (D-451, D-452, D-456, D-460, D-463, D-206): each character of the team holds its gear, the
-// slots the player changed since the start of the map run going on of its earning loop and the count
-// of its gear changes, and the character of each map run holds the gear of that map run. The result
-// of an encounter holds the gear and the backpack its turns left, and each action of the character in
-// it the mark of a refill, which says whether the action took its piece from the backpack into the
-// empty main hand first (D-144, D-457). An action of a turn may also be „Załóż”, which takes a turn of
-// its own in a fight as it takes its minutes outside one (D-140, D-458), and the record of a manual map
-// run counts the minutes of that action as a kind of their own, `equip`. This document was rewritten
-// with the result's gear, backpack and mark, the turn of „Załóż” and its kind of minutes without
-// raising the version, since no saved game state of version 11 exists anywhere yet: the change that
-// brought version 11 has reached no server. It fills
-// every optional branch of the game state, the new ones among them: a character holding a stick in
-// its main hand and a bandage in a pocket, a character of an earning loop with a changed slot, a
-// character with an empty gear, map runs whose gear differs from their character's, and a combat
-// record whose first strike took a stick into the hand, whose later ones did not, and one of whose
-// turns put a bandage on. It also
-// fills the others: the chest, the Understanding, the report's chest and the trip lists naming the
-// bandage, programs of content revision 0 and above, an earning loop whose two counts stand above 0
-// with the run below the longest, a map run with a campfire, a burning item, a combat record, a copy
-// whose program was deleted, a discovery held and counts beside the copy's rules; trip lists in
-// programs, the copy changed from its frozen bring plan, known trees, practice of the map run and of
-// its combat, and ranks bought; an earning loop with an activity going on; a stopped earning loop that
-// gathered practice; and report lines open, stopped away and stopped in the open game.
+// The document of version 11 is that of version 10 with the gear of each character (D-451, D-452,
+// D-456, D-460, D-463, D-206): each character of the team holds its gear, the slots the player changed
+// since the start of the map run going on of its earning loop and the count of its gear changes, and
+// the character of each map run holds the gear of that map run. The result of an encounter holds the
+// gear and the backpack its turns left, and each action of the character in it the mark of a refill,
+// which says whether the action took its piece from the backpack into the empty main hand first (D-144,
+// D-457). An action of a turn may also be „Załóż”, which takes a turn of its own in a fight as it takes
+// its minutes outside one (D-140, D-458), and the record of a manual map run counts the minutes of that
+// action as a kind of their own, `equip`. It holds a character with a stick in its main hand and a
+// bandage in a pocket, a character of an earning loop with a changed slot, a character with an empty
+// gear, map runs whose gear differs from their character's, and a combat record whose first strike took
+// a stick into the hand, whose later ones did not, and one of whose turns put a bandage on. Its
+// characters hold eight character skills; the game refuses it as another version since version 12.
+//
+// The document of the current version, version 12, is that of version 11 with the ninth character
+// skill, „Opatrywanie małych ran”, and its action of combat „Ucisk” (D-379, D-144, D-195, D-206): no key
+// of the shape is new, but a game of version 11 in which „Wytwórz” is already discovered would never get
+// the skill's tree, which enters the Understanding only with a pair discovered in a minute, and a combat
+// record may now hold a turn of „Ucisk”. Each character holds the skill, Ala with practice and the
+// ranks of two branches bought, „Ucisk” among them; the Understanding holds its tree and the action; the
+// practice of the map run and of its combat holds it, and the combat record holds two turns of „Ucisk”,
+// one that took a piece from a pocket and one that refilled an empty pocket from the backpack (D-457).
+// The document fills every optional branch of the game state: the chest, the Understanding, the
+// report's chest and the trip lists naming the bandage, programs of content revision 0 and above, an
+// earning loop whose two counts stand above 0 with the run below the longest, a map run with a
+// campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
+// counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring plan,
+// known trees, practice of the map run and of its combat, and ranks bought; a character holding a stick
+// in its main hand and a bandage in a pocket, a character of an earning loop with a changed slot, a
+// character with an empty gear, map runs whose gear differs from their character's, and a combat record
+// whose first strike took a stick into the hand and one of whose turns put a bandage on; an earning loop
+// with an activity going on; a stopped earning loop that gathered practice; and report lines open,
+// stopped away and stopped in the open game.
 // `HEADQUARTERS` below holds the counts beside a program of the list, which a game state holds only
 // outside a map run, and an earning loop in a combat going on, with no manual map run. Its map run is
 // written paused, so the load's pause changes nothing in it. A change of the game state's shape makes
@@ -969,11 +978,11 @@ const runGeared = (run, gear) => ({
 });
 
 /**
- * The last combat of the map run of the current version: that of version 10, whose first strike took
- * a stick from the backpack into the empty main hand and whose three later strikes took none, with a
- * turn of „Załóż” putting a bandage on in the second turn, and the gear and the backpack the turns left:
- * the stick in the hand, the bandages in two pockets, and six pieces in the backpack, within the
- * carrying capacity of 15.
+ * The last combat of the map run of version 11: that of version 10, whose first strike took a stick
+ * from the backpack into the empty main hand and whose three later strikes took none, with a turn of
+ * „Załóż” putting a bandage on in the second turn, and the gear and the backpack the turns left: the
+ * stick in the hand, the bandages in two pockets, and six pieces in the backpack, within the carrying
+ * capacity of 15.
  */
 const COMBAT_V10 = DOCUMENT_V10.game.run.lastCombat;
 // The turn of „Załóż”: the character puts a bandage on in the turn in which version 10 had no action
@@ -987,7 +996,7 @@ const EQUIP_TURN = {
   creatureHealth: 18,
   characterHealth: 79,
 };
-const LAST_COMBAT = {
+const LAST_COMBAT_V11 = {
   ...COMBAT_V10,
   result: {
     ...COMBAT_V10.result,
@@ -1013,15 +1022,15 @@ const LAST_COMBAT = {
 };
 
 /**
- * The document of the current version, version 11: version 10 with the gear. Ala, the character of
- * the manual map run, holds a stick in her main hand and a bandage in her second pocket, put on in
- * three changes, and her map run holds a bandage in her first pocket too; Ola, in an earning loop,
- * holds a stick for her next map run in the main hand she changed, her one change, while the map run
- * going on holds nothing; Ewa holds an empty gear and has made no change. The last combat of the map
- * run is `LAST_COMBAT`.
+ * The document of version 11: version 10 with the gear. Ala, the character of the manual map run,
+ * holds a stick in her main hand and a bandage in her second pocket, put on in three changes, and her
+ * map run holds a bandage in her first pocket too; Ola, in an earning loop, holds a stick for her next
+ * map run in the main hand she changed, her one change, while the map run going on holds nothing; Ewa
+ * holds an empty gear and has made no change. The last combat of the map run is `LAST_COMBAT_V11`.
+ * The game refuses it as another version since version 12.
  */
 const [ALA_V10, OLA_V10, EWA_V10] = DOCUMENT_V10.game.team.characters;
-const DOCUMENT = {
+const DOCUMENT_V11 = {
   version: 11,
   game: {
     ...DOCUMENT_V10.game,
@@ -1050,12 +1059,130 @@ const DOCUMENT = {
         pocket1: "bandage",
         pocket2: "bandage",
       }),
-      lastCombat: LAST_COMBAT,
+      lastCombat: LAST_COMBAT_V11,
     },
     loops: {
       2: {
         ...DOCUMENT_V10.game.loops[2],
         run: runGeared(DOCUMENT_V10.game.loops[2].run, EMPTY_GEAR),
+      },
+    },
+  },
+};
+
+/** `NEW_SKILLS` with the ninth character skill, „Opatrywanie małych ran” (D-379): a new character holds it with no practice. */
+const NEW_SKILLS_12 = { ...NEW_SKILLS, tending: { practice: 0, ranks: {} } };
+
+/**
+ * Ala's skills of the current version: those of `ALA_SKILLS` and „Opatrywanie małych ran” with the
+ * practice 110, which reaches all four of its thresholds (10, 28, 60 and 110), four points, spent on
+ * the one price of „Ucisk” (3) and the first price of „Mocniejszy zwój” (1).
+ */
+const ALA_SKILLS_12 = {
+  ...ALA_SKILLS,
+  tending: { practice: 110, ranks: { strongerRoll: 1, pressure: 1 } },
+};
+
+/**
+ * The turns of „Ucisk — opatrunek” of the last combat of the current version, each at the 7 health the
+ * wolf strikes for and the 30 health a bandage gives back to Ala with the bought rank of „Mocniejszy
+ * zwój” (25 and 5 for the rank, D-145). The first takes the piece the turn of „Załóż” put into the first
+ * pocket, so no refill; the second finds no pocket holding a bandage and takes one from the backpack
+ * through the first empty pocket, a refill, and the health it gives back stops at the full 100.
+ */
+const PRESSURE_FROM_POCKET = {
+  ruleId: 8,
+  action: { kind: "pressure", item: "bandage" },
+  refill: false,
+  damage: 0,
+  creatureHealth: 12,
+  characterHealth: 95,
+};
+const PRESSURE_REFILLED = {
+  ...PRESSURE_FROM_POCKET,
+  refill: true,
+  characterHealth: 100,
+};
+
+/**
+ * The last combat of the map run of the current version, five turns as the data's five combat minutes
+ * give: the first three of version 11 (a strike taking a stick into the hand, the turn of „Załóż” and a
+ * strike), then the two turns of „Ucisk” (the wolf at 12 health is not defeated and departs). The turns
+ * left the stick in the hand and the pockets empty, and the backpack seven pieces: three sticks, two
+ * berries, one moss and one bandage, within the carrying capacity of 15.
+ */
+const LAST_COMBAT = {
+  ...LAST_COMBAT_V11,
+  result: {
+    practice: { oneHandedCombat: 2, tending: 2 },
+    characterHealth: 100,
+    creatureHealth: 12,
+    outcome: "creatureDeparted",
+    exchanges: [
+      ...LAST_COMBAT_V11.result.exchanges.slice(0, 3),
+      {
+        creatureAction: { kind: "strike", damage: 7, characterHealth: 65 },
+        characterAction: PRESSURE_FROM_POCKET,
+      },
+      {
+        creatureAction: { kind: "strike", damage: 7, characterHealth: 88 },
+        characterAction: PRESSURE_REFILLED,
+      },
+    ],
+    ruleStarts: { 3: 2, 7: 1, 8: 2 },
+    gear: { ...EMPTY_GEAR, mainHand: "stick" },
+    backpack: { stick: 3, berry: 2, moss: 1, fiber: 0, bandage: 1 },
+  },
+};
+
+/**
+ * The document of the current version, version 12: version 11 with the ninth character skill. Every
+ * character holds it, Ala with practice and two ranks bought, among them „Ucisk”; the Understanding
+ * holds its tree and the action „Ucisk”; the map run's practice and its character's skills, the
+ * snapshot at its start, hold it, and so does the practice of its last combat, `LAST_COMBAT`, whose
+ * two last turns are turns of „Ucisk”. The map run's practice counts the two strikes and the two turns
+ * of „Ucisk” of that combat, and the one tending with a bandage, the 5 minutes of „Opatrz” its record
+ * holds.
+ */
+const [ALA_V11, OLA_V11, EWA_V11] = DOCUMENT_V11.game.team.characters;
+const DOCUMENT = {
+  version: 12,
+  game: {
+    ...DOCUMENT_V11.game,
+    understanding: {
+      ...DOCUMENT_V11.game.understanding,
+      trees: [...DOCUMENT_V11.game.understanding.trees, "tending"],
+      actions: [...DOCUMENT_V11.game.understanding.actions, "pressure"],
+    },
+    team: {
+      ...DOCUMENT_V11.game.team,
+      characters: [
+        { ...ALA_V11, skills: ALA_SKILLS_12 },
+        { ...OLA_V11, skills: NEW_SKILLS_12 },
+        { ...EWA_V11, skills: NEW_SKILLS_12 },
+      ],
+    },
+    run: {
+      ...DOCUMENT_V11.game.run,
+      practice: {
+        exploration: 3,
+        smallItemGathering: 5,
+        oneHandedCombat: 2,
+        tending: 3,
+      },
+      character: { ...DOCUMENT_V11.game.run.character, skills: ALA_SKILLS_12 },
+      lastCombat: LAST_COMBAT,
+    },
+    loops: {
+      2: {
+        ...DOCUMENT_V11.game.loops[2],
+        run: {
+          ...DOCUMENT_V11.game.loops[2].run,
+          character: {
+            ...DOCUMENT_V11.game.loops[2].run.character,
+            skills: NEW_SKILLS_12,
+          },
+        },
       },
     },
   },
@@ -1070,7 +1197,7 @@ const DOCUMENT = {
  * her next map run, two changes, while the map run going on keeps the stick it started with.
  */
 const HEADQUARTERS = {
-  version: 11,
+  version: 12,
   game: {
     programs: [
       { id: 1, name: "Program", program: PROGRAM_1, contentRevision: 1 },
@@ -1095,7 +1222,7 @@ const HEADQUARTERS = {
           name: "Ala",
           archetypeId: "elementalMage",
           traits: { carryingCapacity: 15 },
-          skills: NEW_SKILLS,
+          skills: NEW_SKILLS_12,
           generation: 1,
           gear: { ...EMPTY_GEAR, pocket1: "bandage" },
           changedSlots: ["pocket1", "mainHand"],
@@ -1157,13 +1284,13 @@ test("the server's save of the current version loads into the game it holds, its
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const save = {
-    version: 11,
+    version: 12,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 11 is the current version since the raise, so 10 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 10 }), {
+  // D-206: 12 is the current version since the raise, so 11 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 11 }), {
     ok: false,
     reason: "version",
   });
@@ -1386,8 +1513,8 @@ test("the team's moment of the next return below zero loads, as it is a safe int
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
-  // D-206: 11 is the current version since the raise, so 10 and 12 stand in for another one.
-  for (const version of [0, 8, 9, 10, 12, -1]) {
+  // D-206: 12 is the current version since the raise, so 11 and 13 stand in for another one.
+  for (const version of [0, 9, 10, 11, 13, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -1395,14 +1522,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 12 of another shape",
-    { version: 12, game: "Las" },
+    "version 13 of another shape",
+    { version: 13, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 12 with an archetype absent from the data",
+    "version 13 with an archetype absent from the data",
     changed((document) => {
-      document.version = 12;
+      document.version = 13;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -1565,13 +1692,12 @@ test("the document of version 9 is refused as version, whatever its game holds",
 
 // invariant: save-version
 // D-206: the document of version 10 is discarded whole, whatever it holds, though its game state is
-// sound but for the gear its characters and its map runs' characters lack (D-451, D-452, D-463); the
-// current version is the one after it. The same game under the current version is no document of it,
-// and is refused as shape.
+// sound but for the gear its characters and its map runs' characters lack (D-451, D-452, D-463);
+// version 11 is the one after it. The same game under the current version is no document of it, and
+// is refused as shape.
 test("the document of version 10 is refused as version, whatever its game holds", () => {
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   assert.equal(DOCUMENT_V10.version, 10);
-  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V10.version + 1);
   assertRefused(
     "the document of version 10",
     structuredClone(DOCUMENT_V10),
@@ -1586,6 +1712,27 @@ test("the document of version 10 is refused as version, whatever its game holds"
     "the game of version 10 held under the current version",
     { ...structuredClone(DOCUMENT_V10), version: SAVED_GAME_VERSION },
     "shape",
+  );
+});
+
+// invariant: save-version
+// D-206: the document of version 11 is discarded whole, whatever it holds. Its game is whole in every
+// key the current shape has, but a game of version 11 in which „Wytwórz” is already discovered would
+// never get the tree of „Opatrywanie małych ran”, which enters the Understanding only with a pair
+// discovered in a minute (D-195); the current version is the one after it.
+test("the document of version 11 is refused as version, whatever its game holds", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  assert.equal(DOCUMENT_V11.version, 11);
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V11.version + 1);
+  assertRefused(
+    "the document of version 11",
+    structuredClone(DOCUMENT_V11),
+    "version",
+  );
+  assertRefused(
+    "the document of version 11 with the tree and the turns of „Ucisk” of the current version",
+    { ...structuredClone(DOCUMENT), version: 11 },
+    "version",
   );
 });
 
@@ -3207,6 +3354,107 @@ Object.assign(CRAFTED, {
     }),
 });
 
+/** The skill „Opatrywanie małych ran” of a character of a document: Ala's has practice 110, four points, one rank of „Mocniejszy zwój” and one of „Ucisk” bought. */
+const tendingOf = (character) => character.skills.tending;
+
+Object.assign(CRAFTED, {
+  // „Ucisk” in a turn of a combat record (D-144, D-457): it gives health back and deals nothing, so its
+  // damage is 0; its target is an item that heals, and its refill mark a truth value as any turn's.
+  "a turn of „Ucisk” with damage": (document) =>
+    (fought(document).exchanges[3].characterAction.damage = 6),
+  "a turn of „Ucisk” with a fractional damage": (document) =>
+    (fought(document).exchanges[3].characterAction.damage = 0.5),
+  "a turn of „Ucisk” with a damage below 0": (document) =>
+    (fought(document).exchanges[3].characterAction.damage = -6),
+  "a refilled turn of „Ucisk” with damage": (document) =>
+    (fought(document).exchanges[4].characterAction.damage = 6),
+  "a turn of „Ucisk” with no item": (document) =>
+    (fought(document).exchanges[3].characterAction.action = {
+      kind: "pressure",
+    }),
+  "a turn of „Ucisk” with an item that gives no healing": (document) =>
+    (fought(document).exchanges[3].characterAction.action = {
+      kind: "pressure",
+      item: "stick",
+    }),
+  "a turn of „Ucisk” with an item the data lack": (document) =>
+    (fought(document).exchanges[3].characterAction.action = {
+      kind: "pressure",
+      item: "sword",
+    }),
+  "a turn of „Ucisk” with a field beyond its kind and item": (document) =>
+    (fought(document).exchanges[3].characterAction.action = {
+      kind: "pressure",
+      item: "bandage",
+      resource: "moss",
+    }),
+  "a turn of „Ucisk” without its refill mark": (document) =>
+    delete fought(document).exchanges[3].characterAction.refill,
+  "a turn of „Ucisk” with a refill mark as text": (document) =>
+    (fought(document).exchanges[4].characterAction.refill = "true"),
+  // „Ucisk” is an action of combat only: no activity of a map run is one, and no game minute counts to it.
+  "„Ucisk” as the activity going on of the map run": (document) =>
+    (document.game.run.current.activity.action = {
+      kind: "pressure",
+      item: "bandage",
+    }),
+  "„Ucisk” as the activity going on of an earning loop": (document) =>
+    (olaLoop(document).run.current.activity.action = {
+      kind: "pressure",
+      item: "bandage",
+    }),
+  "the game minutes by action with „Ucisk” counted": (document) => {
+    document.game.run.minutesByAction.pressure = 1;
+    document.game.run.minutesByAction.gather -= 1;
+  },
+  // The ranks of the branches of „Opatrywanie małych ran” (D-191, D-379), practice 110 giving 4 points.
+  // „Ucisk” has the one price of 3, so it has no second rank; the points would still suffice (1 and 3),
+  // so only the check of the prices refuses it.
+  "a rank of „Ucisk” above its price": (document) =>
+    (tendingOf(ala(document)).ranks.pressure = 2),
+  // „Mocniejszy zwój” has the prices 1, 1 and 2, which a fourth rank would pass by one point.
+  "a rank of „Mocniejszy zwój” above its prices": (document) =>
+    (tendingOf(ala(document)).ranks = { strongerRoll: 4 }),
+  "a rank of „Wprawna dłoń” above its prices": (document) =>
+    (tendingOf(ala(document)).ranks = { deftHand: 4 }),
+  "a rank of „Ucisk” bought with two points": (document) =>
+    (ala(document).skills.tending = { practice: 28, ranks: { pressure: 1 } }),
+  "a rank of „Ucisk” bought with no practice": (document) =>
+    (ala(document).skills.tending = { practice: 0, ranks: { pressure: 1 } }),
+  "a rank of „Ucisk” of a branch of another tree": (document) =>
+    (ala(document).skills.exploration.ranks.pressure = 1),
+  "a rank of „Wprawne oko” in the tree of „Opatrywanie małych ran”": (
+    document,
+  ) => (tendingOf(ala(document)).ranks.keenEye = 1),
+  "a rank of „Ucisk” in a tree the Understanding lacks": (document) =>
+    (document.game.understanding.trees =
+      document.game.understanding.trees.filter((tree) => tree !== "tending")),
+  "the map run's character with ranks of „Opatrywanie małych ran” beyond its points":
+    (document) =>
+      (document.game.run.character.skills = {
+        ...document.game.run.character.skills,
+        tending: { practice: 60, ranks: { pressure: 1, strongerRoll: 1 } },
+      }),
+  "an earning loop's character with the rank of „Ucisk” and no practice": (
+    document,
+  ) =>
+    (olaLoop(document).run.character.skills = {
+      ...olaLoop(document).run.character.skills,
+      tending: { practice: 0, ranks: { pressure: 1 } },
+    }),
+  "„Opatrywanie małych ran” with a key beside its practice and ranks": (
+    document,
+  ) => (tendingOf(ala(document)).level = 4),
+  "„Opatrywanie małych ran” without its ranks": (document) =>
+    delete tendingOf(ola(document)).ranks,
+  "„Opatrywanie małych ran” with a practice below 0": (document) =>
+    (tendingOf(ola(document)).practice = -1),
+  "the map run's practice of „Opatrywanie małych ran” at 0": (document) =>
+    (document.game.run.practice.tending = 0),
+  "a combat record's practice of „Opatrywanie małych ran” at 0": (document) =>
+    (fought(document).practice.tending = 0),
+});
+
 /**
  * The places an action of „Wytwórz”, „Opatrz” or „Załóż” stands in a document: a rule of a program, of a copy,
  * of a base and of an earning loop's program, and the activity going on of the map run and of an
@@ -3239,6 +3487,7 @@ const VERB_NAMES = {
   craft: "„Wytwórz”",
   tend: "„Opatrz”",
   equip: "„Załóż”",
+  pressure: "„Ucisk”",
 };
 
 /** The targets no verb takes: the items without its property, an identifier the data lack, a value no identifier. */
@@ -3246,6 +3495,7 @@ const NOT_TARGETS = {
   craft: ["moss", "stick", "fiber", "berry"],
   tend: ["moss", "stick", "fiber", "berry"],
   equip: ["moss", "fiber", "berry"],
+  pressure: ["moss", "stick", "fiber", "berry"],
 };
 
 /** What the data give an item that a verb takes as its target: the property its targets are the items of. */
@@ -3253,6 +3503,7 @@ const TARGET_PROPERTY = {
   craft: "recipe",
   tend: "healing",
   equip: "place of the gear",
+  pressure: "healing",
 };
 
 const NOT_ITEMS = {
@@ -3269,8 +3520,17 @@ const NOT_ITEMS = {
   "an item as a truth value": true,
 };
 
+/** The places that hold a rule: „Ucisk” stands in a rule, and no activity of a map run is one. */
+const RULE_PLACES = [
+  "a program",
+  "a copy",
+  "a base",
+  "an earning loop's program",
+];
+
 for (const [place, set] of Object.entries(VERB_PLACES)) {
-  for (const kind of ["craft", "tend", "equip"]) {
+  for (const kind of ["craft", "tend", "equip", "pressure"]) {
+    if (kind === "pressure" && !RULE_PLACES.includes(place)) continue;
     const verb = VERB_NAMES[kind];
     const refused = {
       ...Object.fromEntries(
@@ -3309,6 +3569,21 @@ test("each place of an action holds „Wytwórz”, „Opatrz” and „Załóż
         `${VERB_NAMES[kind]} in ${place}`,
       );
     }
+  }
+});
+
+// invariant: save-version
+test("„Ucisk” with the bandage stands in a rule of a program, a copy, a base and an earning loop's program, and loads", () => {
+  // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
+  for (const place of RULE_PLACES) {
+    const document = changed((copy) =>
+      VERB_PLACES[place](copy, "tend", { kind: "pressure", item: "bandage" }),
+    );
+    assert.deepEqual(
+      loadSavedGame(document),
+      { ok: true, state: document.game },
+      `„Ucisk” in ${place}`,
+    );
   }
 });
 
@@ -3386,6 +3661,84 @@ test("a document at the edges of what the gear admits loads", () => {
     },
     "a combat turn with no action of the character": (document) =>
       (fought(document).exchanges[1].characterAction = null),
+  };
+  for (const [name, change] of Object.entries(edges)) {
+    const document = changed(change);
+    assert.deepEqual(
+      loadSavedGame(document),
+      { ok: true, state: document.game },
+      name,
+    );
+  }
+});
+
+// invariant: save-version
+test("the document of the current version holds the tree of „Opatrywanie małych ran”, its bought ranks and two turns of „Ucisk”, and the load gives them back", () => {
+  // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
+  const pressureTurns = (state) =>
+    state.run.lastCombat.result.exchanges
+      .map((turn) => turn.characterAction)
+      .filter((turn) => turn?.action.kind === "pressure");
+  // Precondition: the document fills what the change adds, so the load below has something to give back.
+  assert.equal(DOCUMENT.game.understanding.trees.includes("tending"), true);
+  assert.equal(pressureTurns(DOCUMENT.game).length, 2);
+  const loaded = loadSavedGame(structuredClone(DOCUMENT));
+  assert.equal(loaded.ok, true);
+  const { state } = loaded;
+  assert.equal(state.understanding.trees.at(-1), "tending");
+  assert.deepEqual(state.team.characters[0].skills.tending, {
+    practice: 110,
+    ranks: { strongerRoll: 1, pressure: 1 },
+  });
+  assert.deepEqual(state.team.characters[1].skills.tending, {
+    practice: 0,
+    ranks: {},
+  });
+  assert.equal(state.run.practice.tending, 3);
+  assert.equal(state.run.lastCombat.result.practice.tending, 2);
+  // The turn that took a bandage from a pocket and the one that took it from the backpack through an
+  // empty pocket, each with the item it uses up and the health it left at the character.
+  assert.deepEqual(
+    pressureTurns(state).map((turn) => [
+      turn.action.item,
+      turn.refill,
+      turn.damage,
+      turn.characterHealth,
+    ]),
+    [
+      ["bandage", false, 0, 95],
+      ["bandage", true, 0, 100],
+    ],
+  );
+});
+
+// invariant: save-version
+test("the branches of „Opatrywanie małych ran” load at their edges: „Ucisk” with exactly its three points, the last rank of „Mocniejszy zwój” and a turn in which the wolf dodges", () => {
+  // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
+  const edges = {
+    "„Ucisk” bought with exactly its price, the points of practice 60": (
+      document,
+    ) =>
+      (ala(document).skills.tending = {
+        practice: 60,
+        ranks: { pressure: 1 },
+      }),
+    "the last rank of „Mocniejszy zwój” with all four points": (document) =>
+      (ala(document).skills.tending = {
+        practice: 110,
+        ranks: { strongerRoll: 3 },
+      }),
+    "the map run's character holding the skill as it stood at the start of the run":
+      (document) =>
+        (document.game.run.character.skills = {
+          ...document.game.run.character.skills,
+          tending: { practice: 60, ranks: { pressure: 1 } },
+        }),
+    "a skill with practice and no rank": (document) =>
+      (ola(document).skills.tending = { practice: 9, ranks: {} }),
+    "a turn in which the wolf dodges beside the turns of „Ucisk”": (document) =>
+      (fought(document).exchanges[4].creatureAction = { kind: "dodge" }),
   };
   for (const [name, change] of Object.entries(edges)) {
     const document = changed(change);

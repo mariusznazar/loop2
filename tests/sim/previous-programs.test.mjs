@@ -131,7 +131,7 @@ function deepFreeze(value) {
 }
 
 // Versions 1 and 2 have programs with no trip plan; versions 3 to 8 have the trip plan; the items
-// of versions 9 and 10 and of version 11, the current version, carry the content revision beside
+// of versions 9 to 11 and of version 12, the current version, carry the content revision beside
 // the other three keys, so the bound of the readable versions is read in as well.
 test("a document of each readable version, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
   // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name`, `program` and the content revision (D-442) in a document of version 9 or above, or exactly `id`, `name` and `program` in one of an earlier version, and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
@@ -233,10 +233,19 @@ test("a document of each readable version, the current one included, gives its p
         ],
       },
     },
+    12: {
+      version: 12,
+      game: {
+        programs: [
+          { id: 1, name: "Program", program: EXPLORE, contentRevision: 0 },
+          { id: 2, name: "Las nocą", program: LAS, contentRevision: 3 },
+        ],
+      },
+    },
   };
   assert.equal(
     SAVED_GAME_VERSION,
-    11,
+    12,
     "precondition: the last document of the table is the current version",
   );
   assert.deepEqual(readPreviousPrograms(documents[1]), {
@@ -271,7 +280,7 @@ test("a document of each readable version, the current one included, gives its p
       { kind: "read", name: "Las nocą", program: LAS },
     ],
   });
-  for (const version of [6, 7, 8, 9, 10, 11]) {
+  for (const version of [6, 7, 8, 9, 10, 11, 12]) {
     // The result holds no content revision: the pull makes each program one of revision 0.
     assert.deepEqual(readPreviousPrograms(documents[version]), {
       ok: true,
