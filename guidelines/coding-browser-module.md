@@ -278,9 +278,10 @@ odczytu w `nowMs`. Nigdy nie woła go z rysowania ani z Efektu.
 Ekran nie wykonuje działań sam: kupno gałęzi i zatrzymanie pętli wychodzą przez `onBuy` i
 `onStop`, a wpis zamienia je na działania magazynu stanu (`state-store.ts`): kupno przez
 `actWithoutCatchUp`, który nie dolicza czasu, zatrzymanie przez `act`, który przed działaniem
-czyta zegar. Gdy w stanie gry stoi
-przejście na mapie (`run !== null`), przycisk „Kup” jest wyłączony, a ekran pisze, że
-stopnie kupi się po jego zakończeniu. Funkcje układające tekst, `loopLine` z `team-lines.ts`
+czyta zegar. Przycisk „Kup” idzie za tym, kiedy
+symulacja przyjmuje kupno (`purchaseOpen` z `skills.ts`): jest wyłączony tylko wtedy, gdy przejście
+ręczne trwa, a przy postaci przejścia, które czeka albo się skończyło, ekran pisze, od kiedy kupiony
+stopień działa. Funkcje układające tekst, `loopLine` z `team-lines.ts`
 i `branchText` z `character-skills.ts`, są czystymi funkcjami; nic nie rysują, więc ekran
 może je importować; import czystych funkcji dopuszcza D-265 niezależnie od statusu pliku.
 Nowy ekran kopiuje ten wpis i dopisuje jeden wiersz w tabeli rejestru w `game-view.ts`.
