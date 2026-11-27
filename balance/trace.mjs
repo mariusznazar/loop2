@@ -77,10 +77,10 @@ function textOf(event) {
 }
 
 /**
- * The trace of one map run on `seed` of `mapId` with the program, the skills and the chest given:
- * `lines` in the order of the game minutes, the `outcome` the engine names (`solved`, `death` or
- * `cap`), the `minute` the run ended at and its death's `cause`, or null. A wait of several minutes
- * is shown once, with its length.
+ * The trace of one map run on `seed` of `mapId` with the program, the skills, the gear and the chest
+ * given: `lines` in the order of the game minutes, the `outcome` the engine names (`solved`, `death`
+ * or `cap`), the `minute` the run ended at and its death's `cause`, or null. A wait of several
+ * minutes is shown once, with its length.
  */
 export function trace(options) {
   const {
@@ -88,12 +88,14 @@ export function trace(options) {
     program,
     seed,
     skills = buildSkills(),
+    gear = {},
     chest = {},
     capMinutes = DEFAULT_CAP_MINUTES,
   } = options;
   const state = makeState({
     program,
     skills,
+    gear,
     chest,
     solvedMaps: prerequisitesOf(mapId),
   });

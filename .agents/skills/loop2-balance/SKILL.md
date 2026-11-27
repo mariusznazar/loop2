@@ -50,13 +50,21 @@ or an unknown name stops the command with a sentence on standard error and exit 
   and `loop` take the chest only from this flag; `check-map` takes it from each program's take list.
 - `--practice <pairs>` and `--ranks <pairs>`: the practice of the character's skills and the bought
   ranks of the branches, as `smallItemGathering=80` and `keenEye=3`.
+- `--gear <pairs>`: the gear the measured character holds at the start of each map run, as
+  `mainHand=stick`: a slot and an item that fits it. `sweep`, `trace`, `loop`, `check-map` and
+  `progression` take it; a slot the game lacks, an item it lacks or an item that does not fit its slot
+  stops the command. With no flag the new character's gear is empty, so a stick of a take list goes to
+  the main hand at its first strike.
 - `--overlay <files>`: overlay files laid on the game's data for the measurement. Repeat the flag or
   list the files with commas.
 - `--cap <minutes>`: game minutes after which a map run is given up.
 - `--hours <list>`: real hours of the loop's readings, as `8,24,72`.
 - `--no-resurrection`: the loop starts with every use of the team's resurrection spent, the uses returning as in the game.
 - `--player <id or path>`: a player description. The identifiers are `edge-daily-best`,
-  `edge-daily-decent` and `edge-daily-decent-stock` (the files of `balance/players/`).
+  `edge-daily-decent` and `edge-daily-decent-stock` (the files of `balance/players/`). A description
+  may name the gear the mage starts with, as `"gear": {"mainHand": "stick"}`: the game's own act puts
+  each piece on from a chest that holds exactly those pieces, and a slot the game lacks or an item
+  that does not fit its slot stops the command. Without `gear` the mage starts with empty gear.
 - `--maps <list>` and `--programs <list>`: narrow the rows of `check-map` (maps an overlay adds)
   and of `progression` (maps of the game, as `forest,forestDeep`).
 - `--out <path>`: writes the result to that file and prints nothing (for `programs`, a directory).
@@ -110,7 +118,9 @@ Every map goes through this check before a package is defined.
    ```
 
    Every row runs with a new character's skills unless `--practice` or `--ranks` say otherwise, and
-   those flags apply to all rows alike. A program that needs a branch of the skills measures near
+   with empty gear unless `--gear` says otherwise; those flags apply to all rows alike. The gear
+   reaches the sweep's columns (the share solved, the minutes, the deaths and the runs at the cap) and
+   the earning loop's columns alike. A program that needs a branch of the skills measures near
    zero without it. Where the comment of a program in `tests/sim/reference-programs.mjs` says it
    depends on a branch, run it again with `--ranks` and `--programs <identifier>`, and tell the
    person only that the row was measured with the skills the program needs. Name no branch, no

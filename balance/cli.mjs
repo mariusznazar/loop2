@@ -23,7 +23,7 @@ import { REFERENCE_PROGRAMS } from "../tests/sim/reference-programs.mjs";
 import { campaignSweep, programsOf } from "./campaign.mjs";
 import { measureRow, renderTable } from "./check-map.mjs";
 import { describePrograms, programLabels } from "./describe.mjs";
-import { buildSkills, seedRange, sweep } from "./engine.mjs";
+import { buildGear, buildSkills, seedRange, sweep } from "./engine.mjs";
 import { loopSweep } from "./loop.mjs";
 import { applyOverlay, readOverlay } from "./overlay.mjs";
 import { measureProgression, renderProgression } from "./progression.mjs";
@@ -44,6 +44,7 @@ const MEASURE_FLAGS = [
   "chest",
   "practice",
   "ranks",
+  "gear",
   "overlay",
   "cap",
   "out",
@@ -60,6 +61,7 @@ const COMMAND_FLAGS = {
     "chest",
     "practice",
     "ranks",
+    "gear",
     "overlay",
     "hours",
     "no-resurrection",
@@ -67,8 +69,16 @@ const COMMAND_FLAGS = {
   ],
   campaign: ["player", "seeds", "overlay", "out"],
   programs: ["out"],
-  "check-map": ["overlay", "maps", "programs", "practice", "ranks", "out"],
-  progression: ["seeds", "maps", "programs", "out"],
+  "check-map": [
+    "overlay",
+    "maps",
+    "programs",
+    "practice",
+    "ranks",
+    "gear",
+    "out",
+  ],
+  progression: ["seeds", "maps", "programs", "gear", "out"],
 };
 
 /** The flags that stand alone, with no value after them. */
@@ -90,7 +100,8 @@ ${Object.entries(COMMAND_FLAGS)
 --chest       the pieces in the chest, as stick=8,berry=7
 --practice    the practice of the character's skills, as smallItemGathering=80
 --ranks       the bought ranks of the branches, as keenEye=3
---overlay     overlay files laid on the game's data for the measurement; repeat the flag or list them
+--gear        the gear of the character at the start of each map run, as mainHand=stick (a slot and an item that fits it)
+--overlay    overlay files laid on the game's data for the measurement; repeat the flag or list them
 --cap         game minutes after which a map run is given up
 --hours       real hours of the loop's readings, as 8,24,72
 --no-resurrection  the loop starts with every use of the team's resurrection spent, the uses returning as in the game
@@ -158,6 +169,29 @@ export function parsePairs(text, flag = "pairs") {
   return pairs;
 }
 
+/**
+ * The gear a `--gear` text names, from `mainHand=stick,pocket1=bandage`: each pair a slot and an item
+ * that fits it, checked against the data. No text is no gear; a pair the data refuses, or a slot given
+ * twice, is refused with the usage error.
+ */
+export function parseGear(text) {
+  if (text === undefined || text === "") return {};
+  const spec = {};
+  for (const pair of text.split(",")) {
+    const [slot, item, ...extra] = pair.split("=");
+    if (slot === "" || item === undefined || item === "" || extra.length > 0)
+      throw new UsageError(`--gear: pair "${pair}" is no slot=item`);
+    if (Object.hasOwn(spec, slot))
+      throw new UsageError(`--gear: slot "${slot}" is given twice`);
+    spec[slot] = item;
+  }
+  try {
+    return buildGear(spec);
+  } catch (error) {
+    throw new UsageError(`--gear: ${error.message}`);
+  }
+}
+
 /** The real hours of the loop's readings from `8,24,72`. */
 function parseHours(text) {
   return text.split(",").map((hours) => positiveNumber(hours, "--hours"));
@@ -173,6 +207,7 @@ function readOptions(raw) {
     chest: parsePairs(raw.chest, "--chest"),
     practice: parsePairs(raw.practice, "--practice"),
     ranks: parsePairs(raw.ranks, "--ranks"),
+    gear: parseGear(raw.gear),
     overlays: raw.overlay ?? [],
     cap: raw.cap === undefined ? undefined : positiveNumber(raw.cap, "--cap"),
     hours: raw.hours === undefined ? undefined : parseHours(raw.hours),
@@ -266,7 +301,7 @@ function measurementOf(options) {
   } catch (error) {
     throw new UsageError(`--practice or --ranks: ${error.message}`);
   }
-  return { mapId, program, chest, skills };
+  return { mapId, program, chest, skills, gear: options.gear };
 }
 
 /** The fields of the header every measurement's result starts with, as the flags gave them. */
@@ -298,16 +333,17 @@ function seedsOf(options) {
 }
 
 function runSweep(options) {
-  const { mapId, program, chest, skills } = measurementOf(options);
+  const { mapId, program, chest, skills, gear } = measurementOf(options);
   const { summary, results } = sweep({
     mapId,
     program,
     seeds: seedsOf(options),
     skills,
+    gear,
     chest,
     capMinutes: options.cap,
   });
-  const header = headerOf("sweep", options);
+  const header = { ...headerOf("sweep", options), gear };
   return delivered(
     options,
     json({ header, summary }),
@@ -316,7 +352,7 @@ function runSweep(options) {
 }
 
 function runTrace(options) {
-  const { mapId, program, chest, skills } = measurementOf(options);
+  const { mapId, program, chest, skills, gear } = measurementOf(options);
   const seeds = options.seeds ?? [DEFAULT_TRACE_SEED];
   if (seeds.length !== 1)
     throw new UsageError(
@@ -327,6 +363,7 @@ function runTrace(options) {
     program,
     seed: seeds[0],
     skills,
+    gear,
     chest,
     capMinutes: options.cap,
   });
@@ -336,18 +373,20 @@ function runTrace(options) {
 }
 
 function runLoop(options) {
-  const { mapId, program, chest, skills } = measurementOf(options);
+  const { mapId, program, chest, skills, gear } = measurementOf(options);
   const { perCheckpoint, runs } = loopSweep({
     mapId,
     program,
     seeds: seedsOf(options),
     skills,
+    gear,
     chest,
     checkpoints: options.hours,
     resurrectionReady: options.resurrection,
   });
   const header = {
     ...headerOf("loop", options),
+    gear,
     hours: options.hours ?? null,
     resurrection: options.resurrection,
   };
@@ -440,6 +479,7 @@ function runCheckMap(options, overlays) {
         programLabel: labels[programId],
         program: REFERENCE_PROGRAMS[programId],
         skills,
+        gear: options.gear,
       }),
     ),
   );
@@ -467,6 +507,7 @@ function runProgression(options) {
         mapIds: options.maps,
         seeds: options.seeds,
         programIds: options.programs,
+        gear: options.gear,
       }),
     ),
   );

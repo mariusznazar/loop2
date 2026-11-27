@@ -96,11 +96,12 @@ function manualRun(state, mapId, characterId) {
  * the measurement; a run pays no practice, since its map is solved, and its death is left unsettled,
  * for it only costs the run.
  */
-function stockOnMap({ take, candidate, practice, maxRuns }) {
+function stockOnMap({ take, candidate, practice, gear, maxRuns }) {
   const skills = skillsFor(candidate.program, practice);
   let state = makeState({
     program: candidate.program,
     skills,
+    gear,
     solvedMaps: [...prerequisitesOf(candidate.mapId), candidate.mapId],
   });
   const characterId = state.team.characters[0].id;
@@ -146,13 +147,14 @@ export function stockFor({
   take,
   candidates,
   practice,
+  gear = {},
   maxRuns = MAX_STOCK_RUNS,
 }) {
   const none = { runs: 0, complete: false, chest: {}, mapId: null };
   if (take.length === 0) return { ...none, complete: true };
   if (total(take) > BALANCE.chestCapacity) return none;
   const attempts = candidates.map((candidate) =>
-    stockOnMap({ take, candidate, practice, maxRuns }),
+    stockOnMap({ take, candidate, practice, gear, maxRuns }),
   );
   if (attempts.length === 0) return none;
   return attempts.reduce((best, attempt) =>
@@ -201,6 +203,7 @@ function measureProgram({
   candidates,
   seeds,
   labels,
+  gear,
 }) {
   const program = REFERENCE_PROGRAMS[programId];
   const skills = skillsFor(program, practiceIn);
@@ -208,12 +211,14 @@ function measureProgram({
     take: program.tripPlan.take,
     candidates,
     practice: practiceIn,
+    gear,
   });
   const { summary, results } = sweep({
     mapId,
     program,
     seeds,
     skills,
+    gear,
     chest: stock.chest,
   });
   const row = {
@@ -233,14 +238,22 @@ function measureProgram({
 }
 
 /** One map measured from what the maps before it gave: its rows and its summary. `before` holds those maps' summaries, the farthest first. */
-function measureMap({ mapId, before, programIds, seeds, labels }) {
+function measureMap({ mapId, before, programIds, seeds, labels, gear }) {
   const practiceIn = sumPractice(before.map((map) => map.practicePaid));
   const candidates = before.map((map) => ({
     mapId: map.mapId,
     program: REFERENCE_PROGRAMS[map.bestProgramId],
   }));
   const measured = programIds.map((programId) =>
-    measureProgram({ mapId, programId, practiceIn, candidates, seeds, labels }),
+    measureProgram({
+      mapId,
+      programId,
+      practiceIn,
+      candidates,
+      seeds,
+      labels,
+      gear,
+    }),
   );
   const rows = measured.map(({ row }) => row);
   const best = bestOf(rows);
@@ -265,7 +278,8 @@ function measureMap({ mapId, before, programIds, seeds, labels }) {
 /**
  * The progression measurement: for each map of `mapIds` (the game's maps, each with the maps that open
  * it measured first) every reference program of `programIds`, on `seeds`, from the state the maps
- * before it give. Gives the `rows` of the requested maps, a row per map and program, and the `maps`
+ * before it give, the character of each run, stock runs included, starting with the `gear` given.
+ * Gives the `rows` of the requested maps, a row per map and program, and the `maps`
  * with their best program, whether it solves one seed or more, the manual runs its stock took, and
  * the practice the map was measured with and its first solving pays. A map the game's data lacks, and
  * a program that is no reference program, are refused before any measurement.
@@ -274,6 +288,7 @@ export function measureProgression({
   mapIds = Object.keys(MAPS),
   seeds = PROGRESSION_SEEDS,
   programIds = Object.keys(REFERENCE_PROGRAMS),
+  gear = {},
 } = {}) {
   for (const mapId of mapIds)
     if (!Object.hasOwn(MAPS, mapId))
@@ -294,6 +309,7 @@ export function measureProgression({
           programIds,
           seeds,
           labels,
+          gear,
         }),
       );
     }

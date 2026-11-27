@@ -171,7 +171,10 @@ function at(x: number): MageGoal {
   return { kind: "at", place: { x, y: SCENE.groundLine } };
 }
 
-/** Where the mage goes at the current activity; in combat and after an end it stays. */
+/**
+ * Where the mage goes at the current activity; in combat and after an end it stays, and so it does for
+ * a kind of action none of the cases names, until the scene gives it a place of its own.
+ */
 function goalOf(run: GameMapRun): MageGoal {
   const { current } = run;
   if (run.death !== null || run.completion !== null || current === null)
@@ -201,6 +204,8 @@ function goalOf(run: GameMapRun): MageGoal {
     case "strikeWithStick":
     case "kick":
     case "dodge":
+      return STAYS;
+    default:
       return STAYS;
   }
 }
@@ -578,8 +583,8 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
 }
 
 /**
- * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating and
- * tending).
+ * The actions whose end takes pieces out of the backpack (crafting, lighting, feeding, eating,
+ * tending and putting a piece on the gear, D-458).
  */
 const USES_BACKPACK: ReadonlySet<string> = new Set([
   "craftCampfire",
@@ -589,6 +594,7 @@ const USES_BACKPACK: ReadonlySet<string> = new Set([
   "eat",
   "craft",
   "tend",
+  "equip",
 ]);
 
 /**

@@ -373,3 +373,38 @@ test("a loop minute that an overlay shortens after the instrument is loaded chan
     daily: [],
   });
 });
+
+test("a player's gear is put on the account's character by the game's own act, from a chest that holds exactly those pieces, which the act leaves empty", () => {
+  const player = { ...best, knowing: true, gear: { mainHand: "stick" } };
+  const { state } = newAccount(
+    player,
+    programsOf(player, REFERENCE_PROGRAMS),
+    1,
+  );
+  const [character] = state.team.characters;
+  assert.equal(character.gear.mainHand, "stick");
+  assert.equal(character.gear.head, null);
+  assert.deepEqual(state.team.chest.pieces, {});
+});
+
+test("a player's gear that the data refuses, a slot the data lacks or an item that does not fit its slot, is refused before the campaign", () => {
+  const programs = programsOf(best, REFERENCE_PROGRAMS);
+  assert.throws(
+    () =>
+      playCampaign({
+        player: { ...shortPlayer(best, {}), gear: { head: "stick" } },
+        programs,
+        seed: 1,
+      }),
+    /does not fit/,
+  );
+  assert.throws(
+    () =>
+      playCampaign({
+        player: { ...shortPlayer(best, {}), gear: { bogusSlot: "stick" } },
+        programs,
+        seed: 1,
+      }),
+    /unknown slot bogusSlot/,
+  );
+});

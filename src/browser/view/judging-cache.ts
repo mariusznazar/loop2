@@ -36,10 +36,19 @@ export type JudgingCacheOpening = {
  * most health the creature of a map lost in one fight of any judging (D-441, D-440).
  */
 export type JudgingCache = {
-  /** The record stored for the triple, or null where none is stored or the stored value is not one the cache wrote. */
-  read(ids: JudgingIds): JudgingRecord | null;
-  /** Stores the record for the triple; where the storage refuses it, the open page still reads it. */
-  remember(ids: JudgingIds, record: JudgingRecord): void;
+  /**
+   * The record stored for the triple, or null where none is stored, the stored value is not one the cache
+   * wrote, or the count of the player's gear changes it holds (D-463) differs from the count the character
+   * has in `state`, the game state at hand, or the character is not on the team in it: the judging does
+   * not stand then.
+   */
+  read(ids: JudgingIds, state: GameState): JudgingRecord | null;
+  /**
+   * Stores the record for the triple together with the count of the player's gear changes the character
+   * has in `state`, the game state the judging read (D-463), 0 where it is not on the team there; where the
+   * storage refuses it, the open page still reads it.
+   */
+  remember(ids: JudgingIds, record: JudgingRecord, state: GameState): void;
   /**
    * The record of the map, or null where none is stored, the stored value is not one the cache wrote, or
    * the record was made at other numbers of the creature than those given: it shows nothing then.
@@ -63,11 +72,11 @@ export type RecordCreature = {
   readonly strikeDamage: number;
 };
 
-// The stored form is version 2; the key names it. A key of another version never matches the prefix,
+// The stored form is version 3; the key names it. A key of another version never matches the prefix,
 // since the prefix ends with the separator right after the version.
-const KEY_PREFIX = "loop2-judging-2|";
+const KEY_PREFIX = "loop2-judging-3|";
 const SEPARATOR = "|";
-// A valid value holds twelve letters, a short list of the data's items, a fingerprint and two numbers,
+// A valid value holds twelve letters, a short list of the data's items, a fingerprint and three numbers,
 // well under this; a longer one is no value of the cache's and is not parsed.
 const MAX_VALUE_LENGTH = 1024;
 const FIELDS = [
@@ -76,6 +85,7 @@ const FIELDS = [
   "revision",
   "fingerprint",
   "generation",
+  "gearChanges",
 ] as const;
 // The record is a second family of keys with a version of its own (D-441): the version stands in the key,
 // right before the separator, so a key of another version or of the judgings never matches the prefix.
@@ -162,15 +172,18 @@ function readEquipment(list: unknown): TripEntry[] | null {
   return entries;
 }
 
+/** What a stored judging holds: the record and the count of the player's gear changes it read (D-463). */
+type HeldJudging = { record: JudgingRecord; gearChanges: number };
+
 /**
- * The record a stored value holds, or null where the value is not the form the cache writes: too long,
- * no JSON, not an object of exactly the five fields, results that are not one known letter for each seed
+ * The judging a stored value holds, or null where the value is not the form the cache writes: too long,
+ * no JSON, not an object of exactly the six fields, results that are not one known letter for each seed
  * of a judging, an item the data lack or named twice, a count that is no safe integer from 1, a content
- * revision that is none from 0, a fingerprint that is no text of the form the simulation gives or a
- * generation that is none from 1. Everything it returns is built here; nothing the parse made is handed
- * on.
+ * revision that is none from 0, a fingerprint that is no text of the form the simulation gives, a
+ * generation that is none from 1 or a count of gear changes that is none from 0. Everything it returns is
+ * built here; nothing the parse made is handed on.
  */
-function readValue(value: unknown): JudgingRecord | null {
+function readValue(value: unknown): HeldJudging | null {
   if (typeof value !== "string" || value.length > MAX_VALUE_LENGTH) return null;
   let parsed: unknown;
   try {
@@ -193,20 +206,24 @@ function readValue(value: unknown): JudgingRecord | null {
     equipment === null ||
     !isCount(held.revision, 0) ||
     !isContentFingerprint(held.fingerprint) ||
-    !isCount(held.generation, 1)
+    !isCount(held.generation, 1) ||
+    !isCount(held.gearChanges, 0)
   )
     return null;
   return {
-    results,
-    equipment,
-    contentRevision: held.revision,
-    contentFingerprint: held.fingerprint,
-    generation: held.generation,
+    record: {
+      results,
+      equipment,
+      contentRevision: held.revision,
+      contentFingerprint: held.fingerprint,
+      generation: held.generation,
+    },
+    gearChanges: held.gearChanges,
   };
 }
 
-/** The stored value of a record: the equipment in the order of the data's items, the results one letter each. */
-function writeValue(record: JudgingRecord): string {
+/** The stored value of a judging: the equipment in the order of the data's items, the results one letter each. */
+function writeValue({ record, gearChanges }: HeldJudging): string {
   const equipment = [...record.equipment]
     .sort((a, b) => ITEM_ORDER.indexOf(a.item) - ITEM_ORDER.indexOf(b.item))
     .map(({ item, count }) => [item, count]);
@@ -216,6 +233,7 @@ function writeValue(record: JudgingRecord): string {
     revision: record.contentRevision,
     fingerprint: record.contentFingerprint,
     generation: record.generation,
+    gearChanges,
   });
 }
 
@@ -227,6 +245,12 @@ function copyOf(record: JudgingRecord): JudgingRecord {
     contentFingerprint: record.contentFingerprint,
     generation: record.generation,
   };
+}
+
+/** The count of the player's gear changes the character has in the game state, or null where it is not on the team (D-463). */
+function gearChangesOf(state: GameState, characterId: number): number | null {
+  const character = state.team.characters.find(({ id }) => id === characterId);
+  return character === undefined ? null : character.gearChanges;
 }
 
 /** What a record holds: the number and the two numbers of the creature it was made at (D-441). */
@@ -366,11 +390,12 @@ function isNotBelow(text: string | undefined, next: number): boolean {
  * Whether the opening removes the stored value of a triple of this game as one that can only come from a
  * save that never reached the server (D-441). It removes a triple whose program number or character
  * number the loaded game has not yet given; where the loaded game holds the triple's character, one whose
- * generation stands above that character's; and where it holds the triple's program, one whose content
- * revision stands above that program's. Each of the last two checks reads only what the loaded game
- * holds, so a triple whose program the loaded game no longer holds is still removed by its character's
- * generation, and only a triple neither of whose character and program the loaded game holds, both once
- * given, is left by them. A key or value of no form of the cache's is left alone.
+ * generation or whose count of the player's gear changes (D-463) stands above that character's; and where
+ * it holds the triple's program, one whose content revision stands above that program's. Each of the last
+ * two checks reads only what the loaded game holds, so a triple whose program the loaded game no longer
+ * holds is still removed by its character's generation or count, and only a triple neither of whose
+ * character and program the loaded game holds, both once given, is left by them. A key or value of no
+ * form of the cache's is left alone.
  */
 function isAboveLoaded(
   state: GameState,
@@ -378,8 +403,9 @@ function isAboveLoaded(
   value: string | null,
 ): boolean {
   const ids = triple.split(SEPARATOR);
-  const record = readValue(value);
-  if (ids.length !== 3 || record === null) return false;
+  const held = readValue(value);
+  if (ids.length !== 3 || held === null) return false;
+  const { record, gearChanges } = held;
   if (
     isNotBelow(ids[0], state.nextCharacterId) ||
     isNotBelow(ids[1], state.nextProgramId)
@@ -388,7 +414,9 @@ function isAboveLoaded(
   const character = state.team.characters.find(({ id }) => part(id) === ids[0]);
   const saved = state.programs.find(({ id }) => part(id) === ids[1]);
   return (
-    (character !== undefined && record.generation > character.generation) ||
+    (character !== undefined &&
+      (record.generation > character.generation ||
+        gearChanges > character.gearChanges)) ||
     (saved !== undefined && record.contentRevision > saved.contentRevision)
   );
 }
@@ -462,8 +490,8 @@ function tidyStorage(
 export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
   const { accountId, storage } = opening;
   const { madeAtMs } = opening.state;
-  // Only the records whose write the storage refused; a write that succeeds takes its triple out.
-  const memory = new Map<string, JudgingRecord>();
+  // Only the judgings whose write the storage refused; a write that succeeds takes its triple out.
+  const memory = new Map<string, HeldJudging>();
   // The same for the records of the maps, whose write the storage refused.
   const recordMemory = new Map<string, StoredRecord>();
   if (storage !== null) tidyStorage(storage, opening);
@@ -484,19 +512,29 @@ export function openJudgingCache(opening: JudgingCacheOpening): JudgingCache {
     return highest;
   }
   return {
-    read(ids) {
+    read(ids, state) {
       const key = keyOf(accountId, madeAtMs, ids);
-      const held = memory.get(key);
-      if (held !== undefined) return copyOf(held);
-      return storage === null ? null : readValue(readFrom(storage, key));
+      const held =
+        memory.get(key) ??
+        (storage === null ? null : readValue(readFrom(storage, key)));
+      if (held === null) return null;
+      // The judging stands only while its character has the count it read (D-463); a value left in the
+      // storage that no longer stands is neither removed nor given.
+      return gearChangesOf(state, ids.characterId) === held.gearChanges
+        ? copyOf(held.record)
+        : null;
     },
-    remember(ids, record) {
+    remember(ids, record, state) {
       const key = keyOf(accountId, madeAtMs, ids);
-      if (storage !== null && writeTo(storage, key, writeValue(record))) {
+      const held = {
+        record: copyOf(record),
+        gearChanges: gearChangesOf(state, ids.characterId) ?? 0,
+      };
+      if (storage !== null && writeTo(storage, key, writeValue(held))) {
         memory.delete(key);
         return;
       }
-      memory.set(key, copyOf(record));
+      memory.set(key, held);
       if (storage !== null) removeFrom(storage, key);
     },
     readRecord(mapId, creature) {

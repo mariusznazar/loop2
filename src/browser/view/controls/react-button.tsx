@@ -11,10 +11,17 @@ import type { CSSProperties, MouseEventHandler, ReactNode, Ref } from "react";
  * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab; „main” — the main
  * look of a button that sends no form, which stays of the type `button` (D-274); „positive” — the
  * plain button with its text in `positive`, the look of „Odbierz”; „value-cell” — the button of a
- * cell of the body row, which carries a `cell` where the others carry a `text` (D-44).
+ * cell of the body row, which carries a `cell` where the others carry a `text`; „tile” — the square
+ * button of a slot of the gear, which carries a `tile` where the others carry a `text` (D-44, D-461).
  */
 export type ReactButtonKind =
-  "destructive" | "secondary" | "tab" | "main" | "positive" | "value-cell";
+  | "destructive"
+  | "secondary"
+  | "tab"
+  | "main"
+  | "positive"
+  | "value-cell"
+  | "tile";
 
 /**
  * The role of the colour of a fill of a bar, which the stylesheet reads as the class of the fill:
@@ -81,6 +88,23 @@ export function ValueCellParts({ cell }: { cell: CellParts }) {
   );
 }
 
+/**
+ * The face of the tile of a slot of the gear: the icon of a piece drawn as a mask, in the colour of
+ * the text beside it (D-43), hidden from a reader of the screen, since the button carries the name the
+ * screen gives it; or the pale name of the slot. The look stands in `styles.css`.
+ */
+function TileFaceParts({ face }: { face: TileFace }) {
+  return "icon" in face ? (
+    <span
+      className="icon-mask"
+      aria-hidden="true"
+      style={{ "--icon": `url("/icons/${face.icon}.svg")` } as CSSProperties}
+    />
+  ) : (
+    <span className="tile-slot-name">{face.slotName}</span>
+  );
+}
+
 type ReactButtonCommon = {
   /** The accessible name, where the visible text alone does not say what the button does. */
   label?: string;
@@ -110,12 +134,21 @@ type ReactButtonCommon = {
   buttonRef?: Ref<HTMLButtonElement>;
 };
 
-/** A button that carries a text, in any of the kinds but the cell of the body row. */
+/**
+ * What a screen gives the tile of a slot of the gear: the icon of the piece the slot holds, as the
+ * file name in `assets/icons` without the extension, with the name the button has for a reader of
+ * the screen since the tile shows the icon alone — the screen writes it „{miejsce}: {rzecz}” — or,
+ * for a slot that holds nothing, the name of the slot, which the tile shows pale in place of an icon.
+ */
+export type TileFace = { icon: string; name: string } | { slotName: string };
+
+/** A button that carries a text, in any of the kinds but the cell of the body row and the tile. */
 type ReactTextButtonProps = ReactButtonCommon & {
   text: string;
   /** Left out, the button is the plain one or, given `selected`, the one selected in its group. */
-  kind?: Exclude<ReactButtonKind, "value-cell">;
+  kind?: Exclude<ReactButtonKind, "value-cell" | "tile">;
   cell?: undefined;
+  tile?: undefined;
 };
 
 /** The button of a cell of the body row, which carries the parts of the cell in place of a text. */
@@ -123,11 +156,27 @@ type ReactCellButtonProps = ReactButtonCommon & {
   kind: "value-cell";
   cell: CellParts;
   text?: undefined;
+  tile?: undefined;
 };
 
-export type ReactButtonProps = ReactTextButtonProps | ReactCellButtonProps;
+/**
+ * The tile of a slot of the gear, which carries its face in place of a text. It names itself, by the
+ * piece's name or by the slot's, so it takes no `label`, and it waits for no server, so it takes no
+ * `waitingText`; a screen locks it with `disabled`.
+ */
+type ReactTileButtonProps = Omit<ReactButtonCommon, "label" | "waitingText"> & {
+  kind: "tile";
+  tile: TileFace;
+  text?: undefined;
+  cell?: undefined;
+  label?: undefined;
+  waitingText?: undefined;
+};
 
-/** A button of the shared look: plain, secondary, main, selected in its group, a tab of it or a cell of the body row. */
+export type ReactButtonProps =
+  ReactTextButtonProps | ReactCellButtonProps | ReactTileButtonProps;
+
+/** A button of the shared look: plain, secondary, main, selected in its group, a tab of it, a cell of the body row or the tile of a slot of the gear. */
 export function ReactButton(props: ReactButtonProps) {
   const {
     kind,
@@ -150,7 +199,9 @@ export function ReactButton(props: ReactButtonProps) {
       className={["button", kind, ...marks, selected ? "selected" : undefined]
         .filter(Boolean)
         .join(" ")}
-      aria-label={label}
+      aria-label={
+        props.kind === "tile" && "icon" in props.tile ? props.tile.name : label
+      }
       aria-expanded={expanded}
       aria-controls={controls}
       aria-pressed={selected === undefined ? undefined : selected}
@@ -160,6 +211,8 @@ export function ReactButton(props: ReactButtonProps) {
     >
       {props.kind === "value-cell" ? (
         <ValueCellParts cell={props.cell} />
+      ) : props.kind === "tile" ? (
+        <TileFaceParts face={props.tile} />
       ) : waiting ? (
         waitingText
       ) : (

@@ -99,7 +99,7 @@ widok zapisuje błąd w konsoli bez jego treści i pokazuje zdanie z D-96.
 
 Wersja kształtu stoi w stałej `SAVED_GAME_VERSION` obok funkcji wczytującej
 i zapisującej. Podnieś ją przy każdej zmianie kształtu: typu `GameState` albo
-typu, do którego prowadzi, oraz przedmiotów z danych, które wylicza `Backpack`. Podnosi ją także dodanie albo usunięcie zwykłej czynności z danych, choć zmiana danych niżej wersji sama nie podnosi: rodzaj zwykłej czynności jest kluczem liczników `minutesByAction` w rekordzie ręcznego przebiegu, a ścisłe wczytanie odmawia dokumentowi z innym zestawem kluczy.
+typu, do którego prowadzi, przedmiotów z danych, które wylicza `Backpack`, oraz miejsc wyposażenia z danych, które wylicza `Gear` (także liczby kieszeni). Podnosi ją także dodanie albo usunięcie zwykłej czynności z danych, choć zmiana danych niżej wersji sama nie podnosi: rodzaj zwykłej czynności jest kluczem liczników `minutesByAction` w rekordzie ręcznego przebiegu, a ścisłe wczytanie odmawia dokumentowi z innym zestawem kluczy.
 Test zapisanego dokumentu bieżącej wersji (`tests/sim/saved-game.test.mjs`)
 wypełnia każdą gałąź opcjonalną, sprawdza, że dokument wczytuje się w opisany
 stan gry, i że stała jest równa wersji zapisanej obok. Zmiana kształtu każe

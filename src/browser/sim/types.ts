@@ -2,6 +2,7 @@ import type { ArchetypeId } from "./data/archetypes.js";
 import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
 import type { CreatureId } from "./data/creatures.js";
+import type { GearPlace, GearSlot } from "./data/gear.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
@@ -16,7 +17,15 @@ export type CharacterSkills = Partial<
 >;
 export type Practice = Partial<Record<SkillId, number>>;
 
-export type { ArchetypeId, CreatureId, ItemId, MapId, ResourceId, Traits };
+export type {
+  ArchetypeId,
+  CreatureId,
+  GearSlot,
+  ItemId,
+  MapId,
+  ResourceId,
+  Traits,
+};
 
 /** A multiplier of the game minutes per real second that the player picks, from the data. */
 export type Pace = (typeof BALANCE.paces)[number];
@@ -35,7 +44,9 @@ export type Condition =
   | { kind: "campfireLeftBelow"; value: number }
   | { kind: "healthBelow"; value: number }
   | { kind: "opponentHealthBelow"; value: number }
-  | { kind: "awayFromCampfire" };
+  | { kind: "awayFromCampfire" }
+  /** „Puste — {miejsce}”: holds where the place of the gear it names holds nothing (D-459). */
+  | { kind: "emptyPlace"; place: GearPlace };
 
 /** Health values for the side whose rule is being checked and its opponent, when present. */
 export type ConditionContext = {
@@ -59,6 +70,8 @@ export type Action =
   | { kind: "strikeWithStick" }
   | { kind: "kick" }
   | { kind: "dodge" }
+  /** „Załóż — {rzecz}”: puts a piece of the item on from the backpack into the slot it fits (D-458). */
+  | { kind: "equip"; item: ItemId }
   | { kind: "craft"; item: ItemId };
 
 /** Stable within a program, including after a rule moves to another group. */
@@ -129,9 +142,21 @@ export type CombatCreatureAction =
   | { kind: "strike"; damage: number; characterHealth: number }
   | { kind: "dodge" };
 
+/** The kinds of the actions of combat: the ones only a fight carries out (D-140). */
+export type CombatVerbKind = "strikeWithStick" | "kick" | "dodge";
+
+/**
+ * An action of the character in a combat turn: an action of combat, or „Załóż”, which takes a turn of
+ * its own there as it takes its minutes outside a fight (D-140, D-458).
+ */
 export type CombatCharacterAction = {
   ruleId: RuleId;
-  action: Extract<Action, { kind: "strikeWithStick" | "kick" | "dodge" }>;
+  action: Extract<Action, { kind: CombatVerbKind | "equip" }>;
+  /**
+   * Whether the action first took a piece from the backpack into the empty slot it uses, in the same
+   * turn (D-457): the strike taking a stick into an empty main hand.
+   */
+  refill: boolean;
   damage: number;
   creatureHealth: number;
   characterHealth: number;
@@ -142,6 +167,11 @@ export type CombatExchange = {
   characterAction: CombatCharacterAction | null;
 };
 
+/**
+ * What an encounter gave: besides the health of both sides, the exchanges and the starts of rules,
+ * the gear and the backpack of the character as its turns left them, which the map run takes when the
+ * turns resolve.
+ */
 export type CombatResult = {
   practice: Practice;
   characterHealth: number;
@@ -149,6 +179,8 @@ export type CombatResult = {
   outcome: CombatOutcome;
   exchanges: CombatExchange[];
   ruleStarts: Record<RuleId, number>;
+  gear: Gear;
+  backpack: Backpack;
 };
 
 export type ActiveCombat = {
@@ -214,8 +246,14 @@ export type Body = {
 export type Backpack = Record<ItemId, number>;
 
 /**
+ * A character's gear (D-451, D-456): each slot of the data holding the one item it holds, an item
+ * that fits the slot's place, or none. It is no backpack (D-455).
+ */
+export type Gear = Record<GearSlot, ItemId | null>;
+
+/**
  * The character of a map run: the team's character it is, by its id, where it stands, its own copy
- * of the character's traits for the map run and what it carries.
+ * of the character's traits for the map run, what it carries and the gear of the map run.
  */
 export type RunCharacter = {
   skills: CharacterSkills;
@@ -223,6 +261,7 @@ export type RunCharacter = {
   at: Hex;
   traits: Traits;
   backpack: Backpack;
+  gear: Gear;
 };
 
 /** A campfire standing on its tile; a tile holds at most one. */
@@ -319,9 +358,7 @@ export type CompletionSettlement =
  * kind of an ordinary action of the data (one that is no combat action), a wait, or a fight.
  */
 export type MinuteKind =
-  | Exclude<Action["kind"], CombatCharacterAction["action"]["kind"]>
-  | "wait"
-  | "combat";
+  Exclude<Action["kind"], CombatVerbKind> | "wait" | "combat";
 
 /** The game minutes of a manual map run by what the character was doing: every kind, 0 included. */
 export type MinutesByAction = Record<MinuteKind, number>;
@@ -456,6 +493,18 @@ export type Character = {
   archetypeId: ArchetypeId;
   traits: Traits;
   generation: number;
+  /**
+   * The gear the game keeps at the character outside a map run (D-452): for a character in an earning
+   * loop the gear of its next map run (D-453). Empty at creation.
+   */
+  gear: Gear;
+  /**
+   * The slots the player changed on the screen Postać since the start of the map run going on of the
+   * character's earning loop, each once (D-460); none at a character with no earning loop.
+   */
+  changedSlots: GearSlot[];
+  /** The gear changes the player made on the screen Postać, from 0; it never goes down (D-463). */
+  gearChanges: number;
 };
 
 /** The team's chest: pieces held, by item; a key absent holds none. */

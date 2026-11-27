@@ -13,6 +13,7 @@ import {
   backpackCap,
   backpackCount,
   newBackpack,
+  newGear,
   newTraits,
 } from "./character.js";
 import { ACTIONS } from "./data/actions.js";
@@ -34,6 +35,7 @@ import {
   campfireLightCount,
   campfireTarget,
   chooseActivity,
+  equipped,
   itemFor,
   natureEnergyCost,
   walkTarget,
@@ -52,6 +54,7 @@ import type {
   CreatureId,
   CurrentActivity,
   DeathCause,
+  Gear,
   Hex,
   ItemId,
   MapId,
@@ -151,6 +154,7 @@ function startActivity(
       case "feedCampfire":
       case "eat":
       case "tend":
+      case "equip":
         minutes = ACTIONS[action.kind].minutes;
         break;
       case "craft":
@@ -254,8 +258,10 @@ type Landing = Pick<
  * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59);
  * „Wytwórz” takes the recipe's pieces of its target and puts one piece of the target in, needing no
  * room, as the recipe uses at least one piece; „Opatrz” takes one piece of its target and raises
- * health by the target's healing, not above full health (D-145). Where what the action needs is no
- * longer there, nothing changes — health full at the end of „Opatrz” included.
+ * health by the target's healing, not above full health (D-145); „Załóż” moves one piece of its
+ * target from the backpack into the slot it fits and the piece the slot held into the backpack
+ * (D-458). Where what the action needs is no longer there, nothing changes — health full at the end
+ * of „Opatrz” included.
  */
 function landUse(state: Landing, action: Action): Landing {
   const { character } = state;
@@ -349,6 +355,11 @@ function landUse(state: Landing, action: Action): Landing {
         },
       };
     }
+    case "equip": {
+      const put = equipped(character, action.item);
+      if (put === null) return state;
+      return { ...state, character: { ...character, ...put } };
+    }
     case "tend": {
       const healing = ITEMS[action.item].healing;
       if (
@@ -386,7 +397,8 @@ function finishUse(state: Landing, action: Action): Landing {
 
 /**
  * A new map run at minute 0: the layout drawn from the seed, the first activity chosen. The
- * character carries the given traits, or those of a new character, and the entry equipment.
+ * character carries the given traits, or those of a new character, and the entry equipment, and
+ * holds a copy of the given gear, the empty gear where none is given.
  */
 export function newMapRun(
   map: MapDef,
@@ -396,6 +408,7 @@ export function newMapRun(
   traits: Traits = newTraits(),
   skills: CharacterSkills = {},
   backpack: Backpack = newBackpack(),
+  gear: Gear = newGear(),
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
@@ -410,6 +423,7 @@ export function newMapRun(
       traits: { ...traits },
       skills: copySkills(skills),
       backpack: { ...backpack },
+      gear: { ...gear },
     },
     body: startingBody(),
     natureEnergy: startingNatureEnergy(),
@@ -741,6 +755,12 @@ export function finishMinute(
     const result = resolveCombat(run, combat.creatureId, program);
     run = {
       ...run,
+      // The gear and the backpack as the turns left them (D-457).
+      character: {
+        ...run.character,
+        gear: { ...result.gear },
+        backpack: { ...result.backpack },
+      },
       body: { ...run.body, health: result.characterHealth },
       practice: sumPractice(run.practice, result.practice),
       activeCombat: null,

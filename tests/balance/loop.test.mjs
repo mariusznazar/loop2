@@ -7,7 +7,8 @@ import {
   loopOnce,
   loopSweep,
 } from "../../balance/loop.mjs";
-import { runOnce } from "../../balance/engine.mjs";
+import { buildGear, runOnce } from "../../balance/engine.mjs";
+import { parseArgs, runCommand } from "../../balance/cli.mjs";
 import { forestBest, forestLoopWithStock } from "../sim/reference-programs.mjs";
 
 // The loop mode of the instrument, checked against relations the loop code does not compute: a loop
@@ -193,4 +194,55 @@ test("the summary per checkpoint counts the seeds and takes its stopped share fr
       Math.round((stopped / seeds.length) * 1000) / 10,
     );
   });
+});
+
+test("a loop given gear starts its character with that gear in the slots given, and a loop given none starts with the empty gear of a new character", () => {
+  const started = (gear) => {
+    const { finalState } = loopOnce({
+      mapId: "forest",
+      program: forestLoopWithStock,
+      seed: 1,
+      gear,
+      checkpoints: [0],
+    });
+    const [character] = finalState.team.characters;
+    return finalState.loops[character.id].run.character.gear;
+  };
+  const withGear = started(buildGear({ mainHand: "stick" }));
+  assert.equal(withGear.mainHand, "stick");
+  for (const slot of ["secondHand", "head", "torso", "legs", "pocket1"])
+    assert.equal(withGear[slot], null, slot);
+  assert.deepEqual(
+    started(undefined),
+    Object.fromEntries(
+      [
+        "mainHand",
+        "secondHand",
+        "head",
+        "torso",
+        "legs",
+        "pocket1",
+        "pocket2",
+        "pocket3",
+      ].map((slot) => [slot, null]),
+    ),
+  );
+});
+
+test("the loop command takes the flag --gear and names the gear in its header", () => {
+  const { options } = parseArgs([
+    "loop",
+    "--map",
+    "forest",
+    "--program",
+    "forestLoopWithStock",
+    "--seeds",
+    "1",
+    "--hours",
+    "1",
+    "--gear",
+    "mainHand=stick",
+  ]);
+  const { header } = JSON.parse(runCommand("loop", options).printed);
+  assert.deepEqual(header.gear, { mainHand: "stick" });
 });

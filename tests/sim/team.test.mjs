@@ -39,6 +39,17 @@ const ZERO_SKILLS = {
   kicking: { practice: 0, ranks: {} },
   dodging: { practice: 0, ranks: {} },
 };
+/** The gear of a new character: each slot of the data holding none (D-456). */
+const EMPTY_GEAR = {
+  mainHand: null,
+  secondHand: null,
+  head: null,
+  torso: null,
+  legs: null,
+  pocket1: null,
+  pocket2: null,
+  pocket3: null,
+};
 const EXPLORING = programFromRules({
   condition: { kind: "always" },
   action: { kind: "explore" },
@@ -78,6 +89,9 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
+      gear: EMPTY_GEAR,
+      changedSlots: [],
+      gearChanges: 0,
     },
     {
       id: 2,
@@ -86,6 +100,9 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
+      gear: EMPTY_GEAR,
+      changedSlots: [],
+      gearChanges: 0,
     },
     {
       id: 3,
@@ -94,6 +111,9 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
+      gear: EMPTY_GEAR,
+      changedSlots: [],
+      gearChanges: 0,
     },
   ]);
   assert.equal(state.nextCharacterId, 4);
@@ -226,7 +246,13 @@ function withUses(state, spent, nextMs) {
 
 /** What the death of the team's character `index` at the real moment `nowMs` does to the team. */
 const dies = (team, index, nowMs) =>
-  teamAfterDeath(team, team.characters[index], {}, nowMs);
+  teamAfterDeath(
+    team,
+    team.characters[index],
+    {},
+    nowMs,
+    team.characters[index].gear,
+  );
 
 /** The uses of the team's resurrection at a moment, as a pair: the uses left and the moment of the next return. */
 function stock(team, nowMs) {

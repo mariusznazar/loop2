@@ -110,6 +110,7 @@ export function actionInRepertoire(
       return repertoire.items.includes(action.resource);
     case "craft":
     case "tend":
+    case "equip":
       return repertoire.items.includes(action.item);
     default:
       return true;
@@ -226,7 +227,9 @@ function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
   )
     return RESOURCES[action.resource].name;
   if (
-    (action.kind === "craft" || action.kind === "tend") &&
+    (action.kind === "craft" ||
+      action.kind === "tend" ||
+      action.kind === "equip") &&
     !repertoire.items.includes(action.item)
   )
     return ITEMS[action.item].name;

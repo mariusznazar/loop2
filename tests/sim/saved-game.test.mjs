@@ -72,24 +72,42 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // game state is whole without them (D-441). It holds the four items the data had then, and no
 // minute counted to „Wytwórz” or „Opatrz”; the game refuses it as another version since version 10.
 //
-// The document of the current version, version 10, is that of version 9 with the bandage, the item
-// that no map holds, and the two ordinary actions „Wytwórz” and „Opatrz” (D-443, D-206): the
-// backpacks hold the bandage beside the four items, the keys of `minutesByAction` hold `craft` and
-// `tend`, and programs, a copy and its base, an earning loop's program and the activities hold
-// rules of both verbs with the bandage as their target. It fills every optional branch of the game
-// state, the new ones among them: the chest, the Understanding, the report's chest and the trip
-// lists naming the bandage, programs of content revision 0 and above, and an earning loop whose two
-// counts stand above 0 with the run below the longest. It also fills the others: a map run with a
-// campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
-// counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
-// plan, known trees, practice of the map run and of its combat, and ranks bought; an
-// earning loop with an activity going on; a stopped earning loop that gathered practice; and report lines
-// open, stopped away and stopped in the open game. `HEADQUARTERS` below holds the counts beside a
-// program of the list, which a game state holds only outside a map run, and an earning loop in a
-// combat going on, with no manual map run. Its map run is written paused, so the load's pause
-// changes nothing in it. A change of the game state's shape makes the load refuse this document; it
-// is rewritten only together with a raised version, or while no saved game state of the current
-// version exists anywhere.
+// The document of version 10 is that of version 9 with the bandage, the item that no map holds, and
+// the two ordinary actions „Wytwórz” and „Opatrz” (D-443, D-206): the backpacks hold the bandage
+// beside the four items, the keys of `minutesByAction` hold `craft` and `tend`, and programs, a copy
+// and its base, an earning loop's program and the activities hold rules of both verbs with the
+// bandage as their target. Its characters and the characters of its map runs hold no gear; the game
+// refuses it as another version since version 11.
+//
+// The document of the current version, version 11, is that of version 10 with the gear of each
+// character (D-451, D-452, D-456, D-460, D-463, D-206): each character of the team holds its gear, the
+// slots the player changed since the start of the map run going on of its earning loop and the count
+// of its gear changes, and the character of each map run holds the gear of that map run. The result
+// of an encounter holds the gear and the backpack its turns left, and each action of the character in
+// it the mark of a refill, which says whether the action took its piece from the backpack into the
+// empty main hand first (D-144, D-457). An action of a turn may also be „Załóż”, which takes a turn of
+// its own in a fight as it takes its minutes outside one (D-140, D-458), and the record of a manual map
+// run counts the minutes of that action as a kind of their own, `equip`. This document was rewritten
+// with the result's gear, backpack and mark, the turn of „Załóż” and its kind of minutes without
+// raising the version, since no saved game state of version 11 exists anywhere yet: the change that
+// brought version 11 has reached no server. It fills
+// every optional branch of the game state, the new ones among them: a character holding a stick in
+// its main hand and a bandage in a pocket, a character of an earning loop with a changed slot, a
+// character with an empty gear, map runs whose gear differs from their character's, and a combat
+// record whose first strike took a stick into the hand, whose later ones did not, and one of whose
+// turns put a bandage on. It also
+// fills the others: the chest, the Understanding, the report's chest and the trip lists naming the
+// bandage, programs of content revision 0 and above, an earning loop whose two counts stand above 0
+// with the run below the longest, a map run with a campfire, a burning item, a combat record, a copy
+// whose program was deleted, a discovery held and counts beside the copy's rules; trip lists in
+// programs, the copy changed from its frozen bring plan, known trees, practice of the map run and of
+// its combat, and ranks bought; an earning loop with an activity going on; a stopped earning loop that
+// gathered practice; and report lines open, stopped away and stopped in the open game.
+// `HEADQUARTERS` below holds the counts beside a program of the list, which a game state holds only
+// outside a map run, and an earning loop in a combat going on, with no manual map run. Its map run is
+// written paused, so the load's pause changes nothing in it. A change of the game state's shape makes
+// the load refuse this document; it is rewritten only together with a raised version, or while no
+// saved game state of the current version exists anywhere.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -843,8 +861,8 @@ const loopOf10 = (id) => ({
 
 /**
  * The record of the map run of the document of the current version, written out by hand: 212 game
- * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage and
- * 5 the tending with one, the longest streak of 40 above the streak going on (16) and below the game
+ * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage, 5
+ * the tending with one and 4 the putting of pieces on the gear, the longest streak of 40 above the streak going on (16) and below the game
  * minute, and the sticks the character took from the chest at the start.
  */
 const RUN_RECORD = {
@@ -853,7 +871,7 @@ const RUN_RECORD = {
     explore: 40,
     wander: 30,
     walkTo: 20,
-    walkToCampfire: 10,
+    walkToCampfire: 6,
     gather: 55,
     patrol: 0,
     craftCampfire: 20,
@@ -862,6 +880,7 @@ const RUN_RECORD = {
     feedCampfire: 5,
     eat: 5,
     tend: 5,
+    equip: 4,
     craft: 10,
     wait: 2,
     combat: 5,
@@ -870,14 +889,15 @@ const RUN_RECORD = {
 };
 
 /**
- * The document of the current version, version 10: version 9 with the bandage. The backpack of the
- * map run holds one and the chest one, Ola's earning loop is tending one with its backpack at none,
- * the programs, the copy and its base and the earning loop's program hold rules of „Wytwórz” and
- * „Opatrz” with the bandage as their target, the map run is making a bandage, the record counts game
- * minutes to both verbs, the Understanding holds both actions and the bandage, and the open line of
- * the report holds two bandages in its chest. The counts stand beside the rules of the copy, six of them.
+ * The document of version 10: version 9 with the bandage. The backpack of the map run holds one and
+ * the chest one, Ola's earning loop is tending one with its backpack at none, the programs, the copy
+ * and its base and the earning loop's program hold rules of „Wytwórz” and „Opatrz” with the bandage
+ * as their target, the map run is making a bandage, the record counts game minutes to both verbs,
+ * the Understanding holds both actions and the bandage, and the open line of the report holds two
+ * bandages in its chest. The counts stand beside the rules of the copy, six of them. No character
+ * holds a gear; the game refuses it as another version since version 11.
  */
-const DOCUMENT = {
+const DOCUMENT_V10 = {
   version: 10,
   game: {
     ...DOCUMENT_V9.game,
@@ -922,15 +942,135 @@ const DOCUMENT = {
   },
 };
 
+/** The empty gear: each of the eight slots of the data, in its order, holding none (D-456). */
+const EMPTY_GEAR = {
+  mainHand: null,
+  secondHand: null,
+  head: null,
+  torso: null,
+  legs: null,
+  pocket1: null,
+  pocket2: null,
+  pocket3: null,
+};
+
+/** `character` of the team with the three fields of the gear of version 11. */
+const geared = (character, gear, changedSlots, gearChanges) => ({
+  ...character,
+  gear,
+  changedSlots,
+  gearChanges,
+});
+
+/** `run` with its character holding `gear`, the gear of that map run. */
+const runGeared = (run, gear) => ({
+  ...run,
+  character: { ...run.character, gear },
+});
+
+/**
+ * The last combat of the map run of the current version: that of version 10, whose first strike took
+ * a stick from the backpack into the empty main hand and whose three later strikes took none, with a
+ * turn of „Załóż” putting a bandage on in the second turn, and the gear and the backpack the turns left:
+ * the stick in the hand, the bandages in two pockets, and six pieces in the backpack, within the
+ * carrying capacity of 15.
+ */
+const COMBAT_V10 = DOCUMENT_V10.game.run.lastCombat;
+// The turn of „Załóż”: the character puts a bandage on in the turn in which version 10 had no action
+// of the character. It deals nothing, so the wolf's health stays at 18 and the character's at 79. The
+// number of its rule, 7, is read as a number and compared with no rule of the copy.
+const EQUIP_TURN = {
+  ruleId: 7,
+  action: { kind: "equip", item: "bandage" },
+  refill: false,
+  damage: 0,
+  creatureHealth: 18,
+  characterHealth: 79,
+};
+const LAST_COMBAT = {
+  ...COMBAT_V10,
+  result: {
+    ...COMBAT_V10.result,
+    ruleStarts: { ...COMBAT_V10.result.ruleStarts, 7: 1 },
+    exchanges: COMBAT_V10.result.exchanges.map((exchange, index) => ({
+      ...exchange,
+      characterAction:
+        index === 1
+          ? EQUIP_TURN
+          : exchange.characterAction && {
+              ...exchange.characterAction,
+              refill: index === 0,
+            },
+    })),
+    gear: {
+      ...EMPTY_GEAR,
+      mainHand: "stick",
+      pocket1: "bandage",
+      pocket2: "bandage",
+    },
+    backpack: { stick: 3, berry: 2, moss: 1, fiber: 0, bandage: 0 },
+  },
+};
+
+/**
+ * The document of the current version, version 11: version 10 with the gear. Ala, the character of
+ * the manual map run, holds a stick in her main hand and a bandage in her second pocket, put on in
+ * three changes, and her map run holds a bandage in her first pocket too; Ola, in an earning loop,
+ * holds a stick for her next map run in the main hand she changed, her one change, while the map run
+ * going on holds nothing; Ewa holds an empty gear and has made no change. The last combat of the map
+ * run is `LAST_COMBAT`.
+ */
+const [ALA_V10, OLA_V10, EWA_V10] = DOCUMENT_V10.game.team.characters;
+const DOCUMENT = {
+  version: 11,
+  game: {
+    ...DOCUMENT_V10.game,
+    understanding: {
+      ...DOCUMENT_V10.game.understanding,
+      actions: [...DOCUMENT_V10.game.understanding.actions, "equip"],
+      conditions: [...DOCUMENT_V10.game.understanding.conditions, "emptyPlace"],
+    },
+    team: {
+      ...DOCUMENT_V10.game.team,
+      characters: [
+        geared(
+          ALA_V10,
+          { ...EMPTY_GEAR, mainHand: "stick", pocket2: "bandage" },
+          [],
+          3,
+        ),
+        geared(OLA_V10, { ...EMPTY_GEAR, mainHand: "stick" }, ["mainHand"], 1),
+        geared(EWA_V10, EMPTY_GEAR, [], 0),
+      ],
+    },
+    run: {
+      ...runGeared(DOCUMENT_V10.game.run, {
+        ...EMPTY_GEAR,
+        mainHand: "stick",
+        pocket1: "bandage",
+        pocket2: "bandage",
+      }),
+      lastCombat: LAST_COMBAT,
+    },
+    loops: {
+      2: {
+        ...DOCUMENT_V10.game.loops[2],
+        run: runGeared(DOCUMENT_V10.game.loops[2].run, EMPTY_GEAR),
+      },
+    },
+  },
+};
+
 /**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on, and the team's resurrection with no use spent and
  * no moment of the next return. The earning loop's run in a row equals its record.
  * Its one program is of content revision 1, and its game was made at the moment 0 the new game takes where
- * the page gives none.
+ * the page gives none. Ala took the stick off her main hand and put a bandage into her first pocket for
+ * her next map run, two changes, while the map run going on keeps the stick it started with.
  */
 const HEADQUARTERS = {
-  version: 10,
+  version: 11,
   game: {
     programs: [
       { id: 1, name: "Program", program: PROGRAM_1, contentRevision: 1 },
@@ -957,6 +1097,9 @@ const HEADQUARTERS = {
           traits: { carryingCapacity: 15 },
           skills: NEW_SKILLS,
           generation: 1,
+          gear: { ...EMPTY_GEAR, pocket1: "bandage" },
+          changedSlots: ["pocket1", "mainHand"],
+          gearChanges: 2,
         },
       ],
       chest: { pieces: {} },
@@ -975,7 +1118,7 @@ const HEADQUARTERS = {
       1: {
         ...countedLoop(loopOf10(1), 3, 3),
         run: {
-          ...loopRun10(1),
+          ...runGeared(loopRun10(1), { ...EMPTY_GEAR, mainHand: "stick" }),
           current: null,
           activeCombat: {
             creatureId: "wolf",
@@ -1014,13 +1157,13 @@ test("the server's save of the current version loads into the game it holds, its
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const save = {
-    version: 10,
+    version: 11,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 10 is the current version since the raise, so 9 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 9 }), {
+  // D-206: 11 is the current version since the raise, so 10 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 10 }), {
     ok: false,
     reason: "version",
   });
@@ -1222,6 +1365,10 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
   passed.game.run.minutesByAction.explore = 1;
   passed.game.run.enteredWith[0].count = 1;
   passed.game.run.enteredWith.pop();
+  passed.game.team.characters[0].gear.mainHand = null;
+  passed.game.team.characters[1].changedSlots.push("head");
+  passed.game.run.character.gear.pocket1 = null;
+  passed.game.loops[2].run.character.gear.mainHand = "stick";
   assert.deepEqual(state, DOCUMENT.game);
 });
 
@@ -1239,8 +1386,8 @@ test("the team's moment of the next return below zero loads, as it is a safe int
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
-  // D-206: 10 is the current version since the raise, so 9 and 11 stand in for another one.
-  for (const version of [0, 8, 9, 11, -1]) {
+  // D-206: 11 is the current version since the raise, so 10 and 12 stand in for another one.
+  for (const version of [0, 8, 9, 10, 12, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -1248,14 +1395,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 11 of another shape",
-    { version: 11, game: "Las" },
+    "version 12 of another shape",
+    { version: 12, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 11 with an archetype absent from the data",
+    "version 12 with an archetype absent from the data",
     changed((document) => {
-      document.version = 11;
+      document.version = 12;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -1394,12 +1541,11 @@ test("the document of version 8 is refused as version, whatever its game holds",
 // invariant: save-version
 // D-206: the document of version 9 is discarded whole, whatever it holds, though its game state is
 // sound but for the bandage its backpacks lack and the two kinds its game minutes by action lack, which
-// the bandage and the actions „Wytwórz” and „Opatrz” add (D-443); the current version is the one
-// after it. The same game under the current version is no document of it, and is refused as shape.
+// the bandage and the actions „Wytwórz” and „Opatrz” add (D-443); version 10 is the one after it. The
+// same game under the current version is no document of it, and is refused as shape.
 test("the document of version 9 is refused as version, whatever its game holds", () => {
   // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
   assert.equal(DOCUMENT_V9.version, 9);
-  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V9.version + 1);
   assertRefused(
     "the document of version 9",
     structuredClone(DOCUMENT_V9),
@@ -1413,6 +1559,32 @@ test("the document of version 9 is refused as version, whatever its game holds",
   assertRefused(
     "the game of version 9 held under the current version",
     { ...structuredClone(DOCUMENT_V9), version: SAVED_GAME_VERSION },
+    "shape",
+  );
+});
+
+// invariant: save-version
+// D-206: the document of version 10 is discarded whole, whatever it holds, though its game state is
+// sound but for the gear its characters and its map runs' characters lack (D-451, D-452, D-463); the
+// current version is the one after it. The same game under the current version is no document of it,
+// and is refused as shape.
+test("the document of version 10 is refused as version, whatever its game holds", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  assert.equal(DOCUMENT_V10.version, 10);
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V10.version + 1);
+  assertRefused(
+    "the document of version 10",
+    structuredClone(DOCUMENT_V10),
+    "version",
+  );
+  assertRefused(
+    "the document of version 10 with the gear of the current version",
+    { ...structuredClone(DOCUMENT), version: 10 },
+    "version",
+  );
+  assertRefused(
+    "the game of version 10 held under the current version",
+    { ...structuredClone(DOCUMENT_V10), version: SAVED_GAME_VERSION },
     "shape",
   );
 });
@@ -2763,6 +2935,25 @@ Object.assign(CRAFTED, {
     delete document.game.run.minutesByAction.tend;
     document.game.run.minutesByAction.gather += 5;
   },
+  "the game minutes by action without „Załóż”": (document) => {
+    delete document.game.run.minutesByAction.equip;
+    document.game.run.minutesByAction.gather += 4;
+  },
+  "the game minutes by action with „Załóż” below 0": (document) => {
+    document.game.run.minutesByAction.equip = -1;
+    document.game.run.minutesByAction.gather = 60;
+  },
+  "the game minutes by action with „Załóż” fractional": (document) => {
+    document.game.run.minutesByAction.equip = 3.5;
+    document.game.run.minutesByAction.gather = 55.5;
+  },
+  "the game minutes by action with „Załóż” as text": (document) =>
+    (document.game.run.minutesByAction.equip = "4"),
+  "the game minutes by action with „Załóż” of none": (document) =>
+    (document.game.run.minutesByAction.equip = null),
+  "the game minutes by action summing to less with „Załóż” counted": (
+    document,
+  ) => (document.game.run.minutesByAction.equip = 3),
   "the game minutes by action of version 9: neither verb": (document) => {
     delete document.game.run.minutesByAction.craft;
     delete document.game.run.minutesByAction.tend;
@@ -2788,8 +2979,236 @@ Object.assign(CRAFTED, {
   ) => (document.game.run.minutesByAction.tend = 4),
 });
 
+/** Ala, the character of the manual map run, who holds a stick and a bandage. */
+const ala = (document) => document.game.team.characters[0];
+/** Ola, the character of the earning loop, whose main hand the player changed. */
+const ola = (document) => document.game.team.characters[1];
+/** Ewa, whose earning loop stopped, so she has none. */
+const ewa = (document) => document.game.team.characters[2];
+
 /**
- * The places an action of „Wytwórz” or „Opatrz” stands in a document: a rule of a program, of a copy,
+ * The places a gear stands in a document: a character of the team, the character of the manual map
+ * run and the character of an earning loop's map run.
+ */
+const GEAR_PLACES_OF = {
+  "a character's gear": (document) => ala(document).gear,
+  "the map run's gear": (document) => document.game.run.character.gear,
+  "an earning loop's gear": (document) => olaLoop(document).run.character.gear,
+  "a combat result's gear": (document) =>
+    document.game.run.lastCombat.result.gear,
+};
+
+/** The result of the last combat of the manual map run. */
+const fought = (document) => document.game.run.lastCombat.result;
+
+/**
+ * What no gear holds (D-456): a piece in a slot whose place it does not fit, an item the data lack, a
+ * slot missing or one more, a value of another type in a slot.
+ */
+const NOT_A_GEAR = {
+  "a stick in a pocket": (gear) => (gear.pocket3 = "stick"),
+  "a bandage in the main hand": (gear) => (gear.mainHand = "bandage"),
+  "a stick in the second hand": (gear) => (gear.secondHand = "stick"),
+  "a bandage on the head": (gear) => (gear.head = "bandage"),
+  "berries, which fit no slot, in the main hand": (gear) =>
+    (gear.mainHand = "berry"),
+  "moss, which fits no slot, in a pocket": (gear) => (gear.pocket3 = "moss"),
+  "an item the data lack": (gear) => (gear.mainHand = "sword"),
+  "the key every object inherits as an item": (gear) =>
+    (gear.mainHand = "toString"),
+  "an empty item": (gear) => (gear.mainHand = ""),
+  "an item in capitals": (gear) => (gear.mainHand = "STICK"),
+  "an item as a number": (gear) => (gear.mainHand = 1),
+  "an item as a truth value": (gear) => (gear.mainHand = false),
+  "an item as a list": (gear) => (gear.mainHand = ["stick"]),
+  "an item as an object": (gear) => (gear.mainHand = { item: "stick" }),
+  "a count of bandages in one pocket": (gear) => (gear.pocket3 = 3),
+  "a slot missing": (gear) => delete gear.pocket3,
+  "the main hand missing": (gear) => delete gear.mainHand,
+  "a fourth pocket": (gear) => (gear.pocket4 = null),
+  "a pocket of number 0": (gear) => (gear.pocket0 = null),
+  "a slot the data lack": (gear) => (gear.belt = null),
+  "a slot named by its place": (gear) => (gear.pocket = null),
+  "an own __proto__ beside the slots": (gear) => defineProto(gear, null),
+};
+
+for (const [where, gearOf] of Object.entries(GEAR_PLACES_OF)) {
+  for (const [what, change] of Object.entries(NOT_A_GEAR))
+    CRAFTED[`${where} with ${what}`] = (document) => change(gearOf(document));
+}
+
+Object.assign(CRAFTED, {
+  // A gear of another type than a slot-by-slot record.
+  "a character's gear of none": (document) => (ala(document).gear = null),
+  "a character's gear as a list of its slots": (document) =>
+    (ala(document).gear = [
+      "stick",
+      null,
+      null,
+      null,
+      null,
+      null,
+      "bandage",
+      null,
+    ]),
+  "a character's gear as an item": (document) => (ala(document).gear = "stick"),
+  "a character's gear as a count of pieces": (document) =>
+    (ala(document).gear = { stick: 1, bandage: 1 }),
+  "the map run's gear of none": (document) =>
+    (document.game.run.character.gear = null),
+  "the map run's gear as a list": (document) =>
+    (document.game.run.character.gear = []),
+  "an earning loop's gear as a text": (document) =>
+    (olaLoop(document).run.character.gear = "mainHand"),
+  // The keys of a character and of a map run's character, exactly.
+  "a character without its gear": (document) => delete ala(document).gear,
+  "a character without its changed slots": (document) =>
+    delete ola(document).changedSlots,
+  "a character without its count of gear changes": (document) =>
+    delete ewa(document).gearChanges,
+  "the map run's character without its gear": (document) =>
+    delete document.game.run.character.gear,
+  "an earning loop's character without its gear": (document) =>
+    delete olaLoop(document).run.character.gear,
+  "the map run's character holding changed slots": (document) =>
+    (document.game.run.character.changedSlots = []),
+  "the map run's character holding a count of gear changes": (document) =>
+    (document.game.run.character.gearChanges = 0),
+  // The changed slots: slots of the data, each once, and only at a character in an earning loop.
+  "a changed slot at the character of the manual map run": (document) =>
+    (ala(document).changedSlots = ["mainHand"]),
+  "a changed slot at a character whose earning loop stopped": (document) =>
+    (ewa(document).changedSlots = ["head"]),
+  "a changed slot named twice": (document) =>
+    (ola(document).changedSlots = ["mainHand", "mainHand"]),
+  "a pocket changed twice": (document) =>
+    (ola(document).changedSlots = ["pocket2", "mainHand", "pocket2"]),
+  "a changed slot the data lack": (document) =>
+    (ola(document).changedSlots = ["pocket4"]),
+  "a changed slot named by its place": (document) =>
+    (ola(document).changedSlots = ["pocket"]),
+  "a changed slot named by its name": (document) =>
+    (ola(document).changedSlots = ["Ręka główna"]),
+  "a changed slot of none": (document) => (ola(document).changedSlots = [null]),
+  "a changed slot as a number": (document) =>
+    (ola(document).changedSlots = [0]),
+  "the changed slots as a text": (document) =>
+    (ola(document).changedSlots = "mainHand"),
+  "the changed slots of none": (document) =>
+    (ola(document).changedSlots = null),
+  "the changed slots as an object": (document) =>
+    (ola(document).changedSlots = { mainHand: true }),
+  // The count of the player's gear changes: a safe integer from 0 (D-463).
+  "a count of gear changes below 0": (document) =>
+    (ala(document).gearChanges = -1),
+  "a fractional count of gear changes": (document) =>
+    (ala(document).gearChanges = 2.5),
+  "a count of gear changes as text": (document) =>
+    (ala(document).gearChanges = "3"),
+  "a count of gear changes of none": (document) =>
+    (ala(document).gearChanges = null),
+  "a count of gear changes not a number": (document) =>
+    (ala(document).gearChanges = NaN),
+  "an infinite count of gear changes": (document) =>
+    (ala(document).gearChanges = Infinity),
+  "a count of gear changes beyond the safe integers": (document) =>
+    (ala(document).gearChanges = 2 ** 53),
+  // The gear and the backpack a combat result holds (D-457): a gear as any gear, a backpack of the
+  // data's items within the carrying capacity of the map run's character, 15.
+  "a combat result without its gear": (document) =>
+    delete fought(document).gear,
+  "a combat result without its backpack": (document) =>
+    delete fought(document).backpack,
+  "a combat result's gear of none": (document) =>
+    (fought(document).gear = null),
+  "a combat result whose backpack holds 16 pieces, over the carrying capacity":
+    (document) =>
+      (fought(document).backpack = {
+        stick: 10,
+        berry: 3,
+        moss: 1,
+        fiber: 1,
+        bandage: 1,
+      }),
+  "a combat result whose backpack holds 16 sticks": (document) =>
+    (fought(document).backpack.stick = 16),
+  "a combat result's backpack with a count below 0": (document) =>
+    (fought(document).backpack.moss = -1),
+  "a combat result's backpack with a fractional count": (document) =>
+    (fought(document).backpack.stick = 2.5),
+  "a combat result's backpack without an item of the data": (document) =>
+    delete fought(document).backpack.bandage,
+  "a combat result's backpack with an item the data lack": (document) =>
+    (fought(document).backpack.sword = 0),
+  "a combat result's backpack as a list": (document) =>
+    (fought(document).backpack = [3, 2, 1, 0, 0]),
+  // The mark of a refill: a truth value at each action of the character, true only where the
+  // action uses an item, as the strike its stick.
+  "an action of a combat record without its refill mark": (document) =>
+    delete fought(document).exchanges[0].characterAction.refill,
+  "a refill mark as text": (document) =>
+    (fought(document).exchanges[0].characterAction.refill = "true"),
+  "a refill mark as a number": (document) =>
+    (fought(document).exchanges[2].characterAction.refill = 0),
+  "a refill mark of none": (document) =>
+    (fought(document).exchanges[0].characterAction.refill = null),
+  "a refill marked on a kick": (document) =>
+    (fought(document).exchanges[2].characterAction = {
+      ...fought(document).exchanges[2].characterAction,
+      action: { kind: "kick" },
+      refill: true,
+    }),
+  "a refill marked on a dodge": (document) =>
+    (fought(document).exchanges[3].characterAction = {
+      ...fought(document).exchanges[3].characterAction,
+      action: { kind: "dodge" },
+      refill: true,
+    }),
+  // The document of the current version has no turn with no action of the character, so the case makes
+  // one first; such a turn alone loads, as „a combat turn with no action of the character” below shows.
+  "a refill mark on an exchange with no action of the character": (document) =>
+    Object.assign(fought(document).exchanges[1], {
+      characterAction: null,
+      refill: true,
+    }),
+  // „Załóż” in a turn of a combat record: its item a stick or a bandage as in any program, no refill
+  // and no damage, since it takes a piece from the backpack into a slot and deals nothing.
+  "a turn of „Załóż” with a refill mark": (document) =>
+    (fought(document).exchanges[1].characterAction.refill = true),
+  "a turn of „Załóż” with damage": (document) =>
+    (fought(document).exchanges[1].characterAction.damage = 6),
+  "a turn of „Załóż” with a fractional damage": (document) =>
+    (fought(document).exchanges[1].characterAction.damage = 0.5),
+  "a turn of „Załóż” with no item": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+    }),
+  "a turn of „Załóż” with an item the data lack": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "sword",
+    }),
+  "a turn of „Załóż” with an item that fits no place of the gear": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "moss",
+    }),
+  "a turn of „Załóż” with a field beyond its kind and item": (document) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "equip",
+      item: "bandage",
+      resource: "moss",
+    }),
+  "an action no turn carries out in place of a turn of the character": (
+    document,
+  ) =>
+    (fought(document).exchanges[1].characterAction.action = {
+      kind: "wander",
+    }),
+});
+
+/**
+ * The places an action of „Wytwórz”, „Opatrz” or „Załóż” stands in a document: a rule of a program, of a copy,
  * of a base and of an earning loop's program, and the activity going on of the map run and of an
  * earning loop. Each sets the action `action` of `kind` where the document has one of that kind.
  */
@@ -2816,12 +3235,24 @@ const VERB_PLACES = {
     (olaLoop(document).run.current.activity.action = action),
 };
 
-const VERB_NAMES = { craft: "„Wytwórz”", tend: "„Opatrz”" };
+const VERB_NAMES = {
+  craft: "„Wytwórz”",
+  tend: "„Opatrz”",
+  equip: "„Załóż”",
+};
 
 /** The targets no verb takes: the items without its property, an identifier the data lack, a value no identifier. */
 const NOT_TARGETS = {
   craft: ["moss", "stick", "fiber", "berry"],
   tend: ["moss", "stick", "fiber", "berry"],
+  equip: ["moss", "fiber", "berry"],
+};
+
+/** What the data give an item that a verb takes as its target: the property its targets are the items of. */
+const TARGET_PROPERTY = {
+  craft: "recipe",
+  tend: "healing",
+  equip: "place of the gear",
 };
 
 const NOT_ITEMS = {
@@ -2839,12 +3270,12 @@ const NOT_ITEMS = {
 };
 
 for (const [place, set] of Object.entries(VERB_PLACES)) {
-  for (const kind of ["craft", "tend"]) {
+  for (const kind of ["craft", "tend", "equip"]) {
     const verb = VERB_NAMES[kind];
     const refused = {
       ...Object.fromEntries(
         NOT_TARGETS[kind].map((item) => [
-          `${item}, which the data give no ${kind === "craft" ? "recipe" : "healing"}`,
+          `${item}, which the data give no ${TARGET_PROPERTY[kind]}`,
           { kind, item },
         ]),
       ),
@@ -2865,10 +3296,10 @@ for (const [place, set] of Object.entries(VERB_PLACES)) {
 }
 
 // invariant: save-version
-test("each place of an action holds „Wytwórz” and „Opatrz” with the bandage, and loads", () => {
+test("each place of an action holds „Wytwórz”, „Opatrz” and „Załóż” with the bandage, and loads", () => {
   // decision: D-443 "An action is a verb with a target, and the targets a verb takes follow from the properties of the items in the game's data."
   for (const [place, set] of Object.entries(VERB_PLACES)) {
-    for (const kind of ["craft", "tend"]) {
+    for (const kind of ["craft", "tend", "equip"]) {
       const document = changed((copy) =>
         set(copy, kind, { kind, item: "bandage" }),
       );
@@ -2902,8 +3333,68 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-442 "Each program of the player's list carries a content revision, a whole number kept with its number, its name and its content"
   // decision: D-442 "The copy of a map run and the program of an earning loop hold content alone and carry no content revision"
   // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included"
+  // decision: D-456 "The gear has eight slots, each holding one piece: „Ręka główna”, „Druga ręka”, „Głowa”, „Tułów”, „Nogi” and three pockets of the belt, each slot being of one place, the three pockets of the place „Kieszeń”."
+  // decision: D-456 "The data of each item name the place it fits: the stick fits the main hand and the bandage a pocket."
+  // decision: D-457 "That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
+});
+
+// invariant: save-version
+test("a document at the edges of what the gear admits loads", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-456 "The data of each item name the place it fits: the stick fits the main hand and the bandage a pocket."
+  const edges = {
+    "a bandage in each of the three pockets": (document) =>
+      Object.assign(ala(document).gear, {
+        pocket1: "bandage",
+        pocket2: "bandage",
+        pocket3: "bandage",
+      }),
+    "the map run's gear empty beside its character's stick": (document) =>
+      (document.game.run.character.gear = { ...EMPTY_GEAR }),
+    "every slot changed at the character of the earning loop": (document) =>
+      (ola(document).changedSlots = [
+        "pocket3",
+        "legs",
+        "mainHand",
+        "secondHand",
+        "head",
+        "torso",
+        "pocket1",
+        "pocket2",
+      ]),
+    "no slot changed at the character of the earning loop": (document) =>
+      (ola(document).changedSlots = []),
+    "the highest safe count of gear changes": (document) =>
+      (ewa(document).gearChanges = Number.MAX_SAFE_INTEGER),
+    "a count of gear changes of 0 beside a held gear": (document) =>
+      (ala(document).gearChanges = 0),
+    "a combat result whose backpack holds the whole carrying capacity": (
+      document,
+    ) =>
+      (fought(document).backpack = {
+        stick: 12,
+        berry: 2,
+        moss: 1,
+        fiber: 0,
+        bandage: 0,
+      }),
+    "a combat result with an empty gear and no refill": (document) => {
+      fought(document).gear = { ...EMPTY_GEAR };
+      fought(document).exchanges[0].characterAction.refill = false;
+    },
+    "a combat turn with no action of the character": (document) =>
+      (fought(document).exchanges[1].characterAction = null),
+  };
+  for (const [name, change] of Object.entries(edges)) {
+    const document = changed(change);
+    assert.deepEqual(
+      loadSavedGame(document),
+      { ok: true, state: document.game },
+      name,
+    );
+  }
 });
 
 // invariant: save-version
@@ -3059,9 +3550,11 @@ test("two characters of one number are refused as shape, the rest of the documen
   assertRefused(
     "two characters of one number",
     changed((document) => {
+      // A character with no earning loop of its own holds no changed slot.
       document.game.team.characters.push({
         ...structuredClone(document.game.team.characters[0]),
         name: "Ewa",
+        changedSlots: [],
       });
     }, HEADQUARTERS),
     "shape",
@@ -3075,10 +3568,12 @@ test("two characters of one number are refused as shape, the rest of the documen
 test("a character whose number is the next character number is refused as shape, the rest of the document sound", () => {
   const withSecondCharacter = (nextCharacterId) =>
     changed((document) => {
+      // A character with no earning loop of its own holds no changed slot.
       document.game.team.characters.push({
         ...structuredClone(document.game.team.characters[0]),
         id: 2,
         name: "Ewa",
+        changedSlots: [],
       });
       document.game.nextCharacterId = nextCharacterId;
     }, HEADQUARTERS);

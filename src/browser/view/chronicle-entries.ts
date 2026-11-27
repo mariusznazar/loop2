@@ -6,6 +6,7 @@
  * recorded, and nothing here keeps state or draws. Nothing runs when the module is imported.
  */
 import { CAMPFIRE } from "../sim/data/campfire.js";
+import { GEAR_PLACES } from "../sim/data/gear.js";
 import { MAPS } from "../sim/data/maps.js";
 import { sameData } from "../sim/programs.js";
 import type { GameEvent, StreakLossCause } from "../sim/run.js";
@@ -19,8 +20,8 @@ import type {
   Understanding,
 } from "../sim/types.js";
 import { discoveryBandText } from "./discovery-band-text.js";
-import { deathText, WAIT_TEXT } from "./now-lines.js";
-import { actionSentence, ruleNumber, ruleSentence } from "./program-editor.js";
+import { deathText, startWords, WAIT_TEXT } from "./now-lines.js";
+import { ruleNumber, ruleSentence } from "./program-editor.js";
 
 /**
  * The kind of an entry, which decides both the filter that shows it and the role of its text:
@@ -348,9 +349,11 @@ function revealed(
  * The entry one event of the simulation gives (D-340, D-341, D-344, D-345): the start of a program
  * rule's action in the words of its row, the start of a wait in the words of „Teraz”, a discovery as
  * the band's text for the state returned with it, a loss of the streak, a campfire going out, a
- * death in the words of „Teraz” and a completion in the map's text. Null for every other event; an
- * attack gives no entry here, since the chronicle places the paragraph of the encounter itself
- * (D-147), and whether a wait's start gives an entry is the chronicle's to decide. `after` is the
+ * death in the words of „Teraz”, a completion in the map's text and the refill of an empty main hand
+ * in a turn of an encounter, in the words the paragraph writes it in, with no actor (D-340, D-457).
+ * Null for every other event, a turn of an encounter with no refill among them; an attack gives no
+ * entry here, since the chronicle places the paragraph of the encounter itself (D-147), and whether a
+ * wait's start gives an entry is the chronicle's to decide. `after` is the
  * game state of the result the event came with. Pure.
  */
 export function eventEntry(
@@ -364,7 +367,7 @@ export function eventEntry(
         minute: event.minute,
         text:
           event.activity.kind === "rule"
-            ? actionSentence(event.activity.action)
+            ? startWords(event.activity.action)
             : WAIT_TEXT,
         role: "text",
       };
@@ -403,6 +406,16 @@ export function eventEntry(
             minute: event.minute,
             text: MAPS[after.run.mapId].completionText,
             role: "positive",
+          }
+        : null;
+    case "combatExchange":
+      // Only the refill of the empty hand is an entry; the blows stay in the paragraph (D-147, D-340).
+      return event.exchange.characterAction?.refill
+        ? {
+            kind: "action",
+            minute: event.minute,
+            text: capitalized(GEAR_PLACES.mainHand.refill),
+            role: "text",
           }
         : null;
     default:

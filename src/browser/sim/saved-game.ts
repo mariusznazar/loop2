@@ -13,8 +13,16 @@ import {
   type BranchId,
   type SkillId,
 } from "./data/skills.js";
+import {
+  backpackCap,
+  backpackCount,
+  fitsSlot,
+  gearSlots,
+} from "./character.js";
+import { GEAR_SLOTS } from "./data/gear.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
+import { combatItem } from "./program.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
 import { MINUTE_KINDS } from "./run-record.js";
@@ -40,6 +48,7 @@ import type {
   CombatExchange,
   CombatOutcome,
   CombatResult,
+  CombatVerbKind,
   Completion,
   CompletionSettlement,
   CurrentActivity,
@@ -49,6 +58,7 @@ import type {
   EarningLoop,
   GameMapRun,
   GameState,
+  Gear,
   Hex,
   ItemId,
   LastCombat,
@@ -75,11 +85,12 @@ import type {
 
 /**
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
- * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, and
- * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
- * record of a manual map run: a new action or a removed one changes those keys.
+ * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, of the
+ * slots of the gear of the data, which `Gear` enumerates, and of the ordinary actions of the data,
+ * whose kinds are the keys of `minutesByAction` in the record of a manual map run: a new action or a
+ * removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 10;
+export const SAVED_GAME_VERSION = 11;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -312,18 +323,22 @@ const COMBAT_OUTCOMES: Record<CombatOutcome, true> = {
   creatureDeparted: true,
 };
 
-type CombatActionKind = CombatCharacterAction["action"]["kind"];
-
-const COMBAT_ACTIONS: Record<CombatActionKind, true> = {
+/** The actions only a fight carries out (D-140): no game minute outside one counts to any of them. */
+const COMBAT_VERBS: Record<CombatVerbKind, true> = {
   strikeWithStick: true,
   kick: true,
   dodge: true,
 };
 
-function isCombatAction(
+function isCombatVerb(
   value: Action,
-): value is CombatCharacterAction["action"] {
-  return Object.hasOwn(COMBAT_ACTIONS, value.kind);
+): value is Extract<Action, { kind: CombatVerbKind }> {
+  return Object.hasOwn(COMBAT_VERBS, value.kind);
+}
+
+/** An action of a turn of the character: an action of combat, or „Załóż”, which takes a turn there. */
+function isTurnAction(value: Action): value is CombatCharacterAction["action"] {
+  return isCombatVerb(value) || value.kind === "equip";
 }
 
 /** The actions that move the character to a neighbouring tile, so their activity holds its target. */
@@ -525,7 +540,9 @@ function resurrectionUses(
 
 /**
  * The team: its characters, numbers each once and below the next one, its chest and the uses of its
- * one resurrection that are spent, with the moment the next returns.
+ * one resurrection that are spent, with the moment the next returns. Each character holds its gear,
+ * the slots of the data the player changed, each once, which the game reads against the earning loops
+ * once it has read them, and the count of its gear changes, a safe integer from 0 (D-463).
  */
 function team(
   value: unknown,
@@ -547,6 +564,9 @@ function team(
       "traits",
       "skills",
       "generation",
+      "gear",
+      "changedSlots",
+      "gearChanges",
     ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
@@ -559,6 +579,9 @@ function team(
       traits: traits(character.traits),
       skills: characterSkills(character.skills, archetypeId, trees),
       generation: identity(character.generation),
+      gear: gear(character.gear),
+      changedSlots: uniqueOf(character.changedSlots, GEAR_SLOTS),
+      gearChanges: count(character.gearChanges),
     };
   });
   return {
@@ -609,6 +632,27 @@ function backpack(value: unknown): Backpack {
   return Object.fromEntries(
     ITEM_IDS.map((item) => [item, count(read[item])]),
   ) as Backpack;
+}
+
+const SLOTS = gearSlots();
+
+/**
+ * A gear (D-456): each slot of the data present and no other, each holding none or one item of the
+ * data that fits the slot's place.
+ */
+function gear(value: unknown): Gear {
+  const read = fields(value, SLOTS);
+  const held = {} as Gear;
+  for (const slot of SLOTS) {
+    if (read[slot] === null) {
+      held[slot] = null;
+      continue;
+    }
+    const item = oneOf(read[slot], ITEMS);
+    if (!fitsSlot(item, slot)) refuse();
+    held[slot] = item;
+  }
+  return held;
 }
 
 /** Nature energy from 0 up to the cap of the data (invariant nature-energy-range). */
@@ -662,8 +706,9 @@ function currentActivity(value: unknown, place: Place): CurrentActivity {
   const endMinute = count(read.endMinute);
   if (startMinute > place.minute || endMinute <= startMinute) refuse();
   const stepTo = read.stepTo === null ? null : place.onMap(read.stepTo);
-  // The pick starts no combat action outside a fight, so no game minute counts to one.
-  if (doing.kind === "rule" && isCombatAction(doing.action)) refuse();
+  // The pick starts no action of combat outside a fight, so no game minute counts to one; „Załóż” is
+  // no such action and goes on as any ordinary one does.
+  if (doing.kind === "rule" && isCombatVerb(doing.action)) refuse();
   const moves = doing.kind === "rule" && MOVES[doing.action.kind] === true;
   if (moves !== (stepTo !== null)) refuse();
   if (stepTo && hexDistance(stepTo, place.at) !== 1) refuse();
@@ -701,20 +746,31 @@ const CREATURE_ACTIONS: {
   },
 };
 
+/**
+ * A character's action of a combat record: an action of combat or „Załóż”, with the mark of a refill,
+ * which only an action that uses an item makes (D-457), and the damage of an action that deals none:
+ * „Załóż” deals 0.
+ */
 function characterAction(value: unknown): CombatCharacterAction {
   const read = fields(value, [
     "ruleId",
     "action",
+    "refill",
     "damage",
     "creatureHealth",
     "characterHealth",
   ]);
   const acted = action(read.action);
-  if (!isCombatAction(acted)) refuse();
+  if (!isTurnAction(acted)) refuse();
+  const refill = flag(read.refill);
+  if (refill && combatItem(acted.kind) === null) refuse();
+  const damage = finite(read.damage, 0);
+  if (acted.kind === "equip" && damage !== 0) refuse();
   return {
     ruleId: identity(read.ruleId),
     action: acted,
-    damage: finite(read.damage, 0),
+    refill,
+    damage,
     creatureHealth: finite(read.creatureHealth, 0),
     characterHealth: finite(read.characterHealth, 0),
   };
@@ -735,7 +791,11 @@ function exchange(value: unknown): CombatExchange {
   };
 }
 
-function combatResult(value: unknown): CombatResult {
+/**
+ * The result of an encounter, with the gear and the backpack its turns left: a gear as any gear is
+ * read, and a backpack within the carrying capacity of the map run's character, `capacity`.
+ */
+function combatResult(value: unknown, capacity: number): CombatResult {
   const read = fields(value, [
     "practice",
     "characterHealth",
@@ -743,7 +803,11 @@ function combatResult(value: unknown): CombatResult {
     "outcome",
     "exchanges",
     "ruleStarts",
+    "gear",
+    "backpack",
   ]);
+  const left = backpack(read.backpack);
+  if (backpackCount(left) > capacity) refuse();
   return {
     practice: practice(read.practice),
     characterHealth: finite(read.characterHealth, 0),
@@ -751,14 +815,20 @@ function combatResult(value: unknown): CombatResult {
     outcome: oneOf(read.outcome, COMBAT_OUTCOMES),
     exchanges: list(read.exchanges).map(exchange),
     ruleStarts: ruleCounts(read.ruleStarts),
+    gear: gear(read.gear),
+    backpack: left,
   };
 }
 
-function lastCombat(value: unknown, minute: number): LastCombat {
+function lastCombat(
+  value: unknown,
+  minute: number,
+  capacity: number,
+): LastCombat {
   const read = fields(value, [...COMBAT_KEYS, "result"]);
   return {
     ...attack(read, minute),
-    result: read.result === null ? null : combatResult(read.result),
+    result: read.result === null ? null : combatResult(read.result, capacity),
   };
 }
 
@@ -969,6 +1039,7 @@ function plainMapRun(
     "at",
     "traits",
     "backpack",
+    "gear",
   ]);
   const id = identity(carried.id);
   const owner = records.characters.get(id);
@@ -979,6 +1050,7 @@ function plainMapRun(
     at: onMap(carried.at),
     traits: traits(carried.traits),
     backpack: backpack(carried.backpack),
+    gear: gear(carried.gear),
   };
 
   const campfires = list(read.campfires).map((item): Campfire => {
@@ -1035,7 +1107,9 @@ function plainMapRun(
     current,
     activeCombat,
     lastCombat:
-      read.lastCombat === null ? null : lastCombat(read.lastCombat, minute),
+      read.lastCombat === null
+        ? null
+        : lastCombat(read.lastCombat, minute, backpackCap(character)),
     attackRandom: uint32(read.attackRandom),
     attackCooldownStart,
     wanderRandom: uint32(read.wanderRandom),
@@ -1347,6 +1421,14 @@ function game(value: unknown): GameState {
   const manual = run ? [run.character.id] : [];
   const loops = earningLoops(read.loops, records, manual);
   const looping = Object.keys(loops).map(Number);
+  // The slots the player changed are marked against an earning loop's map run going on (D-460).
+  if (
+    theTeam.characters.some(
+      (character) =>
+        character.changedSlots.length > 0 && !looping.includes(character.id),
+    )
+  )
+    refuse();
 
   return {
     programs,

@@ -1,8 +1,20 @@
-import { backpackCap, backpackCount } from "./character.js";
+import {
+  backpackCap,
+  backpackCount,
+  fitsSlot,
+  gearSlots,
+} from "./character.js";
 import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
+import {
+  GEAR_PLACES,
+  GEAR_SLOTS,
+  WIELDING_SLOT,
+  type GearPlace,
+  type GearSlot,
+} from "./data/gear.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import { RESOURCES } from "./data/resources.js";
@@ -21,6 +33,7 @@ import type {
   CharacterSkills,
   Condition,
   ConditionContext,
+  Gear,
   GroupId,
   Hex,
   ItemId,
@@ -29,6 +42,7 @@ import type {
   ProgramRule,
   ResourceId,
   RuleId,
+  RunCharacter,
   Tile,
 } from "./types.js";
 
@@ -209,6 +223,29 @@ function nearestCampfireMinutes(run: RunView): number {
   return campfire?.minutesLeft ?? 0;
 }
 
+/**
+ * The places of the gear that some item of the data fits, in the order of the places (D-459): the
+ * targets of the condition „Puste — {miejsce}”, read from the items' rows at each call, so a place
+ * gains its target when an item starts to fit it.
+ */
+export function fittedPlaces(): GearPlace[] {
+  const fitted = new Set(Object.values(ITEMS).map((item) => item.fits));
+  return (Object.keys(GEAR_PLACES) as GearPlace[]).filter((place) =>
+    fitted.has(place),
+  );
+}
+
+/**
+ * Whether a place of the gear holds nothing (D-459): one of its slots is empty, so „Kieszeń” holds
+ * while one of the three pockets is empty. A place no slot has is never empty; the program check
+ * refuses such a place before it is ever read.
+ */
+function placeHasEmptySlot(gear: Gear, place: GearPlace): boolean {
+  return (Object.keys(GEAR_SLOTS) as GearSlot[]).some(
+    (slot) => GEAR_SLOTS[slot] === place && gear[slot] === null,
+  );
+}
+
 /** Whether a condition of a program rule holds now. */
 export function conditionHolds(
   run: RunView,
@@ -218,6 +255,8 @@ export function conditionHolds(
   switch (condition.kind) {
     case "always":
       return true;
+    case "emptyPlace":
+      return placeHasEmptySlot(run.character.gear, condition.place);
     case "hereBelow":
       return stockHere(run, condition.resource) < condition.value;
     case "temperatureBelow":
@@ -296,6 +335,54 @@ function lacking(backpack: Backpack, need: { item: ItemId; count: number }) {
 function firstItemFor(use: ItemUse): ItemId {
   const ids = Object.keys(ITEMS) as ItemId[];
   return ids.find((id) => ITEMS[id][use] !== undefined)!;
+}
+
+/**
+ * The slot „Załóż — {rzecz}” puts `item` into (D-458): the first empty slot of the item's place, so
+ * the first empty pocket for an item of a pocket; where none is empty, the one slot of a place that
+ * has only one, whatever it holds. Null where the place has several slots and every one is taken, and
+ * where the item fits no place, which the program check never lets be a target.
+ */
+export function equipSlot(gear: Gear, item: ItemId): GearSlot | null {
+  const slots = gearSlots().filter((slot) => fitsSlot(item, slot));
+  return (
+    slots.find((slot) => gear[slot] === null) ??
+    (slots.length === 1 ? slots[0] : null)
+  );
+}
+
+/**
+ * Why „Załóż — {rzecz}” cannot put a piece of `item` on (D-380, D-458), in the player's words: null
+ * where it can. A reason about the state of a slot stands before the lack in the backpack.
+ */
+function equipRefusal(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): string | null {
+  const slot = equipSlot(character.gear, item);
+  if (slot === null) return "kieszenie pełne";
+  if (character.gear[slot] === item) return `już założone: ${itemName(item)}`;
+  return holds(character.backpack, { item, count: 1 })
+    ? null
+    : lacking(character.backpack, { item, count: 1 });
+}
+
+/**
+ * The gear and the backpack after „Załóż — {rzecz}” puts one piece of `item` from the backpack into
+ * its slot and the piece that slot held, if any, into the backpack (D-458), so the count of the
+ * backpack never rises; null where it cannot, in the cases `equipRefusal` names. Inputs are not changed.
+ */
+export function equipped(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): Pick<RunCharacter, "gear" | "backpack"> | null {
+  const slot = equipSlot(character.gear, item);
+  if (slot === null || equipRefusal(character, item) !== null) return null;
+  const held = character.gear[slot];
+  const backpack = { ...character.backpack };
+  backpack[item] -= 1;
+  if (held !== null) backpack[held] += 1;
+  return { gear: { ...character.gear, [slot]: item }, backpack };
 }
 
 /**
@@ -392,6 +479,8 @@ function worldRefusal(run: RunView, action: Action): string | null {
       return holds(backpack, { item: action.item, count: 1 })
         ? null
         : lacking(backpack, { item: action.item, count: 1 });
+    case "equip":
+      return equipRefusal(run.character, action.item);
     case "strikeWithStick":
     case "kick":
     case "dodge":
@@ -408,18 +497,40 @@ export function actionFeasible(run: RunView, action: Action): boolean {
 }
 
 /**
- * Why a rule's action cannot be carried out in combat: null where it can. Only a combat action can,
- * and one that uses an item needs a piece of it in the backpack.
+ * Where a combat action that uses `item` takes its piece from (D-144, D-456, D-457): `held` where the
+ * main hand holds the item, `refill` where the hand is empty and the backpack holds a piece of it,
+ * which the action takes into the hand before it acts, in the same turn, and null where neither is so:
+ * no other slot gives the piece.
+ */
+export function combatPiece(
+  character: Pick<RunCharacter, "gear" | "backpack">,
+  item: ItemId,
+): "held" | "refill" | null {
+  const held = character.gear[WIELDING_SLOT];
+  if (held === item) return "held";
+  if (held === null && character.backpack[item] > 0) return "refill";
+  return null;
+}
+
+/** The item a combat action uses, from the actions' data; null for one that uses none. */
+export function combatItem(kind: Action["kind"]): ItemId | null {
+  const effect = (ACTIONS[kind] as ActionDef).combat;
+  return effect && "item" in effect && effect.item ? effect.item : null;
+}
+
+/**
+ * Why a rule's action cannot be carried out in combat: null where it can. Only an action of combat
+ * can, and one the data mark as also carried out in combat, „Załóż”, which is refused as it is outside
+ * it (D-140, D-380, D-458); an action of combat that uses an item needs a piece of it in the main hand
+ * or, where the hand is empty, in the backpack (D-380).
  */
 function combatRefusal(run: RunView, action: Action): string | null {
-  const effect = (ACTIONS[action.kind] as ActionDef).combat;
-  if (!effect) return "trwa walka";
-  if (
-    "item" in effect &&
-    effect.item &&
-    run.character.backpack[effect.item] < 1
-  )
-    return lacking(run.character.backpack, { item: effect.item, count: 1 });
+  const def = ACTIONS[action.kind] as ActionDef;
+  if (def.alsoInCombat) return actionRefusal(run, action);
+  if (!def.combat) return "trwa walka";
+  const item = combatItem(action.kind);
+  if (item !== null && combatPiece(run.character, item) === null)
+    return `brakuje 1 × ${itemName(item)}`;
   return null;
 }
 

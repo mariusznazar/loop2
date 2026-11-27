@@ -1,7 +1,7 @@
 /*
- * The stylesheet of the screen Postać (D-421): its two areas, the figure, the name and the facts of a
- * character with its resurrection line, the frame of what the character does, and the section
- * „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
+ * The stylesheet of the screen Postać (D-421): its two areas, the name and the facts of a character with
+ * its resurrection line, the frame of what the character does, the section „Wyposażenie” with the
+ * figure and the tiles of its slots and the pick under them, and the section „Umiejętności” with its rows of trees and their branches. The page links it after styles.css, and it
  * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
@@ -36,20 +36,106 @@
 }
 
 /*
- * The figure of the character (D-445) at the top of the left area, beside the name: a box whose size
- * TypeScript gives from the data, with the idle sheet inside it at its place, on the flat background of
- * the area. The sheet's frames are those of `.scene-sheet` of run-screen.css, which the picture band of
- * Siedziba draws its characters with too. They change at the beat of the frames of the scene and of the
- * picture band, 160 ms (D-319, D-389), by the keyframes `scene-frames` of styles.css, and only where the
- * system's setting asks for no less motion; under that setting the figure stands on its first frame.
+ * The section „Wyposażenie” (D-461) under the frame of what the character does, in the left area, from
+ * the creation of the character. Its heading is a heading of a section as „Umiejętności” has, in
+ * `text-label` (D-40; rule of `.character-screen-skills h3` below). The body of the section holds the
+ * figure of the character (D-445) in the middle of its width, with the tiles of the slots around it
+ * (D-461): the column of the head, the torso and the legs on its left, that of the two hands on its
+ * right, each tile next to the figure's side, and the row of the three pockets under all three, in the
+ * middle. The tiles are the shared button's own (styles.css gives their look and their size); this rule
+ * only gives them their places, and the columns may shrink below the tiles in them (`minmax(0, 1fr)`) so
+ * that nothing in the section widens the area. The gap between the columns is the narrower step, `--space-xs`,
+ * so that the two tiles, the figure and the gaps fit the left area of a window 1280 px wide, the narrowest
+ * the computer layout has, where it is the narrowest.
  */
-.character-head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-m);
-  margin-bottom: var(--space-m);
+.character-screen-gear {
+  margin-top: var(--space-m);
 }
 
+.character-gear-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "left figure right"
+    "pockets pockets pockets";
+  align-items: center;
+  gap: var(--space-s) var(--space-xs);
+}
+
+.character-gear-body > .character-figure {
+  grid-area: figure;
+}
+
+.character-gear-left,
+.character-gear-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.character-gear-left {
+  grid-area: left;
+  align-items: flex-end;
+}
+
+.character-gear-right {
+  grid-area: right;
+  align-items: flex-start;
+}
+
+.character-gear-pockets {
+  grid-area: pockets;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-s);
+}
+
+/*
+ * The pick under the chosen tile (D-461): its heading „{miejsce}: {rzecz}” or „{miejsce}: nic” in
+ * `text-strong`, the name to look at first (D-40), and under it the cells of the pick, the shared pick
+ * cells of the rule panel, two to a line in both layouts as the rule panel's pick stands in the phone
+ * layout (program-panel.css): the left area is a quarter of the width in the computer layout and the
+ * page's width in the phone layout, and two cells fit it either way where the word of a cell's reason
+ * does not fit a third column. A sentence of a chest with nothing that fits stands in `text-secondary`,
+ * as the sentences of the section do (D-40). The columns may shrink below their cells (`minmax(0, 1fr)`),
+ * so nothing in the pick widens the area.
+ */
+.character-gear-pick {
+  margin-top: var(--space-s);
+}
+
+.character-gear-pick-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+
+.character-gear-pick-empty {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.character-gear-pick-cells {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.character-gear-pick-cells > .pick-cell {
+  width: 100%;
+}
+
+/*
+ * The figure of the character (D-445) in the section „Wyposażenie”: a box whose size TypeScript gives
+ * from the data, at twice the size of the picture band, with the idle sheet inside it at its place, on the
+ * flat background of the area. The sheet's frames are those of `.scene-sheet` of run-screen.css, which
+ * the picture band of Siedziba draws its characters with too. They change at the beat of the frames of
+ * the scene and of the picture band, 160 ms (D-319, D-389), by the keyframes `scene-frames` of
+ * styles.css, and only where the system's setting asks for no less motion; under that setting the figure
+ * stands on its first frame.
+ */
 .character-figure {
   position: relative;
   flex: none;
@@ -69,8 +155,10 @@
   }
 }
 
+/* The name and the facts stand at the top of the left area, above the frame of what the character does (D-446). */
 .character-facts {
   min-width: 0;
+  margin-bottom: var(--space-m);
 }
 
 /* The heading is the name of the character, typed by the player: a name with no space breaks inside the
@@ -148,7 +236,12 @@
   color: var(--text-secondary);
 }
 
-/* The section „Umiejętności”, its name in `text-label` (D-40), the sentence of an unfinished map run in `text-secondary` (D-287). */
+/*
+ * The sections „Wyposażenie” and „Umiejętności”, their names in `text-label` (D-40); under the heading
+ * the sentence of an unfinished map run in `text-secondary` (D-287), and in „Wyposażenie” also that of
+ * an earning loop (D-462), in the same role, as an explanation (D-40).
+ */
+.character-screen-gear h3,
 .character-screen-skills h3 {
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-label);
@@ -156,6 +249,7 @@
   color: var(--text-label);
 }
 
+.character-gear-note,
 .character-screen-skills-note {
   margin: 0 0 var(--space-s);
   color: var(--text-secondary);

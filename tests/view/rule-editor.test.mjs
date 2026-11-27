@@ -1576,8 +1576,8 @@ test("in a grid the arrow keys move among the cells, two columns of conditions, 
     );
     const panel = panelOf(page.root);
     const at = () => nameOf(page.document.activeElement);
-    // The sections: Zawsze; Temperatura, Sytość, Zdrowie, Energia natury; Zapas, Tu leży, Zostało
-    // mniej niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej (D-290), two to a line.
+    // The sections: Zawsze; Temperatura, Sytość, Zdrowie, Energia natury, Puste; Zapas, Tu leży,
+    // Zostało mniej niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej (D-290), two to a line.
     await key(page.document.activeElement, "ArrowDown");
     assert.equal(at(), "Temperatura poniżej");
     await key(page.document.activeElement, "ArrowRight");
@@ -1585,6 +1585,10 @@ test("in a grid the arrow keys move among the cells, two columns of conditions, 
     await key(page.document.activeElement, "ArrowDown");
     assert.equal(at(), "Energia natury poniżej");
     await key(page.document.activeElement, "ArrowDown");
+    assert.equal(at(), "Puste");
+    await key(page.document.activeElement, "ArrowDown");
+    assert.equal(at(), "Zapas poniżej");
+    await key(page.document.activeElement, "ArrowRight");
     assert.equal(at(), "Tu leży mniej niż");
     assert.equal(
       reasonOf(page.document.activeElement),
@@ -1597,8 +1601,8 @@ test("in a grid the arrow keys move among the cells, two columns of conditions, 
     const reachable = cellsIn(panel).filter((cell) => cell.tabIndex === 0);
     assert.deepEqual(reachable.map(nameOf), ["Tu leży mniej niż"]);
     await key(page.document.activeElement, "ArrowUp");
-    assert.equal(at(), "Energia natury poniżej");
-    await key(page.document.activeElement, "ArrowLeft");
+    assert.equal(at(), "Puste");
+    await key(page.document.activeElement, "ArrowUp");
     assert.equal(at(), "Zdrowie poniżej");
     await key(page.document.activeElement, "Enter");
     assert.equal(calls.length, 1);
@@ -1733,6 +1737,7 @@ test("the actions stand in the five groups Ruch, Zbieranie, Ogień, Żywność i
           "Uderz — patyk",
           "Kopnij",
           "Odskocz",
+          "Załóż",
         ],
       ],
       ["Wytwarzanie", ["Wytwórz"]],
@@ -1841,6 +1846,7 @@ test("the conditions stand in two columns in their sections, parted by a line, w
           "Sytość poniżej",
           "Zdrowie poniżej",
           "Energia natury poniżej",
+          "Puste",
         ],
         [
           "Zapas poniżej",

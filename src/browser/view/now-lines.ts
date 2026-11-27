@@ -1,5 +1,6 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import { CREATURES } from "../sim/data/creatures.js";
+import { ITEMS } from "../sim/data/items.js";
 import type { NowAndNext, NowLine } from "../sim/game.js";
 import type { Action, DeathCause, Program, RuleId } from "../sim/types.js";
 import { actionSentence, ruleNumber } from "./program-editor.js";
@@ -67,12 +68,23 @@ function iconOf(action: Action): string {
   return ACTIONS[action.kind].icon;
 }
 
+/**
+ * The words an action gives as it starts, in „Teraz” and in the chronicle (D-458): „Zakłada {rzecz}”
+ * for „Załóż”, from the status of its data and the name of its item, and otherwise the action's
+ * sentence. Pure.
+ */
+export function startWords(action: Action): string {
+  if (action.kind === "equip")
+    return `${ACTIONS.equip.status} ${ITEMS[action.item].name}`;
+  return actionSentence(action);
+}
+
 function nowRow(line: NowLine, program: Program): NowRow {
   switch (line.kind) {
     case "action":
       return {
         icon: iconOf(line.action),
-        text: actionSentence(line.action),
+        text: startWords(line.action),
         role: "text",
         right: joined([
           ruleLabel(program, line.ruleId),

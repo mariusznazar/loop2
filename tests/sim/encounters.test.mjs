@@ -103,7 +103,7 @@ test("cooldown starts at combat end E and protects E+180, but not E+181", () => 
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
   // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
-  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+  // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const done = advanceMinutes(fighting(), 5).state;
   assert.equal(done.run.attackCooldownStart, 186);
   const state = {
@@ -206,7 +206,7 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
   // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
   // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
-  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+  // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   let state = fighting(KICK, 235);
   state.run.body = { temperature: 30, satiety: 0, health: 100 };
   state.run.streak = 12;
@@ -317,7 +317,7 @@ test("combat death in M+5 wins over completion and keeps the streak", () => {
   // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
-  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+  // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const state = fighting();
   state.run.minute = 185;
   state.run.streak = 539;
@@ -370,7 +370,7 @@ test("editing during the wait preserves encounter state and resolves with the ne
   // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
   // decision: D-141 "Editing the program during the encounter leaves its resolution minute, attack generator and cooldown intact, and resets solving progress as D-131 gives"
-  // decision: D-145 "A stick stays in the backpack after a strike"
+  // decision: D-145 "A stick stays in the main hand after a strike, with its condition unchanged."
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
   // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const state = fighting();
@@ -543,12 +543,21 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
     ["activityFinished", "tileRevealed", "attacked", "discovered"],
   );
   assert.deepEqual(result.state.discovery, {
-    actions: ["walkTo", "gather", "patrol", "strikeWithStick", "kick", "dodge"],
+    actions: [
+      "walkTo",
+      "gather",
+      "patrol",
+      "strikeWithStick",
+      "kick",
+      "dodge",
+      "equip",
+    ],
     conditions: [
       "hereBelow",
       "itemBelow",
       "healthBelow",
       "opponentHealthBelow",
+      "emptyPlace",
     ],
     items: ["stick"],
     trees: ["smallItemGathering", "oneHandedCombat", "kicking", "dodging"],
@@ -587,8 +596,13 @@ test("first chill and attack in one minute keep the automatic exploration rule b
   assert.deepEqual(result.state.ruleCounts, { 1: 0 });
   assert.equal(result.state.run.current, null);
   assert.deepEqual(result.state.discovery, {
-    actions: ["wander", "strikeWithStick", "kick", "dodge"],
-    conditions: ["temperatureBelow", "healthBelow", "opponentHealthBelow"],
+    actions: ["wander", "strikeWithStick", "kick", "dodge", "equip"],
+    conditions: [
+      "temperatureBelow",
+      "healthBelow",
+      "opponentHealthBelow",
+      "emptyPlace",
+    ],
     items: [],
     trees: ["oneHandedCombat", "kicking", "dodging"],
     creatures: ["wolf"],
@@ -603,10 +617,10 @@ test("first chill and attack in one minute keep the automatic exploration rule b
 test("a departed creature starts cooldown but adds no defeated attack", () => {
   // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
-  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // decision: D-144 "Another dodge refreshes that reduction"
   // decision: D-146 "The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten"
-  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+  // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const state = fighting(
     programFromRules({ condition: ALWAYS, action: { kind: "dodge" } }),
   );
@@ -794,10 +808,10 @@ for (const scenario of COMBAT_SPLITS) {
   test(`combat time splitting preserves every state and ordered event: ${scenario.name}`, () => {
     // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
     // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
-    // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+    // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the main hand of its gear, taken there from the backpack where the hand is empty (D-457), and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
     // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
     // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
-    // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+    // decision: D-146 "A character that finds no feasible rule whose action it can carry out in combat gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
     // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
     const initial = prepared(scenario.program);
     initial.understanding.creatures = scenario.creatures;

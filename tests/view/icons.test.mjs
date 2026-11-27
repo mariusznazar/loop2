@@ -180,6 +180,7 @@ const TITLES = {
   "first-aid-kit": "First aid kit icon",
   cultist: "Cultist icon",
   "magnifying-glass": "Magnifying glass icon",
+  gloves: "Gloves icon",
 };
 
 /**
@@ -217,6 +218,7 @@ const ACTION_ICONS = [
   { name: "Uderz — patyk", icon: "deadly-strike" },
   { name: "Kopnij", icon: "boot-kick" },
   { name: "Odskocz", icon: "dodge" },
+  { name: "Załóż", icon: "gloves" },
 ];
 
 /** The icons of the creatures, one line each after the actions' and in the order of the data: the wolf's, then the bear's (creatures.ts). */

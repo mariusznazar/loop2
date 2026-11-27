@@ -168,14 +168,23 @@ function reload() {
   pageDocument().body.replaceChildren();
 }
 
-/** A cache of the game of `accountId` made at `madeAtMs` on the window's own storage. */
+/**
+ * A cache of the game of `accountId` made at `madeAtMs` on the window's own storage, whose reads and
+ * writes of a judging take that game as the game state at hand.
+ */
 function cacheOf(accountId, madeAtMs, { afterRefusedSave = false } = {}) {
-  return openJudgingCache({
+  const opened = gameMadeAt(madeAtMs);
+  const cache = openJudgingCache({
     accountId,
-    state: gameMadeAt(madeAtMs),
+    state: opened,
     afterRefusedSave,
     storage: storageOf(),
   });
+  return {
+    ...cache,
+    read: (ids) => cache.read(ids, opened),
+    remember: (ids, given) => cache.remember(ids, given, opened),
+  };
 }
 
 /** Stores the judging of Ala on Las, program 1, as the game of `accountId` made at `madeAtMs` holds it. */
