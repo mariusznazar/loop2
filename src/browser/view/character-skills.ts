@@ -56,6 +56,23 @@ function previewNumber(value: number): string {
   return String(Number(value.toFixed(6))).replace(".", ",");
 }
 
+/**
+ * The value a branch with a numeric preview gives at `rank` bought steps, 0 for none, with its unit:
+ * its value with no step plus its change for each step, never below its floor. The screen Postać
+ * writes „teraz → po kupnie” from it and the screen Wiedza the line of the branch's steps (D-199,
+ * D-416). Pure.
+ */
+export function rankValue(
+  preview: NonNullable<BranchDef["preview"]>,
+  rank: number,
+): string {
+  const value = Math.max(
+    preview.minimum ?? -Infinity,
+    preview.base + preview.step * rank,
+  );
+  return `${previewNumber(value)} ${preview.unit}`;
+}
+
 /** The branch's current rank and, while another is available, its preview and price. Pure. */
 export function branchText(character: Character, id: BranchId): string {
   const branch: BranchDef = BRANCHES[id];
@@ -64,10 +81,9 @@ export function branchText(character: Character, id: BranchId): string {
   let text = `${branch.name} ${rank}/${branch.costs.length} — ${branch.description}`;
   if (branch.preview) {
     const preview = branch.preview;
-    const value = (level: number) =>
-      `${previewNumber(Math.max(preview.minimum ?? -Infinity, preview.base + preview.step * level))} ${preview.unit}`;
-    text += ` · teraz ${value(rank)}`;
-    if (cost !== undefined) text += ` → po kupnie ${value(rank + 1)}`;
+    text += ` · teraz ${rankValue(preview, rank)}`;
+    if (cost !== undefined)
+      text += ` → po kupnie ${rankValue(preview, rank + 1)}`;
   }
   if (cost !== undefined) text += ` · cena ${cost}`;
   return text;

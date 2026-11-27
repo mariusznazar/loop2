@@ -1,7 +1,8 @@
 /**
  * The words and the lists of the screen Wiedza (D-416): the things of the Understanding in their
- * three groups, the counters, and the skill trees the player knows with their branches and the prices
- * of each rank, all drawn from the data and from what the Understanding holds. Nothing here draws or
+ * three groups, the counters, and the skill trees the player knows with their branches, the prices of
+ * each rank and the line of the steps of a branch whose data give a number, all drawn from the data
+ * and from what the Understanding holds. Nothing here draws or
  * changes anything; each function is pure and nothing runs when the module is imported.
  */
 import { ACTIONS } from "../sim/data/actions.js";
@@ -11,10 +12,12 @@ import { ITEMS } from "../sim/data/items.js";
 import {
   BRANCHES,
   SKILLS,
+  type BranchDef,
   type BranchId,
   type SkillId,
 } from "../sim/data/skills.js";
 import type { Understanding } from "../sim/types.js";
+import { rankValue } from "./character-skills.js";
 import { countedName } from "./counted-name.js";
 
 /** One thing of the Understanding: what keys it in its list, its icon file and its name from the data. */
@@ -22,6 +25,15 @@ export type KnownThing = { key: string; icon: string; name: string };
 
 /** A group of the left area: its heading with the number of its things, and the things. */
 export type KnownGroup = { heading: string; things: KnownThing[] };
+
+/** One step of a branch in its line of steps: „I”, „75 %”, „1 pkt”. */
+export type KnownStep = { numeral: string; value: string; price: string };
+
+/**
+ * The line of steps of a branch whose data give a number (D-416): the value with no step bought,
+ * „70 %”, and each step in turn with the value it gives and its price.
+ */
+export type KnownSteps = { without: string; steps: KnownStep[] };
 
 /** One branch of a known tree, as the screen reads it. */
 export type KnownBranch = {
@@ -32,6 +44,8 @@ export type KnownBranch = {
   description: string;
   /** The price of each rank in turn, as „1 · 1 · 1 pkt”. */
   costs: string;
+  /** The line of its steps, or null for a branch whose data give no number. */
+  values: KnownSteps | null;
 };
 
 /** One known skill tree, as the screen reads it. */
@@ -116,6 +130,43 @@ export function knownThingCount(understanding: Understanding): number {
   );
 }
 
+/** The Roman numeral of a step, counted from 1: „I”, „II”, „III”, „IV”. Pure. */
+function numeral(count: number): string {
+  const marks: [string, number][] = [
+    ["X", 10],
+    ["IX", 9],
+    ["V", 5],
+    ["IV", 4],
+    ["I", 1],
+  ];
+  let rest = count;
+  let text = "";
+  for (const [mark, worth] of marks)
+    while (rest >= worth) {
+      text += mark;
+      rest -= worth;
+    }
+  return text;
+}
+
+/**
+ * The line of steps of a branch, from the same numbers of its data from which the screen Postać
+ * writes „teraz → po kupnie” (D-199, D-416): the value with no step bought, then each step with the
+ * value it gives and its price; null for a branch whose data give no number. Pure.
+ */
+function stepValues(branch: BranchDef): KnownSteps | null {
+  const { preview, costs } = branch;
+  if (preview === undefined) return null;
+  return {
+    without: rankValue(preview, 0),
+    steps: costs.map((price, index) => ({
+      numeral: numeral(index + 1),
+      value: rankValue(preview, index + 1),
+      price: `${price} pkt`,
+    })),
+  };
+}
+
 /**
  * The skill trees the Understanding holds, in the order of the data, which is the order of the
  * screen Postać; each with its branches in the order of the data, their names, descriptions and
@@ -128,13 +179,15 @@ export function knownTrees(understanding: Understanding): KnownTree[] {
       const branchList = (Object.keys(BRANCHES) as BranchId[])
         .filter((branch) => BRANCHES[branch].skill === id)
         .map((branch): KnownBranch => {
-          const { name, description, costs } = BRANCHES[branch];
+          const def: BranchDef = BRANCHES[branch];
+          const { name, description, costs } = def;
           return {
             id: branch,
             name,
             steps: stepsCounter(costs.length),
             description,
             costs: `${costs.join(" · ")} pkt`,
+            values: stepValues(def),
           };
         });
       return {
