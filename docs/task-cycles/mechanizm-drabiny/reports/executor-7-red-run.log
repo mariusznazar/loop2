@@ -1,0 +1,57 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/map-lines.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ importing the map lines touches no DOM: Node has no document and the import succeeded (0.6815ms)
+✔ the short sentence of each map's demand comes from its data and gives the hours and the attacks of its condition (0.501ms)
+✔ the condition sentence is the solving text of the map's data alone, since the heading of the card names the map (0.0884ms)
+✔ the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list (0.1752ms)
+✔ the heading names the map, with the tag of its state and the opener's name from the data (0.1703ms)
+✖ the heading gives the icon of each creature that attacks on the map, and none on a map without an attacker (0.8396ms)
+✔ the table „Żąda” gives the streak in hours, or in minutes where it is no whole hour, and the attacks to beat with the creature's icon (0.2017ms)
+✔ the table „Teren” gives the grid, the entrance, the step and the minutes without fire (0.4677ms)
+✔ a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out (0.6143ms)
+✔ each resource gives its name, the tiles that hold it, its stock and its renewal (0.323ms)
+✔ a resource that does not renew says so apart, in warning, in place of its renewal (0.1112ms)
+✔ an attacker gives its icon, name, health and blow, and its chance, quiet time and mean gap (0.1925ms)
+✔ the chance is written with a decimal comma and at most one decimal, and the mean gap rounds (0.0792ms)
+✔ the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line (0.0966ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.9725
+
+✖ failing tests:
+
+test at tests\view\map-lines.test.mjs:169:1
+✖ the heading gives the icon of each creature that attacks on the map, and none on a map without an attacker (0.8396ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + undefined
+  - [
+  -   'wolf-head'
+  - ]
+  
+      at TestContext.<anonymous> (file:///tests/view/map-lines.test.mjs:171:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [ 'wolf-head' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

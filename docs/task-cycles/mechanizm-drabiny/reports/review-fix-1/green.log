@@ -1,0 +1,33 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/progression.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the measurement's seeds are 1 to 500, and a map counts as solvable from one of them (0.6433ms)
+✔ a program needs the branch that opens an action it uses, and no other (0.5896ms)
+✔ the ranks of the branches a program needs are bought as far as the practice's points reach, and no rank of any other branch (0.7575ms)
+✔ the stock of a take list is brought out by manual runs of a solved map, counted, and stays inside the chest (45.723ms)
+✔ an empty take list needs no run, and one the chest cannot hold or the maps do not give is not complete (17.57ms)
+✔ a map is measured with the median practice of the first solvings of the maps before it, each by that map's best program (99.1957ms)
+✔ the practice of a later map is the sum of the first solvings of the maps before it, the farthest first (444.2083ms)
+✔ a map counts by its best program, and a row is its program measured from its own ranks and stock (96.0783ms)
+✔ a map no program solves is not solvable, whatever it is measured with (3.2943ms)
+✔ a map is also measured with the character of the map that opens it, and is harder where its best share is the smaller (119.7666ms)
+✔ a map whose opener stands after other maps is compared with the practice and the stock the opener was measured with (409.8685ms)
+✔ a map whose best program solves one seed of eight, a share far below a fifth, is solvable (19.2506ms)
+✔ the same measurement gives the same result twice (185.0324ms)
+✔ a map the game's data lacks and a program that is no reference program are refused before any measurement (0.5716ms)
+✔ the table has one line per map and program with the figures of the map check but the earning loop's, and names no condition, action, rule, skill, branch or item (90.6252ms)
+✔ one sentence under the table says with what each map was measured, the number of manual runs of the best program's stock among it (86.1215ms)
+✔ the second table has a row per map with its best share, whether it can be solved, its opener and the shares with the opener's character, and names no identifier (89.4274ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1817.3499
