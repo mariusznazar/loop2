@@ -311,6 +311,49 @@ test("the piece of „Ucisk” comes from the first pocket holding its item, els
     );
 });
 
+// Catches a refill that puts into an empty pocket a piece of an item the data fit to no pocket, which
+// would let „Ucisk” heal with a piece taken straight from the backpack. No item of the data but the
+// bandage heals, so a second healing item is laid in the data, once fitting no place and once a pocket.
+test("„Ucisk” of a healing item that fits no pocket takes no piece from the backpack and is refused „brakuje 1 × {rzecz}”; one that fits a pocket refills the first empty pocket", () => {
+  // decision: D-456 "An item whose data name no place fits no slot."
+  // decision: D-457 "That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."
+  const splinted = { kind: "pressure", item: "splint" };
+  const program = programFromRules(
+    rule(below(50), splinted),
+    rule(ALWAYS, KICK),
+  );
+  const backpack = { ...NO_PIECES, splint: 1 };
+  withRows(ITEMS, { splint: SPLINT }, () => {
+    assert.equal(combatPiece({ gear: EMPTY_GEAR, backpack }, splinted), null);
+    const run = fighter({ health: 40, backpack: { splint: 1 } });
+    assert.deepEqual(
+      judgeProgram(run, program, {
+        combat: { health: 40, opponentHealth: 24 },
+      }).rules[1],
+      { bar: "blocked", reason: "brakuje 1 × szyna" },
+    );
+    const result = resolveCombat(run, "wolf", program);
+    assert.equal(result.exchanges[0].characterAction.action.kind, "kick");
+    assert.equal(
+      result.exchanges.some(
+        (exchange) => exchange.characterAction?.action.kind === "pressure",
+      ),
+      false,
+    );
+    assert.deepEqual(result.backpack, backpack);
+    assert.deepEqual(result.gear, EMPTY_GEAR);
+  });
+  withRows(ITEMS, { splint: { ...SPLINT, fits: "pocket" } }, () => {
+    assert.deepEqual(
+      combatPiece(
+        { gear: { ...EMPTY_GEAR, pocket1: "bandage" }, backpack },
+        splinted,
+      ),
+      { slot: "pocket2", refill: true },
+    );
+  });
+});
+
 test("„Ucisk” uses up the bandage of the first pocket holding one, and with none in a pocket takes one from the backpack through the first empty pocket in the same turn", () => {
   // decision: D-144 "„Ucisk — {rzecz}” uses up one piece of its item from a pocket of the belt, an empty pocket taking a piece from the backpack (D-457), while „Opatrz” outside combat takes its piece from the backpack."
   // decision: D-457 "That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."

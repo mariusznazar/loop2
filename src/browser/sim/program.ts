@@ -528,10 +528,11 @@ function pieceSlots(kind: Action["kind"]): GearSlot[] {
 
 /**
  * Where a combat action that uses an item takes its piece from (D-144, D-456, D-457): the first of its
- * slots that holds the item, with `refill` false; where none does, the first of them that is empty,
- * with `refill` true, where the backpack holds a piece of the item, which the action takes into that
- * slot before it acts, in the same turn; and null where neither is so, or the action uses no item: no
- * other slot gives the piece.
+ * slots that holds the item, with `refill` false; where none does, the first of them that is empty and
+ * that the item fits (D-456), with `refill` true, where the backpack holds a piece of the item, which
+ * the action takes into that slot before it acts, in the same turn; and null where neither is so, or
+ * the action uses no item: no other slot gives the piece, and an item that fits none of its slots is
+ * never taken into one.
  */
 export function combatPiece(
   character: Pick<RunCharacter, "gear" | "backpack">,
@@ -542,7 +543,9 @@ export function combatPiece(
   const slots = pieceSlots(action.kind);
   const held = slots.find((slot) => character.gear[slot] === item);
   if (held !== undefined) return { slot: held, refill: false };
-  const empty = slots.find((slot) => character.gear[slot] === null);
+  const empty = slots.find(
+    (slot) => character.gear[slot] === null && fitsSlot(item, slot),
+  );
   if (empty !== undefined && character.backpack[item] > 0)
     return { slot: empty, refill: true };
   return null;
