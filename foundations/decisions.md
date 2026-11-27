@@ -4598,7 +4598,8 @@ header of the screen of the map run does. The way into the owner panel is a link
 screens, as in loop — the logo and the menu jump by about 190 px between Siedziba and Programy;
 another largest width — it changes that one
 dimension alone; the skill trees shown on two screens, as in loop — the same rows on Postać and in
-Wiedza; two buttons „Wejdź” on the way to
+Wiedza with their level, practice, points and buying, which is what this rejects, not the layout of
+the row of a tree that the two screens share (D-416); two buttons „Wejdź” on the way to
 a first map run, as in loop, the first opening a window to choose the character and the second
 standing in that window; a bar that sets whose eyes the screens look through, as in loop — the
 player has to discover it before entering a map; a second way to the maps, a button „Wybierz mapę”
