@@ -20,6 +20,7 @@ import {
 import {
   REFERENCE_PROGRAMS,
   forestBest,
+  forestDeepSettledPatrol,
   forestLoopWithStock,
   forestSettledPatrol,
 } from "../sim/reference-programs.mjs";
@@ -265,40 +266,55 @@ test("a map is also measured with the character of the map that opens it, and is
   assert.equal(edge.harder, null);
 });
 
-// Catches the comparison measured without the stock that the maps before the opener give. The
-// practice enters a measured run only through the ranks of a branch that opens an action, and the
-// practice of Las buys none, so a comparison measured with no practice gives the same share here.
+// Catches the comparison measured without the practice the opener was measured with, and without the
+// stock that the maps before the opener give. The practice enters a measured run only through the
+// ranks of a branch that opens an action, and no opener of the game's maps holds the practice that buys
+// one, so the character starts here with a made-up practice of gathering, 160: its three levels give
+// the three points of the branch the patrol program needs.
 // decision: D-448 "A map is harder than the map that opens it: measured with one character on both maps — the one the balance instrument's mode `progression` builds for the map that opens it, from what the maps before that one gave —"
-test("a map whose opener stands after other maps is compared with the practice and the stock the opener was measured with", () => {
-  const programIds = ["forestBest", "forestDeepBest"];
+test("a map whose opener stands after other maps is compared with the practice and the stock the opener was measured with, where that practice buys a rank", () => {
+  const programIds = ["forestBest", "forestDeepSettledPatrol"];
   const { rows, maps } = measureProgression({
     mapIds: ["forest", "forestDeep"],
     seeds: SEEDS,
     programIds,
+    practice: { smallItemGathering: 160 },
   });
   const forest = maps.find((map) => map.mapId === "forest");
   const deep = maps.find((map) => map.mapId === "forestDeep");
   assert.equal(deep.opener, "forest");
+  assert.ok(
+    skillsFor(forestDeepSettledPatrol, forest.practiceIn).smallItemGathering
+      .ranks.patrol >= 1,
+    "precondition: the practice Las was measured with buys a rank of the branch the patrol program needs",
+  );
   // The opener's character: the practice Las was measured with and, for each program, the stock its
   // row of Las brought out by manual runs of Skraj lasu, the map before Las.
-  const shareWith = (programId, chest) =>
+  const shareWith = (programId, practice, chest) =>
     sweep({
       mapId: "forestDeep",
       program: REFERENCE_PROGRAMS[programId],
       seeds: SEEDS,
-      skills: skillsFor(REFERENCE_PROGRAMS[programId], forest.practiceIn),
+      skills: skillsFor(REFERENCE_PROGRAMS[programId], practice),
       chest,
     }).summary.solvedShare;
   const openerStock = (programId) =>
     rows.find((row) => row.mapId === "forest" && row.programId === programId)
       .stock.chest;
-  const expected = Math.max(
-    ...programIds.map((programId) =>
-      shareWith(programId, openerStock(programId)),
-    ),
+  const noStock = () => ({});
+  const bestShare = (practice, stockOf) =>
+    Math.max(
+      ...programIds.map((programId) =>
+        shareWith(programId, practice, stockOf(programId)),
+      ),
+    );
+  const expected = bestShare(forest.practiceIn, openerStock);
+  assert.ok(
+    expected > bestShare({}, openerStock),
+    "precondition: the practice of the opener changes the best share",
   );
   assert.ok(
-    expected > Math.max(...programIds.map((id) => shareWith(id, {}))),
+    expected > bestShare(forest.practiceIn, noStock),
     "precondition: the stock of the maps before the opener changes the best share",
   );
   assert.equal(deep.withOpenerShare, expected);

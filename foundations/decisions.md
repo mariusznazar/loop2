@@ -6201,7 +6201,7 @@ A map is harder than the map that opens it: measured with one character on both 
 - **Scope:** simulation · balance-tools
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-136 · derives from D-438
-- **Verification:** tests: a map whose opener stands after other maps measured, beside its own measurement, with the practice and the stock the mode `progression` built for its opener. An agent compares a change with the part no test holds:
+- **Verification:** tests: a map whose opener stands after other maps measured, beside its own measurement, with the practice and the stock the mode `progression` built for its opener, the character starting with a made-up practice so that the opener's practice buys a rank of a branch the measured program needs. An agent compares a change with the part no test holds:
   - complies: Las — wataha added as a row of the game maps' data, opened by Las — głębiej and differing from it by its numbers alone, measured with the character the mode `progression` builds for Las — głębiej, its best reference program solving a smaller share of its map runs than the best program of Las — głębiej does of theirs; a map whose solving condition brings in combat, with the next map after it opened by it
   - violates: a new map whose best reference program, measured with one character on both maps as the second paragraph gives, solves a share of its map runs not smaller than that of the map that opens it; a wall whose entry or whose solving is refused until the player holds the thing it asks for
 - **Origin:** none

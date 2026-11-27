@@ -4,10 +4,11 @@
 // on the seeds of the measurement, the map counting by its best program, which is the program that
 // solves the largest share of the seeds. The state is the practice that the first solvings of the maps
 // before it pay, each by the best program of that map (the median of its solved map runs, summed along
-// the chain of maps that open the map); the ranks of the branches the measured program needs, bought
-// from that practice with the game's `buyBranch` as far as its points reach; and the stock of the
-// program's take list, brought out by manual runs of the solved maps before it, each run with the best
-// program of the map it is made on, with the game's `send` and `advanceMinutes`, so that the chest
+// the chain of maps that open the map), added to the practice the caller gives the character before
+// them, none by default; the ranks of the branches the measured program needs, bought from that
+// practice with the game's `buyBranch` as far as its points reach; and the stock of the program's take
+// list, brought out by manual runs of the solved maps before it, each run with the best program of
+// the map it is made on, with the game's `send` and `advanceMinutes`, so that the chest
 // takes and keeps by the rules of the game, counted. The character that brings out the stock and the
 // one measured buy ranks from the same practice, so its points are spent twice. Each map run of the
 // measurement itself is stepped by the engine, so it ends as it ends in the game (invariant
@@ -280,9 +281,23 @@ function measureFrom({
   return { rows: measured.map(({ row }) => row), best, bestResults };
 }
 
-/** One map measured from what the maps before it gave: its rows and its summary. `before` holds those maps' summaries, the farthest first. */
-function measureMap({ mapId, before, programIds, seeds, labels, gear }) {
-  const practiceIn = sumPractice(before.map((map) => map.practicePaid));
+/**
+ * One map measured from what the maps before it gave: its rows and its summary. `before` holds those
+ * maps' summaries, the farthest first, and `practice` the practice the character held before them.
+ */
+function measureMap({
+  mapId,
+  before,
+  practice,
+  programIds,
+  seeds,
+  labels,
+  gear,
+}) {
+  const practiceIn = sumPractice([
+    practice,
+    ...before.map((map) => map.practicePaid),
+  ]);
   const { rows, best, bestResults } = measureFrom({
     mapId,
     practiceIn,
@@ -348,21 +363,23 @@ function withOpenerOf({ mapId, measured, programIds, seeds, labels, gear }) {
 /**
  * The progression measurement: for each map of `mapIds` (the game's maps, each with the maps that open
  * it measured first) every reference program of `programIds`, on `seeds`, from the state the maps
- * before it give, the character of each run, stock runs included, starting with the `gear` given.
- * Gives the `rows` of the requested maps, a row per map and program, and the `maps`
- * with their best program, whether it solves one seed or more, the manual runs its stock took, the
- * practice the map was measured with and its first solving pays, and its comparison with the map that
- * opens it (D-448): that map's identifier as `opener` and its name as `openerName`, its best share as
- * `openerBestShare`, the
- * best share of the map measured with the opener's character as `withOpenerShare`, and `harder`,
- * whether that share is the smaller, each null where no map opens the map. A map the game's data
- * lacks, and a program that is no reference program, are refused before any measurement.
+ * before it give, the character of each run, stock runs included, starting with the `gear` given and
+ * holding the `practice` given ({ skillId: n }) before the maps before it pay theirs, none where it is
+ * not given, as a character the game creates holds none. Gives the `rows` of the requested maps, a
+ * row per map and program, and the `maps` with their best program, whether it solves one seed or
+ * more, the manual runs its stock took, the practice the map was measured with and its first solving
+ * pays, and its comparison with the map that opens it (D-448): that map's identifier as `opener` and
+ * its name as `openerName`, its best share as `openerBestShare`, the best share of the map measured
+ * with the opener's character as `withOpenerShare`, and `harder`, whether that share is the smaller,
+ * each null where no map opens the map. A map the game's data lacks, and a program that is no
+ * reference program, are refused before any measurement.
  */
 export function measureProgression({
   mapIds = Object.keys(MAPS),
   seeds = PROGRESSION_SEEDS,
   programIds = Object.keys(REFERENCE_PROGRAMS),
   gear = {},
+  practice = {},
 } = {}) {
   for (const mapId of mapIds)
     if (!Object.hasOwn(MAPS, mapId))
@@ -378,6 +395,7 @@ export function measureProgression({
       const own = measureMap({
         mapId,
         before: before.map(({ summary }) => summary),
+        practice,
         programIds,
         seeds,
         labels,
