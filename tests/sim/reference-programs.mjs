@@ -43,6 +43,8 @@ export const eat = { kind: "eat" };
 export const strike = { kind: "strikeWithStick" };
 export const kick = { kind: "kick" };
 export const dodge = { kind: "dodge" };
+export const tend = (item) => ({ kind: "tend", item });
+export const pressure = (item) => ({ kind: "pressure", item });
 
 /**
  * A program of the game from its notation. A rule is `[condition, action]`; a group is
@@ -174,6 +176,25 @@ const FIGHT = {
 };
 
 /**
+ * The group of combat of a program that carries bandages: below 50 health it presses a bandage on
+ * the wound before the strike, which takes one turn and gives back 25 health, while a bite of the
+ * wolf takes 7. The rule uses the action that the branch „Ucisk” opens.
+ */
+const FIGHT_WITH_BANDAGES = {
+  name: "Walka",
+  rules: [[healthBelow(50), pressure("bandage")], ...FIGHT.rules],
+};
+
+/**
+ * The group of a program that carries bandages outside a fight: below 70 health it dresses with
+ * one, the 25 it heals never going past full health.
+ */
+const DRESSING = {
+  name: "Opatrunek",
+  rules: [[healthBelow(70), tend("bandage")]],
+};
+
+/**
  * The groups of the roaming program: it builds its campfire where it stands and walks on for the
  * rest. Eats below 75 % satiety, looks for berries below 65 %, explores and wanders below 60 %,
  * lights the campfire below 36 degrees and keeps sticks and berries in stock.
@@ -236,10 +257,17 @@ function roamingGroups({ fight }) {
  * thresholds are open: the stock of sticks and berries it gathers up to, and the temperature
  * below which it lights.
  */
-function settlingGroups({ fight, berries, sticks = 8, coldAt = 36.4 }) {
+function settlingGroups({
+  fight,
+  berries,
+  sticks = 8,
+  coldAt = 36.4,
+  bandages = false,
+}) {
   return [
     { name: "Jedzenie", rules: [[satietyBelow(75), eat]] },
-    ...(fight ? [FIGHT] : []),
+    ...(fight ? [bandages ? FIGHT_WITH_BANDAGES : FIGHT] : []),
+    ...(bandages ? [DRESSING] : []),
     {
       name: "Głód",
       when: satietyBelow(50),
@@ -654,6 +682,26 @@ export const wastelandCleanFlame = program({
   ],
 });
 
+/**
+ * The best program found for Las - głębiej, written to bring bandages from the chest: the same
+ * settling program with the group "Walka", that presses a bandage on the wound before the strike
+ * below 50 health, and the group "Opatrunek", that dresses with one outside a fight below 70 health.
+ * The list of what it takes holds the bandages first, then eight sticks and seven berries; the
+ * backpack takes 15 pieces spent in the order of the list, so the berries give way to the bandages
+ * and three of them come. It depends on the branch „Ucisk”: a character without it does nothing with
+ * the rule of combat, and a bandage in a pocket of the gear is used up by that rule before one of the
+ * backpack.
+ */
+export const forestBandages = program({
+  take: [
+    ["bandage", 4],
+    ["stick", 8],
+    ["berry", 7],
+  ],
+  bring: ALL_OUT,
+  groups: settlingGroups({ fight: true, berries: 4, bandages: true }),
+});
+
 /** Every reference program by its identifier. */
 export const REFERENCE_PROGRAMS = {
   forestOldAcceptance,
@@ -679,4 +727,5 @@ export const REFERENCE_PROGRAMS = {
   deadZoneNoFire,
   wastelandCleanFlame,
   forestSettledVariantExample,
+  forestBandages,
 };

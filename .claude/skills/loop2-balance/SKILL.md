@@ -100,7 +100,7 @@ Every map goes through this check before a package is defined.
    npm run --silent balance -- check-map --overlay .runs/<name>.json
    ```
 
-   It prints one row for each map the overlay adds and each reference program (23 programs, about 55
+   It prints one row for each map the overlay adds and each reference program (24 programs, about 55
    seconds for one map). Narrow it with `--maps <id>` and `--programs <id,id>`, or write the table
    with `--out <path>` outside the tracked files.
 3. The columns are: the map's name in the game's data, the program's label, the share solved on
