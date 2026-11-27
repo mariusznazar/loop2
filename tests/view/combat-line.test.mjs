@@ -134,6 +134,6 @@ test("a turn of „Ucisk” that refilled an empty pocket reads the refill of th
         ],
       },
     }),
-    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag bierze przedmiot z plecaka do kieszeni · Mag uciska ranę: zdrowie 93/100 · Wilk odszedł.",
+    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag bierze opatrunek z plecaka do kieszeni · Mag uciska ranę: zdrowie 93/100 · Wilk odszedł.",
   );
 });

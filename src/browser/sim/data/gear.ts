@@ -26,9 +26,7 @@ export const GEAR_PLACES = {
   pocket: {
     name: "Kieszeń",
     line: "pod ręką",
-    // No item named: any item the data fit to a pocket is taken into it, and the data hold no form of
-    // an item's name that fits a sentence.
-    refill: "bierze przedmiot z plecaka do kieszeni",
+    refill: "bierze opatrunek z plecaka do kieszeni",
   },
 } as const satisfies Record<string, PlaceRow>;
 
