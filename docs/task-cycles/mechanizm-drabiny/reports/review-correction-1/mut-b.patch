@@ -1,0 +1,11 @@
+--- balance/progression.mjs	2026-11-27 12:55:37.806293900 +0100
++++ .runs/review-correction-1/mut-b/balance/progression.mjs	2026-11-27 13:01:39.662484100 +0100
+@@ -345,7 +345,7 @@
+   const { best } = measureFrom({
+     mapId,
+     practiceIn: openerSummary.practiceIn,
+-    candidates: candidatesOf(before),
++    candidates: [],
+     programIds,
+     seeds,
+     labels,

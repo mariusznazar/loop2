@@ -1,0 +1,33 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_map_run_tiles.py
+
+.....F
+======================================================================
+FAIL: test_tripwire_every_map_and_resource_is_written_out (test_map_run_tiles.MapRunTiles.test_tripwire_every_map_and_resource_is_written_out)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tests/invariants/test_map_run_tiles.py", line 335, in test_tripwire_every_map_and_resource_is_written_out
+    self.assertEqual(not_written_out(read, MAP_RESOURCES), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ["the data gives the game map 'forestDeep2[451 chars]cks"] != []
+
+First list contains 3 additional elements.
+First extra element 0:
+"the data gives the game map 'forestDeep2', which MAP_RESOURCES in tests/invariants/test_map_run_tiles.py does not hold; add it there with its resources and stocks"
+
++ []
+- ["the data gives the game map 'forestDeep2', which MAP_RESOURCES in "
+-  'tests/invariants/test_map_run_tiles.py does not hold; add it there with its '
+-  'resources and stocks',
+-  "the data gives the game map 'forestDeep3', which MAP_RESOURCES in "
+-  'tests/invariants/test_map_run_tiles.py does not hold; add it there with its '
+-  'resources and stocks',
+-  "the data gives the game map 'forestDeep4', which MAP_RESOURCES in "
+-  'tests/invariants/test_map_run_tiles.py does not hold; add it there with its '
+-  'resources and stocks']
+
+----------------------------------------------------------------------
+Ran 6 tests in 4.145s
+
+FAILED (failures=1)
