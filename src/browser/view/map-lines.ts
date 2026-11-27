@@ -46,7 +46,7 @@ export type CardHeading = {
   name: string;
   state: { text: string; solved: boolean };
   openedBy: string | null;
-  /** The icon file of each creature that attacks on the map, beside the name; none where no creature attacks. */
+  /** The icon of each creature that attacks on the map, by the name the data give it; none where no creature attacks. */
   icons: string[];
 };
 
