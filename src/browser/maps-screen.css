@@ -220,7 +220,7 @@
 
 /*
  * The card of a map (D-327). At the top the heading — the name in `text-strong`, at the size of the title
- * of the predecessor's card of a map and at the body weight, as that title is, the tag of its state beside it, „rozwiązana” in `positive` (D-134) or „otwarta” in
+ * of the predecessor's card of a map and at the body weight, as that title is, the icon of each creature that attacks on the map and the tag of its state beside it, „rozwiązana” in `positive` (D-134) or „otwarta” in
  * `text-secondary`, and „odsłania ją {mapa}” in `text-secondary` after a „ · ” — and at the right of the
  * heading the plain shared button „Wejdź — wybierz postać”. Under it the one short sentence of what the
  * map demands, written by hand in its data, in `text`; the whole sentence of the solving condition closes
@@ -252,6 +252,30 @@
   font-size: var(--font-size-map-card-title);
   font-weight: var(--font-weight-body);
   color: var(--text-strong);
+}
+
+/*
+ * The icon of each creature that attacks on the map, between the name and the tag of its state (D-327):
+ * the mask of `.icon-mask` in the colour of the name beside it, `text-strong` (D-43), as tall as a line
+ * of the name's size, so `1lh` of the title's token, and centred on the heading's line.
+ */
+.maps-card-heading-icon {
+  align-self: center;
+  font-size: var(--font-size-map-card-title);
+  color: var(--text-strong);
+}
+
+/*
+ * The tag of the state, the separator and the opener are one item of the heading, so that where the
+ * name and the icons leave no room for them in a narrow heading they pass to the next line together
+ * and no separator stands at the end of a line.
+ */
+.maps-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  min-width: 0;
 }
 
 .maps-card-state,

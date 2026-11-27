@@ -476,16 +476,29 @@ test("the card of Las — głębiej names its opener, asks for the attacks to be
       "the tag of a solved map stands in its role",
     );
     // The name, the tag and the opener stand in the heading in that order, as the old Loop has them.
+    const heading = page.root.querySelector(".maps-card-heading");
     assert.deepEqual(
-      [...page.root.querySelector(".maps-card-heading").children].map(
-        (child) => child.className,
-      ),
+      [
+        ...heading.querySelectorAll(
+          ".maps-card-name, .maps-card-state, .maps-card-sep, .maps-card-opened-by",
+        ),
+      ].map((part) => part.className),
       [
         "maps-card-name",
         "maps-card-state solved",
         "maps-card-sep",
         "maps-card-opened-by",
       ],
+    );
+    // The tag, the separator and the opener are one item of the heading, so that a narrow heading
+    // breaks its line before them as a whole and leaves no separator at the end of a line.
+    assert.equal(
+      heading.querySelector(".maps-card-state").parentElement,
+      heading.querySelector(".maps-card-opened-by").parentElement,
+    );
+    assert.notEqual(
+      heading.querySelector(".maps-card-state").parentElement,
+      heading,
     );
     assert.equal(text(page.root, ".maps-card-name"), "Las");
     assert.equal(
@@ -546,6 +559,68 @@ test("the card of Las — głębiej names its opener, asks for the attacks to be
       understanding,
       "drawing the card writes nothing into the Understanding",
     );
+  });
+});
+
+// D-327, D-43: the heading of a card holds the small icon of each creature that attacks on the map,
+// between the name and the tag of its state, drawn as the mask of the creature's file in the colour of
+// the name beside it, `text-strong`; a map without an attacker has none there. Catches an icon left
+// out of the heading, one drawn after the tag, one drawn as a picture or in a colour of its own, and
+// an icon given to a map that has no attacker.
+test("the heading of the card of Las — głębiej holds the wolf's icon between the name and the tag in the colour of the name, and the headings of Skraj lasu and of Las hold none", async () => {
+  // decision: D-327 "Beside the name and the tag of its state the heading holds the small icon of each creature that attacks on the map, and a map without an attacker has none there"
+  // decision: D-43 "which is drawn as a mask and takes its colour from the text beside it"
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText();
+    page.document.head.append(style);
+    const state = solved(teamOf("Ala"));
+    const { screen } = await mount(page, propsOf(state, "forestDeep"));
+    const heading = page.root.querySelector(".maps-card-heading");
+    assert.deepEqual(
+      [
+        ...heading.querySelectorAll(
+          ".maps-card-name, .icon-mask, .maps-card-state, .maps-card-sep, .maps-card-opened-by",
+        ),
+      ].map((part) =>
+        part.classList.contains("icon-mask")
+          ? `icon ${part.style.getPropertyValue("--icon")}`
+          : part.className,
+      ),
+      [
+        "maps-card-name",
+        'icon url("/icons/wolf-head.svg")',
+        "maps-card-state",
+        "maps-card-sep",
+        "maps-card-opened-by",
+      ],
+      "the name, the wolf's icon, the tag, the opener",
+    );
+    const icon = heading.querySelector(".icon-mask");
+    assert.equal(
+      icon.getAttribute("aria-hidden"),
+      "true",
+      "a mark, not a word",
+    );
+    assert.equal(heading.querySelector("img"), null, "no icon is a picture");
+    assert.equal(
+      page.window.getComputedStyle(icon).color,
+      page.window.getComputedStyle(heading.querySelector(".maps-card-name"))
+        .color,
+      "the icon stands in the colour of the name beside it",
+    );
+    assert.equal(
+      page.window.getComputedStyle(icon).color,
+      "var(--text-strong)",
+    );
+    for (const mapId of ["forest", "forestEdge"]) {
+      await inAct(() => screen.update(propsOf(state, mapId)));
+      assert.equal(
+        page.root.querySelector(".maps-card-heading .icon-mask"),
+        null,
+        `${mapId} has no attacker, so its heading holds no icon`,
+      );
+    }
   });
 });
 
