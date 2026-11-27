@@ -49,32 +49,60 @@ test("a resolved encounter lists both actions and ends with its result", () => {
 });
 
 // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
-test("a turn of „Ucisk” reads „Mag uciska ranę” with the mage's health after the turn, and no creature's health", () => {
+test("a turn of „Ucisk” reads „Mag uciska ranę” with the mage's health after the turn cut down to a whole number as the body row writes it, and no creature's health", () => {
   assert.equal(
     combatText({
       ...creature,
       result: {
-        characterHealth: 93,
+        characterHealth: 71.1,
         creatureHealth: 24,
         outcome: "creatureDeparted",
         ruleStarts: { 1: 1 },
         exchanges: [
           {
-            creatureAction: { kind: "strike", damage: 7, characterHealth: 93 },
+            creatureAction: { kind: "strike", damage: 7, characterHealth: 71.1 },
             characterAction: {
               ruleId: 1,
               action: { kind: "pressure" },
               refill: false,
               damage: 0,
               creatureHealth: 24,
-              characterHealth: 93,
+              characterHealth: 71.1,
             },
           },
         ],
       },
     }),
-    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uciska ranę: zdrowie 93/100 · Wilk odszedł.",
+    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uciska ranę: zdrowie 71/100 · Wilk odszedł.",
   );
+});
+
+test("the health after a turn of „Ucisk” that is whole, or just short of the next whole number, is cut down, never rounded up", () => {
+  const text = (health) =>
+    combatText({
+      ...creature,
+      result: {
+        characterHealth: health,
+        creatureHealth: 24,
+        outcome: "creatureDeparted",
+        ruleStarts: { 1: 1 },
+        exchanges: [
+          {
+            creatureAction: { kind: "strike", damage: 7, characterHealth: 1 },
+            characterAction: {
+              ruleId: 1,
+              action: { kind: "pressure" },
+              refill: false,
+              damage: 0,
+              creatureHealth: 24,
+              characterHealth: health,
+            },
+          },
+        ],
+      },
+    });
+  assert.match(text(100), /Mag uciska ranę: zdrowie 100\/100/);
+  assert.match(text(59.95), /Mag uciska ranę: zdrowie 59\/100/);
 });
 
 // decision: D-457 "An empty slot of the gear stays empty until a rule puts something on it or the character uses an action that takes a piece from that slot. That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."

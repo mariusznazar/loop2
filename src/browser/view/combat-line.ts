@@ -5,6 +5,7 @@ import { CREATURES } from "../sim/data/creatures.js";
 import { GEAR_PLACES, GEAR_SLOTS, WIELDING_SLOT } from "../sim/data/gear.js";
 import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import { whole } from "./body-row.js";
 import type {
   CombatCharacterAction,
   Condition,
@@ -81,7 +82,7 @@ function actionText(combat: LastCombat): string[] {
       } else if (character.action.kind === "pressure") {
         // „Ucisk” gives the mage's own health after its turn, not the creature's (D-144, D-147).
         actions.push(
-          `Mag ${ACTIONS.pressure.status.toLowerCase()}: zdrowie ${character.characterHealth}/${BALANCE.body.startHealth}`,
+          `Mag ${ACTIONS.pressure.status.toLowerCase()}: zdrowie ${whole(character.characterHealth)}/${BALANCE.body.startHealth}`,
         );
       } else if (character.action.kind === "equip") {
         // „Załóż” has no creature health to show: it puts the piece on and takes the turn (D-458).
