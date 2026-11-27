@@ -202,7 +202,8 @@ export type CampfireId = typeof CAMPFIRE.id;
 /**
  * What the player has discovered, by data identifiers: actions and conditions by their kinds, and
  * items, the campfire included, and creatures by their ids. One for the whole game and every
- * character. Also the shape of a repertoire, the subset of it that a character can use.
+ * character. A repertoire, the subset of it that a character can use, holds the same lists and the
+ * predispositions it was computed through (`Repertoire`).
  */
 export type Understanding = {
   trees: SkillId[];

@@ -29,8 +29,15 @@ import type {
   Understanding,
 } from "./types.js";
 
-/** The subset of an Understanding that a character can use in a program; computed, never saved. */
-export type Repertoire = Understanding;
+/**
+ * The subset of an Understanding that a character can use in a program, with the predispositions it
+ * was computed through, by which an action that takes an item is judged by its pair of verb and
+ * target (D-120); computed, never saved.
+ */
+export type Repertoire = Understanding & {
+  /** The character skills of the archetype the repertoire was computed through. */
+  predispositions: readonly SkillId[];
+};
 
 /**
  * The Understanding of a new game (D-118): what the data gives no revealing event, in the order of
@@ -79,7 +86,8 @@ function pairOpen(
  * The repertoire of an Understanding through a list of predispositions. An action of the
  * Understanding is in it where a skill among the predispositions grows its pair of verb and target,
  * or where no skill grows it; an action that takes an item stays where at least one of its pairs is
- * open. A condition and an item are in it whatever the predispositions.
+ * open, and `actionInRepertoire` judges each of its pairs through the predispositions the repertoire
+ * keeps. A condition and an item are in it whatever the predispositions.
  */
 export function repertoireOf(
   understanding: Understanding,
@@ -97,6 +105,7 @@ export function repertoireOf(
     items: [...understanding.items],
     creatures: [...understanding.creatures],
     trees: understanding.trees.filter((id) => predispositions.includes(id)),
+    predispositions: [...predispositions],
   };
 }
 
@@ -116,7 +125,10 @@ export function conditionInRepertoire(
   }
 }
 
-/** Whether an action, with the resource or the item it names, lies in the repertoire. */
+/**
+ * Whether an action, with the resource or the item it names, lies in the repertoire; an action that
+ * takes an item by its pair of verb and item, open to the predispositions of the repertoire.
+ */
 export function actionInRepertoire(
   repertoire: Repertoire,
   action: Action,
@@ -129,7 +141,11 @@ export function actionInRepertoire(
       return repertoire.items.includes(action.resource);
     default: {
       const item = targetItem(action);
-      return item === undefined || repertoire.items.includes(item);
+      return (
+        item === undefined ||
+        (repertoire.items.includes(item) &&
+          pairOpen(action.kind, item, repertoire.predispositions))
+      );
     }
   }
 }
@@ -218,7 +234,9 @@ export const BRANCH_NOT_BOUGHT = "gałąź niewykupiona";
 /**
  * The first thing of a rule the repertoire lacks, in the order the row reads: its condition, that
  * condition's target, its action, that action's target — named as the player sees it, a kind by its
- * label, a resource by its name and an item by the name its row gives.
+ * label, a resource by its name and an item by the name its row gives. An action whose kind and item
+ * the repertoire holds, but whose pair of verb and item its predispositions close, is named by the
+ * label of its kind, as a kind the predispositions close whole.
  */
 function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
   const { condition, action } = rule;

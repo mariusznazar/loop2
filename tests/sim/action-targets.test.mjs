@@ -489,9 +489,9 @@ const SECOND_RECIPE = [
 
 for (const { name, lay, other, predispositions } of SECOND_RECIPE) {
   test(`with ${name}, „Wytwórz — Opatrunek” lies outside the repertoire of a character without the tree of tending, and „Wytwórz” with the other item inside it`, () => {
-    // decision: D-120 "an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+    // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
     // decision: D-126 "The simulation passes over a program rule whose condition, action or the target of either lies outside the character's repertoire to the next program rule"
-    // decision: D-310 "the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed cell of the rule panel, or „jeszcze nieodkryte: {name}”."
+    // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name, such as „tu nie leży mech”, „brakuje 4 × patyk”, „brak opału: patyk” and „brak energii natury: 7 z 10”, and the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed cell of the rule panel, or „jeszcze nieodkryte: {name}”."
     lay(() => {
       const repertoire = repertoireOf(fullUnderstanding(), predispositions);
       const craftOther = { kind: "craft", item: other };
@@ -523,7 +523,7 @@ for (const { name, lay, other, predispositions } of SECOND_RECIPE) {
 }
 
 test("with the tree of tending and without the skill of a second recipe item, „Wytwórz — Opatrunek” lies inside the repertoire and „Wytwórz” with the other item outside it", () => {
-  // decision: D-120 "an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
   withProbe({ splint: SPLINT }, () => {
     const repertoire = repertoireOf(fullUnderstanding(), [
       ...WITHOUT_TENDING,
