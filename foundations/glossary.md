@@ -340,3 +340,9 @@ The computer layout is the look the game takes in every window whose page area, 
 Gear is what a character wears, wields and has at hand, apart from its backpack.
 
 - **Not:** what a trip plan takes from the chest into a map run — "equipment"
+
+## rung
+
+A rung is a game map that differs from the map that opens it by its numbers alone and is made by the ladder mechanism, from a row of the game maps' data that names the map that opens it and gives only the numbers in which the rung differs from that map (D-464).
+
+- **Not:** none

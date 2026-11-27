@@ -611,6 +611,7 @@ test("the buttons stand after the scrolling part, outside it: „Restart” and 
       "Restart",
       "Zakończ",
       "Otwarte: Las — wataha →",
+      "Otwarte: Las — głębiej II →",
     ]);
     const last = withRun(SOLVED, { mapId: "forestLair" });
     await show(last);

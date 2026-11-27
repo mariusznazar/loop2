@@ -63,11 +63,16 @@ test("the condition sentence is the solving text of the map's data alone, since 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
+  // decision: D-466 "A new map stands in the order of the game maps' data right after the last map that the map opening it already opens"
   assert.deepEqual(sendMaps(), [
     "forestEdge",
     "forest",
     "forestDeep",
     "forestPack",
+    "forestDeep2",
+    "forestDeep3",
+    "forestDeep4",
     "forestLair",
   ]);
   assert.deepEqual(sendMaps([]), ["forestEdge"]);
@@ -77,15 +82,54 @@ test("the list of maps hides maps until their prerequisites are solved; the edit
     "forest",
     "forestDeep",
   ]);
+  // Las — głębiej opens Las — wataha and the rung Las — głębiej II, in the data's order.
   assert.deepEqual(sendMaps(["forestEdge", "forest", "forestDeep"]), [
     "forestEdge",
     "forest",
     "forestDeep",
     "forestPack",
+    "forestDeep2",
   ]);
   assert.deepEqual(
     sendMaps(["forestEdge", "forest", "forestDeep", "forestPack"]),
-    ["forestEdge", "forest", "forestDeep", "forestPack", "forestLair"],
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestLair",
+    ],
+  );
+  // Each rung opens the next one only once the one before it is solved.
+  assert.deepEqual(
+    sendMaps(["forestEdge", "forest", "forestDeep", "forestDeep2"]),
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestDeep3",
+    ],
+  );
+  assert.deepEqual(
+    sendMaps([
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestDeep2",
+      "forestDeep3",
+    ]),
+    [
+      "forestEdge",
+      "forest",
+      "forestDeep",
+      "forestPack",
+      "forestDeep2",
+      "forestDeep3",
+      "forestDeep4",
+    ],
   );
 });
 
@@ -101,22 +145,37 @@ test("the heading names the map, with the tag of its state and the opener's name
     name: "Skraj lasu",
     state: open,
     openedBy: null,
+    icons: [],
   });
   assert.deepEqual(cardHeading(forest, false), {
     name: "Las",
     state: open,
     openedBy: "odsłania ją Skraj lasu",
+    icons: [],
   });
   assert.deepEqual(cardHeading(forest, true), {
     name: "Las",
     state: done,
     openedBy: "odsłania ją Skraj lasu",
+    icons: [],
   });
   assert.deepEqual(cardHeading(forestDeep, true), {
     name: "Las — głębiej",
     state: done,
     openedBy: "odsłania ją Las",
+    icons: ["wolf-head"],
   });
+});
+
+// D-327: beside the name and the tag of the state the heading holds the small icon of each creature that
+// attacks on the map, and a map without an attacker has none there. Catches an icon left out of the
+// heading, the icon of the wrong creature, and an icon given to a map without an attacker.
+test("the heading gives the icon of each creature that attacks on the map, and none on a map without an attacker", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  assert.deepEqual(cardHeading(forestDeep, false).icons, ["wolf-head"]);
+  assert.deepEqual(cardHeading(forestLair, true).icons, ["bear-head"]);
+  assert.deepEqual(cardHeading(forest, false).icons, []);
+  assert.deepEqual(cardHeading(forestEdge, false).icons, []);
 });
 
 // D-327: „Żąda” is a table of what the solving condition asks: the streak in hours, or in minutes where it

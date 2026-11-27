@@ -20,6 +20,7 @@ import {
 import {
   REFERENCE_PROGRAMS,
   forestBest,
+  forestDeepSettledPatrol,
   forestLoopWithStock,
   forestSettledPatrol,
 } from "../sim/reference-programs.mjs";
@@ -237,6 +238,89 @@ test("a map no program solves is not solvable, whatever it is measured with", ()
   assert.equal(maps[0].solvable, false);
 });
 
+test("a map is also measured with the character of the map that opens it, and is harder where its best share is the smaller", () => {
+  const { maps } = measureProgression({
+    mapIds: ["forest", "forestEdge"],
+    seeds: SEEDS,
+    programIds: FEW,
+  });
+  const forest = maps.find((map) => map.mapId === "forest");
+  const edge = maps.find((map) => map.mapId === "forestEdge");
+  assert.equal(forest.opener, "forestEdge");
+  assert.equal(forest.openerBestShare, edge.bestShare);
+  // Skraj lasu opens no map, so its character is a new one: no practice and no stock.
+  const shares = FEW.map(
+    (programId) =>
+      sweep({
+        mapId: "forest",
+        program: REFERENCE_PROGRAMS[programId],
+        seeds: SEEDS,
+        skills: buildSkills(),
+        chest: {},
+      }).summary.solvedShare,
+  );
+  assert.equal(forest.withOpenerShare, Math.max(...shares));
+  assert.equal(forest.harder, forest.withOpenerShare < edge.bestShare);
+  assert.equal(edge.opener, null);
+  assert.equal(edge.withOpenerShare, null);
+  assert.equal(edge.harder, null);
+});
+
+// Catches the comparison measured without the practice the opener was measured with, and without the
+// stock that the maps before the opener give. The practice enters a measured run only through the
+// ranks of a branch that opens an action, and no opener of the game's maps holds the practice that buys
+// one, so the character starts here with a made-up practice of gathering, 160: its three levels give
+// the three points of the branch the patrol program needs.
+// decision: D-448 "A map is harder than the map that opens it: measured with one character on both maps — the one the balance instrument's mode `progression` builds for the map that opens it, from what the maps before that one gave —"
+test("a map whose opener stands after other maps is compared with the practice and the stock the opener was measured with, where that practice buys a rank", () => {
+  const programIds = ["forestBest", "forestDeepSettledPatrol"];
+  const { rows, maps } = measureProgression({
+    mapIds: ["forest", "forestDeep"],
+    seeds: SEEDS,
+    programIds,
+    practice: { smallItemGathering: 160 },
+  });
+  const forest = maps.find((map) => map.mapId === "forest");
+  const deep = maps.find((map) => map.mapId === "forestDeep");
+  assert.equal(deep.opener, "forest");
+  assert.ok(
+    skillsFor(forestDeepSettledPatrol, forest.practiceIn).smallItemGathering
+      .ranks.patrol >= 1,
+    "precondition: the practice Las was measured with buys a rank of the branch the patrol program needs",
+  );
+  // The opener's character: the practice Las was measured with and, for each program, the stock its
+  // row of Las brought out by manual runs of Skraj lasu, the map before Las.
+  const shareWith = (programId, practice, chest) =>
+    sweep({
+      mapId: "forestDeep",
+      program: REFERENCE_PROGRAMS[programId],
+      seeds: SEEDS,
+      skills: skillsFor(REFERENCE_PROGRAMS[programId], practice),
+      chest,
+    }).summary.solvedShare;
+  const openerStock = (programId) =>
+    rows.find((row) => row.mapId === "forest" && row.programId === programId)
+      .stock.chest;
+  const noStock = () => ({});
+  const bestShare = (practice, stockOf) =>
+    Math.max(
+      ...programIds.map((programId) =>
+        shareWith(programId, practice, stockOf(programId)),
+      ),
+    );
+  const expected = bestShare(forest.practiceIn, openerStock);
+  assert.ok(
+    expected > bestShare({}, openerStock),
+    "precondition: the practice of the opener changes the best share",
+  );
+  assert.ok(
+    expected > bestShare(forest.practiceIn, noStock),
+    "precondition: the stock of the maps before the opener changes the best share",
+  );
+  assert.equal(deep.withOpenerShare, expected);
+  assert.equal(deep.openerBestShare, forest.bestShare);
+});
+
 // decision: D-438 "In one measurement of the balance instrument in its mode `progression`, a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500"
 test("a map whose best program solves one seed of eight, a share far below a fifth, is solvable", () => {
   const { rows, maps } = measureProgression({
@@ -282,7 +366,8 @@ test("the table has one line per map and program with the figures of the map che
     programIds: FEW,
   });
   const text = renderProgression(result);
-  const [header, ...lines] = cellsOf(text);
+  const [firstTable] = text.split("\n\n");
+  const [header, ...lines] = cellsOf(firstTable);
   assert.equal(header.length, 6);
   const columns = [
     "Map",
@@ -336,7 +421,8 @@ test("one sentence under the table says with what each map was measured, the num
   const text = renderProgression(result);
   const [table, sentence, ...rest] = text.trimEnd().split("\n\n");
   assert.ok(table.startsWith("|"));
-  assert.equal(rest.length, 0);
+  assert.equal(rest.length, 1, "the second table follows the sentence");
+  assert.ok(rest[0].startsWith("| Map | Best share"), rest[0]);
   assert.equal(sentence.split("\n").length, 1, "one line");
   const forest = result.maps.find((map) => map.mapId === "forest");
   const runs = forest.manualRuns;
@@ -344,4 +430,48 @@ test("one sentence under the table says with what each map was measured, the num
   assert.ok(sentence.includes(`Las: ${runs} manual run`), sentence);
   assert.ok(sentence.includes("Skraj lasu: no manual run"), sentence);
   assert.equal(sentence.match(/\./g).length, 1, "one sentence");
+});
+
+test("the second table has a row per map with its best share, whether it can be solved, its opener and the shares with the opener's character, and names no identifier", () => {
+  const result = measureProgression({
+    mapIds: ["forestEdge", "forest"],
+    seeds: SEEDS,
+    programIds: FEW,
+  });
+  const text = renderProgression(result);
+  const [, , openers] = text.trimEnd().split("\n\n");
+  const [header, ...lines] = cellsOf(openers);
+  assert.deepEqual(header, [
+    "Map",
+    "Best share (seeds 1-8)",
+    "Can be solved",
+    "Opener",
+    "Opener's best share",
+    "Best share with the opener's character",
+    "Harder than the opener",
+  ]);
+  const edge = result.maps.find((map) => map.mapId === "forestEdge");
+  const forest = result.maps.find((map) => map.mapId === "forest");
+  assert.deepEqual(lines, [
+    [
+      "Skraj lasu",
+      `${edge.bestShare} %`,
+      edge.solvable ? "yes" : "no",
+      "—",
+      "—",
+      "—",
+      "—",
+    ],
+    [
+      "Las",
+      `${forest.bestShare} %`,
+      forest.solvable ? "yes" : "no",
+      "Skraj lasu",
+      `${edge.bestShare} %`,
+      `${forest.withOpenerShare} %`,
+      forest.harder ? "yes" : "no",
+    ],
+  ]);
+  for (const id of FEW)
+    assert.ok(!text.includes(id), `the text holds the identifier ${id}`);
 });

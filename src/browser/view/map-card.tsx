@@ -31,11 +31,20 @@ function CardLine({ text, warning }: { text: string; warning: boolean }) {
   return <li className={warning ? "maps-card-warning" : undefined}>{text}</li>;
 }
 
-/** An icon of the icon directory drawn as a mask in the colour of the text beside it (D-43). */
-function CardIcon({ name }: { name: string }) {
+/**
+ * An icon of the icon directory drawn as a mask in the colour of the text beside it (D-43), in the
+ * class of the card's icons or in the one of the icons of its heading.
+ */
+function CardIcon({
+  name,
+  className = "maps-card-icon",
+}: {
+  name: string;
+  className?: string;
+}) {
   return (
     <span
-      className="icon-mask maps-card-icon"
+      className={`icon-mask ${className}`}
       aria-hidden="true"
       style={{ "--icon": `url("/icons/${name}.svg")` } as CSSProperties}
     />
@@ -98,7 +107,8 @@ function CardEntry({
 }
 
 /**
- * The card of a map (D-327): a heading with the map's name, the tag of its state and its opener, and at
+ * The card of a map (D-327): a heading with the map's name, the icon of each creature that attacks on
+ * the map, the tag of its state and its opener, and at
  * its right „Wejdź — wybierz postać”, which takes the player to „Kto idzie”; under it the one short
  * sentence of what the map demands, written by hand in the map's data; then two columns, the tables
  * „Żąda” and „Teren” on the left, „Żąda” closing with the sentence of the solving condition (D-133), and
@@ -125,21 +135,30 @@ export function MapCard({
       <div className="maps-card-top">
         <div className="maps-card-heading">
           <h2 className="maps-card-name">{heading.name}</h2>
-          <span
-            className={
-              heading.state.solved
-                ? "maps-card-state solved"
-                : "maps-card-state"
-            }
-          >
-            {heading.state.text}
+          {heading.icons.map((icon, index) => (
+            <CardIcon
+              key={`${icon}|${index}`}
+              name={icon}
+              className="maps-card-heading-icon"
+            />
+          ))}
+          <span className="maps-card-tags">
+            <span
+              className={
+                heading.state.solved
+                  ? "maps-card-state solved"
+                  : "maps-card-state"
+              }
+            >
+              {heading.state.text}
+            </span>
+            {heading.openedBy === null ? null : (
+              <>
+                <span className="maps-card-sep"> · </span>
+                <span className="maps-card-opened-by">{heading.openedBy}</span>
+              </>
+            )}
           </span>
-          {heading.openedBy === null ? null : (
-            <>
-              <span className="maps-card-sep"> · </span>
-              <span className="maps-card-opened-by">{heading.openedBy}</span>
-            </>
-          )}
         </div>
         <div className="maps-card-go">
           <ReactButton text={CHOOSE_TEXT} onClick={onChoose} />
