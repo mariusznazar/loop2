@@ -4,7 +4,8 @@
 // effect at its end), D-142 and D-145 (an attack takes nothing from either verb; „Opatrz” heals
 // whatever took health, never above full health, and is no combat verb), D-380 and D-309 (the
 // reasons), D-363 and D-443 (the price and the targets follow the items' rows), D-121 and D-128
-// (what reveals each) and D-193 (no practice) in foundations/decisions.md. The numbers of the
+// (what reveals each) and D-193 (one practice to the tree each ending action grows) in
+// foundations/decisions.md. The numbers of the
 // bandage's row are read from the data (D-82); every other number is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -225,7 +226,8 @@ test("„Wytwórz” takes the recipe's pieces and gives one piece of its target
     moss: 1,
     bandage: 1,
   });
-  assert.deepEqual(done.practice, {}, "neither verb adds practice");
+  // The making ends in effect, so it adds one practice to the tree that the pair of „Wytwórz” and the bandage grows (D-193).
+  assert.deepEqual(done.practice, { tending: 1 }, "making adds one practice");
 });
 
 test("„Wytwórz” needs no revealed tile and no room: with the backpack full it still ends with its piece", () => {
@@ -307,7 +309,8 @@ test("„Opatrz” takes one piece and gives the target's healing at its end, to
   });
   // The minute's own step first gives back 0.05, the character being neither chilled nor starving.
   assert.equal(done.body.health, rounded(50 + 0.05 + HEALING));
-  assert.deepEqual(done.practice, {}, "neither verb adds practice");
+  // The tending ends in effect, so it adds one practice to the tree that the pair of „Opatrz” and the bandage grows (D-193).
+  assert.deepEqual(done.practice, { tending: 1 }, "tending adds one practice");
 });
 
 test("„Opatrz” gives back no more than full health", () => {
@@ -315,6 +318,46 @@ test("„Opatrz” gives back no more than full health", () => {
   assert.ok(HEALING > 1, "precondition: a healing above the one point left");
   const done = after(carrying(runWith({ bandage: 1 }, body(99)), TEND), 1);
   assert.equal(done.body.health, BALANCE.body.startHealth);
+  assert.equal(done.character.backpack.bandage, 0);
+});
+
+/** The run with its character holding `ranks` of the branches of „Opatrywanie małych ran”. */
+function withTendingRanks(run, ranks) {
+  return {
+    ...run,
+    character: {
+      ...run.character,
+      skills: { tending: { practice: 0, ranks } },
+    },
+  };
+}
+
+test("„Opatrz” gives back the bandage's healing with 5 more for each bought rank of „Mocniejszy zwój”", () => {
+  // decision: D-145 "The health „Opatrz — {rzecz}” gives back is the healing the data give the thing, increased by the bought ranks of „Mocniejszy zwój”."
+  // The minute's own step gives back 0.05, the character being neither chilled nor starving, then
+  // the bandage gives its 25 and 5 for each rank.
+  const cases = [
+    [{}, 45.05],
+    [{ strongerRoll: 1 }, 50.05],
+    [{ strongerRoll: 2 }, 55.05],
+    [{ strongerRoll: 3 }, 60.05],
+  ];
+  for (const [ranks, health] of cases) {
+    const run = withTendingRanks(runWith({ bandage: 1 }, body(20)), ranks);
+    const done = after(carrying(run, TEND), 1);
+    assert.equal(done.body.health, health, JSON.stringify(ranks));
+    assert.equal(done.character.backpack.bandage, 0, JSON.stringify(ranks));
+  }
+});
+
+test("„Opatrz” with bought ranks of „Mocniejszy zwój” gives back no more than full health", () => {
+  // decision: D-145 "„Opatrz — {rzecz}” uses up one piece of the thing, an item the data give a healing, and gives back that healing to health whatever took it — cold, hunger or a blow of combat — never above full health"
+  // decision: D-145 "The health „Opatrz — {rzecz}” gives back is the healing the data give the thing, increased by the bought ranks of „Mocniejszy zwój”."
+  const run = withTendingRanks(runWith({ bandage: 1 }, body(90)), {
+    strongerRoll: 3,
+  });
+  const done = after(carrying(run, TEND), 1);
+  assert.equal(done.body.health, 100);
   assert.equal(done.character.backpack.bandage, 0);
 });
 
@@ -633,14 +676,16 @@ test("the first gathered moss reveals the bandage and „Wytwórz”, and „Opa
     current: endingNext(run, { kind: "gather", resource: "moss" }),
   }));
   const result = advanceMinutes(state, 1);
+  // D-195: the tree of tending enters with the first moss, together with „Ucisk”, the action a branch
+  // of it opens.
   assert.deepEqual(discoveries(result.events), [
     {
       kind: "discovered",
       minute: 1,
-      actions: ["craft"],
+      actions: ["pressure", "craft"],
       conditions: [],
       items: ["bandage"],
-      trees: [],
+      trees: ["tending"],
       creatures: [],
     },
   ]);
@@ -668,10 +713,10 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
     {
       kind: "discovered",
       minute: 1,
-      actions: ["tend"],
+      actions: ["tend", "pressure"],
       conditions: [],
       items: [],
-      trees: [],
+      trees: ["tending"],
       creatures: [],
     },
   ]);
@@ -679,6 +724,7 @@ test("the first „Wytwórz” that ends with its effect on the bandage reveals 
     "explore",
     "craft",
     "tend",
+    "pressure",
   ]);
   assert.equal(result.state.run.character.backpack.bandage, 1);
 });

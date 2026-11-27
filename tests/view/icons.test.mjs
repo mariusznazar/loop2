@@ -202,8 +202,8 @@ const ACTIONS_AT = CAMPFIRE_AT + 2;
 
 /**
  * The icons of the actions, one line each in the section, after the campfire's: named by the actions
- * that show the icon, in the order of the data (actions.ts); „Opatrz” brings the roll of bandage, and
- * „Wytwórz” joins „Wytwórz — ognisko”, whose icon it shares.
+ * that show the icon, in the order of the data (actions.ts); „Opatrz” and „Ucisk” bring the roll of
+ * bandage, and „Wytwórz” joins „Wytwórz — ognisko”, whose icon it shares.
  */
 const ACTION_ICONS = [
   { name: "Eksploruj", icon: "binoculars" },
@@ -214,7 +214,7 @@ const ACTION_ICONS = [
   { name: "Zapal — ognisko, Zapal — patyk", icon: "match-tip" },
   { name: "Zasil — ognisko", icon: "logging" },
   { name: "Zjedz — jagoda", icon: "meal" },
-  { name: "Opatrz", icon: "bandage-roll" },
+  { name: "Opatrz, Ucisk", icon: "bandage-roll" },
   { name: "Uderz — patyk", icon: "deadly-strike" },
   { name: "Kopnij", icon: "boot-kick" },
   { name: "Odskocz", icon: "dodge" },
@@ -315,10 +315,11 @@ test("the section credits the bandage's icon, the first aid kit by Delapouite, a
 test("the section credits „Opatrz”'s icon, the roll of bandage by Lorc, once, among the actions' icons after „Zjedz — jagoda”", () => {
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
   const items = itemsOf(sectionMarkup());
-  const at = ACTIONS_AT + ACTION_ICONS.findIndex((a) => a.name === "Opatrz");
+  const at =
+    ACTIONS_AT + ACTION_ICONS.findIndex((a) => a.name === "Opatrz, Ucisk");
   assert.equal(
     textOfMarkup(items[at]),
-    "Opatrz: „Bandage roll icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+    "Opatrz, Ucisk: „Bandage roll icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
   );
   assert.match(
     linksOf(items[at])[0].attributes,

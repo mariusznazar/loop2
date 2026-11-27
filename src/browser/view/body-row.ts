@@ -22,6 +22,15 @@ export function tenths(value: number): string {
   return (Math.floor(value * 10) / 10).toFixed(1).replace(".", ",");
 }
 
+/**
+ * A number cut down to a whole number, the way the body row writes health and nature energy: 71.1
+ * as „71”. The paragraph of an encounter writes the mage's health after „Ucisk” with it too, so the
+ * player reads one health in both places.
+ */
+export function whole(value: number): string {
+  return `${Math.floor(value)}`;
+}
+
 /** The values of the body row a cell stands for. */
 export type BodyCellId = "temperature" | "satiety" | "health" | "natureEnergy";
 
@@ -44,8 +53,8 @@ function bodyNumbers(
   return {
     temperature: `${tenths(body.temperature)} °C`,
     satiety: `${Math.floor(body.satiety)} %`,
-    health: `${Math.floor(body.health)}`,
-    natureEnergy: `${Math.floor(natureEnergy)}`,
+    health: whole(body.health),
+    natureEnergy: whole(natureEnergy),
   };
 }
 

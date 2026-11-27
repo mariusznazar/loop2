@@ -48,6 +48,7 @@
       "tests/sim/loop-record.test.mjs",
       "tests/sim/map-card.test.mjs",
       "tests/sim/new-account-first-pass.test.mjs",
+      "tests/sim/pressure.test.mjs",
       "tests/sim/previous-programs.test.mjs",
       "tests/sim/program-counts.test.mjs",
       "tests/sim/program-list.test.mjs",
@@ -61,8 +62,10 @@
       "tests/sim/skills.test.mjs",
       "tests/sim/streak.test.mjs",
       "tests/sim/team.test.mjs",
+      "tests/sim/tending.test.mjs",
       "tests/sim/time.test.mjs",
       "tests/sim/traits.test.mjs",
+      "tests/sim/tree-entry.test.mjs",
       "tests/sim/trip.test.mjs",
       "tests/sim/world.test.mjs"
     ]

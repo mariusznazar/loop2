@@ -322,6 +322,7 @@ test("each action names its group and each condition its section and place in th
       ["strikeWithStick", "foodAndCombat"],
       ["kick", "foodAndCombat"],
       ["dodge", "foodAndCombat"],
+      ["pressure", "foodAndCombat"],
       ["equip", "foodAndCombat"],
       ["craft", "crafting"],
     ],
@@ -646,29 +647,41 @@ test("the character skills grow the listed pairs of verb and target, and the wal
   // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
-    Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
+    Object.values(SKILLS).map((skill) => [skill.name, skill.grownBy]),
     [
-      ["Eksploracja", ["explore"]],
-      ["Zbieranie małych przedmiotów", ["gather", "patrol"]],
-      ["Wytwarzanie ogniska", ["craftCampfire", "feedCampfire"]],
-      ["Jedzenie", ["eat"]],
-      ["Rzucanie czaru Płomyk", ["lightCampfire", "lightItem"]],
-      ["Walka bronią jednoręczną", ["strikeWithStick"]],
-      ["Kopanie", ["kick"]],
-      ["Unik przed ciosem", ["dodge"]],
+      ["Eksploracja", [{ action: "explore" }]],
+      [
+        "Zbieranie małych przedmiotów",
+        [{ action: "gather" }, { action: "patrol" }],
+      ],
+      [
+        "Wytwarzanie ogniska",
+        [{ action: "craftCampfire" }, { action: "feedCampfire" }],
+      ],
+      ["Jedzenie", [{ action: "eat" }]],
+      [
+        "Rzucanie czaru Płomyk",
+        [{ action: "lightCampfire" }, { action: "lightItem" }],
+      ],
+      ["Walka bronią jednoręczną", [{ action: "strikeWithStick" }]],
+      ["Kopanie", [{ action: "kick" }]],
+      ["Unik przed ciosem", [{ action: "dodge" }]],
+      [
+        "Opatrywanie małych ran",
+        [
+          { action: "craft", item: "bandage" },
+          { action: "tend", item: "bandage" },
+          { action: "pressure" },
+        ],
+      ],
     ],
   );
-  const grown = Object.values(SKILLS).flatMap((skill) => skill.actions);
+  const grown = Object.values(SKILLS).flatMap((skill) =>
+    skill.grownBy.map((pair) => pair.action),
+  );
   assert.equal(new Set(grown).size, grown.length, "an action in two skills");
   const free = Object.keys(ACTIONS).filter((id) => !grown.includes(id));
-  assert.deepEqual(free, [
-    "wander",
-    "walkTo",
-    "walkToCampfire",
-    "tend",
-    "equip",
-    "craft",
-  ]);
+  assert.deepEqual(free, ["wander", "walkTo", "walkToCampfire", "equip"]);
 });
 
 test("the elemental mage has all listed skills as predispositions", () => {
@@ -678,7 +691,7 @@ test("the elemental mage has all listed skills as predispositions", () => {
     [...ARCHETYPES.elementalMage.predispositions].sort(),
     Object.keys(SKILLS).sort(),
   );
-  assert.equal(Object.keys(SKILLS).length, 8);
+  assert.equal(Object.keys(SKILLS).length, 9);
 });
 
 test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished exploration, and no other tree has an event of its own", () => {
@@ -757,6 +770,13 @@ const ROWS = [
     // D-195: the action is discovered with its tree.
     event: { kind: "treeDiscovered", skill: "smallItemGathering" },
     actions: ["patrol"],
+    conditions: [],
+    items: [],
+  },
+  {
+    // D-195: „Ucisk”, which a branch of the tree of tending opens, is discovered with its tree.
+    event: { kind: "treeDiscovered", skill: "tending" },
+    actions: ["pressure"],
     conditions: [],
     items: [],
   },

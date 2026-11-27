@@ -13,7 +13,8 @@ import {
   type SkillDef,
   type SkillId,
 } from "./data/skills.js";
-import { branchActionAvailable } from "./skills.js";
+import { itemTargets } from "./action-targets.js";
+import { branchActionAvailable, skillsGrowing, targetItem } from "./skills.js";
 import { tileAt } from "./hex.js";
 import type { GameEvent } from "./run.js";
 import type {
@@ -28,8 +29,15 @@ import type {
   Understanding,
 } from "./types.js";
 
-/** The subset of an Understanding that a character can use in a program; computed, never saved. */
-export type Repertoire = Understanding;
+/**
+ * The subset of an Understanding that a character can use in a program, with the predispositions it
+ * was computed through, by which an action that takes an item is judged by its pair of verb and
+ * target (D-120); computed, never saved.
+ */
+export type Repertoire = Understanding & {
+  /** The character skills of the archetype the repertoire was computed through. */
+  predispositions: readonly SkillId[];
+};
 
 /**
  * The Understanding of a new game (D-118): what the data gives no revealing event, in the order of
@@ -49,35 +57,55 @@ export function newUnderstanding(): Understanding {
   };
 }
 
-/** Every action that some character skill grows. */
-function grownBySomeSkill(): Set<Action["kind"]> {
-  return new Set(Object.values(SKILLS).flatMap((skill) => skill.actions));
+/**
+ * The targets of the pairs of verb and target an action kind stands for: the items it takes, in the
+ * data's order, or the verb alone, as an `undefined` target, for a kind that takes none.
+ */
+function pairTargets(kind: Action["kind"]): (ItemId | undefined)[] {
+  const items = itemTargets(kind);
+  return items.length > 0 ? items : [undefined];
+}
+
+/**
+ * Whether the pair of a verb and a target is open to a list of predispositions: a skill among them
+ * grows it, or no skill grows it.
+ */
+function pairOpen(
+  kind: Action["kind"],
+  item: ItemId | undefined,
+  predispositions: readonly SkillId[],
+): boolean {
+  const growers = skillsGrowing(kind, item);
+  return (
+    growers.length === 0 ||
+    growers.some((skill) => predispositions.includes(skill))
+  );
 }
 
 /**
  * The repertoire of an Understanding through a list of predispositions. An action of the
- * Understanding is in it where a skill among the predispositions grows it, or where no skill grows
- * it; a condition and an item are in it whatever the predispositions.
+ * Understanding is in it where a skill among the predispositions grows its pair of verb and target,
+ * or where no skill grows it; an action that takes an item stays where at least one of its pairs is
+ * open, and `actionInRepertoire` judges each of its pairs through the predispositions the repertoire
+ * keeps. A condition and an item are in it whatever the predispositions.
  */
 export function repertoireOf(
   understanding: Understanding,
   predispositions: readonly SkillId[],
   skills: CharacterSkills = {},
 ): Repertoire {
-  const grown = grownBySomeSkill();
-  const opened = new Set<Action["kind"]>(
-    predispositions.flatMap((skill) => SKILLS[skill].actions),
-  );
   return {
     actions: understanding.actions.filter(
       (kind) =>
-        (opened.has(kind) || !grown.has(kind)) &&
-        branchActionAvailable(skills, kind),
+        pairTargets(kind).some((item) =>
+          pairOpen(kind, item, predispositions),
+        ) && branchActionAvailable(skills, kind),
     ),
     conditions: [...understanding.conditions],
     items: [...understanding.items],
     creatures: [...understanding.creatures],
     trees: understanding.trees.filter((id) => predispositions.includes(id)),
+    predispositions: [...predispositions],
   };
 }
 
@@ -97,7 +125,10 @@ export function conditionInRepertoire(
   }
 }
 
-/** Whether an action, with the resource or the item it names, lies in the repertoire. */
+/**
+ * Whether an action, with the resource or the item it names, lies in the repertoire; an action that
+ * takes an item by its pair of verb and item, open to the predispositions of the repertoire.
+ */
 export function actionInRepertoire(
   repertoire: Repertoire,
   action: Action,
@@ -108,12 +139,14 @@ export function actionInRepertoire(
     case "gather":
     case "patrol":
       return repertoire.items.includes(action.resource);
-    case "craft":
-    case "tend":
-    case "equip":
-      return repertoire.items.includes(action.item);
-    default:
-      return true;
+    default: {
+      const item = targetItem(action);
+      return (
+        item === undefined ||
+        (repertoire.items.includes(item) &&
+          pairOpen(action.kind, item, repertoire.predispositions))
+      );
+    }
   }
 }
 
@@ -201,7 +234,9 @@ export const BRANCH_NOT_BOUGHT = "gałąź niewykupiona";
 /**
  * The first thing of a rule the repertoire lacks, in the order the row reads: its condition, that
  * condition's target, its action, that action's target — named as the player sees it, a kind by its
- * label, a resource by its name and an item by the name its row gives.
+ * label, a resource by its name and an item by the name its row gives. An action whose kind and item
+ * the repertoire holds, but whose pair of verb and item its predispositions close, is named by the
+ * label of its kind, as a kind the predispositions close whole.
  */
 function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
   const { condition, action } = rule;
@@ -226,13 +261,9 @@ function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
     !repertoire.items.includes(action.resource)
   )
     return RESOURCES[action.resource].name;
-  if (
-    (action.kind === "craft" ||
-      action.kind === "tend" ||
-      action.kind === "equip") &&
-    !repertoire.items.includes(action.item)
-  )
-    return ITEMS[action.item].name;
+  const item = targetItem(action);
+  if (item !== undefined && !repertoire.items.includes(item))
+    return ITEMS[item].name;
   return ACTIONS[action.kind].label;
 }
 
@@ -387,10 +418,22 @@ function newlyRevealed(
       !understanding.actions.includes(kind) &&
       revealing((ACTIONS[kind] as ActionDef).revealedBy),
   );
+  // A tree enters with the first pair it grows whose verb and target the Understanding holds after
+  // the minute, at least one of them new in it (D-195).
+  const verbHeld = (kind: Action["kind"]) =>
+    understanding.actions.includes(kind) || actions.includes(kind);
+  const itemHeld = (item: ItemId) =>
+    understanding.items.includes(item) || items.includes(item);
   const trees = (Object.keys(SKILLS) as SkillId[]).filter(
     (id) =>
       !understanding.trees.includes(id) &&
-      (SKILLS[id].actions.some((action) => actions.includes(action)) ||
+      ((SKILLS[id] as SkillDef).grownBy.some(
+        (pair) =>
+          verbHeld(pair.action) &&
+          (pair.item === undefined || itemHeld(pair.item)) &&
+          (actions.includes(pair.action) ||
+            (pair.item !== undefined && items.includes(pair.item))),
+      ) ||
         revealing((SKILLS[id] as SkillDef).revealedBy)),
   );
   const unlocked = (Object.keys(ACTIONS) as Action["kind"][]).filter((kind) => {

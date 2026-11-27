@@ -38,6 +38,7 @@ const ZERO_SKILLS = {
   oneHandedCombat: { practice: 0, ranks: {} },
   kicking: { practice: 0, ranks: {} },
   dodging: { practice: 0, ranks: {} },
+  tending: { practice: 0, ranks: {} },
 };
 /** The gear of a new character: each slot of the data holding none (D-456). */
 const EMPTY_GEAR = {

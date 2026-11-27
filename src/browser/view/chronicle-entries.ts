@@ -6,7 +6,6 @@
  * recorded, and nothing here keeps state or draws. Nothing runs when the module is imported.
  */
 import { CAMPFIRE } from "../sim/data/campfire.js";
-import { GEAR_PLACES } from "../sim/data/gear.js";
 import { MAPS } from "../sim/data/maps.js";
 import { sameData } from "../sim/programs.js";
 import type { GameEvent, StreakLossCause } from "../sim/run.js";
@@ -19,6 +18,7 @@ import type {
   RuleId,
   Understanding,
 } from "../sim/types.js";
+import { refillWords } from "./combat-line.js";
 import { discoveryBandText } from "./discovery-band-text.js";
 import { deathText, startWords, WAIT_TEXT } from "./now-lines.js";
 import { ruleNumber, ruleSentence } from "./program-editor.js";
@@ -409,12 +409,14 @@ export function eventEntry(
           }
         : null;
     case "combatExchange":
-      // Only the refill of the empty hand is an entry; the blows stay in the paragraph (D-147, D-340).
+      // Only the refill of the empty slot is an entry; the blows stay in the paragraph (D-147, D-340).
       return event.exchange.characterAction?.refill
         ? {
             kind: "action",
             minute: event.minute,
-            text: capitalized(GEAR_PLACES.mainHand.refill),
+            text: capitalized(
+              refillWords(event.exchange.characterAction.action),
+            ),
             role: "text",
           }
         : null;

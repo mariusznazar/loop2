@@ -4,6 +4,7 @@
 // stays).
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -75,6 +76,8 @@ const GROWN = {
   flameSpell: ["lightCampfire", "lightItem"],
 };
 const OPEN_TO_ALL = ["wander", "walkTo", "walkToCampfire"];
+/** The predispositions of the archetype every created character takes, the mage's (D-120). */
+const MAGE = ARCHETYPES.elementalMage.predispositions;
 
 // D-118: „Zawsze” and „Eksploruj” are all a new game knows (written out, not read from the data).
 test("a new game's Understanding holds the condition Zawsze and the action Eksploruj alone", () => {
@@ -101,7 +104,10 @@ test("two new Understandings share no array, so a change of one reaches no other
 
 test("the mage, with all five skills, has the Understanding as its repertoire", () => {
   // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions"
-  assert.deepEqual(repertoireOf(FULL, ALL_SKILLS), FULL);
+  assert.deepEqual(repertoireOf(FULL, ALL_SKILLS), {
+    ...FULL,
+    predispositions: ALL_SKILLS,
+  });
 });
 
 test("the repertoire keeps discovered creatures in their own list", () => {
@@ -127,7 +133,10 @@ test("the repertoire of the mage keeps the order of the Understanding", () => {
     trees: [],
     creatures: [],
   };
-  assert.deepEqual(repertoireOf(understanding, ALL_SKILLS), understanding);
+  assert.deepEqual(repertoireOf(understanding, ALL_SKILLS), {
+    ...understanding,
+    predispositions: ALL_SKILLS,
+  });
 });
 
 for (const skill of ALL_SKILLS) {
@@ -204,6 +213,7 @@ const SMALL = {
   items: ["stick", "campfire"],
   trees: [],
   creatures: [],
+  predispositions: ALL_SKILLS,
 };
 
 function rule(id, condition, action) {
@@ -289,9 +299,35 @@ test("an action and a condition that name no target need no item", () => {
     items: [],
     trees: [],
     creatures: [],
+    predispositions: ["exploration"],
   };
   assert.equal(actionInRepertoire(bare, { kind: "explore" }), true);
   assert.equal(conditionInRepertoire(bare, { kind: "always" }), true);
+});
+
+test("Wytwórz and Opatrz with the bandage leave the repertoire without the tree's predisposition, and return with it", () => {
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  const understanding = {
+    actions: ["explore", "craft", "tend"],
+    conditions: ["always"],
+    items: ["bandage"],
+    trees: ["tending"],
+    creatures: [],
+  };
+  const predispositions = ARCHETYPES.elementalMage.predispositions;
+  const without = predispositions.filter((skill) => skill !== "tending");
+  assert.deepEqual(repertoireOf(understanding, without), {
+    actions: ["explore"],
+    conditions: ["always"],
+    items: ["bandage"],
+    trees: [],
+    creatures: [],
+    predispositions: without,
+  });
+  assert.deepEqual(repertoireOf(understanding, predispositions), {
+    ...understanding,
+    predispositions,
+  });
 });
 
 test("the reduced program keeps identities and order and drops exactly the rules and groups outside the repertoire", () => {
@@ -393,10 +429,11 @@ test("the editor shows the repertoire of the mage through the Understanding, out
     ...createCharacter(newGame(), "Ala").state,
     understanding,
   };
-  assert.deepEqual(editorRepertoire(hq), understanding);
+  const mage = { ...understanding, predispositions: MAGE };
+  assert.deepEqual(editorRepertoire(hq), mage);
   assert.deepEqual(editorRepertoire(newGame()).actions, ["explore"]);
   const running = { ...sent(), understanding };
-  assert.deepEqual(editorRepertoire(running), understanding);
+  assert.deepEqual(editorRepertoire(running), mage);
 });
 
 test("a map run of a character the team does not list falls back to the archetype of created characters", () => {
@@ -406,7 +443,10 @@ test("a map run of a character the team does not list falls back to the archetyp
     team: { ...state.team, characters: [] },
     understanding: FULL,
   };
-  assert.deepEqual(editorRepertoire(stray), FULL);
+  assert.deepEqual(editorRepertoire(stray), {
+    ...FULL,
+    predispositions: MAGE,
+  });
 });
 
 test("creating, sending, restarting, pausing, changing the program and ending leave the Understanding as it is", () => {

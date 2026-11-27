@@ -7,10 +7,18 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
-import { buildSkills, runOnce } from "../../balance/engine.mjs";
+import { mapRunEnded, stepMinute } from "../../dist/browser/sim/run.js";
+import {
+  buildSkills,
+  makeState,
+  prerequisitesOf,
+  runOnce,
+  startOf,
+} from "../../balance/engine.mjs";
 import {
   always,
   explore,
+  forestBandages,
   forestBest,
   forestDeepBest,
   forestDeepDecent,
@@ -256,6 +264,85 @@ test("on Las — głębiej with a program that gathers moss, crafts the bandage 
     program: DRESSING,
     chest: {},
     solvedMaps: ["forestEdge", "forest"],
+  });
+  assert.ok(minutes.size > 1);
+});
+
+// The program that brings bandages from the chest and dresses with them, on Las — wataha with the
+// branch „Ucisk” bought and a bandage in the first pocket. The chest holds more than the cap of 15
+// pieces lets in, so the take list's order decides which piece stays behind.
+const PACK_MAPS = ["forestEdge", "forest", "forestDeep"];
+const BANDAGE_CHEST = { bandage: 4, stick: 8, berry: 7 };
+const PRESSURE_RANK = { tending: { practice: 0, ranks: { pressure: 1 } } };
+
+/** How many turns of combat the program spent on „Ucisk” in one map run, stepped by the game's own function. */
+function pressureTurns(seed) {
+  const skills = buildSkills({ ranks: { pressure: 1 } });
+  const state = makeState({
+    program: forestBandages,
+    skills,
+    gear: { pocket1: "bandage" },
+    chest: BANDAGE_CHEST,
+    solvedMaps: prerequisitesOf("forestPack"),
+  });
+  const started = startOf(state, "forestPack", seed, skills);
+  let run = started.run;
+  let turns = 0;
+  while (!mapRunEnded(run) && run.minute < CAP_MINUTES) {
+    const before = run;
+    run = stepMinute(run, started.map, started.reduced).run;
+    if (before.activeCombat && !run.activeCombat && run.lastCombat?.result)
+      turns += run.lastCombat.result.exchanges.filter(
+        ({ characterAction }) => characterAction?.action.kind === "pressure",
+      ).length;
+  }
+  return turns;
+}
+
+test("precondition: the program of bandages takes the bandages first, so the berries are the pieces that give way to the cap of 15", () => {
+  const ready = readyGame({
+    program: forestBandages,
+    chest: BANDAGE_CHEST,
+    solvedMaps: PACK_MAPS,
+  });
+  const sent = send(ready, { mapId: "forestPack", characterId: 1 }, 1).state;
+  // The game lists what entered in the order of its items, not of the take list: read the counts.
+  assert.deepEqual(
+    Object.fromEntries(
+      sent.run.enteredWith.map(({ item, count }) => [item, count]),
+    ),
+    { bandage: 4, stick: 8, berry: 3 },
+  );
+});
+
+test("precondition: the program of bandages dresses outside a fight and presses in one on Las — wataha, with the branch bought and a bandage in a pocket", () => {
+  let pressed = 0;
+  for (let seed = 1; seed <= 10; seed += 1) {
+    const result = runOnce({
+      mapId: "forestPack",
+      program: forestBandages,
+      seed,
+      capMinutes: CAP_MINUTES,
+      chest: BANDAGE_CHEST,
+      skills: buildSkills({ ranks: { pressure: 1 } }),
+      gear: { pocket1: "bandage" },
+    });
+    assert.ok(result.minutesBy.tend > 0, `seed ${seed} dressed`);
+    if (pressureTurns(seed) > 0) pressed += 1;
+  }
+  assert.ok(pressed > 0, "some seed pressed in a fight");
+});
+
+// invariant: instrument-game-agreement
+test("on Las — wataha with the program of bandages, its chest, the branch „Ucisk” bought and a bandage in a pocket the instrument ends each seed as the game does", () => {
+  const minutes = agrees({
+    mapId: "forestPack",
+    program: forestBandages,
+    chest: BANDAGE_CHEST,
+    solvedMaps: PACK_MAPS,
+    skills: PRESSURE_RANK,
+    skillSpec: { ranks: { pressure: 1 } },
+    gear: { pocket1: "bandage" },
   });
   assert.ok(minutes.size > 1);
 });

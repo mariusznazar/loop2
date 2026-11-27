@@ -70,6 +70,8 @@ export type Action =
   | { kind: "strikeWithStick" }
   | { kind: "kick" }
   | { kind: "dodge" }
+  /** „Ucisk — {rzecz}”: in a combat turn uses up a piece of the item from a pocket and heals (D-144). */
+  | { kind: "pressure"; item: ItemId }
   /** „Załóż — {rzecz}”: puts a piece of the item on from the backpack into the slot it fits (D-458). */
   | { kind: "equip"; item: ItemId }
   | { kind: "craft"; item: ItemId };
@@ -143,7 +145,7 @@ export type CombatCreatureAction =
   | { kind: "dodge" };
 
 /** The kinds of the actions of combat: the ones only a fight carries out (D-140). */
-export type CombatVerbKind = "strikeWithStick" | "kick" | "dodge";
+export type CombatVerbKind = "strikeWithStick" | "kick" | "dodge" | "pressure";
 
 /**
  * An action of the character in a combat turn: an action of combat, or „Załóż”, which takes a turn of
@@ -154,9 +156,11 @@ export type CombatCharacterAction = {
   action: Extract<Action, { kind: CombatVerbKind | "equip" }>;
   /**
    * Whether the action first took a piece from the backpack into the empty slot it uses, in the same
-   * turn (D-457): the strike taking a stick into an empty main hand.
+   * turn (D-457): the strike taking a stick into an empty main hand, „Ucisk” a bandage into an empty
+   * pocket, which it then uses up.
    */
   refill: boolean;
+  /** The damage the action dealt: 0 for one that deals none, „Odskocz”, „Ucisk” and „Załóż”. */
   damage: number;
   creatureHealth: number;
   characterHealth: number;
@@ -198,7 +202,8 @@ export type CampfireId = typeof CAMPFIRE.id;
 /**
  * What the player has discovered, by data identifiers: actions and conditions by their kinds, and
  * items, the campfire included, and creatures by their ids. One for the whole game and every
- * character. Also the shape of a repertoire, the subset of it that a character can use.
+ * character. A repertoire, the subset of it that a character can use, holds the same lists and the
+ * predispositions it was computed through (`Repertoire`).
  */
 export type Understanding = {
   trees: SkillId[];

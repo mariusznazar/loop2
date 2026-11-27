@@ -1,22 +1,24 @@
+import { tendedBody } from "./body.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import { CREATURES, type CreatureAction } from "./data/creatures.js";
-import { WIELDING_SLOT } from "./data/gear.js";
 import {
   chooseCombatRule,
   combatItem,
   combatPiece,
   conditionHolds,
   equipped,
+  healsInCombat,
   type RunView,
 } from "./program.js";
-import { practiced, skillBonus } from "./skills.js";
+import { healingOf, practiced, skillBonus } from "./skills.js";
 import type {
+  Body,
+  CharacterSkills,
   CombatCharacterAction,
   CombatCreatureAction,
   CombatExchange,
   CombatResult,
-  CombatVerbKind,
   CreatureId,
   MapRun,
   Program,
@@ -41,24 +43,52 @@ function chooseCreatureAction(
 }
 
 /**
- * The character before an action of `kind`: where the action uses an item and the main hand is empty,
- * with one piece of it taken from the backpack into the hand (D-457), and whether it was; otherwise
- * the very character. The piece in the hand stays there after the action (D-145).
+ * The character before `action`: where the action uses an item and none of its slots holds it, with
+ * one piece of it taken from the backpack into the first empty one of them (D-457), and whether it
+ * was; otherwise the very character. The piece of a strike stays in the hand after it (D-145).
  */
-function wielding(
+function withPiece(
   character: RunCharacter,
-  kind: CombatVerbKind,
+  action: CombatCharacterAction["action"],
 ): { character: RunCharacter; refill: boolean } {
-  const item = combatItem(kind);
-  if (item === null || combatPiece(character, item) !== "refill")
+  const item = combatItem(action);
+  const piece = combatPiece(character, action);
+  if (item === null || piece === null || !piece.refill)
     return { character, refill: false };
   return {
     character: {
       ...character,
       backpack: { ...character.backpack, [item]: character.backpack[item] - 1 },
-      gear: { ...character.gear, [WIELDING_SLOT]: item },
+      gear: { ...character.gear, [piece.slot]: item },
     },
     refill: true,
+  };
+}
+
+/**
+ * A turn of an action that heals by its target, „Ucisk — {rzecz}” (D-144): the piece of the first slot
+ * of its place that holds the item, or one taken there from the backpack in the same turn, used up,
+ * and the health it gives back to `body`, the body at the health of the turn, as „Opatrz” gives it
+ * with the same item and the character's skills, never above full health.
+ */
+function healed(
+  character: RunCharacter,
+  action: CombatCharacterAction["action"],
+  body: Body,
+  skills: CharacterSkills,
+): { character: RunCharacter; refill: boolean; health: number } {
+  const item = combatItem(action);
+  const taken = withPiece(character, action);
+  const piece = combatPiece(taken.character, action);
+  if (item === null || piece === null)
+    throw new Error("combat: selected healing has no piece to use");
+  return {
+    character: {
+      ...taken.character,
+      gear: { ...taken.character.gear, [piece.slot]: null },
+    },
+    refill: taken.refill,
+    health: tendedBody(body, healingOf(skills, item)).health,
   };
 }
 
@@ -132,11 +162,27 @@ export function resolveCombat(
       if (put === null)
         throw new Error("combat: selected equip cannot be carried out");
       character = { ...character, ...put };
+    } else if (healsInCombat(action.kind)) {
+      // „Ucisk” uses up its piece and gives back health: no damage, one practice of its tree.
+      const turn = healed(
+        character,
+        action,
+        { ...run.body, health: characterHealth },
+        run.character.skills,
+      );
+      character = turn.character;
+      refill = turn.refill;
+      characterHealth = turn.health;
+      practice = practiced(
+        practice,
+        action.kind,
+        combatItem(action) ?? undefined,
+      );
     } else {
       const effect = (ACTIONS[action.kind] as ActionDef).combat;
-      if (!effect)
+      if (!effect || "heals" in effect)
         throw new Error("combat: selected action has no combat effect");
-      const armed = wielding(character, action.kind);
+      const armed = withPiece(character, action);
       character = armed.character;
       refill = armed.refill;
       if ("damage" in effect) {

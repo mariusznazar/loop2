@@ -1,3 +1,4 @@
+import type { GearPlace } from "./gear.js";
 import type { Revelation } from "./revelations.js";
 import type { ItemId, TargetProperty } from "./items.js";
 
@@ -7,6 +8,16 @@ import type { ItemId, TargetProperty } from "./items.js";
  * the action's item target that holds them, as the recipe of the item does for „Wytwórz”.
  */
 export type ActionMinutes = number | null | { fromTarget: "recipe" };
+
+/**
+ * What an action of combat does in its turn: damage, with the item it strikes with, whose piece the
+ * main hand holds (D-456); a reduction of the next damaging strike; or the healing of its item target,
+ * whose piece it takes from a slot of the place named and uses up (D-144, D-457).
+ */
+export type CombatEffect =
+  | { damage: number; item?: ItemId }
+  | { reducesNextDamageBy: number }
+  | { heals: "target"; place: GearPlace };
 
 export type ActionDef = {
   label: string;
@@ -33,8 +44,8 @@ export type ActionDef = {
    * Absent for an action that costs none.
    */
   natureEnergy?: number;
-  /** Combat-only effect; absent actions belong to ordinary map time. */
-  combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
+  /** Combat-only effect; absent actions belong to ordinary map time. See `CombatEffect`. */
+  combat?: CombatEffect;
   /**
    * Present for an ordinary action that can also be carried out in combat, taking a turn there as it
    * takes its minutes outside it (D-140): it is no action of combat, so it has no combat effect, and
@@ -222,6 +233,19 @@ export const ACTIONS = {
     combat: { reducesNextDamageBy: 5 },
     icon: "dodge",
     iconTitle: "Dodge icon",
+  },
+  // „Ucisk” takes the targets of the items that hold a healing property, as „Opatrz” does, and in a
+  // turn of combat uses up a piece of its target from a pocket of the belt.
+  pressure: {
+    label: "Ucisk",
+    group: "foodAndCombat",
+    status: "Uciska ranę",
+    minutes: null,
+    itemTargets: { property: "healing" },
+    revealedBy: { kind: "treeDiscovered", skill: "tending" },
+    combat: { heals: "target", place: "pocket" },
+    icon: "bandage-roll",
+    iconTitle: "Bandage roll icon",
   },
   // „Załóż” takes the targets of the items whose row names a place of the gear, and uses nothing up.
   equip: {

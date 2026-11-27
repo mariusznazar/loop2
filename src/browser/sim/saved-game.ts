@@ -22,11 +22,11 @@ import {
 import { GEAR_SLOTS } from "./data/gear.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
-import { combatItem } from "./program.js";
+import { combatItem, healsInCombat } from "./program.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
 import { MINUTE_KINDS } from "./run-record.js";
-import { skillProgress } from "./skills.js";
+import { branchActionAvailable, skillProgress } from "./skills.js";
 import { pieceCount } from "./trip.js";
 import { newUnderstanding } from "./understanding.js";
 import type {
@@ -88,9 +88,12 @@ import type {
  * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, of the
  * slots of the gear of the data, which `Gear` enumerates, and of the ordinary actions of the data,
  * whose kinds are the keys of `minutesByAction` in the record of a manual map run: a new action or a
- * removed one changes those keys.
+ * removed one changes those keys. It rises too where the keys stay and an old document still describes
+ * a game the rules no longer make: a skill's tree enters the Understanding only with a pair discovered
+ * in a minute (D-195), so a game of version 11 in which „Wytwórz” is already discovered would never
+ * get the tree of „Opatrywanie małych ran”, and a record of combat may now hold a turn of „Ucisk”.
  */
-export const SAVED_GAME_VERSION = 11;
+export const SAVED_GAME_VERSION = 12;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -328,6 +331,7 @@ const COMBAT_VERBS: Record<CombatVerbKind, true> = {
   strikeWithStick: true,
   kick: true,
   dodge: true,
+  pressure: true,
 };
 
 function isCombatVerb(
@@ -748,10 +752,14 @@ const CREATURE_ACTIONS: {
 
 /**
  * A character's action of a combat record: an action of combat or „Załóż”, with the mark of a refill,
- * which only an action that uses an item makes (D-457), and the damage of an action that deals none:
- * „Załóż” deals 0.
+ * which only an action that uses an item makes (D-457), the strike and „Ucisk”, and the damage of an
+ * action that deals none: „Załóż” and „Ucisk” deal 0. An action a branch opens was carried out by a
+ * character that bought the branch, `skills` being the skills of the map run's character.
  */
-function characterAction(value: unknown): CombatCharacterAction {
+function characterAction(
+  value: unknown,
+  skills: CharacterSkills,
+): CombatCharacterAction {
   const read = fields(value, [
     "ruleId",
     "action",
@@ -761,11 +769,13 @@ function characterAction(value: unknown): CombatCharacterAction {
     "characterHealth",
   ]);
   const acted = action(read.action);
-  if (!isTurnAction(acted)) refuse();
+  if (!isTurnAction(acted) || !branchActionAvailable(skills, acted.kind))
+    refuse();
   const refill = flag(read.refill);
-  if (refill && combatItem(acted.kind) === null) refuse();
+  if (refill && combatItem(acted) === null) refuse();
   const damage = finite(read.damage, 0);
-  if (acted.kind === "equip" && damage !== 0) refuse();
+  if ((acted.kind === "equip" || healsInCombat(acted.kind)) && damage !== 0)
+    refuse();
   return {
     ruleId: identity(read.ruleId),
     action: acted,
@@ -776,7 +786,7 @@ function characterAction(value: unknown): CombatCharacterAction {
   };
 }
 
-function exchange(value: unknown): CombatExchange {
+function exchange(value: unknown, skills: CharacterSkills): CombatExchange {
   const read = fields(value, ["creatureAction", "characterAction"]);
   const creature = read.creatureAction;
   return {
@@ -787,15 +797,20 @@ function exchange(value: unknown): CombatExchange {
     characterAction:
       read.characterAction === null
         ? null
-        : characterAction(read.characterAction),
+        : characterAction(read.characterAction, skills),
   };
 }
 
 /**
  * The result of an encounter, with the gear and the backpack its turns left: a gear as any gear is
- * read, and a backpack within the carrying capacity of the map run's character, `capacity`.
+ * read, a backpack within the carrying capacity of the map run's character, `capacity`, and turns
+ * of actions that character may carry out, by its `skills`.
  */
-function combatResult(value: unknown, capacity: number): CombatResult {
+function combatResult(
+  value: unknown,
+  capacity: number,
+  skills: CharacterSkills,
+): CombatResult {
   const read = fields(value, [
     "practice",
     "characterHealth",
@@ -813,7 +828,7 @@ function combatResult(value: unknown, capacity: number): CombatResult {
     characterHealth: finite(read.characterHealth, 0),
     creatureHealth: finite(read.creatureHealth, 0),
     outcome: oneOf(read.outcome, COMBAT_OUTCOMES),
-    exchanges: list(read.exchanges).map(exchange),
+    exchanges: list(read.exchanges).map((item) => exchange(item, skills)),
     ruleStarts: ruleCounts(read.ruleStarts),
     gear: gear(read.gear),
     backpack: left,
@@ -824,11 +839,13 @@ function lastCombat(
   value: unknown,
   minute: number,
   capacity: number,
+  skills: CharacterSkills,
 ): LastCombat {
   const read = fields(value, [...COMBAT_KEYS, "result"]);
   return {
     ...attack(read, minute),
-    result: read.result === null ? null : combatResult(read.result, capacity),
+    result:
+      read.result === null ? null : combatResult(read.result, capacity, skills),
   };
 }
 
@@ -1109,7 +1126,12 @@ function plainMapRun(
     lastCombat:
       read.lastCombat === null
         ? null
-        : lastCombat(read.lastCombat, minute, backpackCap(character)),
+        : lastCombat(
+            read.lastCombat,
+            minute,
+            backpackCap(character),
+            character.skills,
+          ),
     attackRandom: uint32(read.attackRandom),
     attackCooldownStart,
     wanderRandom: uint32(read.wanderRandom),
