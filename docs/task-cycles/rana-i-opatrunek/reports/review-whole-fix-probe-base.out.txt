@@ -1,0 +1,5 @@
+manual seed 2: load ok=true 
+  paragraph: Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk gryzie: −7 · Mag uciska ranę: zdrowie 72.7/100 · Wilk gryzie: −7 · Mag uderza patykiem: wilk 12/24 · Wilk gryzie: −7 · Mag uderza patykiem: wilk 6/24 · Wilk odskakuje · Mag uderza patykiem: wilk 0/24 · Wilk pokonany.
+  without the rank: ok=true 
+loop try 6: load ok=true 
+  without the rank: ok=true 
