@@ -145,22 +145,37 @@ test("the heading names the map, with the tag of its state and the opener's name
     name: "Skraj lasu",
     state: open,
     openedBy: null,
+    icons: [],
   });
   assert.deepEqual(cardHeading(forest, false), {
     name: "Las",
     state: open,
     openedBy: "odsłania ją Skraj lasu",
+    icons: [],
   });
   assert.deepEqual(cardHeading(forest, true), {
     name: "Las",
     state: done,
     openedBy: "odsłania ją Skraj lasu",
+    icons: [],
   });
   assert.deepEqual(cardHeading(forestDeep, true), {
     name: "Las — głębiej",
     state: done,
     openedBy: "odsłania ją Las",
+    icons: ["wolf-head"],
   });
+});
+
+// D-327: beside the name and the tag of the state the heading holds the small icon of each creature that
+// attacks on the map, and a map without an attacker has none there. Catches an icon left out of the
+// heading, the icon of the wrong creature, and an icon given to a map without an attacker.
+test("the heading gives the icon of each creature that attacks on the map, and none on a map without an attacker", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  assert.deepEqual(cardHeading(forestDeep, false).icons, ["wolf-head"]);
+  assert.deepEqual(cardHeading(forestLair, true).icons, ["bear-head"]);
+  assert.deepEqual(cardHeading(forest, false).icons, []);
+  assert.deepEqual(cardHeading(forestEdge, false).icons, []);
 });
 
 // D-327: „Żąda” is a table of what the solving condition asks: the streak in hours, or in minutes where it

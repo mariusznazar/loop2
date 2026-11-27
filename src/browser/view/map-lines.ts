@@ -46,6 +46,8 @@ export type CardHeading = {
   name: string;
   state: { text: string; solved: boolean };
   openedBy: string | null;
+  /** The icon file of each creature that attacks on the map, beside the name; none where no creature attacks. */
+  icons: string[];
 };
 
 /**
@@ -85,7 +87,7 @@ export type AttackerLines = {
 /**
  * The heading of a card (D-327): the map's name, the tag of its state — „rozwiązana” once the map is
  * solved, „otwarta” before — and „odsłania ją {mapa}” with the opener's name from the data where
- * another map opens this one. Pure.
+ * another map opens this one, and the icon of each creature that attacks on the map. Pure.
  */
 export function cardHeading(map: MapDef, solved: boolean): CardHeading {
   const opener =
@@ -96,6 +98,9 @@ export function cardHeading(map: MapDef, solved: boolean): CardHeading {
     name: map.name,
     state: { text: solved ? "rozwiązana" : "otwarta", solved },
     openedBy: opener,
+    icons: (map.attackers ?? []).map(
+      (attacker) => CREATURES[attacker.id].icon,
+    ),
   };
 }
 
