@@ -465,7 +465,11 @@ export type MinuteBeforePick = {
   picks: boolean;
 };
 
-/** Whether the map run has ended: the character died or the map run completed. */
+/**
+ * Whether the map run has ended: the character died or the map run completed. `purchaseOpen` in
+ * skills.ts writes the same test out, since this module imports that one; a new kind of end goes
+ * into both.
+ */
 export function mapRunEnded(run: MapRun): boolean {
   return run.death !== null || run.completion !== null;
 }

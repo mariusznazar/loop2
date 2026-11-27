@@ -10,6 +10,7 @@ import {
   newGame,
   restart,
   send,
+  setPaused,
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import {
@@ -188,8 +189,10 @@ test("Mocniejszy cios has four ranks at one point each, and its fifth purchase i
   assert.equal(buyBranch(state, 1, "strongerStrike").state, state);
 });
 
-test("unknown trees, unknown characters, no skill and every retained run refuse purchase", () => {
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+// Catches a purchase let through while a manual map run goes on, the one wait in which the game
+// still refuses it.
+test("unknown trees, unknown characters, no skill and a manual map run that goes on refuse purchase", () => {
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”, and „Restart” then starts with the skills of the map run it replaces, or, after a death that took the character's practice and ranks, with what the character was left with, so not with a rank bought in that wait; while a manual map run goes on, neither paused nor ended, the game refuses a purchase"
   const state = headquarters();
   assert.equal(buyBranch(state, 99, "keenEye").state, state);
   const unknown = {
@@ -205,14 +208,81 @@ test("unknown trees, unknown characters, no skill and every retained run refuse 
     },
   };
   assert.equal(buyBranch(absent, 1, "keenEye").state, absent);
-  for (const patch of [
-    {},
-    { completion: { minute: 1 } },
-    { death: { minute: 1, cause: "cold" } },
+  const running = send(state, ids, 1).state;
+  assert.equal(running.paused, false, "precondition: the map run goes on");
+  assert.equal(buyBranch(running, 1, "keenEye").state, running);
+  assert.equal(
+    buyBranch(running, 2, "keenEye").state,
+    running,
+    "another character's purchase waits too while the map run goes on",
+  );
+});
+
+// Catches the old refusal kept for a map run that waits in a pause, at a discovery, or after its end
+// in a death or a completion, until „Restart” or „Zakończ”.
+test("a purchase is taken while a manual map run waits in a pause or has ended in a death or a completion", () => {
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”"
+  const running = send(headquarters(), ids, 1).state;
+  for (const [name, waiting] of [
+    ["a pause", setPaused(running, true).state],
+    [
+      "a completion",
+      { ...running, run: { ...running.run, completion: { minute: 1 } } },
+    ],
+    [
+      "a death",
+      {
+        ...running,
+        run: { ...running.run, death: { minute: 1, cause: "cold" } },
+      },
+    ],
   ]) {
-    const running = send(state, ids, 1).state;
-    const held = { ...running, run: { ...running.run, ...patch } };
-    assert.equal(buyBranch(held, 1, "keenEye").state, held);
+    for (const id of [1, 2]) {
+      const bought = buyBranch(waiting, id, "keenEye").state;
+      const character = bought.team.characters.find((each) => each.id === id);
+      assert.equal(
+        branchRank(character.skills, "keenEye"),
+        1,
+        `${name}: ${id}`,
+      );
+      assert.deepEqual(
+        bought.run,
+        waiting.run,
+        `${name}: the map run stays as it was`,
+      );
+    }
+  }
+});
+
+// Catches a rank bought in the wait that reaches the map run going on or the one „Restart” starts,
+// and one that does not reach the next map run sent after „Zakończ”.
+test("a rank bought while the map run waits leaves its skills as they were; „Restart” starts without it, and the next map run after „Zakończ” starts with it", () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”, and „Restart” then starts with the skills of the map run it replaces"
+  const running = send(headquarters(), ids, 1).state;
+  for (const [name, waiting] of [
+    ["a pause", setPaused(running, true).state],
+    [
+      "a completion",
+      { ...running, run: { ...running.run, completion: { minute: 1 } } },
+    ],
+  ]) {
+    const bought = buyBranch(waiting, 1, "patrol").state;
+    assert.equal(
+      branchRank(bought.team.characters[0].skills, "patrol"),
+      1,
+      name,
+    );
+    assert.equal(branchRank(bought.run.character.skills, "patrol"), 0, name);
+    const restarted = restart(bought).state;
+    assert.equal(branchRank(restarted.run.character.skills, "patrol"), 0, name);
+    assert.equal(
+      branchRank(restarted.team.characters[0].skills, "patrol"),
+      1,
+      `${name}: the character keeps the rank`,
+    );
+    const next = send(end(restarted).state, ids, 2).state;
+    assert.equal(branchRank(next.run.character.skills, "patrol"), 1, name);
   }
 });
 
@@ -311,7 +381,7 @@ test("meal and walking bonuses apply to their own actions when both are bought",
 });
 
 test("send and restart take independent rank snapshots and a restart discards run practice", () => {
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   const before = structuredClone(hq);
   const sent = send(hq, ids, 1).state;
@@ -640,7 +710,7 @@ test("Obchód is known with its tree but offered only in its owner's run; an una
   // decision: D-119 "That one computation is at once what the program editor offers and what the simulation lets the character carry out"
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
-  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including the branches it had bought at the start of that map run"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   assert.ok(hq.understanding.actions.includes("patrol"));
   assert.equal(editorRepertoire(hq).actions.includes("patrol"), false);

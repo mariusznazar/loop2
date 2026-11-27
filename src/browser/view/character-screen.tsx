@@ -1,5 +1,6 @@
 /**
- * The screen Postać (D-445, D-446, D-447, D-199, D-217, D-218, D-244, D-245, D-287): one character in
+ * The screen Postać (D-445, D-446, D-447, D-199, D-200, D-217, D-218, D-244, D-245, D-280, D-287): at its
+ * top the link „← Siedziba” to Siedziba, and under it one character in
  * two areas side by side, as the columns of Mapy and Wiedza. The narrow left area holds, from the top,
  * the character's name, the line of its generation and archetype with the archetype's icon, and its
  * resurrection line; under them the frame of what the character does: its state, the line of its
@@ -22,10 +23,12 @@ import type { GearSlot } from "../sim/data/gear.js";
 import type { ItemId } from "../sim/data/items.js";
 import { SKILLS, type BranchId, type SkillId } from "../sim/data/skills.js";
 import { waitingPractice } from "../sim/loop.js";
+import { purchaseOpen } from "../sim/skills.js";
 import type { CharacterId, GameState } from "../sim/types.js";
 import { CharacterGear } from "./character-gear.js";
 import { statusLine } from "./character-status.js";
 import { CharacterTrees } from "./character-trees.js";
+import { screenAddress } from "./screen-address.js";
 import {
   generationLabel,
   loopLine,
@@ -104,6 +107,12 @@ function CharacterView({
 
   return (
     <div className="character-screen">
+      <a
+        className="character-screen-back"
+        href={screenAddress({ kind: "headquarters" })}
+      >
+        ← Siedziba
+      </a>
       <div className="screen character-areas">
         <section className="screen-area character-identity">
           <div className="character-facts">
@@ -179,7 +188,8 @@ function CharacterView({
             character={character}
             trees={trees}
             waiting={loop === undefined ? {} : waitingPractice(loop)}
-            run={state.run}
+            run={state.run?.character.id === characterId ? state.run : null}
+            purchaseOpen={purchaseOpen(state)}
             onBuy={onBuy}
           />
         )}

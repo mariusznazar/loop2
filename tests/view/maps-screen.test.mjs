@@ -1065,7 +1065,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj”, its sen
 // D-287, D-55: while a manual map run waits or has ended, every „Wejdź” is inactive, „Puść w pętlę”
 // is inactive at the run's character alone, and each character says why.
 test("a manual map run going on, waiting and ended keeps „Wejdź” inactive and „Puść w pętlę” inactive at its character alone, with the sentence at each character", async () => {
-  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź” and, at that map run's character, „Puść w pętlę” stand inactive"
   // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
   // decision: D-55 "The game holds one manual map run at a time: while one character is in a manual map run, the game sends no other on a manual map run"
   await withPage(async (page) => {
@@ -1113,7 +1113,7 @@ test("a manual map run going on, waiting and ended keeps „Wejdź” inactive a
 // sentence or none of it, a link that goes on standing after „Zakończ”, and a link that takes another
 // role than the sentence's `text-secondary`.
 test("while a manual map run waits and after it ended, the second part of the sentence at every character is a link to the screen of that map run, and „Zakończ” takes it away", async () => {
-  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone. Stopnie kupisz po jego zakończeniu.” Wherever the sentence under the buttons of a character stands, „Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of that manual map run"
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź” and, at that map run's character, „Puść w pętlę” stand inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” of the screen Postać of that map run's character alone „Przejście na mapie {mapa} jest niezakończone. Kupiony stopień działa od następnego przejścia tej postaci, także w pętli; „Restart” zaczyna bez niego.” Wherever the sentence under the buttons of a character stands, „Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of that manual map run"
   // decision: D-281 "An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/mapy`, `#/mapy/{map}`, `#/programy`, `#/programy/{n}`, `#/wiedza` and `#/postac/{n}/przejscie`"
   await withPage(async (page) => {
     const style = page.document.createElement("style");
@@ -1270,7 +1270,7 @@ test("„Oceń na 12 ziarnach” stands beside „Wejdź” at each character on
 // stays active at a character in either, in every state of the map run.
 test("the button of a judging stays active at a character in an earning loop and while a manual map run goes on, waits or has ended", async () => {
   // decision: D-439 "A program can be judged on every map open to the player, a map not yet solved included, and for a character in an earning loop or in a manual map run"
-  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź” and, at that map run's character, „Puść w pętlę” stand inactive"
   await withPage(async (page) => {
     const base = solved(teamOf("Ala", "Bob"));
     const looping = { ...base, loops: { 1: LOOP } };

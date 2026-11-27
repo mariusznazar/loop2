@@ -481,7 +481,7 @@ function actionsStarted(state) {
 
 // D-200: the run on the screen keeps what it started with, whatever the death took.
 test("a death that takes everything leaves the map run on the screen as it was", () => {
-  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-190 "The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no use of the resurrection left starts from the character as that death left it"
   const state = died(usedUp(team(), T0 + 1));
   const settled = settleDeath(state, T0).state;

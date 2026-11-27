@@ -1,6 +1,7 @@
 /**
- * The header of the screen of a map run in React (D-311, D-130, D-132, D-62, D-188, D-122, D-44,
- * D-46, D-133, D-368): the character's name, the map's name and after them the clock, the bar of
+ * The header of the screen of a map run in React (D-311, D-280, D-130, D-132, D-62, D-188, D-122,
+ * D-44, D-46, D-133, D-368): the character's name as the link „← {imię postaci}” to its screen
+ * Postać, the map's name and after them the clock, the bar of
  * the solving condition, „Pauza” or „Wznów”, the five pace buttons, after the end of the map run
  * „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this order.
  * It is a component with no boundary of its own: the screen of a map run renders it from the game
@@ -16,6 +17,7 @@ import { solvingRequirements } from "../sim/run.js";
 import { mapRunEnded } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
+import { screenAddress } from "./screen-address.js";
 import {
   clockText,
   pauseLabel,
@@ -47,7 +49,9 @@ export type RunHeaderProps = {
 
 /**
  * The header: the name of the character of the map run, found in the team by the map run's
- * character, the name of the map from the data, then the clock, which holds the game minute and
+ * character, in its heading as the link „← {imię postaci}” to that character's screen Postać, which
+ * leaves the screen as any change of address does (D-280, D-283), the name of the map from the data,
+ * then the clock, which holds the game minute and
  * nothing of the character's action (that is „Teraz”'s, D-334), the bar of the solving condition
  * and the buttons. After the end of the map run, in death or a completion, the clock stands at the
  * game minute of the end in the role `text`, the bar stands too, at the stopped minute and with
@@ -74,7 +78,17 @@ export function RunHeader({ state, controls, windowOpen }: RunHeaderProps) {
   return (
     <div className="run-header" hidden={ended && windowOpen}>
       {character === undefined ? null : (
-        <h2 className="run-header-name">{character.name}</h2>
+        <h2 className="run-header-name">
+          <a
+            className="run-header-back"
+            href={screenAddress({
+              kind: "character",
+              characterId: character.id,
+            })}
+          >
+            {`← ${character.name}`}
+          </a>
+        </h2>
       )}
       <p className="run-header-map">{map.name}</p>
       <p className="run-header-clock">{clockText(run, state.paused)}</p>

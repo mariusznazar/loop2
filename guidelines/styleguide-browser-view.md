@@ -748,10 +748,10 @@ them), więc zielony test nie zastępuje tego sprawdzenia.
 
 ### Main button, secondary action and tab
 
-- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-44 · D-39 · D-243 · D-329
+- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-280 · D-281 · D-44 · D-39 · D-243 · D-329
 - **Invariant:** none
-- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym; „Odbierz” przy wierszu raportu w Siedzibie przyciskiem w `positive`, nie w głównym wyglądzie.
-- **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
+- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym; „Odbierz” przy wierszu raportu w Siedzibie przyciskiem w `positive`, nie w głównym wyglądzie; „← Ala” na początku nagłówka ekranu przejścia jako odnośnik do `#/postac/1` w `text-strong`, bez podkreślenia, pod kursorem na `highlight`.
+- **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie; „← Ala” w nagłówku ekranu przejścia jako przycisk albo w ramce wspólnego przycisku.
 
 Główny wygląd, akcja poboczna, zakładka, przycisk w `positive` i przycisk przerywany to
 wyglądy wspólnego przycisku, każdy na swoim miejscu, które podaje ta reguła; ich stany podaje
@@ -799,6 +799,20 @@ reguła States of shared controls.
   zielenią, tłem ani ramką. Wygląd pozycji paska, menu „Konto” i pozycji
   listy programów podaje reguła Menu bar, the menu „Konto” and the list of
   programs.
+- „← {imię postaci}” na początku nagłówka ekranu przejścia (D-280, D-311) jest
+  odnośnikiem do ekranu Postać tej postaci, nie przyciskiem: ma adres
+  (D-281), jak pozycja paska menu, a przyciskami nagłówka zostają „Pauza”,
+  tempa, „Restart” i „Zakończ”. Stoi w miejscu samego imienia i wygląda jak
+  imię: w nagłówku drugiego stopnia, w `text-strong` (rola nazwy, D-40),
+  w rozmiarze `--font-size-heading` i wadze `--font-weight-emphasis`, bez
+  podkreślenia i bez ramki, strzałka w tym samym kolorze co imię; pod kursorem
+  tło `highlight`, a rola tekstu zostaje; fokus rysuje reguła Visible focus
+  bez dodatku (D-47). Imię wpisał gracz, więc łamie się w nagłówku (reguła A
+  name typed by the player breaks in its row). W układzie telefonu odnośnik
+  stoi sam jako kontrolka, więc trzyma cel dotyku `--touch-target-min` w bloku
+  `@media (width < 1280px)` arkusza ekranu przejścia, z tekstem pośrodku
+  wysokości celu, a na urządzeniu, które nie najeżdża, nie dostaje tła pod
+  kursorem (D-396).
 
 ### A line at a text takes the colour of that text
 
@@ -1162,8 +1176,8 @@ between them).
 
 - **Decision:** D-445 · D-446 · D-447 · D-454 · D-461 · D-462 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-288 · D-289 · D-291 · D-389 · D-39 · D-40 · D-43 · D-44 · D-396
 - **Invariant:** none
-- **Good:** Lewy blok z imieniem w `text-strong` u góry, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`, a pod ramką sekcja „Wyposażenie” z nagłówkiem w `text-label`: ludzik dwa razy większy niż na pasie obozu, na płaskim tle bloku, pośrodku ośmiu kwadratowych kafelków — po lewej „Głowa”, „Tułów” i „Nogi”, po prawej „Ręka główna” i „Druga ręka”, pod nim trzy kieszenie — z samą ikoną patyka w `text-strong` na kafelku ręki głównej i z bladymi nazwami miejsc w `text-label` na pustych; po dotknięciu kafelka ręki jego ramka w `selected`, a pod kafelkami „Ręka główna: patyk” w `text-strong` i komórki wyboru, wśród nich „Zdejmij” bez ikony, a gdy skrzynka jest pełna, wyszarzone z powodem „skrzynka pełna” w `text-secondary`; przy postaci w pętli nad kafelkami „Postać jest w pętli. Zmiana działa od następnego przejścia.” w `text-secondary`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
-- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik obok imienia u góry lewego bloku albo w wielkości ludzika z pasa obozu; ludzik na kawałku polany albo z tekstem na nim; nazwa przedmiotu albo liczba napisana na kafelku z ikoną; kafelek z ikoną, który czytnik ekranu czyta samą nazwą przedmiotu, bez miejsca; wybrany kafelek zaznaczony tłem `highlight` zamiast ramki w `selected`; blada nazwa miejsca w `text-disabled`, jakby miejsca nie dało się użyć; kafelek miejsca, do którego nic nie pasuje, ukryty do chwili, gdy gracz ma pasujący przedmiot; kafelek jako `<button>` ekranu z klasą własną albo kafelek niższy albo węższy niż `--touch-target-min` w układzie telefonu; „Zdejmij” z ikoną; wyszarzona komórka wyboru bez powodu; sekcja „Wyposażenie” w prawym bloku nad „Umiejętnościami”; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte i kafelek wybrany przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
+- **Good:** Nad oboma blokami „← Siedziba” w `text-label`, bez podkreślenia, a pod kursorem na `highlight`; lewy blok z imieniem w `text-strong` u góry, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`, a pod ramką sekcja „Wyposażenie” z nagłówkiem w `text-label`: ludzik dwa razy większy niż na pasie obozu, na płaskim tle bloku, pośrodku ośmiu kwadratowych kafelków — po lewej „Głowa”, „Tułów” i „Nogi”, po prawej „Ręka główna” i „Druga ręka”, pod nim trzy kieszenie — z samą ikoną patyka w `text-strong` na kafelku ręki głównej i z bladymi nazwami miejsc w `text-label` na pustych; po dotknięciu kafelka ręki jego ramka w `selected`, a pod kafelkami „Ręka główna: patyk” w `text-strong` i komórki wyboru, wśród nich „Zdejmij” bez ikony, a gdy skrzynka jest pełna, wyszarzone z powodem „skrzynka pełna” w `text-secondary`; przy postaci w pętli nad kafelkami „Postać jest w pętli. Zmiana działa od następnego przejścia.” w `text-secondary`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
+- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik obok imienia u góry lewego bloku albo w wielkości ludzika z pasa obozu; ludzik na kawałku polany albo z tekstem na nim; nazwa przedmiotu albo liczba napisana na kafelku z ikoną; kafelek z ikoną, który czytnik ekranu czyta samą nazwą przedmiotu, bez miejsca; wybrany kafelek zaznaczony tłem `highlight` zamiast ramki w `selected`; blada nazwa miejsca w `text-disabled`, jakby miejsca nie dało się użyć; kafelek miejsca, do którego nic nie pasuje, ukryty do chwili, gdy gracz ma pasujący przedmiot; kafelek jako `<button>` ekranu z klasą własną albo kafelek niższy albo węższy niż `--touch-target-min` w układzie telefonu; „Zdejmij” z ikoną; wyszarzona komórka wyboru bez powodu; sekcja „Wyposażenie” w prawym bloku nad „Umiejętnościami”; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte i kafelek wybrany przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku; „← Siedziba” w lewym bloku zamiast nad oboma, jako przycisk albo w układzie telefonu niższe niż `--touch-target-min`; zdanie o tym, od kiedy kupiony stopień działa, przy postaci, której przejście nie dotyczy, albo „Kup” wyłączone przy przejściu, które czeka w pauzie.
 
 Ekran Postać (`#/postac/{n}`, D-281) ma dwa obszary, każdy osobny (D-282), i każdy stoi w bloku
 `screen-area`, jak kolumny ekranów Siedziba, Mapy, Wiedza i Przejście: na tle `panel` z cienką ramką
@@ -1171,6 +1185,17 @@ w `divider`. Lewy obszar jest wąski, prawy szeroki — ta sama proporcja co kol
 Wiedza, jedna czwarta i trzy czwarte szerokości w układzie komputera — a w układzie telefonu, w oknie
 węższym niż 1280 px, lewy stoi nad prawym (D-396), więc sekcja „Wyposażenie” lewego obszaru stoi
 wtedy nad „Umiejętnościami” prawego.
+
+- Na górze ekranu, nad oboma obszarami, w obu układach, stoi „← Siedziba”, odnośnik do Siedziby
+  (D-280, D-281), jak w starym Loopie. Jest odnośnikiem, nie przyciskiem, bo ma adres, i stoi sam jako
+  kontrolka: tekst w `text-label`, bez podkreślenia, jak pozycja paska menu, która nie znaczy miejsca
+  gracza (reguła Menu bar, the menu „Konto” and the list of programs); pod kursorem tło `highlight`,
+  a rola tekstu zostaje; fokus rysuje reguła Visible focus bez dodatku (D-47). W układzie telefonu
+  trzyma cel dotyku `--touch-target-min` w bloku `@media (width < 1280px)` arkusza ekranu, z tekstem
+  pośrodku wysokości celu, a na urządzeniu, które nie najeżdża, nie dostaje tła pod kursorem (reguły
+  Everything is done by touch, and every control holds the touch target i Two layouts and one
+  threshold between them). Pasek menu znaczy na tym ekranie Siedzibę, więc do Siedziby prowadzą
+  dwie drogi, strzałka i pozycja paska (D-280).
 
 - Lewy obszar, u góry (D-446): imię jako nagłówek ekranu w `text-strong`, łamane w swoim wierszu
   (reguła A name typed by the player breaks in its row); pod nim jeden wiersz z „pokolenie {n}” od
@@ -1244,7 +1269,9 @@ wtedy nad „Umiejętnościami” prawego.
   the side in the phone layout, and no text crosses its frame). Reguły układu telefonu sekcji sprawdza agent
   w przeglądarce, nie test (reguła Two layouts and one threshold between them).
 - Prawy obszar: nagłówek „Umiejętności” w `text-label`; obszaru nie ma, póki gracz nie zna żadnego
-  drzewa (D-199). Zdanie o niezakończonym przejściu stoi pod nagłówkiem w `text-secondary` (D-287).
+  drzewa (D-199). Tylko przy postaci przejścia ręcznego, które stoi w grze niezakończone, pod
+  nagłówkiem stoi w `text-secondary`, jako wyjaśnienie (D-40), zdanie D-287 o tym, od kiedy kupiony
+  stopień działa (D-200). Przy innej postaci zdania nie ma: „Restart” jej nie dotyczy.
 - Wiersz drzewa (D-199) w kolumnach, oddzielony od sąsiednich cienką linią w `divider`: zwijak —
   zwykły wspólny przycisk „▸”, po rozwinięciu „▾”, z nazwą drzewa jako nazwą dostępną, który mówi
   `aria-expanded` (D-44); nazwa w `text-strong`, zaraz po niej „+{n} pkt czeka w pętli” w `text`, nie
@@ -1258,7 +1285,8 @@ wtedy nad „Umiejętnościami” prawego.
   zwijaka podaje reguła States of shared controls: error, empty i loading go nie dotyczą, bo nie ma
   wpisu, listy i nie czeka na serwer. Każde wejście na ekran zaczyna ze zwiniętymi drzewami.
 - Gałąź rozwiniętego drzewa: jej słowa w `text` i „Kup” jako zwykły wspólny przycisk, wyłączony, gdy
-  brak punktów, gałąź jest pełna albo przejście ręczne czeka lub się skończyło (D-199, D-200, D-287).
+  brak punktów, gałąź jest pełna albo przejście ręczne trwa, ani nie czekając w pauzie, ani się nie
+  skończywszy (D-199, D-200); przy przejściu, które czeka albo się skończyło, „Kup” działa (D-287).
 - Ekran nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
 
 ### Program editor

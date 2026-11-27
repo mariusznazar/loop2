@@ -1816,7 +1816,7 @@ function patrolOffered(root) {
 // and a branch of a teammate who is not in the map run opening an action.
 test("the offer of Programy follows the character of the map run held by the game state, an ended one included, and goes with „Zakończ”", async () => {
   // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
-  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including the branches it had bought at the start of that map run"
   await withPage(async (page) => {
     const game = await wiredPanel(page, patrolBought(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));

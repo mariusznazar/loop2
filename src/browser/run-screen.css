@@ -220,6 +220,45 @@
   color: var(--text-strong);
 }
 
+/*
+ * The name is the link „← {imię postaci}” to the character's screen Postać (D-280, D-311; styleguide
+ * rule "Main button, secondary action and tab"): a link that stands by itself, drawn as the name it
+ * is, in `text-strong` with no underline, and under the pointer on `highlight`, as an item of the menu
+ * bar; the focus is the one :focus-visible rule of styles.css (D-47).
+ */
+.run-header-back {
+  display: inline-block;
+  padding: var(--space-2xs) var(--space-xs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.run-header-back:hover {
+  background: var(--highlight);
+}
+
+/*
+ * The phone layout (D-396; styleguide rule "Everything is done by touch, and every control holds the
+ * touch target"): the link stands by itself as a control, so it holds the touch target, its text in
+ * the middle of its height.
+ */
+@media (width < 1280px) {
+  .run-header-back {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+/* The phone layout on a device that does not hover (D-396): the link keeps no `highlight` once touched. */
+@media (width < 1280px) and (hover: none) {
+  .run-header-back:hover {
+    background: transparent;
+  }
+}
+
 .run-header-map {
   margin: 0;
   font-size: var(--font-size-map-title);

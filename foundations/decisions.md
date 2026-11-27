@@ -4551,6 +4551,8 @@ bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar 
 the screen of a map run the menu bar marks no item; „Zatrzymaj” and „Odbierz” on that card are buttons of their own and open no screen. A player reaches a first map run from Siedziba in
 at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”.
 
+The character's name at the start of the header of the screen of a map run is the link „← {imię postaci}” to the screen Postać of that map run's character, and the link „← Siedziba” at the top of the screen Postać leads to Siedziba, both in the computer layout and in the phone layout, where each, a link that stands by itself as a control, holds the touch target of D-396.
+
 An account with the owner role (D-410) has one more screen, the list of accounts (D-411), of the same content width, which is no item of the bar: the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela” to `#/konta` (D-281). The items of the bar and the bar itself are the same for a player and for an account with the owner role, and the menu „Konto” of a player holds no such link.
 
 - **Scope:** browser-view
@@ -4563,7 +4565,10 @@ An account with the owner role (D-410) has one more screen, the list of accounts
   map run's game minute, leading to the screen of the map run, on Siedziba, Postać, Programy and Mapy
   while the map run goes on or has ended in a death until „Zakończ”, and on no screen of a map run;
   the card of a character on Siedziba leading to its screen Postać as one link named by the
-  character's name, and „Zatrzymaj” and „Odbierz” on it opening no screen; the menu bar marking
+  character's name, and „Zatrzymaj” and „Odbierz” on it opening no screen; the header of a map run
+  beginning, whether the map run goes on, waits or has ended, with the link „← {imię postaci}” to
+  the screen Postać of its character, which opens it with the map run paused, and „← Siedziba” at the
+  top of the screen Postać, above its areas, a link to Siedziba; the menu bar marking
   Siedziba on Postać, Mapy on `#/mapy` and on `#/mapy/{map}`, and no item on the screen of a map run;
   a player with one character reaching the first map run from Siedziba by „Mapy”, the row of a map
   and „Wejdź”; the menu „Konto” of an account with the owner role holding the link „Panel właściciela”
@@ -4593,8 +4598,14 @@ the menu bar names the place the player is at, and D-277 has the bar mark that p
 item there. A player who leaves a map run keeps one way back to it, and a map run that has ended
 stays until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć
 do przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
-header of the screen of the map run does. The way into the owner panel is a link in the menu „Konto”, so the bar stays as it is and looks the same for a player and for an account with the owner role; the cost accepted is that the panel is less visible than an item of the bar, also to those who assess the game, and that the menu „Konto” gets a first link beside its buttons.
-*Rejected:* the name alone on the card of a character leading to the screen Postać — no cost to the product known; one more item „Konta” on the menu bar, only for an account with the owner role — the panel is easier to see, also for those who assess the game, but D-280's fixed list of items and its tests change and the bar looks different by role; one page holding everything — unreadable; the width of the content changing between
+header of the screen of the map run does. The character's name at the start of the header of a map
+run leads to its screen Postać, and „← Siedziba” stands at the top of the screen Postać, as in loop,
+so the player goes from a map run to its character, to spend its points of practice among other
+things, in one click, where the way went through Siedziba and the card of the character. Accepted
+with it: „←” reads as „back”, while the link in the header always leads to the character, also where
+the player came to the map run from the screen Mapy or from the menu bar, as in loop; and the screen
+Postać has two ways to Siedziba, the arrow and the item „Siedziba” of the menu bar, which it marks. The way into the owner panel is a link in the menu „Konto”, so the bar stays as it is and looks the same for a player and for an account with the owner role; the cost accepted is that the panel is less visible than an item of the bar, also to those who assess the game, and that the menu „Konto” gets a first link beside its buttons.
+*Rejected:* the name alone on the card of a character leading to the screen Postać — no cost to the product known; the character's name alone as the link at the start of the header of a map run, with no arrow, as on the card on Siedziba — no cost to the product known; a button or a link „Postać” of its own in the header of a map run, beside „Restart” and „Zakończ” — one more element in a row of the header already long, which breaks into several lines in the phone layout; no arrow back but the one from the map run to its character, the menu bar doing the rest — no cost to the product known; one more item „Konta” on the menu bar, only for an account with the owner role — the panel is easier to see, also for those who assess the game, but D-280's fixed list of items and its tests change and the bar looks different by role; one page holding everything — unreadable; the width of the content changing between
 screens, as in loop — the logo and the menu jump by about 190 px between Siedziba and Programy;
 another largest width — it changes that one
 dimension alone; the skill trees shown on two screens, as in loop — the same rows on Postać and in
@@ -7461,7 +7472,7 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
+Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including the branches it had bought at the start of that map run.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -7480,7 +7491,7 @@ Outside a map run the program editor offers the repertoire computed from the Und
     character skill the archetype does not predispose offered outside a map run
 - **Origin:** none
 
-*Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands; the code already took the repertoire of the character in the map run for as long as the map run stood in the game state. A character without the branch passes over a rule with „Obchód” and the rule stays in the program (D-126). Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress (D-131), whereas editing a saved program prepares the next send, and a rule with „Obchód” can be written without losing the streak at game minute zero or in a saved program edited during a map run, which acts from the next entry onto a map other than a „Restart”; a fix made in the editor of Programy does not reach a waiting map run unless the player switches the character to that program, which sets the streak to zero; and the player sees in the Understanding an action that no character yet can carry out.
+*Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ” and keeps the skills of its start, without a rank bought in that wait (D-200), so the offer does not change while it stands; the code already took the repertoire of the character in the map run for as long as the map run stood in the game state. A character without the branch passes over a rule with „Obchód” and the rule stays in the program (D-126). Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress (D-131), whereas editing a saved program prepares the next send, and a rule with „Obchód” can be written without losing the streak at game minute zero or in a saved program edited during a map run, which acts from the next entry onto a map other than a „Restart”; a fix made in the editor of Programy does not reach a waiting map run unless the player switches the character to that program, which sets the streak to zero; and the player sees in the Understanding an action that no character yet can carry out.
 *Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character; the archetype's offer after the end of a map run, as this decision read word for word gave it — code to change, and on Programy after a death the offer changes while the map run still stands.
 
 ### D-197 — What does the gathering branch Obchód do?
@@ -7548,25 +7559,27 @@ Below an open tree each branch gives its name, rank and maximum rank, descriptio
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game has no purchase in the map-run view and no undo of a purchase.
+The player buys a branch rank with „Kup” on the screen Postać, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The player buys so also while a manual map run waits in a pause, or has ended and waits for „Restart” or „Zakończ”, and „Restart” then starts with the skills of the map run it replaces, or, after a death that took the character's practice and ranks, with what the character was left with, so not with a rank bought in that wait; while a manual map run goes on, neither paused nor ended, the game refuses a purchase. The game has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** tests: a rank bought with „Kup” on the screen Postać, and saved; „Kup” and the
-  purchase refused while a manual map run goes on, waits in a pause or has ended in death or
-  completion; „Kup” active at a character in an earning loop; the rank acting from that character's
-  next map run, the next map run of its earning loop included, while the map run going on, and one
-  ended in a death that took the character's skills, keeps the skills of its start. For no purchase
-  in the map-run view and no undo of a purchase, an agent compares a change with the part no test
-  holds:
+- **Verification:** tests: a rank bought with „Kup” on the screen Postać, and saved; „Kup” active and
+  the purchase taken, at the map run's character and at another, while a manual map run waits in a
+  pause or has ended in death or completion, the map run staying as it was; „Kup” inactive and the
+  purchase refused while it goes on; „Kup” active at a character in an earning loop; the rank acting
+  from that character's next map run, the next map run of its earning loop included, while the map
+  run going on, and one ended in a death that took the character's skills, keeps the skills of its
+  start; „Restart” after a purchase in the wait starting without the rank, and the next map run after
+  „Zakończ” starting with it. For no purchase in the map-run view and no undo of a purchase, an agent
+  compares a change with the part no test holds:
   - complies: the screen of a map run holding no „Kup”; a rank bought staying bought
   - violates: a „Kup” beside the program of a map run; a button on the screen Postać that takes a
     bought rank back and returns its points
 - **Origin:** none
 
-*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts; in the predecessor game's test a purchase touched neither the map run nor the program. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
-*Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on.
+*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts; in the predecessor game's test a purchase touched neither the map run nor the program. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns. A player who goes from a map run that waits, or has ended, to its character in one click (D-280) spends there the points of practice, those the map run paid at its completion among them, and the map run keeps the skills of its start, so the purchase changes nothing in it; „Restart” repeats the attempt it replaces with the same skills. While a manual map run goes on the player stands on its screen, since leaving it pauses it (D-283) and a loaded one comes back paused (D-212), so the refusal while it goes on shows on no screen Postać. Accepted with it: a player who buys a rank in the wait and presses „Restart” does not see the rank act, which the sentence at „Umiejętności” says (D-287).
+*Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on; „Restart” taking the ranks bought in the wait too, so that a rank acts at once at the next try of the same map — „Restart” would change what it starts with, the skills of the map run it replaces and after a death that took everything what the character was left with, with its tests and the case of that death; „Kup” inactive until „Zakończ”, the way back from a map run serving only to look at the character and the points spent after „Zakończ”, which leads to the screen Postać — no change of the rules of the game, but the player could not spend the points of practice from a map run that waits.
 
 ### D-201 — What does the map-run view show of its practice?
 
@@ -10894,13 +10907,15 @@ the game would have to remember who paused it, and a reload loses that memory.
 
 While the game state holds a manual map run that waits in a pause, or that has ended and waits for
 „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the
-simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand
+simulation allows, while „Wejdź” and, at that map run's character, „Puść w pętlę” stand
 inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a
 map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać
-postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone. Stopnie
-kupisz po jego zakończeniu.” Wherever the sentence under the buttons of a character stands,
-„Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of that manual map
-run, `#/postac/{n}/przejscie` with {n} the number of the map run's character (D-281).
+postać.”, and at the section „Umiejętności” of the screen Postać of that map run's character alone
+„Przejście na mapie {mapa} jest niezakończone. Kupiony stopień działa od następnego przejścia tej
+postaci, także w pętli; „Restart” zaczyna bez niego.” Wherever the sentence under the buttons of a
+character stands, „Wróć do niego i je zakończ, żeby wysłać postać.” in it is a link to the screen of
+that manual map run, `#/postac/{n}/przejscie` with {n} the number of the map run's character
+(D-281).
 
 At the character of that map run the tiles of its gear cannot be selected, and under the heading „Wyposażenie” stands „Przejście na mapie {mapa} jest niezakończone. Wyposażenie zmienisz po jego zakończeniu.”, while the tiles of the gear of every other character stay selectable.
 
@@ -10909,10 +10924,11 @@ At the character of that map run the tiles of its gear cannot be selected, and u
 - **Relations:** derives from D-55 · derives from D-200 · derives from D-453
 - **Verification:** tests: on the screen Mapy, while a manual map run goes on, waits or has ended,
   „Wejdź” of every character inactive and „Puść w pętlę” inactive at that map run's character
-  alone, another character's staying active; „Kup” on the screen Postać inactive while the map run
+  alone, another character's staying active; „Kup” on the screen Postać active while the map run
   waits and after its end; under the buttons of each character in „Kto idzie” the sentence naming
-  the map from the data, gone after „Zakończ”; at „Umiejętności” the sentence that ranks are bought
-  after the end of the map run; while the map run waits and after its end, „Wróć do niego i je
+  the map from the data, gone after „Zakończ”; at „Umiejętności” of the map run's character the
+  sentence that a rank bought acts from its next map run, in a loop too, and that „Restart” starts
+  without it, and no such sentence at another character; while the map run waits and after its end, „Wróć do niego i je
   zakończ, żeby wysłać postać.” of the sentence under the buttons of every character a link to the
   screen of that map run, `#/postac/{n}/przejscie` of the map run's character and not of the row's,
   the rest of the sentence standing before it as text, and the link gone after „Zakończ”; the tiles
@@ -10928,20 +10944,27 @@ At the character of that map run the tiles of its gear cannot be selected, and u
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
 do not act and what the player does to free them, and what the simulation allows stays open. The
-simulation refuses to send a character and to buy a rank while the game state holds a map run, one
-that has ended included (D-200), and refuses an earning loop only to the character of that map run,
-so the rest stays active. The words that tell the player to go back to the map run lead there, so the
-player who meets an inactive „Wejdź” on a card reaches the map run that holds it with one click.
-Accepted with it: the sentence repeats under the buttons of each character in „Kto idzie”, its link
-included. The tiles of the gear of that character stand inactive as „Kup” does, since the gear of a
-character changes outside an unfinished manual map run of it (D-453), and the sentence under the heading
-„Wyposażenie” says why and when it frees them.
+simulation refuses to send a character while the game state holds a map run, one that has ended
+included, refuses an earning loop only to the character of that map run, and takes a purchase while
+the map run waits or has ended (D-200), so the rest stays active. The words that tell the player to
+go back to the map run lead there, so the player who meets an inactive „Wejdź” on a card reaches the
+map run that holds it with one click. Accepted with it: the sentence repeats under the buttons of
+each character in „Kto idzie”, its link included. The sentence at „Umiejętności” says when a rank
+bought acts, since a player who buys a rank in the wait and presses „Restart” does not see it act
+(D-200); it stands at the character of that map run alone, since „Restart” is nothing to another
+character, whose next map run, of an earning loop included, takes the rank as any purchase gives it.
+The tiles of the gear of that character stand inactive, since the gear of a character changes outside
+an unfinished manual map run of it (D-453), and the sentence under the heading „Wyposażenie” says why
+and when it frees them.
 *Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba, the screen
 Postać and the screen Mapy for viewing alone — the player could not start the earning loop of
 another character, and the code would have to block what the simulation allows; the gear changed
 only where the character is at the camp, outside its earning loop — to change the weapon of a
 character in an earning loop the player stops the loop, and the next „Puść w pętlę” judges the
-program first.
+program first; the sentence at „Umiejętności” at every character, saying that a rank acts from the
+next map run sent by „Wejdź” — at every character „Restart” would be named where it means nothing,
+and „Wejdź” where a character in an earning loop takes the rank from the next map run of its loop, a
+rule wrong at most characters.
 
 ### D-311 — How is the screen of a map run laid out?
 
@@ -10957,7 +10980,7 @@ right under its cells while the player has one open (D-450), the backpack and th
 the drawing of the map and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
 „Wznów”, the pace, and after the end of the
-map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”.
+map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”, the name standing at its start as the link „← {imię postaci}” to the screen Postać of that character (D-280), in place of the name alone, in the computer layout and in the phone layout.
 
 Under the line of the backpack stands the line of the gear, in the same text as the line of the backpack, naming the main hand first and the pockets after it: „Wyposażenie: patyk w ręku, 2 × opatrunek pod ręką”, „Wyposażenie: 2 × opatrunek pod ręką”, „Wyposażenie: patyk w ręku” and, where the character holds nothing, „Wyposażenie: nic”.
 
@@ -10981,7 +11004,8 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   world from the top: the scene, „Teraz” and
   „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; a bar
   under each value of the body row and the explanation of a value open right under its cells and
-  above the backpack; the header holding the character's name, the map's name, the clock, the bar of the solving condition,
+  above the backpack; the header holding the character's name at its start, as the link „← {imię
+  postaci}” to its screen Postać, the map's name, the clock, the bar of the solving condition,
   „Pauza” or „Wznów”, the paces, and after the end „Koniec przejścia”, which opens the window,
   „Restart”, the warning of a cut trip plan after it and „Zakończ”; the window in place of the screen after a
   death and a completion, the header and the areas hidden under it, the lines of the end standing in
@@ -11035,7 +11059,8 @@ whole area, and „Kronika” is picked first, since the chronicle is what the p
 paragraph of the last encounter stands in the chronicle and, at the end, in the window (D-147), never in the world area. The
 area with the tabs stands under the world, so its place does not depend on the length of the
 program and the player sees it beside the program. The header is where the player steers the map
-run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
+run, so „Restart” and „Zakończ” stay there, and the character's name at its start is the one-click
+way to the character's screen Postać (D-280), in its place, as loop's header begins with it. Accepted with it: a long header, which with the bar of
 the solving condition and three buttons may break in the phone layout; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
 tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in the phone layout the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for the phone layout; the
