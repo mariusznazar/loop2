@@ -65,6 +65,7 @@
       "tests/sim/tending.test.mjs",
       "tests/sim/time.test.mjs",
       "tests/sim/traits.test.mjs",
+      "tests/sim/tree-entry.test.mjs",
       "tests/sim/trip.test.mjs",
       "tests/sim/world.test.mjs"
     ]
