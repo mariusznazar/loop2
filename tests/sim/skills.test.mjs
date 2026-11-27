@@ -245,7 +245,7 @@ test("a purchase is taken while a manual map run waits in a pause or has ended i
         1,
         `${name}: ${id}`,
       );
-      assert.equal(
+      assert.deepEqual(
         bought.run,
         waiting.run,
         `${name}: the map run stays as it was`,
@@ -710,7 +710,7 @@ test("Obchód is known with its tree but offered only in its owner's run; an una
   // decision: D-119 "That one computation is at once what the program editor offers and what the simulation lets the character carry out"
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
-  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including the branches it had bought at the start of that map run"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   assert.ok(hq.understanding.actions.includes("patrol"));
   assert.equal(editorRepertoire(hq).actions.includes("patrol"), false);

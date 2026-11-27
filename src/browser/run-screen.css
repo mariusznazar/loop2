@@ -240,8 +240,7 @@
 /*
  * The phone layout (D-396; styleguide rule "Everything is done by touch, and every control holds the
  * touch target"): the link stands by itself as a control, so it holds the touch target, its text in
- * the middle of its height. A device that does not hover keeps no `highlight` on the link it last
- * touched.
+ * the middle of its height.
  */
 @media (width < 1280px) {
   .run-header-back {
@@ -253,6 +252,7 @@
   }
 }
 
+/* The phone layout on a device that does not hover (D-396): the link keeps no `highlight` once touched. */
 @media (width < 1280px) and (hover: none) {
   .run-header-back:hover {
     background: transparent;
