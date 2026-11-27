@@ -23,7 +23,11 @@ export const GEAR_PLACES = {
   head: { name: "Głowa" },
   torso: { name: "Tułów" },
   legs: { name: "Nogi" },
-  pocket: { name: "Kieszeń", line: "pod ręką" },
+  pocket: {
+    name: "Kieszeń",
+    line: "pod ręką",
+    refill: "bierze opatrunek z plecaka do kieszeni",
+  },
 } as const satisfies Record<string, PlaceRow>;
 
 /** A place of the gear: a key of `GEAR_PLACES`. */

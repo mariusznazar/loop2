@@ -1,13 +1,36 @@
-import { ACTIONS } from "../sim/data/actions.js";
+import { ACTIONS, type ActionDef } from "../sim/data/actions.js";
+import { BALANCE } from "../sim/data/balance.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { CREATURES } from "../sim/data/creatures.js";
-import { GEAR_PLACES } from "../sim/data/gear.js";
+import { GEAR_PLACES, GEAR_SLOTS, WIELDING_SLOT } from "../sim/data/gear.js";
 import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import type { Condition, LastCombat } from "../sim/types.js";
+import type {
+  CombatCharacterAction,
+  Condition,
+  LastCombat,
+} from "../sim/types.js";
 
 function capitalized(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/**
+ * The words of the refill of an empty slot that a turn of combat takes its piece from (D-457): the
+ * words of the place the action takes its piece from, the place of its item target for „Ucisk”, and
+ * the main hand for a strike, which takes its stick from there (D-456). Used by the paragraph of an
+ * encounter and by the chronicle alike, so they name the same place.
+ */
+export function refillWords(action: CombatCharacterAction["action"]): string {
+  const def: ActionDef = ACTIONS[action.kind];
+  const effect = def.combat;
+  const place =
+    effect !== undefined && "place" in effect
+      ? effect.place
+      : GEAR_SLOTS[WIELDING_SLOT];
+  const row = GEAR_PLACES[place];
+  if (!("refill" in row)) throw new Error(`the place ${place} has no refill`);
+  return row.refill;
 }
 
 function conditionText(condition: Condition): string {
@@ -50,10 +73,16 @@ function actionText(combat: LastCombat): string[] {
     }
     const character = exchange.characterAction;
     if (character) {
-      // The refill of an empty main hand is an element of its own, before the strike (D-457).
-      if (character.refill) actions.push(`Mag ${GEAR_PLACES.mainHand.refill}`);
+      // The refill of an empty slot is an element of its own, before the turn's action (D-457).
+      if (character.refill)
+        actions.push(`Mag ${refillWords(character.action)}`);
       if (character.action.kind === "dodge") {
         actions.push("Mag odskakuje");
+      } else if (character.action.kind === "pressure") {
+        // „Ucisk” gives the mage's own health after its turn, not the creature's (D-144, D-147).
+        actions.push(
+          `Mag ${ACTIONS.pressure.status.toLowerCase()}: zdrowie ${character.characterHealth}/${BALANCE.body.startHealth}`,
+        );
       } else if (character.action.kind === "equip") {
         // „Załóż” has no creature health to show: it puts the piece on and takes the turn (D-458).
         actions.push(
