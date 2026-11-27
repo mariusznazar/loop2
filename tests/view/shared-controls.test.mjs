@@ -143,6 +143,13 @@ const KIND_CASES = [
     text: "Nie pamiętam hasła",
     expectedClass: "button secondary",
   },
+  {
+    name: "a dashed button",
+    // decision: D-44 "The screens build the closed „+ postać” at the end of the cards of the team on Siedziba from the shared controls as well: a button of a kind of its own, the dashed button"
+    kind: "dashed",
+    text: "+ postać",
+    expectedClass: "button dashed",
+  },
 ];
 
 for (const { name, kind, text, expectedClass } of KIND_CASES) {
@@ -1181,6 +1188,51 @@ test("the stylesheets draw a tile square with its icon in text-strong and its pa
     assert.equal(
       lastDeclared(document, locked, "border-color", "border"),
       "var(--frame-width) solid var(--control-border)",
+    );
+  });
+});
+
+// Breaks: a dashed button drawn with a solid frame, a frame in another role than `control-border`, its
+// text not in the middle or in another role than `text`, or one that takes no `highlight` under the
+// pointer, or takes a lighter frame or text there as loop's tile does (D-44).
+test("the stylesheets draw a dashed button with a dashed frame in control-border, its text in text in the middle, and the background highlight under the pointer with frame and text unchanged", async () => {
+  // decision: D-44 "The screens build the closed „+ postać” at the end of the cards of the team on Siedziba from the shared controls as well: a button of a kind of its own, the dashed button, with a dashed frame in `control-border` and its text in the middle, which takes the background `highlight` under the pointer with its frame and the role of its text unchanged."
+  await withPage(async ({ document, window }) => {
+    const style = document.createElement("style");
+    style.textContent = stylesheetWithPointerClass();
+    document.head.append(style);
+    const computed = (element, property) =>
+      window.getComputedStyle(element).getPropertyValue(property);
+    const dashed = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactButton, { text: "+ postać", kind: "dashed" }),
+      ),
+    );
+    const look = () => ({
+      borderStyle: lastDeclared(document, dashed, "border-style"),
+      border: lastDeclared(document, dashed, "border-color", "border"),
+      colour: computed(dashed, "color"),
+      justify: computed(dashed, "justify-content"),
+      align: computed(dashed, "align-items"),
+    });
+    const atRest = {
+      borderStyle: "dashed",
+      border: "var(--frame-width) solid var(--control-border)",
+      colour: "var(--text)",
+      justify: "center",
+      align: "center",
+    };
+    assert.deepEqual(look(), atRest);
+    dashed.classList.add("is-hovered");
+    assert.equal(
+      lastDeclared(document, dashed, "background-color", "background"),
+      "var(--highlight)",
+    );
+    assert.deepEqual(
+      look(),
+      atRest,
+      "frame and text unchanged under the pointer",
     );
   });
 });

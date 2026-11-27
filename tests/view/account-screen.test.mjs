@@ -2550,9 +2550,13 @@ const ACTS = [
   {
     name: "creating a character",
     start: twoPrograms,
-    act: (root) => {
+    ownActs: true,
+    act: async (root) => {
+      // A team that holds a character opens the field with „+ postać” first.
+      const add = buttonNamed(root, "+ postać");
+      if (add !== undefined) await press(add);
       inputLabelled(root, "Imię nowej postaci").value = "Ola";
-      fire(buttonNamed(root, "Załóż"), "click");
+      await press(buttonNamed(root, "Załóż"));
     },
     expected: (start) => createCharacter(start, "Ola").state,
   },
@@ -3262,6 +3266,7 @@ function renewing(at, left) {
 // the saver would send. The screen is drawn in React, so the writes of the line are counted as the
 // changes of its text the page's document records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
+  // decision: D-217 "Siedziba shows that line once, in the same words and roles, under the heading „Drużyna” and above the cards of the characters while the team holds a character"
   // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
@@ -3276,7 +3281,7 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       await held.answer("currentAccount", ACCOUNT);
       // Every use spent, the first 59 min 30 s away at the clock's start: rounded up, one whole hour.
       await held.answer("loadSavedGame", saveOf(renewing(T, 3_570_000), 4));
-      const [line] = byClass(root, "team-member-resurrection");
+      const [line] = byClass(root, "team-resurrection");
       const warning = " — śmierć zabierze wprawę i wykupione stopnie";
       assert.equal(
         line.textContent,
@@ -3785,8 +3790,9 @@ function reported(rest = {}) {
   };
 }
 
-// Catches a section missing, placed under „Drużyna”, or with the lines in the order of the data.
-test("a game built from a state with a report shows the section above „Drużyna”, the stopped line first", async () => {
+// Catches the row of the report missing or placed under „Drużyna”, its sentence missing, and a line
+// standing anywhere but in its character's card, with the name before it.
+test("a game built from a state with a report shows the sentence above „Drużyna” and each line in its character's card", async () => {
   // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and the others in `text`, „{m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, a button that opens no screen, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, {m} in both lines being the game minutes the catch-up passed"
   await onPage(async ({ root }) => {
@@ -3794,23 +3800,23 @@ test("a game built from a state with a report shows the section above „Drużyn
     const section = reportSection(root);
     assert.ok(shown(section));
     assert.equal(
-      section.children[0].textContent,
-      "Gdy cię nie było",
-      "the title",
+      byClass(section, "away-report-summary")[0].textContent,
+      "Bez ciebie 1 pętla stanęła, 1 chodziła bez przeszkód.",
+      "the sentence",
     );
-    assert.deepEqual(
-      byClass(section, "away-report-line").map((line) => line.textContent),
+    assert.deepEqual(byClass(section, "away-report-line"), []);
+    const linesOf = (name) =>
+      byClass(rowOf(root, name), "away-report-line").map((line) => [
+        line.textContent,
+        line.classList.contains("danger"),
+      ]);
+    assert.deepEqual(linesOf("Ola"), [
       [
-        "Ola: pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
-        "Ala: 5 min · skrzynka: patyk +3",
+        "pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+        true,
       ],
-    );
-    assert.ok(
-      byClass(section, "away-report-line")[0].classList.contains("danger"),
-    );
-    assert.ok(
-      !byClass(section, "away-report-line")[1].classList.contains("danger"),
-    );
+    ]);
+    assert.deepEqual(linesOf("Ala"), [["5 min · skrzynka: patyk +3", false]]);
     const [headquarters] = byClass(root, "headquarters");
     const sections = childrenOf(headquarters).filter((child) =>
       child.classList.contains("headquarters-section"),
@@ -3821,9 +3827,9 @@ test("a game built from a state with a report shows the section above „Drużyn
   });
 });
 
-// Catches the title of a section that holds only stops in the open game (D-246) and a full chest
-// that is not said, or said for a chest that is not full.
-test("only stops in the open game give „Pętle, które stanęły”, and a full chest adds its sentence", async () => {
+// Catches „Bez ciebie” said of a report that holds only stops in the open game (D-246), and a full
+// chest that is not said, or said for a chest that is not full.
+test("a stop in the open game opens the sentence with its count, and a full chest adds its sentence", async () => {
   // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and the others in `text`, „{m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, a button that opens no screen, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "An earning loop a death stops in the open game enters the same report, as the one kind of line that is no line of a return, „pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "An earning loop a death stops in the open game enters the same report, as the one kind of line that is no line of a return, „pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and a player returning to a manual map run reads the report on reaching Siedziba"
@@ -3843,10 +3849,13 @@ test("only stops in the open game give „Pętle, które stanęły”, and a ful
       team: { ...base.team, chest: { pieces: { stick: 60 } } },
     });
     const section = reportSection(root);
-    assert.equal(section.children[0].textContent, "Pętle, które stanęły");
     assert.equal(
-      byClass(section, "away-report-line")[0].textContent,
-      "Ola: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+      byClass(section, "away-report-summary")[0].textContent,
+      "1 pętla stanęła.",
+    );
+    assert.equal(
+      byClass(rowOf(root, "Ola"), "away-report-line")[0].textContent,
+      "pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
     );
     const [full] = byClass(section, "away-report-full");
     assert.ok(shown(full));
@@ -3919,12 +3928,9 @@ test("„Odbierz” pays the practice waiting, saves at once, leaves the earning
     };
     const eatingBefore = state.team.characters[0].skills.eating.practice;
     const { view, held } = await viewOf(state);
-    const [line] = byClass(reportSection(root), "away-report-text");
-    assert.equal(
-      line.textContent,
-      "Ala: 5 min · wprawa do odebrania: Jedzenie +4",
-    );
-    await press(buttonLabelled(reportSection(root), "Odbierz: Ala"));
+    const [line] = byClass(rowOf(root, "Ala"), "away-report-text");
+    assert.equal(line.textContent, "5 min · wprawa do odebrania: Jedzenie +4");
+    await press(buttonLabelled(rowOf(root, "Ala"), "Odbierz: Ala"));
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
     const saved = argsOf(held, "saveGame")[0].game;
     assert.equal(
@@ -3935,17 +3941,17 @@ test("„Odbierz” pays the practice waiting, saves at once, leaves the earning
     assert.deepEqual(saved.loops[1].run.minute, state.loops[1].run.minute);
     assert.equal(saved.awayReport.length, 1);
     assert.equal(
-      byClass(reportSection(root), "away-report-text")[0].textContent,
-      "Ala: 5 min",
+      byClass(rowOf(root, "Ala"), "away-report-text")[0].textContent,
+      "5 min",
     );
     assert.ok(
-      !all(reportSection(root)).some(
+      !all(root).some(
         (element) =>
           element.localName === "button" && element.textContent === "Odbierz",
       ),
       "no button „Odbierz” stands",
     );
-    assert.ok(shown(byClass(reportSection(root), "away-report-line")[0]));
+    assert.ok(shown(byClass(rowOf(root, "Ala"), "away-report-line")[0]));
     await inAct(() => view.dispose());
   });
 });
@@ -4497,7 +4503,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
       tagged(byClass(root, "headquarters")[0], "button")
         .filter(shown)
         .map((button) => button.textContent),
-      ["Załóż"],
+      ["+ postać"],
       "no button of Siedziba leads to the maps or sends",
     );
 
@@ -5164,6 +5170,7 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
 // show, also while a manual map run waits. Catches the lines refreshed only without a map run, a
 // screen that draws its line at the moment it was built, and a tick that saves.
 test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, and saves nothing", async () => {
+  // decision: D-217 "Siedziba shows that line once, in the same words and roles, under the heading „Drużyna” and above the cards of the characters while the team holds a character"
   // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour."
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
@@ -5175,7 +5182,7 @@ test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of
     team: renewing(T, 3_570_000).team,
   });
   for (const [hash, lineClass] of [
-    ["#/", "team-member-resurrection"],
+    ["#/", "team-resurrection"],
     ["#/postac/1", "character-screen-resurrection"],
     ["#/mapy/forest", "maps-who-resurrection"],
   ]) {

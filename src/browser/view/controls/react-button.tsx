@@ -12,7 +12,8 @@ import type { CSSProperties, MouseEventHandler, ReactNode, Ref } from "react";
  * look of a button that sends no form, which stays of the type `button` (D-274); „positive” — the
  * plain button with its text in `positive`, the look of „Odbierz”; „value-cell” — the button of a
  * cell of the body row, which carries a `cell` where the others carry a `text`; „tile” — the square
- * button of a slot of the gear, which carries a `tile` where the others carry a `text` (D-44, D-461).
+ * button of a slot of the gear, which carries a `tile` where the others carry a `text` (D-44, D-461);
+ * „dashed” — the dashed button with its text in the middle, the closed „+ postać” of Siedziba (D-44).
  */
 export type ReactButtonKind =
   | "destructive"
@@ -21,7 +22,8 @@ export type ReactButtonKind =
   | "main"
   | "positive"
   | "value-cell"
-  | "tile";
+  | "tile"
+  | "dashed";
 
 /**
  * The role of the colour of a fill of a bar, which the stylesheet reads as the class of the fill:
@@ -176,7 +178,7 @@ type ReactTileButtonProps = Omit<ReactButtonCommon, "label" | "waitingText"> & {
 export type ReactButtonProps =
   ReactTextButtonProps | ReactCellButtonProps | ReactTileButtonProps;
 
-/** A button of the shared look: plain, secondary, main, selected in its group, a tab of it, a cell of the body row or the tile of a slot of the gear. */
+/** A button of the shared look: plain, secondary, main, selected in its group, a tab of it, dashed, a cell of the body row or the tile of a slot of the gear. */
 export function ReactButton(props: ReactButtonProps) {
   const {
     kind,
