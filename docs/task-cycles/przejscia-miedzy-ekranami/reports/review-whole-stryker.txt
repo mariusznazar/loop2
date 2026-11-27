@@ -1,0 +1,20 @@
+    ~ tests/sim/trip.test.mjs (covered 13)
+  world.test.mjs
+    ✘ tests/sim/world.test.mjs (covered 0)
+[Survived] ArrayDeclaration
+src/browser/sim/skills.ts:243:53
+-     if (!purchaseOpen(state)) return { state, events: [] };
++     if (!purchaseOpen(state)) return { state, events: ["Stryker was here"] };
+Tests ran:
+    tests/sim/skills.test.mjs
+Ran 1.42 tests per mutant on average.
+-----------|------------------|----------|-----------|------------|----------|----------|
+           | % Mutation score |          |           |            |          |          |
+File       |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+-----------|--------|---------|----------|-----------|------------|----------|----------|
+All files  |  94.74 |   94.74 |       18 |         0 |          1 |        0 |        0 |
+ skills.ts |  94.74 |   94.74 |       18 |         0 |          1 |        0 |        0 |
+-----------|--------|---------|----------|-----------|------------|----------|----------|
+[32m16:26:08 (16128) INFO JsonReporter[39m Your report can be found at: file:///.runs/review-whole/head/.runs/stryker/mutation.json
+[32m16:26:08 (16128) INFO MutationTestExecutor[39m Done in 1 minute and 52 seconds.
+exit 0
