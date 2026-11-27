@@ -153,6 +153,7 @@ test("„Załóż” sits at the end of „Żywność i walka”, after „Odsko
       "Uderz — patyk",
       "Kopnij",
       "Odskocz",
+      "Ucisk",
       "Załóż",
     ],
   );

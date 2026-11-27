@@ -1737,6 +1737,7 @@ test("the actions stand in the five groups Ruch, Zbieranie, Ogień, Żywność i
           "Uderz — patyk",
           "Kopnij",
           "Odskocz",
+          "Ucisk",
           "Załóż",
         ],
       ],
