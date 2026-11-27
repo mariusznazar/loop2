@@ -925,7 +925,7 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
 
-- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-332 · D-333 · D-439 · D-440 · D-441 · D-243 · D-133 · D-134 · D-149 · D-188 · D-217 · D-244 · D-274 · D-279 · D-287 · D-281 · D-27 · D-39 · D-40 · D-44 · D-282 · D-396
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-332 · D-333 · D-439 · D-440 · D-441 · D-243 · D-133 · D-134 · D-149 · D-188 · D-217 · D-244 · D-274 · D-279 · D-287 · D-281 · D-27 · D-39 · D-40 · D-43 · D-44 · D-282 · D-396
 - **Invariant:** none
 - **Good:** Wiersz rozwiązanej mapy w katalogu: kółko wypełnione w `positive`, nazwa w `text`, pod nią fakty w `text-secondary`, z „⊘ wnosisz 0” w `warning`; wybrany wiersz wypełniony `highlight`, z tekstem w `text-strong` i belką w `positive` po lewej; trzy widoki jako przyciski w ramkach, wybrany z ramką w `selected`; w nagłówku karty Las — głębiej nazwa w `text-strong`, obok niej wilcza głowa maską w tym samym kolorze i obok nich „otwarta” w `text-secondary`, a po prawej „Wejdź — wybierz postać”; przy Mateczniku po pierwszej ocenie na końcu wiersza „niedźwiedź: 24 ze 120” w `text`; przed wyborem w obszarze karty „Wybierz mapę z listy.” w `text-secondary`; pod postacią wynik oceny z nagłówkiem w `text-strong`, wierszem śmierci w `danger` i wierszem bez rozstrzygnięcia w `warning`, a przy liście „Program:” „szczelny: 12 z 12” w `positive`.
 - **Bad:** Kółko stanu rozwiązanej mapy w `text` albo „rozwiązana” po nazwie wiersza katalogu; wybrany wiersz z samą belką, bez wypełnienia, albo z belką w `selected`; zwijak przygaszony, gdy stoi wybrana mapa albo wpisany tekst; widoki jako podkreślone zakładki; „otwarta” w `positive`; liczba niedźwiedzia przy Mateczniku przed pierwszą oceną albo jako „0”; obszar karty przed wyborem pusty; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie; wiersz śmierci z oceny w `warning` albo wiersz bez rozstrzygnięcia w `danger`; „szczelny: 12 z 12” w `text`; zdanie „Na {k} z 12 ziaren program mapy nie rozwiązuje.” w `text-secondary`; „Oceń na 12 ziarnach” albo „Puść mimo to” w głównym wyglądzie.
@@ -1006,7 +1006,9 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
   `--font-size-map-card-title`, odczytany z jej strony, i waga tekstu — obok niej znacznik stanu w rozmiarze
   podpisu — „rozwiązana” w `positive` (D-134) albo „otwarta” w `text-secondary` —
   a przy mapie otwieranej przez inną mapę po „ · ” „odsłania ją {mapa}” w
-  `text-secondary`; obok nazwy i znacznika stoi ikona każdego stworzenia, które napada na mapie, rysowana maską w kolorze tekstu obok, czyli w `text-strong` nazwy, a mapa bez napastnika ikony nie ma (D-327, D-43); po prawej stronie nagłówka zwykły wspólny przycisk „Wejdź —
+  `text-secondary`; znacznik, „ · ” i „odsłania ją {mapa}” przechodzą razem do
+  linii pod nazwą, gdy obok niej się nie mieszczą, na przykład w wąskim
+  nagłówku układu telefonu (D-327); obok nazwy i znacznika stoi ikona każdego stworzenia, które napada na mapie, rysowana maską w kolorze tekstu obok, czyli w `text-strong` nazwy, a mapa bez napastnika ikony nie ma (D-327, D-43); po prawej stronie nagłówka zwykły wspólny przycisk „Wejdź —
   wybierz postać” (D-44), który przenosi fokus na nagłówek „Kto idzie”, a
   przeglądarka pokazuje go na ekranie. Pod nagłówkiem jedno krótkie zdanie tego,
   czego mapa żąda, pisane ręcznie w danych mapy, jak w starej grze, w `text`
