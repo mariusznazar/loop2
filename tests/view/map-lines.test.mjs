@@ -63,8 +63,8 @@ test("the condition sentence is the solving text of the map's data alone, since 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
-  // decision: D-149 "When does the game offer a map opened by another map?"
-  // decision: D-466 "Where does a new map stand in the order of the game maps' data?"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
+  // decision: D-466 "A new map stands in the order of the game maps' data right after the last map that the map opening it already opens"
   assert.deepEqual(sendMaps(), [
     "forestEdge",
     "forest",

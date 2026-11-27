@@ -569,7 +569,7 @@ test("the card of Las — głębiej names its opener, asks for the attacks to be
 // an icon given to a map that has no attacker.
 test("the heading of the card of Las — głębiej holds the wolf's icon between the name and the tag in the colour of the name, and the headings of Skraj lasu and of Las hold none", async () => {
   // decision: D-327 "Beside the name and the tag of its state the heading holds the small icon of each creature that attacks on the map, and a map without an attacker has none there"
-  // decision: D-43 "which is drawn as a mask and takes its colour from the text beside it"
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async (page) => {
     const style = page.document.createElement("style");
     style.textContent = gameStylesheetText();
