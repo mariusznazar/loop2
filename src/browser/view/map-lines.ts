@@ -98,9 +98,7 @@ export function cardHeading(map: MapDef, solved: boolean): CardHeading {
     name: map.name,
     state: { text: solved ? "rozwiązana" : "otwarta", solved },
     openedBy: opener,
-    icons: (map.attackers ?? []).map(
-      (attacker) => CREATURES[attacker.id].icon,
-    ),
+    icons: (map.attackers ?? []).map((attacker) => CREATURES[attacker.id].icon),
   };
 }
 
