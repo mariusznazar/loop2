@@ -1,0 +1,9 @@
+# Handoff — review of the fix (the same reviewer, resumed)
+
+The person who started this cycle delegated every intermediate choice to the orchestrator; nothing here is that person's approval. Your first handoff (`reports/review-whole-handoff.md`) holds for where you work and what you leave running: read-only from the worktree `the worktree of the task`, nothing in the main checkout `the main checkout of the repository`, no shell, server or browser left running; working copies only in `.runs/review-fix-1/`, removed before you return.
+
+- Stage: the review of **the fix** of the Minor finding of your review of the whole change, with `review-change` and `.the-way/task-cycle/review/fix.md` (read it when the method says so).
+- Range: from the reviewed head `ba1ccf8d5a1835123b62b20ddf7802173e7fa10d` to the fix's head `b15ef8133d105bc3665913c23ff4e5a41fb62a6c` (one commit). Compute `git diff ba1ccf8d5a1835123b62b20ddf7802173e7fa10d..b15ef8133d105bc3665913c23ff4e5a41fb62a6c` yourself and confirm `git rev-parse HEAD`.
+- The findings the fix answers: `reports/review-whole-findings.md` (M2 word for word from your report). The fix report, a set of claims to verify: `reports/author-fix-1-report.md`. A new Critical or Important finding in the fix fails this review; a Minor finding does not block.
+- No working copy of the whole product is needed unless a check calls for one; run the focused test the fix touches if you want it, with its command and exit code. Not the full gate.
+- Your report: `.runs/task-cycles/wyglad-ekranu-wiedzy/reports/review-fix-1-report.md`, first line `PASS <sha>` or `FAIL <sha>`, with the checks (commands and exit codes), **Unread material**, **Searches not found or unclear**, and the working copies made and removed. Return the first line, the path and a one-line result.
