@@ -48,6 +48,14 @@ export function treeRow(
   };
 }
 
+/**
+ * A number of a branch's preview as the player reads it: at most six decimals, with a decimal comma
+ * and no trailing zeros, so the computer's rounding (0.15000000000000002) never shows.
+ */
+function previewNumber(value: number): string {
+  return String(Number(value.toFixed(6))).replace(".", ",");
+}
+
 /** The branch's current rank and, while another is available, its preview and price. Pure. */
 export function branchText(character: Character, id: BranchId): string {
   const branch: BranchDef = BRANCHES[id];
@@ -57,7 +65,7 @@ export function branchText(character: Character, id: BranchId): string {
   if (branch.preview) {
     const preview = branch.preview;
     const value = (level: number) =>
-      `${Math.max(preview.minimum ?? -Infinity, preview.base + preview.step * level)} ${preview.unit}`;
+      `${previewNumber(Math.max(preview.minimum ?? -Infinity, preview.base + preview.step * level))} ${preview.unit}`;
     text += ` · teraz ${value(rank)}`;
     if (cost !== undefined) text += ` → po kupnie ${value(rank + 1)}`;
   }
