@@ -108,7 +108,7 @@ test("new characters own independent zero practice and empty ranks, with level o
 test("all cumulative thresholds of D-379 grant exactly one point and level each, then stop", () => {
   // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
   // decision: D-191 "Each level gives points that buy ranks of branches of its own tree, at prices that differ from branch to branch, and each next level needs more practice than the one before"
-  // decision: D-379 "The eight character skills give a level and a point at each of these amounts of practice"
+  // decision: D-379 "The nine character skills give a level and a point at each of these amounts of practice"
   const expected = {
     smallItemGathering: [30, 80, 160, 280, 450],
     campfireCrafting: [20, 55, 110, 190],

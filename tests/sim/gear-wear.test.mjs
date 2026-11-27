@@ -462,7 +462,7 @@ test("a rule with „Załóż” lies in the repertoire only where the Understan
 });
 
 test("„Załóż” ends the group „Żywność i walka” of the pick", () => {
-  // decision: D-290 "The pick of the rule panel sets the actions in five named groups: Ruch — „Eksploruj”, „Wędruj”, „Idź”, „Idź — ognisko”; Zbieranie — „Zbierz”, „Obchód”; Ogień — „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zasil — ognisko”; Żywność i walka — „Zjedz — jagoda”, „Opatrz”, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Załóż”; and Wytwarzanie — „Wytwórz”."
+  // decision: D-290 "The pick of the rule panel sets the actions in five named groups"
   const group = Object.keys(ACTIONS).filter(
     (id) => ACTIONS[id].group === "foodAndCombat",
   );

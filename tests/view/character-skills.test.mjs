@@ -21,7 +21,7 @@ const character = (practice = 0, ranks = {}) => ({
 // numbers name, a bar that is not full after the last threshold, and points shown at zero.
 test("a tree's row gives its level, its practice against the next threshold with the bar's share, and its points only where they wait; after the last threshold a full bar and „najwyższy”", () => {
   // decision: D-199 "Each known tree stands as a row in columns: its name, „poziom {p}”, a bar of its practice up to its next threshold with „{wprawa} / {próg}”, or after its last threshold a full bar with „najwyższy”, and „{k} pkt” only where it has points to spend"
-  // decision: D-379 "The eight character skills give a level and a point at each of these amounts of practice"
+  // decision: D-379 "The nine character skills give a level and a point at each of these amounts of practice"
   assert.deepEqual(treeRow(character(), "exploration", {}), {
     name: "Eksploracja",
     level: "poziom 1",
