@@ -3392,6 +3392,16 @@ Object.assign(CRAFTED, {
     delete fought(document).exchanges[3].characterAction.refill,
   "a turn of „Ucisk” with a refill mark as text": (document) =>
     (fought(document).exchanges[4].characterAction.refill = "true"),
+  // A turn of „Ucisk” is carried out by a character that bought the branch, so a combat record of a
+  // map run whose character holds no rank of it, however otherwise whole, is refused.
+  "turns of „Ucisk” in the combat record of a map run whose character holds no rank of „Ucisk”":
+    (document) =>
+      (document.game.run.character.skills.tending = {
+        practice: 110,
+        ranks: { strongerRoll: 1 },
+      }),
+  "turns of „Ucisk” in the combat record of a map run whose character holds no skill of „Opatrywanie małych ran”":
+    (document) => delete document.game.run.character.skills.tending,
   // „Ucisk” is an action of combat only: no activity of a map run is one, and no game minute counts to it.
   "„Ucisk” as the activity going on of the map run": (document) =>
     (document.game.run.current.activity.action = {
@@ -3724,11 +3734,16 @@ test("the branches of „Opatrywanie małych ran” load at their edges: „Ucis
         practice: 60,
         ranks: { pressure: 1 },
       }),
-    "the last rank of „Mocniejszy zwój” with all four points": (document) =>
-      (ala(document).skills.tending = {
+    "the last rank of „Mocniejszy zwój” with all four points": (document) => {
+      // The map run's character keeps the skills it started with, „Ucisk” among them, as its combat record needs.
+      document.game.run.character.skills = structuredClone(
+        document.game.run.character.skills,
+      );
+      ala(document).skills.tending = {
         practice: 110,
         ranks: { strongerRoll: 3 },
-      }),
+      };
+    },
     "the map run's character holding the skill as it stood at the start of the run":
       (document) =>
         (document.game.run.character.skills = {
