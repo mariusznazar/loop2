@@ -7689,9 +7689,14 @@ tile, is open to every character, and an archetype never filters items.
   repertoire every action whose pair of verb and target it grows, and only those; with no
   predisposition the actions no character skill grows, the walks and „Wędruj”, staying open,
   „Wytwórz” and „Opatrz” with the bandage as the target, which „Opatrywanie małych ran” grows,
-  leaving the repertoire with that skill, and conditions and items never filtered; an action opened
-  by a branch open only to the character that bought the branch, in the program editor and in the
-  simulation.
+  leaving the repertoire with that skill, and conditions and items never filtered; a second item
+  with a recipe, laid in a test, keeping the kind „Wytwórz” open for a character without that skill
+  while the rule „Wytwórz — Opatrunek” lies outside the repertoire, is passed over by the
+  simulation and reads „jeszcze nieodkryte: Wytwórz”, and „Wytwórz” with the second item stays
+  inside it, whether no skill grows its pair or another skill among the predispositions does, and
+  with that skill and without the one of the second item the bandage inside and the second item
+  outside; an action opened by a branch open only to the character that bought the branch, in the
+  program editor and in the simulation.
 - **Origin:** none
 
 *Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
