@@ -82,7 +82,7 @@ const lineAt = (spent, nextMs) =>
   resurrectionLine(teamWithUses(spent, nextMs), NOW);
 
 test("a full stock reads its count from the data, with no time and out of danger", () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full"
   assert.deepEqual(lineAt(0, null), {
     text: "Wskrzeszenie drużyny: użycia 3 z 3",
     danger: false,
@@ -90,7 +90,7 @@ test("a full stock reads its count from the data, with no time and out of danger
 });
 
 test("a new game's team holds its full stock with no moment, and its line is the full stock", () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full"
   assert.deepEqual(resurrectionLine(newGame().team, NOW), {
     text: "Wskrzeszenie drużyny: użycia 3 z 3",
     danger: false,
@@ -98,7 +98,7 @@ test("a new game's team holds its full stock with no moment, and its line is the
 });
 
 test("a part of the stock reads the uses left and the time to the next return, in text-secondary and out of danger", () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left"
   assert.deepEqual(lineAt(2, NOW + 3 * HOUR + 10 * MINUTE), {
     text: "Wskrzeszenie drużyny: użycia 1 z 3, następne za 3 godz. 10 min czasu realnego",
     danger: false,
@@ -106,7 +106,7 @@ test("a part of the stock reads the uses left and the time to the next return, i
 });
 
 test("no use left reads 0 of the count, the time to the next return and the warning, in danger", () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses"
   assert.deepEqual(lineAt(3, NOW + 3 * HOUR + 10 * MINUTE), {
     text: `Wskrzeszenie drużyny: użycia 0 z 3, następne za 3 godz. 10 min czasu realnego${DANGER}`,
     danger: true,
@@ -116,7 +116,7 @@ test("no use left reads 0 of the count, the time to the next return and the warn
 // The three examples of D-217, written out: the minutes go up to a whole minute before the split, so a
 // time shown is never shorter than the real one.
 test("7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min", () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour"
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
   assert.equal(
     lineAt(1, NOW + 7 * HOUR + 59 * MINUTE + 30 * SECOND).text,
@@ -150,7 +150,7 @@ test("hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61
 
 test("below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min", () => {
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses, the count {c} coming from the balance data and the time reading „następne za {m} min czasu realnego” below one hour"
   assert.equal(
     lineAt(1, NOW + 1).text,
     "Wskrzeszenie drużyny: użycia 2 z 3, następne za 1 min czasu realnego",

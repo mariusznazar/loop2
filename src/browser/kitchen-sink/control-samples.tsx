@@ -378,6 +378,10 @@ const CONTROLS: readonly (readonly [string, (state: State) => ReactNode])[] = [
     buttonSample("Odbierz", { kind: "positive" }, NOT_APPLYING.buttonLoading),
   ],
   [
+    "Przycisk przerywany",
+    buttonSample("+ postać", { kind: "dashed" }, NOT_APPLYING.buttonLoading),
+  ],
+  [
     "Przycisk wybrany w grupie",
     buttonSample("Wybrany", { selected: true }, NOT_APPLYING.buttonLoading),
   ],

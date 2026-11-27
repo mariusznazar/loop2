@@ -1,4 +1,5 @@
-// The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-184, D-51, D-330, D-389) on
+// The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-447, D-446, D-280, D-39, D-44,
+// D-184, D-51, D-330, D-389) on
 // jsdom through tests/view/page-document.mjs (D-264): which elements the screen builds, what it
 // shows of the game state and of the clock's moment, what its acts hand the page, and that
 // nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
@@ -12,6 +13,7 @@ import {
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createHeadquarters } from "../../dist/browser/view/headquarters.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 
 // --- the page ------------------------------------------------------------------------------
 
@@ -20,6 +22,7 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const WARNING = " — śmierć zabierze wprawę i wykupione stopnie";
 const ARCHETYPE = ARCHETYPES[CREATED_ARCHETYPE].name;
+const ARCHETYPE_ICON = `url("/icons/${ARCHETYPES[CREATED_ARCHETYPE].icon}.svg")`;
 
 /** Ala (1), Ola (2) and Ela (3), in the order they were created, from the new game. */
 function teamOf(count = 3) {
@@ -123,6 +126,8 @@ const rowOf = (root, name) =>
   all(root, ".team-member").find(
     (row) => text(row, ".team-member-name") === name,
   );
+/** The closed tile „+ postać” at the end of the cards. */
+const addTile = (root) => buttonNamed(root, "+ postać");
 /** The section that holds the heading `heading` among its children. */
 const sectionOf = (root, heading) =>
   all(root, "section").find(
@@ -130,6 +135,31 @@ const sectionOf = (root, heading) =>
       [...section.children].find((child) => child.localName === "h3")
         ?.textContent === heading,
   );
+
+/** The condition of the blocks of the phone layout on a device whose pointer cannot hover (D-396). */
+const TOUCH = "(width < 1280px) and (hover: none)";
+
+/**
+ * The last value the plain rules of the stylesheet declare for `element` as the first of `properties`
+ * that a rule holds, a longhand before its shorthand, read from the rules themselves, or null where no
+ * rule declares one: jsdom drops a declaration that holds `var()` from its computed style where it
+ * stands in a shorthand, such as a frame. Of two rules that match, the later one wins here; blocks of
+ * `@media` are left out, as jsdom leaves them out.
+ */
+function lastDeclared(document, element, ...properties) {
+  let last = null;
+  for (const rule of document.styleSheets[0].cssRules) {
+    if (rule.selectorText === undefined || !element.matches(rule.selectorText))
+      continue;
+    for (const property of properties) {
+      const value = rule.style.getPropertyValue(property);
+      if (value === "") continue;
+      last = value;
+      break;
+    }
+  }
+  return last;
+}
 
 // --- the sections ----------------------------------------------------------------------------
 
@@ -185,10 +215,13 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
   });
 });
 
-// Catches the order of the team changed to the name's or the last created's (D-54), a name that is no
-// link or leads elsewhere than to the character's screen, and a generation label at generation 1.
-test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
+// Catches the order of the team changed to the name's or the last created's (D-54), a card whose link
+// is not its name or leads elsewhere than to the character's screen, a card with a second link, a
+// generation label at generation 1, and the archetype's icon missing, after the name or in another
+// colour than the name's (D-446).
+test("each character stands in a card in the order of creation, its name the one link of the card to its screen Postać, with the archetype's icon before it, its generation from 2 up and its archetype", async () => {
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character"
+  // decision: D-446 "The same icon stands before the character's name on its card on Siedziba, drawn as a mask in the colour of that name."
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
@@ -212,14 +245,30 @@ test("each character stands in the order of creation with its name as a link to 
       rows.map((row) => text(row, ".team-member-generation") ?? null),
       [null, "pokolenie 2", null],
     );
-    for (const row of rows)
+    for (const row of rows) {
       assert.equal(text(row, ".team-member-archetype"), ARCHETYPE);
+      assert.equal(all(row, "a").length, 1, "the name is the card's one link");
+      const head = row.querySelector(".team-member-head");
+      const icon = head.firstElementChild;
+      assert.ok(icon.classList.contains("icon-mask"));
+      assert.equal(icon.style.getPropertyValue("--icon"), ARCHETYPE_ICON);
+      assert.equal(icon.getAttribute("aria-hidden"), "true");
+      assert.equal(
+        icon.nextElementSibling,
+        row.querySelector(".team-member-name"),
+      );
+    }
+    assert.deepEqual(
+      rows.map((row) => text(row, ".team-member-facts")),
+      [ARCHETYPE, `pokolenie 2 · ${ARCHETYPE}`, ARCHETYPE],
+    );
   });
 });
 
-// Catches the empty team drawn as an empty list, with no sentence, or with the sentence of the screen
-// Mapy (D-51); the creation of the first character must stand beside it.
-test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers the creation of a character", async () => {
+// Catches the empty team drawn with no sentence, or with the sentence of the screen Mapy (D-51); the
+// creation of the first character must stand beside it, its field open from the start, with no
+// „Anuluj” and no closing by Escape, and with no resurrection line, which speaks of a team's characters.
+test("an empty team says „Drużyna nie ma jeszcze postaci.” beside the tile „+ postać” open on the field of a name, which nothing closes", async () => {
   // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   await withPage(async (page) => {
     await mount(page, propsOf(newGame()));
@@ -228,9 +277,17 @@ test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers
       "Drużyna nie ma jeszcze postaci.",
     );
     assert.equal(all(page.root, ".team-member").length, 0);
-    assert.equal(page.root.querySelector(".team-list"), null);
-    assert.ok(nameField(page.root), "the field of the first name stands");
+    assert.equal(page.root.querySelector(".team-resurrection"), null);
+    assert.equal(addTile(page.root), undefined, "no closed tile");
+    const field = nameField(page.root);
+    assert.ok(field, "the field of the first name stands");
+    assert.ok(field.closest(".team-list .team-add.open"));
     assert.ok(buttonNamed(page.root, "Załóż"));
+    assert.equal(buttonNamed(page.root, "Anuluj"), undefined);
+    await typeInto(field, "Ol");
+    await pressKey(field, "Escape");
+    assert.equal(nameField(page.root), field, "Escape leaves the field");
+    assert.equal(field.value, "Ol");
   });
 });
 
@@ -262,15 +319,33 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
 
 // --- time, earning loops -----------------------------------------------------------------------------
 
+// Catches the resurrection line drawn in each card again, or anywhere but under the heading „Drużyna”
+// and above the cards (D-217).
+test("the team's resurrection line stands once, under „Drużyna” and above the cards, and in no card", async () => {
+  // decision: D-217 "Siedziba shows that line once, in the same words and roles, under the heading „Drużyna” and above the cards of the characters while the team holds a character, and the card of a character on Siedziba holds none of it."
+  await withPage(async (page) => {
+    await mount(page, propsOf(teamOf(3)));
+    const lines = all(page.root, ".team-resurrection");
+    assert.equal(lines.length, 1);
+    const [line] = lines;
+    assert.equal(line.textContent, "Wskrzeszenie drużyny: użycia 3 z 3");
+    assert.equal(line.previousElementSibling.textContent, "Drużyna");
+    assert.ok(line.nextElementSibling.classList.contains("team-list"));
+    for (const card of all(page.root, ".team-member"))
+      assert.equal(card.textContent.includes("Wskrzeszenie"), false);
+  });
+});
+
 // Catches a resurrection line drawn once and left, a line that loses `danger` late or early, and a
 // line rebuilt as a new element at every reading, which would drop what stands on it (D-217).
 test("the resurrection line follows the clock's moment in the very same element, in danger at zero uses", async () => {
-  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses"
+  // decision: D-217 "The screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny: użycia {u} z {c}” in `text-secondary` while the stock of uses is full, „Wskrzeszenie drużyny: użycia {u} z {c}, następne za {g} godz. {m} min czasu realnego” in `text-secondary` while the stock is not full and a use is left, and „Wskrzeszenie drużyny: użycia 0 z {c}, następne za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger` at zero uses"
+  // decision: D-217 "Siedziba shows that line once, in the same words and roles, under the heading „Drużyna” and above the cards of the characters while the team holds a character"
   await withPage(async (page) => {
     const nextAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf(1), 3, nextAt);
     const { screen } = await mount(page, propsOf(state));
-    const [line] = all(page.root, ".team-member-resurrection");
+    const [line] = all(page.root, ".team-resurrection");
     assert.equal(
       line.textContent,
       `Wskrzeszenie drużyny: użycia 0 z 3, następne za 8 godz. 0 min czasu realnego${WARNING}`,
@@ -290,14 +365,14 @@ test("the resurrection line follows the clock's moment in the very same element,
       "Wskrzeszenie drużyny: użycia 1 z 3, następne za 4 godz. 0 min czasu realnego",
     );
     assert.equal(line.classList.contains("danger"), false);
-    assert.equal(all(page.root, ".team-member-resurrection")[0], line);
+    assert.equal(all(page.root, ".team-resurrection")[0], line);
   });
 });
 
 // Catches an earning loop line and „Zatrzymaj” drawn at a character that has no earning loop, a button that does not
 // reach the page's `stop` with the character's number, and the line of a stop missing after it (D-244,
 // D-245).
-test("a running earning loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped earning loop shows its line instead", async () => {
+test("a running earning loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped earning loop shows „W obozie” with its line under it", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
@@ -324,14 +399,154 @@ test("a running earning loop shows its line with „Zatrzymaj”, which asks the
     const ola = rowOf(page.root, "Ola");
     assert.equal(ola.querySelector(".team-member-loop"), null);
     assert.equal(buttonLabelled(ola, "Zatrzymaj: Ola"), undefined);
-    assert.equal(
-      text(ola, ".team-member-stopped"),
-      "Pętla zatrzymana · wprawa: Jedzenie +4",
+    assert.deepEqual(
+      all(ola.querySelector(".team-member-status"), "p").map(
+        (line) => `${line.className}: ${line.textContent}`,
+      ),
+      [
+        "team-member-state: W obozie",
+        "team-member-stopped: Pętla zatrzymana · wprawa: Jedzenie +4",
+      ],
     );
     assert.equal(
       rowOf(page.root, "Ala").querySelector(".team-member-stopped"),
       null,
     );
+  });
+});
+
+// Catches a card that says nothing of a character in the camp or in a manual map run, a line other
+// than the one of the frame of the screen Postać, and a card not drawn anew when the minute of the
+// map run, its death or its completion changes while nothing else does (D-447).
+test("each card shows what its character does: „W obozie”, „Przejście: {mapa} · minuta {m}” with its end, drawn anew at each minute, death and completion", async () => {
+  // decision: D-447 "The card of a character on Siedziba shows that same line, always, under the character's name and archetype: „W obozie”, „Przejście: {mapa} · minuta {m}” with its ending, or the line of its earning loop with „Zatrzymaj”, and after a stop of its earning loop „W obozie” with the line of the stop under it (D-245)."
+  await withPage(async (page) => {
+    const state = teamOf(2);
+    const { screen } = await mount(page, propsOf(state));
+    const stateOf = (name) =>
+      text(rowOf(page.root, name), ".team-member-state");
+    assert.equal(stateOf("Ala"), "W obozie");
+    assert.equal(stateOf("Ola"), "W obozie");
+
+    const entered = sentInto(state, 2);
+    await inAct(() => screen.update(propsOf(entered)));
+    assert.equal(stateOf("Ala"), "W obozie");
+    assert.equal(stateOf("Ola"), "Przejście: Las · minuta 0");
+
+    const at = (run) =>
+      propsOf({ ...entered, run: { ...entered.run, ...run } });
+    // Nothing but the run's minute changes: the card is drawn anew all the same.
+    await inAct(() => screen.update(at({ minute: 17 })));
+    assert.equal(stateOf("Ola"), "Przejście: Las · minuta 17");
+    await inAct(() =>
+      screen.update(at({ minute: 17, death: { minute: 17, cause: "cold" } })),
+    );
+    assert.equal(stateOf("Ola"), "Przejście: Las · minuta 17 · postać zginęła");
+    await inAct(() =>
+      screen.update(at({ minute: 30, completion: { minute: 30 } })),
+    );
+    assert.equal(
+      stateOf("Ola"),
+      "Przejście: Las · minuta 30 · mapa rozwiązana",
+    );
+  });
+});
+
+// Catches the green frame and the dot left on a card whose character is in no earning loop, missing
+// on one that is, or drawn in another role than `positive` (D-39); the card at rest keeps its frame in
+// `control-border` and no background of its own, so the block's `panel` shows (styleguide rule "The
+// section „Drużyna” of Siedziba").
+test("a card whose character's earning loop goes on has a frame in positive and the dot „●” beside its name; another card has its frame in control-border and no dot", async () => {
+  // decision: D-39 "`positive` also stands as the frame of the card of a character on Siedziba, and as the dot „●” beside its name, while the earning loop of that character goes on; that frame is no frame at a text in the sense of D-279 and takes no colour from the text beside it."
+  // decision: D-42 "`control-border`, `focus`, `character` and `window-frame`, the frame of the window of a rule or of a rule group, have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden`, the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`, and the frame of the card of a character in an earning loop on Siedziba, in `positive`, against `panel` and `highlight`, the colours it touches"
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText().replaceAll(
+      ":hover",
+      ".is-hovered",
+    );
+    page.document.head.append(style);
+    const { getComputedStyle } = page.document.defaultView;
+    await mount(page, propsOf({ ...teamOf(2), loops: { 2: LOOP } }));
+    const declared = (element, ...properties) =>
+      lastDeclared(page.document, element, ...properties);
+    const ala = rowOf(page.root, "Ala");
+    const ola = rowOf(page.root, "Ola");
+    assert.equal(ala.querySelector(".team-member-dot"), null);
+    const dot = ola.querySelector(".team-member-dot");
+    assert.equal(dot.textContent, "●");
+    assert.equal(dot.getAttribute("aria-hidden"), "true");
+    assert.equal(
+      dot.previousElementSibling,
+      ola.querySelector(".team-member-name"),
+    );
+    assert.equal(getComputedStyle(dot).color, "var(--positive)");
+    assert.equal(declared(ola, "border-color", "border"), "var(--positive)");
+    assert.equal(
+      declared(ala, "border-color", "border"),
+      "var(--frame-width) solid var(--control-border)",
+    );
+    for (const card of [ala, ola])
+      assert.equal(
+        declared(card, "background-color", "background"),
+        null,
+        "no background of its own",
+      );
+  });
+});
+
+// Catches a card that takes no background under the pointer over its link, or one that keeps it on a
+// device whose pointer cannot hover, where a tap would leave it lit (D-40; styleguide rule "The section
+// „Drużyna” of Siedziba").
+test("under the pointer over its link a card takes the background highlight, and on a device that cannot hover it keeps none", async () => {
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character"
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText().replaceAll(
+      ":hover",
+      ".is-hovered",
+    );
+    page.document.head.append(style);
+    await mount(page, propsOf(teamOf(1)));
+    const card = rowOf(page.root, "Ala");
+    card.querySelector(".team-member-name").classList.add("is-hovered");
+    assert.equal(
+      lastDeclared(page.document, card, "background-color", "background"),
+      "var(--highlight)",
+    );
+    const touch = [...page.document.styleSheets[0].cssRules]
+      .filter((rule) => rule.media?.mediaText === TOUCH)
+      .flatMap((rule) => [...rule.cssRules])
+      .filter((rule) => card.matches(rule.selectorText))
+      .map((rule) => rule.style.getPropertyValue("background"));
+    assert.deepEqual(touch, ["transparent"]);
+  });
+});
+
+// Catches the card's link left the size of the name, so a touch on the card beside the name would open
+// nothing, and its buttons under the link's area, so a touch on „Zatrzymaj” would open the screen
+// Postać instead (D-280): the stylesheet stretches the name's area over the card and lifts the buttons
+// above it. jsdom lays nothing out, so the case reads the rules that do it.
+test("the stylesheet stretches the area of the name's link over its card and sets the card's buttons above it", async () => {
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item; „Zatrzymaj” and „Odbierz” on that card are buttons of their own and open no screen."
+  await withPage(async (page) => {
+    const style = page.document.createElement("style");
+    style.textContent = gameStylesheetText();
+    page.document.head.append(style);
+    await mount(page, propsOf({ ...teamOf(1), loops: { 1: LOOP } }));
+    const card = rowOf(page.root, "Ala");
+    const rules = [...page.document.styleSheets[0].cssRules];
+    const stretch = rules.find(
+      (rule) => rule.selectorText === ".team-member-name::after",
+    );
+    assert.equal(stretch.style.getPropertyValue("position"), "absolute");
+    assert.equal(stretch.style.getPropertyValue("inset"), "0px");
+    assert.equal(lastDeclared(page.document, card, "position"), "relative");
+    const name = card.querySelector(".team-member-name");
+    assert.equal(lastDeclared(page.document, name, "position"), null);
+    const stop = buttonLabelled(card, "Zatrzymaj: Ala");
+    assert.equal(lastDeclared(page.document, stop, "position"), "relative");
+    assert.equal(lastDeclared(page.document, stop, "z-index"), "1");
   });
 });
 
@@ -393,41 +608,64 @@ const reported = () => ({
   ],
 });
 
-// Catches the section drawn below „Drużyna”, the stopped line not first, `danger` missing or on the
-// wrong line, and the title of a return missing (D-246).
-test("a report stands above „Drużyna”, titled „Gdy cię nie było”, the earning loop that stopped first and in danger", async () => {
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
+/** The texts of the lines of the report in the card of `name`, with whether each stands in danger. */
+const reportIn = (root, name) =>
+  all(rowOf(root, name), ".away-report-line").map((line) => [
+    line.textContent,
+    line.classList.contains("danger"),
+  ]);
+
+// Catches the lines drawn above „Drużyna” or in another character's card, with the name before them,
+// a line not under the character's own lines, `danger` missing or on the wrong line, and the row above
+// „Drużyna” missing its sentence or holding a title (D-246).
+test("each line of a report stands in its character's card, under its own lines, with no name, the stopped one in danger; above „Drużyna” stands the sentence that counts them", async () => {
+  // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and the others in `text`, „{m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, a button that opens no screen, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "While the report holds a line, one row above „Drużyna” holds a sentence that counts its lines, each line of an earning loop a death stopped as a loop that stopped and every other line as a loop that went on, in `danger` where a loop stopped and in `positive` otherwise, then „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij” that closes the whole report."
   await withPage(async (page) => {
     await mount(page, propsOf(reported()));
-    const section = page.root.querySelector(".away-report");
-    assert.equal(section.hidden, false);
-    assert.equal(section.children[0].textContent, "Gdy cię nie było");
-    const lines = all(section, ".away-report-line");
-    assert.deepEqual(
-      lines.map((line) => line.textContent),
+    assert.deepEqual(reportIn(page.root, "Ala"), [
+      ["5 min · skrzynka: patyk +3", false],
+    ]);
+    assert.deepEqual(reportIn(page.root, "Ola"), [
       [
-        "Ola: pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
-        "Ala: 5 min · skrzynka: patyk +3",
+        "pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+        true,
       ],
+    ]);
+    const ola = rowOf(page.root, "Ola");
+    assert.equal(
+      ola.lastElementChild,
+      ola.querySelector(".team-member-report"),
+      "the report stands last in the card, under the card's own lines",
     );
+
+    const row = page.root.querySelector(".away-report");
+    assert.equal(row.hidden, false);
+    assert.equal(row.querySelector("h3"), null, "no title");
+    const sentence = row.querySelector(".away-report-summary");
+    assert.equal(
+      sentence.textContent,
+      "Bez ciebie 1 pętla stanęła, 1 chodziła bez przeszkód.",
+    );
+    assert.ok(sentence.classList.contains("danger"));
+    assert.equal(row.querySelectorAll(".away-report-line").length, 0);
+    assert.equal(all(row, ".away-report-full").length, 0);
     assert.deepEqual(
-      lines.map((line) => line.classList.contains("danger")),
-      [true, false],
+      all(row, "button").map((button) => button.textContent),
+      ["Zamknij"],
     );
     const sections = all(page.root, ".headquarters > section");
-    assert.equal(sections[0], section);
+    assert.equal(sections[0], row);
     assert.equal(sections[1].children[0].textContent, "Drużyna");
-    assert.equal(all(section, ".away-report-full").length, 0);
   });
 });
 
-// Catches the title chosen by the presence of a stop rather than by where it happened (the stop in
-// the open game gives „Pętle, które stanęły”), and a full chest that is not said (D-246).
-test("only stops in the open game give the title „Pętle, które stanęły”, and a full chest adds „Skrzynka jest pełna.”", async () => {
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
-  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
-  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, the title reading „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a manual map run reads the report on reaching Siedziba"
+// Catches „Bez ciebie” said of a stop in the open game, a sentence in danger with no loop that stopped,
+// and a full chest that is not said once, in the row after the sentence (D-246).
+test("a stop in the open game opens the sentence with its count, a report with no stop stands in positive, and a full chest adds „Skrzynka jest pełna.” after the sentence", async () => {
+  // decision: D-246 "The sentence reads „Bez ciebie {s} pętla stanęła, {k} chodziła bez przeszkód.” with each count declined — „1 pętla stanęła”, „2 pętle stanęły”, „5 pętli stanęło”, then „1 chodziła”, „2 chodziły”, „5 chodziło” — and a part of zero left out, the part of the loops that went on then reading „{k} pętla chodziła bez przeszkód”, „2 pętle chodziły”, „5 pętli chodziło”; „Bez ciebie” opens it only where every line is a line of a return, and otherwise the sentence opens with its first count."
+  // decision: D-246 "An earning loop a death stops in the open game enters the same report, as the one kind of line that is no line of a return, „pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”"
+  // decision: D-246 "While the report holds a line, one row above „Drużyna” holds a sentence that counts its lines, each line of an earning loop a death stopped as a loop that stopped and every other line as a loop that went on, in `danger` where a loop stopped and in `positive` otherwise, then „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij” that closes the whole report."
   await withPage(async (page) => {
     const state = withChest(
       {
@@ -436,22 +674,48 @@ test("only stops in the open game give the title „Pętle, które stanęły”,
       },
       { stick: 60 },
     );
-    await mount(page, propsOf(state));
-    const section = page.root.querySelector(".away-report");
-    assert.equal(section.children[0].textContent, "Pętle, które stanęły");
-    assert.equal(
-      text(section, ".away-report-line"),
-      "Ola: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+    const { screen } = await mount(page, propsOf(state));
+    const row = page.root.querySelector(".away-report");
+    const sentence = () => row.querySelector(".away-report-summary");
+    assert.equal(sentence().textContent, "1 pętla stanęła.");
+    assert.ok(sentence().classList.contains("danger"));
+    assert.deepEqual(reportIn(page.root, "Ola"), [
+      [
+        "pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+        true,
+      ],
+    ]);
+    const full = all(page.root, ".away-report-full");
+    assert.equal(full.length, 1, "said once");
+    assert.equal(full[0].textContent, "Skrzynka jest pełna.");
+    assert.equal(full[0].previousElementSibling, sentence());
+
+    await inAct(() =>
+      screen.update(
+        propsOf({
+          ...teamOf(2),
+          awayReport: [
+            reportLine(1, { minutes: 4 }),
+            reportLine(2, { minutes: 4 }),
+          ],
+        }),
+      ),
     );
-    assert.equal(text(section, ".away-report-full"), "Skrzynka jest pełna.");
+    assert.equal(
+      sentence().textContent,
+      "Bez ciebie 2 pętle chodziły bez przeszkód.",
+    );
+    assert.ok(sentence().classList.contains("positive"));
+    assert.equal(sentence().classList.contains("danger"), false);
+    assert.equal(all(page.root, ".away-report-full").length, 0);
   });
 });
 
-// Catches a „Zamknij” that does not reach the page's `closeReport`, a section that stays once the
-// page has emptied the report, and focus left on the body once the button is gone, which the next
-// key press would lose (D-246).
-test("„Zamknij” asks the page to close the report; once the report is empty the section goes and the focus stands on „Drużyna”", async () => {
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+// Catches a „Zamknij” that does not reach the page's `closeReport`, a row or lines that stay once the
+// page has emptied the report, and focus left on the body once the button is gone, which the next key
+// press would lose (D-246).
+test("„Zamknij” asks the page to close the report; once the report is empty the row and the lines in the cards go and the focus stands on „Drużyna”", async () => {
+  // decision: D-246 "While the report holds a line, one row above „Drużyna” holds a sentence that counts its lines, each line of an earning loop a death stopped as a loop that stopped and every other line as a loop that went on, in `danger` where a loop stopped and in `positive` otherwise, then „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij” that closes the whole report."
   await withPage(async (page) => {
     const open = reported();
     let screen = null;
@@ -478,6 +742,7 @@ test("„Zamknij” asks the page to close the report; once the report is empty 
     await press(close);
     assert.deepEqual(calls, ["closeReport"]);
     assert.equal(page.root.querySelector(".away-report").hidden, true);
+    assert.equal(all(page.root, ".team-member-report").length, 0);
     const heading = sectionOf(page.root, "Drużyna").children[0];
     assert.equal(globalThis.document.activeElement, heading);
   });
@@ -510,25 +775,24 @@ const waiting = (practice, runPractice = {}) => ({
 });
 
 // Catches the practice of the earning loop and the map run going on not both in the line, a button on a
-// line with nothing waiting and a button that does not carry the name of its character.
-test("practice waiting at an earning loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
+// line with nothing waiting, a button that does not carry the name of its character, and one that opens
+// the screen Postać: it is a button of its own, not a link (D-280).
+test("practice waiting at an earning loop reads in its line in the card with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, with their text in `danger` at rest, in every layout, and the background `highlight` besides under the pointer, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
   // decision: D-39 "`positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer"
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
-  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
+  // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and the others in `text`, „{m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, a button that opens no screen, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the report is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the report shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     await mount(
       page,
       propsOf(waiting({ eating: 4 }, { eating: 1, exploration: 2 })),
     );
-    const section = page.root.querySelector(".away-report");
-    const lines = all(section, ".away-report-line");
+    const lines = ["Ala", "Ola"].map((name) =>
+      rowOf(page.root, name).querySelector(".away-report-line"),
+    );
     assert.deepEqual(
       lines.map((line) => text(line, ".away-report-text")),
-      [
-        "Ala: 5 min · wprawa do odebrania: Eksploracja +2, Jedzenie +5",
-        "Ola: 3 min",
-      ],
+      ["5 min · wprawa do odebrania: Eksploracja +2, Jedzenie +5", "3 min"],
     );
     assert.deepEqual(
       lines.map((line) =>
@@ -539,13 +803,15 @@ test("practice waiting at an earning loop reads in its line with „Odbierz” i
     const take = buttonLabelled(page.root, "Odbierz: Ala");
     assert.equal(take.getAttribute("class"), "button positive");
     assert.equal(take.getAttribute("type"), "button");
+    assert.equal(take.closest("a"), null, "no link holds the button");
   });
 });
 
 // Catches an „Odbierz” that does not reach the page with its character, and a focus left on the
-// body once the button is gone with the practice it paid (D-246).
-test("„Odbierz” hands the page its character; once nothing waits the button goes and the focus stands on „Zamknij”", async () => {
-  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
+// body once the button is gone with the practice it paid (D-246; styleguide, "Focus does not fall to
+// the page"): the name of the card, the element of the card that stays, takes it.
+test("„Odbierz” hands the page its character; once nothing waits the button goes and the focus stands on the name of its card", async () => {
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the report is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the report shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     const before = waiting({ eating: 4 });
     let screen = null;
@@ -578,14 +844,12 @@ test("„Odbierz” hands the page its character; once nothing waits the button 
     assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
     // The line stays with its minutes, only the part about practice has gone.
     assert.deepEqual(
-      all(page.root.querySelector(".away-report"), ".away-report-text").map(
-        (line) => line.textContent,
-      ),
-      ["Ala: 5 min", "Ola: 3 min"],
+      all(page.root, ".away-report-text").map((line) => line.textContent),
+      ["5 min", "3 min"],
     );
     assert.equal(
       globalThis.document.activeElement,
-      buttonNamed(page.root, "Zamknij"),
+      rowOf(page.root, "Ala").querySelector(".team-member-name"),
     );
   });
 });
@@ -593,14 +857,14 @@ test("„Odbierz” hands the page its character; once nothing waits the button 
 // Catches practice that is back after a redraw with the earning loop gathering more (D-246): the button
 // returns at the next change of the earning loop.
 test("the part about practice and „Odbierz” come back when the earning loop gathers more", async () => {
-  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the report is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the report shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(waiting({})));
     assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
     await inAct(() => screen.update(propsOf(waiting({ eating: 1 }))));
     assert.equal(
-      text(page.root, ".away-report-text"),
-      "Ala: 5 min · wprawa do odebrania: Jedzenie +1",
+      text(rowOf(page.root, "Ala"), ".away-report-text"),
+      "5 min · wprawa do odebrania: Jedzenie +1",
     );
     assert.ok(buttonLabelled(page.root, "Odbierz: Ala"));
   });
@@ -608,7 +872,7 @@ test("the part about practice and „Odbierz” come back when the earning loop 
 
 // D-246: a line of an earning loop a death stopped has no practice waiting, so it has no button either.
 test("a line of an earning loop a death stopped has no „Odbierz”", async () => {
-  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "After being away the player reads a report on Siedziba, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, each line standing in the card of its character in „Drużyna”, under a line, with no name before it, the line of an earning loop a death stopped before a later line of that character: an earning loop a death stopped in `danger`, „pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, and the others in `text`, „{m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, a button that opens no screen, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, {m} in both lines being the game minutes the catch-up passed"
   await withPage(async (page) => {
     const state = {
       ...waiting({ eating: 4 }),
@@ -629,10 +893,7 @@ test("„Załóż” hands the page the trimmed name and empties the field; Ente
   // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(newGame()));
-    assert.equal(
-      text(page.root, ".character-creation-label"),
-      `Nowa postać: ${ARCHETYPE}`,
-    );
+    assert.equal(text(page.root, ".team-add-archetype"), ARCHETYPE);
     await typeInto(nameField(page.root), "  Ola ");
     await press(buttonNamed(page.root, "Załóż"));
     assert.deepEqual(calls, [["create", "Ola"]]);
@@ -668,12 +929,142 @@ test("a name empty once trimmed creates nothing and says „Wpisz imię postaci.
   });
 });
 
+// Catches a tile that does not open the field in its place, a focus left on the closed tile that a
+// touch took away, the field opened anywhere but at the end of the cards (D-54), and „Anuluj” missing
+// or drawn as another look than the secondary action (D-275).
+test("„+ postać” at the end of the cards opens in its place the field of a name, „Załóż” and „Anuluj”, and the focus moves to the field", async () => {
+  // decision: D-275 "An action that opens or leaves a state of a form and stands under that form — „Nie pamiętam hasła”, „Wróć do logowania” and „Anuluj” of the login card — is a secondary action"
+  await withPage(async (page) => {
+    await mount(page, propsOf(teamOf(2)));
+    const list = page.root.querySelector(".team-list");
+    assert.equal(nameField(page.root), undefined, "closed at first");
+    const add = addTile(page.root);
+    assert.equal(add.getAttribute("class"), "button dashed");
+    assert.equal(add.closest("li"), list.lastElementChild);
+    await press(add);
+    const field = nameField(page.root);
+    assert.ok(field);
+    assert.equal(field.closest("li"), list.lastElementChild);
+    assert.equal(globalThis.document.activeElement, field);
+    assert.equal(addTile(page.root), undefined);
+    assert.equal(text(list.lastElementChild, ".team-add-archetype"), ARCHETYPE);
+    const cancel = buttonNamed(list.lastElementChild, "Anuluj");
+    assert.equal(cancel.getAttribute("class"), "button secondary");
+    assert.deepEqual(
+      [...list.lastElementChild.children].map(
+        (child) =>
+          child.querySelector("input")?.getAttribute("aria-label") ??
+          child.textContent,
+      ),
+      [ARCHETYPE, "Imię nowej postaci", "Załóż", "Anuluj"],
+    );
+  });
+});
+
+// Catches a tile that „Anuluj” or Escape leaves open, a text kept in a field opened again, a character
+// created by them, and the focus left on the page once the field is gone (styleguide, "Focus does not
+// fall to the page"): the closed „+ postać” in the field's place takes it.
+test("„Anuluj” and Escape in the field close the tile with nothing created and the field emptied, and the focus stands on the closed „+ postać”", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, propsOf(teamOf(1)));
+    for (const leave of [
+      () => press(buttonNamed(page.root, "Anuluj")),
+      () => pressKey(nameField(page.root), "Escape"),
+    ]) {
+      await press(addTile(page.root));
+      await typeInto(nameField(page.root), "Ol");
+      await leave();
+      assert.equal(nameField(page.root), undefined, "closed");
+      assert.equal(globalThis.document.activeElement, addTile(page.root));
+      await press(addTile(page.root));
+      assert.equal(nameField(page.root).value, "", "the field is empty again");
+      await pressKey(nameField(page.root), "Escape");
+    }
+    assert.deepEqual(calls, []);
+  });
+});
+
+// Catches a tile left open once a character is created, and the focus left on the page once the field is
+// gone: the closed „+ postać” in its place takes it, the new card standing before it.
+test("„Załóż” with a name closes the tile, and the focus stands on the closed „+ postać”, after the new card", async () => {
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  await withPage(async (page) => {
+    let screen = null;
+    const calls = [];
+    const state = teamOf(1);
+    await inAct(() => {
+      screen = createHeadquarters({
+        controls: {
+          // The page creates the character and gives the screen the state at once.
+          create: (name) => {
+            calls.push(name);
+            screen.update(propsOf(createCharacter(state, name).state));
+          },
+          stop: () => {},
+          closeReport: () => {},
+          takePractice: () => {},
+        },
+        props: propsOf(state),
+      });
+      page.root.append(screen.element);
+    });
+    await press(addTile(page.root));
+    await typeInto(nameField(page.root), "Ola");
+    await press(buttonNamed(page.root, "Załóż"));
+    assert.deepEqual(calls, ["Ola"]);
+    assert.equal(nameField(page.root), undefined);
+    const list = page.root.querySelector(".team-list");
+    assert.deepEqual(
+      all(list, ".team-member-name").map((name) => name.textContent),
+      ["Ala", "Ola"],
+    );
+    assert.equal(addTile(page.root).closest("li"), list.lastElementChild);
+    assert.equal(globalThis.document.activeElement, addTile(page.root));
+  });
+});
+
+// Catches an Enter in the field left to the browser: the closed „+ postać” takes the focus at once, and a
+// browser presses the focused button with the same key, so the tile would open again at once. jsdom has
+// no such default act, so the case reads whether the key's default was spent.
+test("Enter in the field creates as „Załóż” does and spends the key, so the closed „+ postać” that takes the focus is not pressed by it", async () => {
+  await withPage(async (page) => {
+    let screen = null;
+    const state = newGame();
+    await inAct(() => {
+      screen = createHeadquarters({
+        controls: {
+          create: (name) =>
+            screen.update(propsOf(createCharacter(state, name).state)),
+          stop: () => {},
+          closeReport: () => {},
+          takePractice: () => {},
+        },
+        props: propsOf(state),
+      });
+      page.root.append(screen.element);
+    });
+    await typeInto(nameField(page.root), "Ala");
+    const { KeyboardEvent } = globalThis.window;
+    const enter = new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true,
+    });
+    await inAct(() => nameField(page.root).dispatchEvent(enter));
+    assert.equal(enter.defaultPrevented, true);
+    assert.equal(nameField(page.root), undefined, "the tile is closed");
+    assert.equal(globalThis.document.activeElement, addTile(page.root));
+  });
+});
+
 // Catches the field and the button rebuilt at a refresh of the game state: they would lose the text
-// typed and the focus the player has in them, at every game minute.
-test("the field keeps its element, its text and its focus, and the button its focus, through every refresh of the state and of the moment", async () => {
+// typed and the focus the player has in them, at every game minute; and the open tile closed by a
+// refresh, which the player did not ask for.
+test("the open field keeps its element, its text and its focus, and the button its focus, through every refresh of the state and of the moment", async () => {
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(page, propsOf(state));
+    await press(addTile(page.root));
     const field = nameField(page.root);
     const button = buttonNamed(page.root, "Załóż");
     await typeInto(field, "Ol");
@@ -843,7 +1234,7 @@ test("the picture band follows the manual map run and the earning loops, and „
 // --- what the screen does not do -------------------------------------------------------------
 
 // Catches a control of sending left on Siedziba (D-330): the list „Program:”, „Wejdź”,
-// „Puść w pętlę”, a button that leads to the screen Mapy or a link other than a character's name.
+// „Puść w pętlę”, a button that leads to the screen Mapy or a link other than the name of a card.
 test("nothing on the screen sends a character or leads to the screen Mapy", async () => {
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
@@ -857,7 +1248,7 @@ test("nothing on the screen sends a character or leads to the screen Mapy", asyn
           (button) => button.getAttribute("aria-label") ?? button.textContent,
         )
         .sort(),
-      ["Zamknij", "Zatrzymaj: Ola", "Załóż"],
+      ["+ postać", "Zamknij", "Zatrzymaj: Ola"],
     );
     // The links of the folded section of credits lead outside the game, not to a screen of the game.
     assert.deepEqual(

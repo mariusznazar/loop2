@@ -302,10 +302,11 @@ header .failure-line {
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
  * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
  * control that waits for a server: the button disabled under a changed text and the fields of its
- * form disabled, which the disabled rules below draw (D-44). The button has six looks beside the
+ * form disabled, which the disabled rules below draw (D-44). The button has eight looks beside the
  * plain one: the destructive button, the button in `positive`, the button selected in its group,
- * the secondary action, the tab and the button of a cell of the body row, each below, and the main
- * look of the button that sends a form or is of the kind `main`.
+ * the secondary action, the tab, the button of a cell of the body row, the tile of a slot of the gear
+ * and the dashed button, each below, and the main look of the button that sends a form or is of the
+ * kind `main`.
  */
 .button,
 .select-list,
@@ -606,6 +607,21 @@ header .failure-line {
 .button.tile:disabled,
 .button.tile:disabled .tile-slot-name {
   color: var(--text-disabled);
+}
+
+/*
+ * The dashed button (D-44): the closed „+ postać” that ends the cards of the team on Siedziba, as the
+ * dashed tile that ends the tiles of loop's team. Its frame is the plain button's, in `control-border`,
+ * drawn dashed by the keyword, with no value of its own, and its text stands in the middle of the box
+ * the screen gives it; at rest, under the pointer — the background `highlight` from the rule above,
+ * its frame and text unchanged — at focus and disabled it is the plain button.
+ */
+.button.dashed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  text-align: center;
 }
 
 /*

@@ -28,7 +28,7 @@ bez odstępstw zgodnie z D-38.
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
 | `text-disabled`   | text       | Tego teraz nie da się użyć; stoi też jako tor paska wprawy drzewa na ekranie Postać, choć tor nie jest tekstem, z progiem 2:1 wobec `panel` (D-42).                                                                                                                                                                                                                                                                                                                                                  | —          | D-40     |
-| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę, i jako belka po lewej wybranego wiersza katalogu map, którego karta stoi otwarta; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska; stoi też jako wypełnienie paska zdrowia w wierszu ciała, na torze w `highlight`, z co najmniej 3:1 wobec toru przy pełnym kryciu. | —          | D-39     |
+| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, jako wypełnienie paska postępu nad głową postaci oraz jako tekst przycisku „Odbierz”, który wypłaca czekającą wprawę, i jako belka po lewej wybranego wiersza katalogu map, którego karta stoi otwarta; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska; stoi też jako wypełnienie paska zdrowia w wierszu ciała, na torze w `highlight`, z co najmniej 3:1 wobec toru przy pełnym kryciu; stoi też jako ramka kafelka postaci w Siedzibie i kropka „●” przy jej imieniu, dopóki pętla tej postaci chodzi — ramka mówi o pętli, nie o tekście w kafelku. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                                                                               | —          | D-39     |
 | `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała i liczba wartości wiersza ciała poniżej jej progu, zdrowia poniżej 35 też; stoi też jako strefa przegrzania na skali temperatury w wierszu ciała, z co najmniej 3:1 wobec `panel`.                                                                                                                                                                                                                                                       | —          | D-39     |
 | `discovery`       | text       | Odkryto coś nowego; stoi też jako ramka plakietki odkrycia w scenie.                                                                                                                                                                                                                                                                                                         | —          | D-39     |
@@ -191,6 +191,10 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
 - ramka plakietki odkrycia w scenie, `discovery` na `panel`, nie dokłada pary
   ani progu: reguła sceny wymaga dla niej co najmniej 3:1 wobec `panel` (D-39,
   D-42), a `discovery` ma już 4,5:1 na `panel` z pierwszego punktu;
+- zielona ramka kafelka postaci w pętli w Siedzibie, `positive`, nie dokłada pary
+  ani progu: D-42 wymaga dla niej co najmniej 3:1 wobec barw, których dotyka —
+  `panel` bloku, bo kafelek nie ma własnego tła, i `highlight` pod kursorem —
+  a `positive` ma już 4,5:1 na obu z pierwszego punktu (D-39, D-42);
 - `text-disabled` nie ma progu jako tekst; jako tor paska wprawy drzewa na
   ekranie Postać ma co najmniej 2:1 wobec `panel` — para osobna, próg własny
   produktu, nie kryterium WCAG, żeby tor nie zlał się z tłem bloku; tekstu
@@ -327,6 +331,14 @@ Kontrolki odstępujące od tej listy stanów:
   przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który wysyła formularz.
   Spoczynek: tekst w `positive`, ramka w `control-border`, bez wypełnienia; pod kursorem tło
   `highlight`, a ramka i tekst bez zmiany; wyłączony — tekst w `text-disabled`, jak każdy
+  wyłączony przycisk. Fokus rysuje reguła Visible focus.
+- `src/browser/view/controls/react-button.tsx`
+  — przycisk przerywany (D-44), dziś zamknięte „+ postać” na końcu kafelków Siedziby: error
+  i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk,
+  który wysyła formularz. Spoczynek: ramka w `control-border` przerywana — słowo kluczowe
+  `dashed`, bez nowej wartości — tekst w `text` na środku pudełka, które daje mu ekran, bez
+  wypełnienia; pod kursorem tło `highlight`, a ramka i tekst bez zmiany, nie jaśniejsza ramka
+  i jaśniejszy napis jak w starym Loopie; wyłączony — tekst w `text-disabled`, jak każdy
   wyłączony przycisk. Fokus rysuje reguła Visible focus.
 - `src/browser/view/controls/react-button.tsx`
   — akcja poboczna (D-275): error
@@ -539,7 +551,7 @@ komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
 w jej postaci React (D-269), w każdym stanie albo z powodem, dla którego stan
 nie dotyczy — przycisk także w głównym wyglądzie (D-274), jako zakładkę
-wybraną i niewybraną (D-276), w `positive` (D-44, D-39), przycisk niszczący
+wybraną i niewybraną (D-276), w `positive` (D-44, D-39), przerywany (D-44), przycisk niszczący
 w spoczynku, pod kursorem, przy fokusie i wyłączony, gdy czeka na serwer
 (D-44, D-402) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
@@ -741,9 +753,9 @@ them), więc zielony test nie zastępuje tego sprawdzenia.
 - **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym; „Odbierz” przy wierszu raportu w Siedzibie przyciskiem w `positive`, nie w głównym wyglądzie.
 - **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
 
-Główny wygląd, akcja poboczna, zakładka i przycisk w `positive` to wyglądy wspólnego
-przycisku, każdy na swoim miejscu, które podaje ta reguła; ich stany podaje reguła
-States of shared controls.
+Główny wygląd, akcja poboczna, zakładka, przycisk w `positive` i przycisk przerywany to
+wyglądy wspólnego przycisku, każdy na swoim miejscu, które podaje ta reguła; ich stany podaje
+reguła States of shared controls.
 
 - Główny wygląd ma przycisk, który wysyła formularz, jeden na
   formularz (D-274). Wygląd bierze się z samego wysyłania formularza
@@ -761,9 +773,13 @@ States of shared controls.
   czekającą wprawę (D-44, D-39, D-246). Nie jest głównym wyglądem, bo nie wysyła formularza
   i nie jest „Wejdź” (D-274), a `positive` stoi na nim tylko jako tekst. Każde inne działanie
   zostaje przy przycisku, który daje mu D-44.
+- Przycisk przerywany (`kind: "dashed"`) to zamknięte „+ postać”, które kończy kafelki
+  sekcji „Drużyna” Siedziby i otwiera w swoim miejscu pole imienia (D-44; reguła The section
+  „Drużyna” of Siedziba). Każde inne działanie zostaje przy przycisku, który daje mu D-44.
 - Akcją poboczną (`kind: "secondary"`) jest tylko działanie, które otwiera
   albo opuszcza stan formularza i stoi pod tym formularzem — dziś „Nie
-  pamiętam hasła”, „Wróć do logowania” i „Anuluj” karty logowania (D-275).
+  pamiętam hasła”, „Wróć do logowania” i „Anuluj” karty logowania oraz „Anuluj” pod polem
+  otwartego kafelka „+ postać” (D-275).
   Zostaje przyciskiem, bo zmienia stan ekranu i nie ma adresu, nigdy
   odnośnikiem. Każde inne działanie, choćby poboczne, zostaje przy
   przycisku, który daje mu D-44.
@@ -809,7 +825,7 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 - **Decision:** none
 - **Invariant:** none
-- **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego; tak samo nazwa programu na liście Programy i adres konta w menu „Konto”.
+- **Good:** Imię postaci z samych liter, dłuższe od kafelka postaci w Siedzibie, łamie się w tym kafelku i nie wychodzi poza niego; tak samo nazwa programu na liście Programy i adres konta w menu „Konto”.
 - **Bad:** Długie imię bez spacji wypycha wiersz poza obszar ekranu albo jest ucięte, albo przewijane tylko dlatego, że nie ma w nim spacji.
 
 Tekst, który wpisał gracz, taki jak imię postaci, nazwa albo adres konta, może
@@ -830,7 +846,7 @@ w rozwiniętych opcjach.
 
 - **Decision:** none
 - **Invariant:** none
-- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w wierszu tej postaci; „✕” okna reguły, które stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
+- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w kafelku tej postaci, na jej imieniu; „✕” okna reguły, które stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
 - **Bad:** Element z fokusem znika, a fokus ląduje na stronie, więc gracz z klawiaturą zaczyna ekran od góry.
 
 Gdy element, który trzyma fokus, znika z ekranu — zamknięta karta, zamknięty
@@ -1760,8 +1776,74 @@ założenia, tyle całych, ile mieści pas. W układzie telefonu (D-396), gdzie 
 przycinaj polanę po bokach wokół ogniska i nie zmniejszaj jej; sekcja „Drużyna” pod pasem wymienia wszystkie postacie. Poruszaj ogień i postacie z CSS, w
 stałym takcie klatek sceny, bez pętli rysowania, a pod ograniczeniem ruchu zostaw klatki w miejscu. Nie daj
 obozowi tekstu, kontrolki ani reakcji na kliknięcie, ukryj go przed czytnikami ekranu i nie rób w nim błysku;
-do postaci prowadzą imiona w „Drużyna” (D-280). Nazwy plików i liczby bierz z danych gry, a rozmiary wpisuj
+do postaci prowadzą kafelki w „Drużyna” (D-280). Nazwy plików i liczby bierz z danych gry, a rozmiary wpisuj
 w style z TypeScriptu. Obóz nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
+
+### The section „Drużyna” of Siedziba
+
+- **Decision:** D-282 · D-54 · D-51 · D-52 · D-218 · D-217 · D-244 · D-245 · D-246 · D-280 · D-446 · D-447 · D-287 · D-39 · D-40 · D-42 · D-43 · D-44 · D-275 · D-279 · D-396
+- **Invariant:** none
+- **Good:** Pod nagłówkiem „Drużyna” w `text-label` raz „Wskrzeszenie drużyny: użycia 3 z 3” w `text-secondary`, pod nim siatka kafelków jednej szerokości, pięć w rzędzie przy pełnej szerokości gry: kafelek z cienką ramką w `control-border` i bez własnego tła, w nim znaczek maga i „Ala” w `text-strong`, pod imieniem „Mag żywiołów” w `text-secondary` i „W obozie” w `text`; kafelek postaci w pętli w zielonej ramce, z zieloną kropką „●” na końcu wiersza imienia i z wierszem pętli z „Zatrzymaj”; siatkę kończy przerywane „+ postać”, a w układzie telefonu kafelki stoją po dwa w rzędzie.
+- **Bad:** Kafelek z własnym tłem `page` albo z ramką w `divider`; imię jako jedyne pole kliknięcia kafelka; wiersz wskrzeszenia w każdym kafelku; raport z nieobecności w osobnej sekcji z tytułem; „Załóż” zawsze widoczne pod kafelkami; „+ postać” z pełną ramką albo z podkreślonym napisem; zielona ramka w kolorze tekstu obok; kafelek, który pod kursorem rozjaśnia ramkę zamiast tła; imię ucięte wielokropkiem.
+
+Sekcja „Drużyna” Siedziby (D-282) stoi w bloku `screen-area` ekranu, pod wierszem raportu
+z nieobecności, kiedy ten stoi, i nad sekcją „Skrzynka”. Pisze ją `src/browser/view/headquarters.tsx`,
+kafelki `src/browser/view/team-cards.tsx`, a ich wygląd stoi w `src/browser/headquarters.css`.
+
+- Pod nagłówkiem „Drużyna” w `text-label` stoi raz, dopóki drużyna ma postać, wiersz wskrzeszenia
+  drużyny w `text-secondary`, a przy zerze użyć w `danger` (D-217); kafelek go nie ma. Drużyna bez
+  postaci ma w tym miejscu „Drużyna nie ma jeszcze postaci.” w `text-secondary`, obok otwartego
+  kafelka „+ postać” (D-51).
+- Kafelki stoją w siatce, w kolejności założenia postaci (D-54), a „+ postać” po nich: w układzie
+  komputera kafelki jednej stałej szerokości, tyle w rzędzie, ile się mieści, około pięciu przy
+  pełnej szerokości gry, jak w starym Loopie; w układzie telefonu dwa w rzędzie (D-396). Kafelki
+  jednego rzędu mają wysokość najwyższego. Szerokość kolumny jest wymiarem układu, którego D-43 nie
+  liczy.
+- Kafelek postaci to prostokąt z cienką ramką w `control-border`, bo da się go kliknąć, bez
+  własnego tła, więc prześwituje `panel` bloku (D-40). Dopóki pętla postaci chodzi, ramka jest
+  w `positive`, a na końcu wiersza imienia stoi kropka „●” w `positive`, ukryta przed czytnikiem
+  ekranu, bo pętlę nazywa wiersz pętli (D-39); ta ramka mówi o pętli, nie bierze koloru tekstu obok
+  (reguła A line at a text takes the colour of that text). Poza pętlą ramka jest zwykła, bez kropki.
+- W kafelku, od góry: znaczek archetypu rysowany maską w kolorze imienia i imię w `text-strong`,
+  w rozmiarze `--font-size-heading` (D-446, D-43), łamane w kafelku (reguła A name typed by the
+  player breaks in its row); pod nimi „pokolenie {n} · ” od drugiego pokolenia i nazwa archetypu
+  w `text-secondary`, w rozmiarze podpisu (D-218); pod nimi wiersz tego, co postać robi, ten sam co
+  pierwszy wiersz ramki na ekranie Postać, w `text` i w rozmiarze szczegółu (D-447) — „W obozie”,
+  „Przejście: …” albo wiersz pętli z przyciskiem niszczącym „Zatrzymaj” pod nim (D-244, D-44), a po
+  zatrzymaniu pętli pod „W obozie” wiersz „Pętla zatrzymana …” w `text-secondary` (D-245).
+- Wiersze raportu z nieobecności stoją w kafelku swojej postaci, na jego końcu, pod cienką linią
+  w `divider`, bo tu kończy się jedna część kafelka, a zaczyna następna (D-40), bez imienia przed
+  wierszem: pętla zatrzymana śmiercią w `danger`, pozostałe w `text`, z „Odbierz” w `positive` przy
+  wierszu, w którym czeka wprawa (D-246, D-39).
+- Nad „Drużyną”, dopóki raport stoi, jeden wiersz, który się zawija: zdanie liczące pętle w `danger`,
+  gdy któraś stanęła, inaczej w `positive` — zwykły tekst w tej roli, jak „rozwiązana” na liście
+  map — po nim „Skrzynka jest pełna.” w `warning`, gdy skrzynka jest pełna, i zwykły wspólny
+  przycisk „Zamknij” (D-246, D-39, D-44).
+- Cały kafelek prowadzi do ekranu Postać tej postaci: imię jest jedynym odnośnikiem kafelka,
+  a arkusz rozciąga jego pole kliknięcia na cały kafelek, więc czytnik ekranu czyta odnośnik
+  imieniem (D-280); pod kursorem nad tym polem kafelek dostaje tło `highlight`, a ramka i role
+  tekstu zostają (D-40). „Zatrzymaj” i „Odbierz” stoją nad tym polem jako osobne przyciski
+  i ekranu nie otwierają. Obwódkę fokusu rysuje reguła Visible focus na imieniu, nie na kafelku.
+  W układzie telefonu imię trzyma własne pole dotyku `--touch-target-min`, a na urządzeniu, które
+  nie najeżdża, kafelek nie dostaje tła pod kursorem (reguła Two layouts and one threshold between
+  them).
+- Zamknięte „+ postać” to przycisk przerywany wspólnej kontrolki (D-44; reguła Main button, secondary
+  action and tab), na całe pole kafelka, co najmniej tak wysoki jak kafelek z jednym wierszem tego,
+  co postać robi. Dotknięcie otwiera w tym samym miejscu kafelek z przerywaną ramką
+  w `control-border`, którą rysuje arkusz Siedziby, bo pole i „Załóż” nie są tym przyciskiem: w nim
+  znaczek i nazwa archetypu nowej postaci w `text-secondary`, pole „Imię nowej postaci”, zwykły
+  przycisk „Załóż” i pod nimi akcja poboczna „Anuluj” (D-275); fokus przechodzi do pola. „Załóż”
+  i Enter w polu zakładają postać z imienia (D-52), a „Anuluj” i Escape w polu zamykają kafelek bez
+  zakładania i czyszczą pole; po każdym z nich fokus dostaje zamknięte „+ postać”, które staje
+  w miejscu pola (reguła Focus does not fall to the page). Imię puste po obcięciu zostawia kafelek
+  otwarty z „Wpisz imię postaci.” pod polem, w stanie błędu pola (D-52, D-44). Przy pustej drużynie
+  kafelek stoi otwarty od razu, bez „Anuluj”, a Escape go nie zamyka (D-51). Otwarty kafelek
+  i wpisany tekst trwają przy przerysowaniu i po wyjściu z Siedziby.
+- Kafelki i ich kontrolki mieszczą się przy obszarze strony 360 px bez przewijania w bok i bez
+  napisu poza ramką, a każda kontrolka trzyma cel dotyku (D-396); reguł układu telefonu nie
+  sprawdza test, tylko agent w przeglądarce (reguła A change is checked in both layouts).
+- Sekcja nie wnosi nowej roli ani wartości tokenu; zielona ramka i kropka to użycie `positive`, które
+  podaje D-39 i tabela Roles.
 
 ### The chronicle of a map run
 

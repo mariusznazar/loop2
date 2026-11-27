@@ -1,6 +1,6 @@
 /*
  * The stylesheet of the screen Siedziba (D-421): the picture band at the top, the sections „Drużyna” and
- * „Skrzynka”, the team and the chest, the report on earning loops and the creation of a character.
+ * „Skrzynka”, the cards of the team and the chest, the report on earning loops and the tile „+ postać”.
  * The folded credits at its foot stand in credits.css. The frames of the characters and the fire of the
  * picture band (`.camp-member img`, `.camp-fire img`) are animated by a rule that stands whole in styles.css, beside
  * the frames of the scene's sprites, because one selector list holds both. The page links this file
@@ -102,36 +102,32 @@
   color: var(--text-label);
 }
 
-/* The report on earning loops (D-246): the lines in `text`, an earning loop that stopped in `danger`, a full chest in `warning` (D-39). */
-.away-report-list {
-  list-style: none;
-  margin: 0 0 var(--space-s);
-  padding: 0;
-  color: var(--text);
-}
-
-.away-report-line {
+/*
+ * The row of the report on earning loops above „Drużyna” (D-246): the sentence that counts the earning
+ * loops, in `danger` where one stopped and in `positive` otherwise, „Skrzynka jest pełna.” in `warning`
+ * after it, and „Zamknij”, in one line that wraps (D-39).
+ */
+.away-report {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-xs);
+  gap: var(--space-xs) var(--space-m);
 }
 
-/* The line names the character, a name typed by the player: a name with no space breaks inside its row
- * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the row
- * shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
-.away-report-text {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.away-report-summary,
+.away-report-full {
+  margin: 0;
 }
 
-.away-report-line.danger {
+.away-report-summary.danger {
   color: var(--danger);
 }
 
+.away-report-summary.positive {
+  color: var(--positive);
+}
+
 .away-report-full {
-  margin: 0 0 var(--space-s);
   color: var(--warning);
 }
 
@@ -141,67 +137,199 @@
   color: var(--text-secondary);
 }
 
-.team-list,
 .chest-list {
   list-style: none;
   margin: 0 0 var(--space-s);
   padding: 0;
 }
 
-.team-member,
-.character-creation {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-xs);
+/* The team's resurrection line, once under „Drużyna”: in `text-secondary`, at zero uses in `danger` (D-217, D-39, D-40). */
+.team-resurrection {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
 }
 
-/* The name of a character, typed by the player: a name with no space breaks inside its row and does not
- * run out of it (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the
- * item of the row shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
-.team-member-name {
+.team-resurrection.danger {
+  color: var(--danger);
+}
+
+/*
+ * The cards of the team in a grid (styleguide rule "The section „Drużyna” of Siedziba"): in the computer
+ * layout cards of one fixed width, as many in a row as fit, about five at the full width of the game, as
+ * the tiles of loop's team; the cards of one row take the height of the highest. The width of a column is
+ * a layout dimension, which D-43 leaves out.
+ */
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 250px);
+  gap: var(--space-s);
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+}
+
+/*
+ * The card of a character: a thin frame in `control-border`, since the card can be clicked, with no
+ * background of its own, so the `panel` of the block shows (D-40); while its earning loop goes on, the
+ * frame in `positive` (D-39). The card is the box of its link: the name's area is stretched over the
+ * card, so a touch anywhere on it follows the link, and under the pointer over that area the card takes
+ * the background `highlight` (D-280, D-40); its buttons stand above that area.
+ */
+.team-member {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
   min-width: 0;
-  overflow-wrap: anywhere;
+  padding: var(--space-s) var(--space-m);
+  border: var(--frame-width) solid var(--control-border);
+  color: var(--text);
+}
+
+.team-member.looping {
+  border-color: var(--positive);
+}
+
+.team-member:has(.team-member-name:hover) {
+  background: var(--highlight);
+}
+
+.team-member .button {
+  position: relative;
+  z-index: 1;
+}
+
+/* The first line: the archetype's icon in the colour of the name, the name, and the dot of a running earning loop at the line's end (D-446, D-39). */
+.team-member-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);
 }
 
-.team-member-archetype {
-  color: var(--text-secondary);
+/* The name of a character, typed by the player: a name with no space breaks inside its card and does not
+ * run out of it (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the
+ * item of the row shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. The
+ * box after it is the link's area, stretched over the card. */
+.team-member-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-strong);
+  text-decoration: none;
 }
 
-/* The generation beside the name: `text-secondary`, as the archetype is (D-40). */
-.team-member-generation {
-  color: var(--text-secondary);
+.team-member-name::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
-/* The resurrection line, on a row of its own: in `text-secondary`, at zero uses in `danger` (D-217, D-39, D-40). */
-.team-member-resurrection {
-  flex-basis: 100%;
+.team-member-dot {
+  margin-left: auto;
+  font-size: var(--font-size-label);
+  color: var(--positive);
+}
+
+/* The generation and the archetype in `text-secondary` (D-218, D-40). */
+.team-member-facts {
   margin: 0;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
 }
 
-.team-member-resurrection.danger {
-  color: var(--danger);
+/* What the character does, in `text`, with „Zatrzymaj” under the line of an earning loop, and the line of a stop in `text-secondary` (D-447, D-244, D-245). */
+.team-member-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  font-size: var(--font-size-detail);
 }
 
-/* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-244). */
+.team-member-state,
 .team-member-loop {
   margin: 0;
   color: var(--text);
 }
 
-/* The line after an earning loop's stop, on a row of its own in `text-secondary` (D-245). */
 .team-member-stopped {
-  flex-basis: 100%;
   margin: 0;
   color: var(--text-secondary);
 }
 
-.character-creation-label {
-  color: var(--text-label);
+/* The lines of the report in the card, under a line in `divider`: in `text`, an earning loop that stopped in `danger` (D-246, D-39, D-40). */
+.team-member-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  list-style: none;
+  margin: var(--space-2xs) 0 0;
+  padding: var(--space-xs) 0 0;
+  border-top: var(--frame-width) solid var(--divider);
+  font-size: var(--font-size-detail);
+}
+
+.away-report-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  color: var(--text);
+}
+
+/* The line names nothing the player typed, but a long line of items breaks in the card as a name would. */
+.away-report-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.away-report-line.danger {
+  color: var(--danger);
+}
+
+/*
+ * The tile „+ postać” that ends the grid: closed, the shared dashed button over the whole tile, at least
+ * as high as a card of one line of what the character does (a layout dimension); open, the same place
+ * with a dashed frame in `control-border` drawn here, since the field and „Załóż” are not that button,
+ * holding the archetype, the field, „Załóż” and „Anuluj” one under the other (D-44, D-275).
+ */
+.team-add {
+  display: flex;
+  min-width: 0;
+}
+
+.team-add > .button.dashed {
+  flex: 1;
+  min-height: 4lh;
+}
+
+.team-add.open {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-s) var(--space-m);
+  border: var(--frame-width) dashed var(--control-border);
+}
+
+.team-add-archetype {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  font-size: var(--font-size-label);
+  color: var(--text-secondary);
+}
+
+.team-add.open .input-field {
+  align-self: stretch;
+}
+
+.team-add.open .input-field input {
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /*
@@ -210,16 +338,33 @@
  * keeps the rules above: in a window narrower than the clearing it crops the clearing at the sides around
  * the fire and never scales it down (D-389). The clearing, the sheets of the characters and the row of
  * cells that did not fit stand in boxes whose overflow is hidden, so the band takes no scrolling to the
- * side and the measurement of loop2-play lists them as signs only. The name of a character in „Drużyna”
- * is a link that stands by itself at the head of its row, the way to the screen Postać (D-280), not a link
- * inside a sentence, so it holds the minimum of the touch target, `--touch-target-min`, high and wide, its
- * text at the middle of the target; a name that does not fit the row still breaks in it, as above.
+ * side and the measurement of loop2-play lists them as signs only. The cards stand two in a row, as the
+ * tiles of loop's team on a phone. The name of a character is the link of its card, the way to the screen
+ * Postać (D-280), not a link inside a sentence, so it holds the minimum of the touch target,
+ * `--touch-target-min`, high and wide, its text at the middle of the target; a name that does not fit the
+ * card still breaks in it, as above.
  */
 @media (width < 1280px) {
+  .team-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .team-member-name {
     display: flex;
     align-items: center;
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
+  }
+}
+
+/*
+ * The background under the pointer where nothing hovers (D-40; styleguide rule "Two layouts and one
+ * threshold between them"): a browser of touch keeps `:hover` on the element last tapped, so the card
+ * would stay on `highlight` after a tap; on a device whose pointer cannot hover the card keeps the
+ * `panel` of the block.
+ */
+@media (width < 1280px) and (hover: none) {
+  .team-member:has(.team-member-name:hover) {
+    background: transparent;
   }
 }

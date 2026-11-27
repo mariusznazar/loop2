@@ -155,7 +155,7 @@ test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to 
 
 test("the item of the place the page gives is marked with aria-current, and none on a map run's screen", async () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // D-277, D-280: Siedziba on Siedziba and on Postać, Mapy on Mapy and on a map, Programy on Programy
   // and on a program, Wiedza on Wiedza, none on the screen of a map run; the page gives the screen, the bar reads the
   // item from it.
@@ -190,7 +190,7 @@ test("the item of the place the page gives is marked with aria-current, and none
 
 test("the bar follows the page's update: the marked item moves, and the open menu stays open", async () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   await withPage(async (page) => {
     const { bar } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
