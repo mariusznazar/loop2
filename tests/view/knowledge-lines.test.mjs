@@ -161,3 +161,61 @@ test("the known trees stand in the order of the data, each with its branches, th
   );
   assert.deepEqual(knownTrees(understanding()), []);
 });
+
+/** The line of steps of the branch `id` of the known tree `tree`. */
+const stepsOf = (tree, id) =>
+  knownTrees(understanding({ trees: [tree] }))[0].branchList.find(
+    (branch) => branch.id === id,
+  ).values;
+
+// Catches a step whose number leaves out the floor of the data („Długi krok” below one minute), a
+// number with the computer's rounding or a decimal point („0,15”), a step left out or one too many,
+// the prices in another order than the steps, a numeral that does not count the steps, and a line of
+// numbers for a branch whose data give none.
+test("a branch with a number gives its value with no step bought and each step in turn with its value and price, and a branch without one gives none", () => {
+  // decision: D-416 "An open tree shows each branch with its name, „{n} stopni”, its description from the data and the prices of all its steps in turn, and under the description"
+  // decision: D-416 "A branch whose data give no number"
+  // Wprawne oko: 70 % and +5 a step, prices 1 · 1 · 1.
+  assert.deepEqual(stepsOf("smallItemGathering", "keenEye"), {
+    without: "70 %",
+    steps: [
+      { numeral: "I", value: "75 %", price: "1 pkt" },
+      { numeral: "II", value: "80 %", price: "1 pkt" },
+      { numeral: "III", value: "85 %", price: "1 pkt" },
+    ],
+  });
+  // Długi krok: 5 min and −2 a step, never below 1 min, prices 1 · 1 · 2.
+  assert.deepEqual(stepsOf("exploration", "longStep"), {
+    without: "5 min",
+    steps: [
+      { numeral: "I", value: "3 min", price: "1 pkt" },
+      { numeral: "II", value: "1 min", price: "1 pkt" },
+      { numeral: "III", value: "1 min", price: "2 pkt" },
+    ],
+  });
+  // Mocniejszy cios: 6 and +2 a step, four steps at 1 each.
+  assert.deepEqual(stepsOf("oneHandedCombat", "strongerStrike"), {
+    without: "6 obrażeń",
+    steps: [
+      { numeral: "I", value: "8 obrażeń", price: "1 pkt" },
+      { numeral: "II", value: "10 obrażeń", price: "1 pkt" },
+      { numeral: "III", value: "12 obrażeń", price: "1 pkt" },
+      { numeral: "IV", value: "14 obrażeń", price: "1 pkt" },
+    ],
+  });
+  // Szybkie gojenie: 0.05 and +0.05 a step, prices 2 · 3.
+  assert.deepEqual(stepsOf("tending", "quickHealing"), {
+    without: "0,05 zdrowia na minutę",
+    steps: [
+      { numeral: "I", value: "0,1 zdrowia na minutę", price: "2 pkt" },
+      { numeral: "II", value: "0,15 zdrowia na minutę", price: "3 pkt" },
+    ],
+  });
+  for (const [tree, id] of [
+    ["smallItemGathering", "patrol"],
+    ["flameSpell", "cleanFlame"],
+    ["exploration", "scout"],
+    ["tending", "pressure"],
+  ])
+    assert.equal(stepsOf(tree, id), null, `${id} has no line of steps`);
+});

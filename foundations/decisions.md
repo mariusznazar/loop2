@@ -4598,7 +4598,8 @@ header of the screen of the map run does. The way into the owner panel is a link
 screens, as in loop — the logo and the menu jump by about 190 px between Siedziba and Programy;
 another largest width — it changes that one
 dimension alone; the skill trees shown on two screens, as in loop — the same rows on Postać and in
-Wiedza; two buttons „Wejdź” on the way to
+Wiedza with their level, practice, points and buying, which is what this rejects, not the layout of
+the row of a tree that the two screens share (D-416); two buttons „Wejdź” on the way to
 a first map run, as in loop, the first opening a window to choose the character and the second
 standing in that window; a bar that sets whose eyes the screens look through, as in loop — the
 player has to discover it before entering a map; a second way to the maps, a button „Wybierz mapę”
@@ -4836,7 +4837,7 @@ The screen of the list of accounts, at `#/konta` for an account with the owner r
 
 The screen Wiedza shows the actions, items and creatures in the Understanding and the skill trees to read, with no levels and no buying. Its left area is as in the predecessor game, loop: the heading „Zrozumienie” with the counter „{n} poznanych rzeczy”, three groups „Czynności · {n}”, „Przedmioty · {n}” and „Stworzenia · {n}”, each in the order of discovery with the newest thing last, a group with no thing standing nowhere, the campfire standing among the items, and no sentence for an empty area. Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data, the wolf the icon `wolf-head` from game-icons.net, as in loop.
 
-Its right area has the heading „Umiejętności” with the counter „{n} drzew”, the trees the player knows in the order of the data, each a folded row with its name and „{n} gałęzi”, opened by a click or the keyboard, and an open tree shows each branch with its name, „{n} stopni”, its description from the data and the prices of all its steps in turn; each entering of the screen starts with the trees folded, and before the first known tree the area stands nowhere.
+Its right area has the heading „Umiejętności” with the counter „{n} drzew”, the trees the player knows in the order of the data, each a folded row across the width of the area with its name and „{n} gałęzi”, which a click anywhere on the row opens and folds again, and the keyboard through a small fold „▸” at the start of the row, as the row of a tree on the screen Postać; each entering of the screen starts with the trees folded, and before the first known tree the area stands nowhere. An open tree shows each branch with its name, „{n} stopni”, its description from the data and the prices of all its steps in turn, and under the description, in the computer layout and in the phone layout alike, the line of its steps: the value with no step of the branch bought and then each step in turn with the value it gives and its price, taken from the same data of the game from which the screen Postać writes „teraz → po kupnie”. A branch whose data give no number, as „Obchód”, „Czysty płomień”, „Zwiad” and „Ucisk”, shows its description and its prices with no line of steps.
 
 The counter „{n} poznanych rzeczy” counts the actions, items and creatures together, with no condition and no tree. The counters of the screen decline by the number, as in loop: „1 poznana rzecz”, „3 poznane rzeczy”, „13 poznanych rzeczy”, „1 drzewo”, „3 drzewa”, „8 drzew”, „1 gałąź”, „3 gałęzie”, „1 stopień”, „3 stopnie”.
 
@@ -4848,23 +4849,29 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
   in the order of discovery with the newest thing last, a group with no thing standing nowhere,
   the campfire among the items, each thing with its icon and its name from the data, and no
   sentence in an area that holds no thing; the right area with its heading and its counter, the
-  known trees in the order of the data as folded rows with their numbers of branches, opened by a
-  click, an open tree showing each branch with its name, its number of steps, its description and
-  the prices of all its steps, and the trees folded at each entering of the screen; the right area
-  standing nowhere before the first known tree; no level, no practice, no points, no „Kup” and no
-  change of the game state on the screen; the first counter counting the actions, items and
-  creatures together and the counters declining by their number. For the keyboard in a real
-  browser, which the tests on a document imitation do not show, and for the layout, an agent
-  compares a change with the part no test holds:
-  - complies: Enter and Space on the row of a tree opening it in the browser, as the browser's own
-    click of a native button; in the phone layout the two areas of the screen standing
-    one under the other, each an area of its own
-  - violates: a key handler on the row of a tree that stops Enter or Space, or a row that is no
-    native button; the two areas drawn as one block that the phone layout cannot set apart
+  known trees in the order of the data as folded rows with their names and numbers of branches and
+  a fold at their start, opened by a click anywhere on the row and folded again by a click on the
+  fold, an open tree showing each branch with its name, its number of steps, its description and
+  the prices of all its steps, and the line of its steps — the value with no step bought and each
+  step with its value and price — for a branch whose data give a number and none for a branch whose
+  data give none, and the trees folded at each entering of the screen; the right area standing
+  nowhere before the first known tree; no level, no practice, no points, no „Kup” and no change of
+  the game state on the screen; the first counter counting the actions, items and creatures
+  together and the counters declining by their number. For the keyboard in a real browser, which
+  the tests on a document imitation do not show, and for the layout, an agent compares a change
+  with the part no test holds:
+  - complies: Enter and Space on the fold of the row of a tree opening it in the browser, as the
+    browser's own click of a native button; in the phone layout the two areas of the screen
+    standing one under the other, each an area of its own, and the row of a tree across the width
+    of its area with the line of steps of each open branch under its description, as in the
+    computer layout
+  - violates: a key handler on the fold of a tree that stops Enter or Space, or a fold that is no
+    native button; the row of a tree as wide as its text alone; the two areas drawn as one block
+    that the phone layout cannot set apart; the line of steps hidden in the phone layout
 - **Origin:** none
 
 *Rationale:* the Understanding is the one gain a death never takes, and before this screen the player saw it nowhere, so after losing a character the player saw only what was lost and not what stayed. The predecessor game, loop, has such a screen, with a count of the things known. The screen is for recalling what the player already knows. Buying stands on Postać, so the same rows do not stand on two screens. Accepted with it: one more screen, and with the discoveries the game has today the collection is short.
-*Rejected:* the same rows of skills on two screens, as in loop — the rows of Postać repeated in Wiedza; the left area with, for a game that knows no thing yet, the sentence of loop „Pusto. Zrozumienie rośnie z zetknięcia: odsłania je to, co postać napotka na mapie.” — one sentence and its test more, and a player sees it only where a game starts with no known action; the heading „Poznane” in place of „Zrozumienie” — a departure from loop, which writes „Zrozumienie”, and if the tutorial names the record „Zrozumienie”, the player learns one thing under two names; one list of names with no groups, counters and icons — less than loop, whose screens are the minimum this game takes, and a list with no groups reads worse at a dozen things; the trees always open — about 27 rows at nine trees and eighteen branches, where loop kept the trees folded; the trees under the heading of an archetype, as in loop — today one group with a heading that tells nothing apart, and loop gave the group a description of the archetype that the data of this game do not have; before the first known tree a sentence on the right, such as „Drzewa umiejętności poznasz razem z czynnościami, które rozwijają.” — the area would not stand empty, but the game would announce skills before the player discovers them, which the screen Postać avoids; no rule for the counters — what the first counter counts, conditions and trees included, and how a numeral declines would be left to each author of the screen.
+*Rejected:* the same rows of skills on two screens, as in loop — the rows of Postać repeated in Wiedza with their level, practice, points and buying, which is what this rejects, not the layout of the row of a tree that the two screens share; the branch of an open tree with the words it had before the line of steps, only laid out better — the player still would not learn what a step gives; beside the name of a tree the icons of the actions the tree develops — the same action would stand twice on the screen, in the left area and at the tree; the line of steps in the computer layout alone, the branch in the phone layout without it — a player on a phone would not learn what a step gives, and the decision and the styleguide would tell the two layouts apart, each with a test; the row of a tree as a button with a frame as wide as its text — frames of different lengths, a row ragged at its right edge; the left area with, for a game that knows no thing yet, the sentence of loop „Pusto. Zrozumienie rośnie z zetknięcia: odsłania je to, co postać napotka na mapie.” — one sentence and its test more, and a player sees it only where a game starts with no known action; the heading „Poznane” in place of „Zrozumienie” — a departure from loop, which writes „Zrozumienie”, and if the tutorial names the record „Zrozumienie”, the player learns one thing under two names; one list of names with no groups, counters and icons — less than loop, whose screens are the minimum this game takes, and a list with no groups reads worse at a dozen things; the trees always open — about 27 rows at nine trees and eighteen branches, where loop kept the trees folded; the trees under the heading of an archetype, as in loop — today one group with a heading that tells nothing apart, and loop gave the group a description of the archetype that the data of this game do not have; before the first known tree a sentence on the right, such as „Drzewa umiejętności poznasz razem z czynnościami, które rozwijają.” — the area would not stand empty, but the game would announce skills before the player discovers them, which the screen Postać avoids; no rule for the counters — what the first counter counts, conditions and trees included, and how a numeral declines would be left to each author of the screen.
 
 ### D-421 — Which stylesheets does the browser view have, and what does each hold?
 

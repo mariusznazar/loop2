@@ -1,8 +1,8 @@
 // The screen Wiedza (D-416, D-281, D-282) on jsdom through tests/view/page-document.mjs (D-264): which
 // elements the screen builds, what it shows of the Understanding and of the data, which trees stand
 // folded and open, and that it shows no level and offers no buying. Real keys, focus and the layout of
-// the two areas are the browser check's (D-88); the tree's row is a native button, which a browser
-// opens with Enter and Space.
+// the two areas are the browser check's (D-88); the fold at the start of a tree's row is a native
+// button, which a browser presses with Enter and Space.
 import { assert, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
@@ -39,8 +39,22 @@ const texts = (root, selector) =>
   all(root, selector).map((node) => node.textContent);
 const iconsOf = (root) =>
   all(root, ".icon-mask").map((icon) => icon.style.getPropertyValue("--icon"));
-/** The rows of the trees, the buttons that fold and open them. */
-const rowsOf = (root) => all(root, ".knowledge-tree > button");
+/** The folds of the trees, the buttons at the start of their rows that fold and open them. */
+const rowsOf = (root) => all(root, ".knowledge-tree-row > button");
+/** The row of the tree named `name`, the whole row the player clicks. */
+const rowNamed = (root, name) =>
+  all(root, ".knowledge-tree-row").find(
+    (row) => row.querySelector(".knowledge-tree-name").textContent === name,
+  );
+/** Each open branch as its parts read: its first line, its prices, its description, its steps. */
+const branchesOf = (root) =>
+  all(root, ".knowledge-branch").map((branch) => ({
+    head: branch.querySelector(".knowledge-branch-head").textContent,
+    costs: branch.querySelector(".knowledge-branch-costs").textContent,
+    description: branch.querySelector(".knowledge-branch-description")
+      .textContent,
+    steps: texts(branch, ".knowledge-step"),
+  }));
 
 // Catches an area that says something of nothing known, a right area standing before a tree is known,
 // and a screen without its heading.
@@ -145,21 +159,28 @@ test("the right area lists the known trees in the order of the data, each folded
       ["3 drzewa"],
     );
     assert.deepEqual(
-      rowsOf(page.root).map((row) => [
-        row.textContent,
-        row.getAttribute("aria-expanded"),
-        row.tagName,
-        row.getAttribute("type"),
+      all(page.root, ".knowledge-tree-row").map((row) => [
+        row.querySelector(".knowledge-tree-name").textContent,
+        row.querySelector(".knowledge-tree-branches").textContent,
       ]),
       [
-        ["▸ Eksploracja · 3 gałęzie", "false", "BUTTON", "button"],
-        [
-          "▸ Zbieranie małych przedmiotów · 3 gałęzie",
-          "false",
-          "BUTTON",
-          "button",
-        ],
-        ["▸ Kopanie · 1 gałąź", "false", "BUTTON", "button"],
+        ["Eksploracja", "3 gałęzie"],
+        ["Zbieranie małych przedmiotów", "3 gałęzie"],
+        ["Kopanie", "1 gałąź"],
+      ],
+    );
+    assert.deepEqual(
+      rowsOf(page.root).map((fold) => [
+        fold.textContent,
+        fold.getAttribute("aria-label"),
+        fold.getAttribute("aria-expanded"),
+        fold.tagName,
+        fold.getAttribute("type"),
+      ]),
+      [
+        ["▸", "Eksploracja", "false", "BUTTON", "button"],
+        ["▸", "Zbieranie małych przedmiotów", "false", "BUTTON", "button"],
+        ["▸", "Kopanie", "false", "BUTTON", "button"],
       ],
     );
     assert.equal(all(page.root, ".knowledge-branch").length, 0, "all folded");
@@ -167,55 +188,91 @@ test("the right area lists the known trees in the order of the data, each folded
   });
 });
 
-// Catches a click that opens the wrong tree or closes the others, a branch that lacks its steps, its
-// description or its prices, and a tree that does not fold again.
-test("a click opens a tree to its branches with their steps, descriptions and the price of every step, and a second click folds it", async () => {
-  // decision: D-416 "Its right area has the heading „Umiejętności” with the counter „{n} drzew”, the trees the player knows in the order of the data"
+// Catches a row that only its fold opens, a click that opens the wrong tree or closes the others, a
+// fold that does not say the tree stands open, a branch that lacks its number of steps, its
+// description or its prices, a branch with a number but no line of its steps, a line of steps for a
+// branch whose data give no number, and a tree that does not fold again.
+test("a click anywhere on a tree's row opens it to its branches with their steps, descriptions, prices and the line of their steps, and a click on its fold folds it", async () => {
+  // decision: D-416 "Its right area has the heading „Umiejętności” with the counter „{n} drzew”, the trees the player knows in the order of the data, each a folded row across the width of the area with its name and „{n} gałęzi”, which a click anywhere on the row opens and folds again"
+  // decision: D-416 "An open tree shows each branch with its name, „{n} stopni”, its description from the data and the prices of all its steps in turn, and under the description"
+  // decision: D-416 "A branch whose data give no number"
   await withPage(async (page) => {
     await mount(
       page,
       stateKnowing({ trees: ["exploration", "smallItemGathering"] }),
     );
     const [exploration, gathering] = rowsOf(page.root);
-    await press(gathering);
-    assert.equal(gathering.getAttribute("aria-expanded"), "true");
-    assert.equal(exploration.getAttribute("aria-expanded"), "false");
-    assert.equal(
-      gathering.textContent,
-      "▾ Zbieranie małych przedmiotów · 3 gałęzie",
-    );
-    assert.deepEqual(
-      all(page.root, ".knowledge-branch").map((branch) =>
-        [...branch.children].map((part) => part.textContent),
+    await press(
+      rowNamed(page.root, "Zbieranie małych przedmiotów").querySelector(
+        ".knowledge-tree-branches",
       ),
-      [
-        [
-          "Wprawne oko",
-          "3 stopnie",
-          "Większa szansa zebrania przedmiotu",
-          "1 · 1 · 1 pkt",
-        ],
-        [
-          "Pełna garść",
-          "1 stopień",
-          "Więcej sztuk przy udanym zbieraniu",
-          "3 pkt",
-        ],
-        [
-          "Obchód",
-          "1 stopień",
-          "Zbiera do 12 sztuk bez losowania przez 40 minut",
-          "3 pkt",
-        ],
-      ],
     );
-    await press(exploration);
+    assert.equal(gathering.getAttribute("aria-expanded"), "true");
+    assert.equal(gathering.textContent, "▾");
+    assert.equal(exploration.getAttribute("aria-expanded"), "false");
+    assert.deepEqual(branchesOf(page.root), [
+      {
+        head: "Wprawne oko · 3 stopnie",
+        costs: "1 · 1 · 1 pkt",
+        description: "Większa szansa zebrania przedmiotu",
+        steps: [
+          "bez gałęzi 70 %",
+          "I 75 % · 1 pkt",
+          "II 80 % · 1 pkt",
+          "III 85 % · 1 pkt",
+        ],
+      },
+      {
+        head: "Pełna garść · 1 stopień",
+        costs: "3 pkt",
+        description: "Więcej sztuk przy udanym zbieraniu",
+        steps: ["bez gałęzi 1 szt.", "I 2 szt. · 3 pkt"],
+      },
+      {
+        head: "Obchód · 1 stopień",
+        costs: "3 pkt",
+        description: "Zbiera do 12 sztuk bez losowania przez 40 minut",
+        steps: [],
+      },
+    ]);
+    await press(rowNamed(page.root, "Eksploracja"));
     assert.equal(all(page.root, ".knowledge-branch").length, 6, "both open");
     await press(gathering);
     assert.equal(gathering.getAttribute("aria-expanded"), "false");
-    assert.deepEqual(
-      all(page.root, ".knowledge-branch-name").map((name) => name.textContent),
-      ["Wprawny krok", "Długi krok", "Zwiad"],
+    assert.deepEqual(branchesOf(page.root), [
+      {
+        head: "Wprawny krok · 3 stopnie",
+        costs: "1 · 1 · 1 pkt",
+        description: "Krótsza eksploracja",
+        steps: [
+          "bez gałęzi 20 min",
+          "I 17 min · 1 pkt",
+          "II 14 min · 1 pkt",
+          "III 11 min · 1 pkt",
+        ],
+      },
+      {
+        head: "Długi krok · 3 stopnie",
+        costs: "1 · 1 · 2 pkt",
+        description: "Krótsze przejście między polami",
+        steps: [
+          "bez gałęzi 5 min",
+          "I 3 min · 1 pkt",
+          "II 1 min · 1 pkt",
+          "III 1 min · 2 pkt",
+        ],
+      },
+      {
+        head: "Zwiad · 1 stopień",
+        costs: "3 pkt",
+        description: "Odkrywa również sąsiednie pola",
+        steps: [],
+      },
+    ]);
+    assert.equal(
+      all(page.root, ".knowledge-branch .knowledge-steps").length,
+      2,
+      "no line of steps under Zwiad",
     );
   });
 });
@@ -253,7 +310,7 @@ test("an open tree stays open when the game state is drawn again, and a screen b
 });
 
 // Catches a level, practice, points, a rank bought or a button of buying drawn on the screen, and a
-// control other than the rows of the trees; and a draw that writes anything into the game state.
+// control other than the folds of the trees; and a draw that writes anything into the game state.
 test("the screen shows no level, practice, points or buying, and changes nothing in the game state", async () => {
   // decision: D-416 "The screen Wiedza shows the actions, items and creatures in the Understanding and the skill trees to read, with no levels and no buying"
   await withPage(async (page) => {
@@ -284,7 +341,7 @@ test("the screen shows no level, practice, points or buying, and changes nothing
     const shown = page.root.textContent;
     for (const word of ["poziom", "wprawa", "punkty", "Kup", "→", "kupion"])
       assert.ok(!shown.includes(word), `no "${word}" on the screen`);
-    assert.equal(all(page.root, "button").length, 2, "only the rows of trees");
+    assert.equal(all(page.root, "button").length, 2, "only the folds of trees");
     assert.ok(
       all(page.root, "button").every((button) =>
         button.hasAttribute("aria-expanded"),

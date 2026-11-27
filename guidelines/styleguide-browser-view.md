@@ -1100,10 +1100,10 @@ Katalog (D-325) stoi w jednej kolumnie, od góry:
 
 ### The screen Wiedza
 
-- **Decision:** D-416 · D-280 · D-281 · D-282 · D-291 · D-200 · D-44 · D-39 · D-40 · D-43 · D-396
+- **Decision:** D-416 · D-280 · D-281 · D-282 · D-291 · D-199 · D-200 · D-44 · D-39 · D-40 · D-43 · D-396
 - **Invariant:** none
-- **Good:** Nagłówek „Wiedza” w `text-strong` nad dwoma obszarami; „Czynności · 2” w `text-label` nad wierszami z ikoną w kolorze nazwy; wiersz drzewa „▸ Eksploracja · 3 gałęzie” jako zwykły wspólny przycisk, a po rozwinięciu gałąź z nazwą w `text-strong`, „3 stopnie” w `text-label`, opisem w `text-secondary` i „1 · 1 · 2 pkt” w `text`.
-- **Bad:** Przy drzewie albo gałęzi poziom, wprawa, punkty, kupiony stopień albo „Kup”; zdanie w obszarze, który nie ma jeszcze rzeczy; obszar „Umiejętności” przed pierwszym poznanym drzewem; nazwa rzeczy bez jej ikony; wiersz drzewa w osobnej kontrolce zamiast wspólnego przycisku.
+- **Good:** Nagłówek „Wiedza” w `text-strong` nad dwoma obszarami; „Czynności · 18” w `text-label` nad rzeczami w dwóch kolumnach w układzie komputera i przy 360 px, a w sześciu w oknie układu telefonu szerokim na 1100 px, każda z ikoną w kolorze nazwy; wiersz drzewa na całą szerokość obszaru, pod cienką linią w `divider`, ze zwijakiem „▸” na początku, nazwą „Eksploracja” w `text-strong` i „3 gałęzie” w `text-secondary` przy prawym brzegu; po rozwinięciu gałąź „Długi krok · 3 stopnie” z „1 · 1 · 2 pkt” w kolumnie po prawej, pod nią „Krótsze przejście między polami” w `text-secondary`, a pod opisem linia stopni: „bez gałęzi” nad „5 min”, „I · 1 pkt” nad „3 min”, „II · 1 pkt” nad „1 min” i „III · 2 pkt” nad „1 min”; „Zwiad · 1 stopień” z samym opisem i „3 pkt”.
+- **Bad:** Przy drzewie albo gałęzi poziom, wprawa, punkty do wydania, kupiony stopień, „teraz → po kupnie” albo „Kup”; zdanie w obszarze, który nie ma jeszcze rzeczy; obszar „Umiejętności” przed pierwszym poznanym drzewem; nazwa rzeczy bez jej ikony; rzeczy Zrozumienia w jednej kolumnie; wiersz drzewa jako przycisk z ramką szeroki na swój napis albo rozwijany tylko zwijakiem; zwijak jako osobna kontrolka zamiast wspólnego przycisku; linia stopni schowana w układzie telefonu albo stopień przecięty między dwie linie; linia stopni przy „Zwiad”, „Obchód”, „Czysty płomień” albo „Ucisk”.
 
 Ekran Wiedza (`#/wiedza`, D-416, D-281) ma nagłówek „Wiedza” i pod nim dwa obszary, każdy
 osobny (D-282): po lewej Zrozumienie, po prawej drzewa umiejętności. Nagłówek jest w
@@ -1118,17 +1118,44 @@ between them).
   ikona z danych gry i nazwa w `text`, a ikona jest rysowana maską w kolorze nazwy obok niej,
   jak ikona czynności w edytorze programu (D-291, D-43). Grupa bez rzeczy nie stoi, a obszar bez
   żadnej rzeczy ma sam nagłówek i licznik, bez zdania.
+- Rzeczy grupy stoją w kolumnach, w obu układach tyle, ile zmieści szerokość obszaru, i co
+  najmniej dwie: najmniejsza szerokość kolumny to 12em, szerokość, w której ikona i nazwa
+  „Wytwórz — ognisko” stoją w jednej linii, a gdzie pół obszaru bez odstępu między kolumnami jest
+  węższe — to pół, więc najwęższy obszar też mieści dwie kolumny. Rzeczy idą wierszami, od lewej
+  do prawej, więc najnowsza stoi na końcu, a dłuższa nazwa łamie się między słowami w swojej
+  kolumnie i nie wychodzi poza nią. Szerokość kolumny to wymiar układu, którego D-43 nie liczy.
+  Powód: lista ma rosnąć wszerz, nie w dół, bo projekt dokłada rzeczy do poznania, a wąskie okno
+  komputera jest telefonem i dostaje tyle kolumn, ile zmieści (D-396).
 - Obszar Umiejętności: nagłówek „Umiejętności” w `text-label` i licznik „{n} drzew” w
-  `text-secondary`. Obszaru nie ma, póki gracz nie zna żadnego drzewa. Drzewo to wiersz, a wiersz
-  to zwykły wspólny przycisk (D-44) z tekstem „▸ {nazwa} · {n} gałęzi”, po rozwinięciu „▾”; mówi
-  `aria-expanded`, a rozwija go kliknięcie i klawiatura, Enter albo Spacja, jak każdy przycisk.
-  Jego stany podaje reguła States of shared controls: error, empty i loading go nie dotyczą, bo
-  wiersz nie ma wpisu, listy i nie czeka na serwer. Każde wejście na ekran zaczyna ze zwiniętymi
-  drzewami.
-- Gałąź rozwiniętego drzewa: nazwa w `text-strong`, „{n} stopni” w `text-label`, opis w
-  `text-secondary` i ceny wszystkich stopni po kolei, „1 · 1 · 2 pkt”, w `text`.
-- Ekran nie pokazuje poziomu, wprawy, punktów, kupionych stopni, podglądu „teraz → po kupnie”
-  ani „Kup” i niczego w grze nie zmienia (D-416); kupuje się na ekranie Postać (D-200).
+  `text-secondary`. Obszaru nie ma, póki gracz nie zna żadnego drzewa. Każde wejście na ekran
+  zaczyna ze zwiniętymi drzewami.
+- Wiersz drzewa stoi jak wiersz drzewa na ekranie Postać, bez poziomu, paska i punktów: na całą
+  szerokość obszaru, oddzielony od sąsiednich cienką linią w `divider`; na początku zwijak —
+  zwykły wspólny przycisk „▸”, po rozwinięciu „▾”, z nazwą drzewa jako nazwą dostępną, który mówi
+  `aria-expanded` (D-44) — potem nazwa w `text-strong`, a przy prawym brzegu „{n} gałęzi”
+  w `text-secondary`, w rozmiarze podpisu, jak liczniki obszarów. Kliknięcie w dowolne miejsce
+  wiersza rozwija albo zwija drzewo, a klawiatura dochodzi do zwijaka, który robi to samo Enterem
+  albo Spacją, jak każdy przycisk (D-416). Stany zwijaka podaje reguła States of shared controls:
+  error, empty i loading go nie dotyczą, bo nie ma wpisu, listy i nie czeka na serwer. W układzie
+  telefonu zwijak trzyma cel dotyku jak każdy przycisk, a wiersz rozwija się dotknięciem
+  w dowolnym miejscu.
+- Gałąź rozwiniętego drzewa stoi pod wierszem, wcięta: w pierwszej linii nazwa w `text-strong`
+  i „· {n} stopni” w `text-label`, a ceny wszystkich stopni po kolei, „1 · 1 · 2 pkt”, w `text`
+  w osobnej kolumnie po prawej, jak w starym Loopie; pod nazwą opis w `text-secondary`.
+- Gałąź, której dane dają liczbę, ma pod opisem linię stopni (D-416), w obu układach: najpierw
+  „bez gałęzi” nad wartością bez żadnego stopnia, potem każdy stopień po kolei, jego numer
+  rzymski i „· {cena} pkt” nad wartością, którą daje — numer i „bez gałęzi” w `text-label`, cena
+  w `text-secondary`, oba w rozmiarze podpisu, a wartość w `text`. Stopień jest jednym kawałkiem,
+  który się nie łamie w środku; linia łamie się między stopniami, gdy obszar jest za wąski, i stoi
+  wtedy w kilku rzędach stopni. Gałąź, której dane liczby nie dają, ma sam opis i ceny, bez linii
+  stopni.
+- Ekran nie pokazuje poziomu, wprawy, punktów do wydania, kupionych stopni ani „Kup” i niczego
+  w grze nie zmienia (D-416); kupuje się na ekranie Postać (D-200). Linia stopni bierze liczby
+  z tych samych danych gry co podgląd „teraz → po kupnie” ekranu Postać, ale nie ma słów „teraz”,
+  „po kupnie” ani strzałki, bo nie mówi o żadnej postaci.
+- Ekran mieści się przy obszarze strony 360 px bez przewijania w bok i bez napisu poza ramką,
+  a jego reguł układu telefonu nie sprawdza test, tylko agent w przeglądarce (reguła A change is
+  checked in both layouts).
 - Ekran nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
 
 ### The screen Postać

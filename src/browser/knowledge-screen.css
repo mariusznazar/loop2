@@ -10,10 +10,8 @@
  * `text-strong` as the heading of Siedziba is, over two areas as the columns of Mapy (in styles.css), one
  * under the other in the phone layout, a window under 1280 px (D-396, D-282). The names of the areas and
  * of the groups are names of sections, so `text-label`; the counters are notes, so `text-secondary`; the things stand in `text`
- * with their icons drawn as masks in that colour (D-291, D-43). A tree is a shared button that folds
- * and opens it; a branch's name stands in `text-strong`, its number of ranks in `text-label`, its
- * description in `text-secondary` and its prices in `text`. Focus is the one :focus-visible rule
- * of styles.css.
+ * with their icons drawn as masks in that colour (D-291, D-43). The rows of the trees and their
+ * branches follow below. Focus is the one :focus-visible rule of styles.css.
  */
 .knowledge-heading {
   margin: 0 0 var(--space-s);
@@ -54,34 +52,94 @@
 
 .knowledge-things,
 .knowledge-trees,
-.knowledge-branches {
+.knowledge-branches,
+.knowledge-steps {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+/*
+ * The things of a group stand in columns, as many as the width of the area holds and at least two
+ * (styleguide rule "The screen Wiedza"): a column is at least 12em wide, a width in which an icon and a
+ * name such as „Wytwórz — ognisko” stand on one line, but at most half the area less the gap, so the
+ * narrowest area still holds two. The things run along a row and then down, so the newest thing
+ * stands last. A longer name breaks between its words in its column. The widths are layout
+ * dimensions (D-43).
+ */
+.knowledge-things {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(12em, calc((100% - var(--space-m)) / 2)), 1fr)
+  );
+  column-gap: var(--space-m);
+}
+
 .knowledge-thing {
   display: flex;
-  align-items: center;
-  gap: var(--space-s);
+  align-items: flex-start;
+  gap: var(--space-xs);
   padding: var(--space-2xs) 0;
   color: var(--text);
 }
 
-.knowledge-tree {
-  margin-bottom: var(--space-xs);
+.knowledge-thing-name {
+  min-width: 0;
 }
 
+/*
+ * The row of a tree (D-416), as the row of a tree on the screen Postać but with no level, bar or
+ * points: across the area, set apart from its neighbours by a thin line in `divider`, the fold — a
+ * shared button — at its start, the name in `text-strong` and „{n} gałęzi” at the right edge in
+ * `text-secondary`, a note as the counters of the areas are. A click anywhere on the row opens or
+ * folds the tree.
+ */
+.knowledge-tree {
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.knowledge-tree-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-m);
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+}
+
+.knowledge-tree-name {
+  color: var(--text-strong);
+}
+
+.knowledge-tree-branches {
+  font-size: var(--font-size-label);
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/*
+ * A branch of an open tree, under the row: in its first line the name in `text-strong` and „· {n}
+ * stopni” in `text-label`, the prices of its steps in a column of their own at the right in `text`,
+ * the description under the name in `text-secondary`, and under it the line of its steps, each step
+ * one piece that never breaks inside: its numeral, or „bez gałęzi”, in `text-label`, the value it
+ * gives in `text` and „· {cena} pkt” in `text-secondary`. The line breaks between steps where the
+ * area is too narrow for it.
+ */
 .knowledge-branches {
-  margin: var(--space-xs) 0 var(--space-s) var(--space-l);
+  padding: 0 0 var(--space-s) var(--space-xl);
 }
 
 .knowledge-branch {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: var(--space-2xs) var(--space-s);
-  padding: var(--space-2xs) 0;
+  gap: var(--space-2xs) var(--space-l);
+  padding: var(--space-xs) 0;
+}
+
+.knowledge-branch-head {
+  color: var(--text-label);
 }
 
 .knowledge-branch-name {
@@ -90,13 +148,63 @@
 
 .knowledge-branch-steps {
   font-size: var(--font-size-label);
-  color: var(--text-label);
-}
-
-.knowledge-branch-description {
-  color: var(--text-secondary);
 }
 
 .knowledge-branch-costs {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
   color: var(--text);
+}
+
+.knowledge-branch-description {
+  grid-column: 1;
+  color: var(--text-secondary);
+}
+
+.knowledge-steps {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-xl);
+  margin-top: var(--space-2xs);
+}
+
+.knowledge-step {
+  display: grid;
+  grid-template-areas:
+    "name price"
+    "value value";
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-xs);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.knowledge-step-name {
+  grid-area: name;
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.knowledge-step-value {
+  grid-area: value;
+}
+
+.knowledge-step-price {
+  grid-area: price;
+  font-size: var(--font-size-label);
+  color: var(--text-secondary);
+}
+
+/*
+ * The phone layout of the branches (D-396; styleguide rule "Nothing scrolls to the side in the phone
+ * layout, and no text crosses its frame"): the branches stand less indented, as those of the screen
+ * Postać do, so the line of steps keeps the width it needs. The fold keeps its touch target by the
+ * shared rule of `.button`.
+ */
+@media (width < 1280px) {
+  .knowledge-branches {
+    padding-left: var(--space-m);
+  }
 }
