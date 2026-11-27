@@ -23,7 +23,10 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
+import { programFromRules } from "../sim/program-fixture.mjs";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
@@ -294,6 +297,102 @@ test("an attack places the paragraph at its minute among the entries, and the ne
   ]);
   assert.deepEqual(rowsOf(chronicle, "combat"), [{ paragraph: 20 }]);
   assert.equal(chronicle.snapshot().paragraph.minute, 20);
+});
+
+// Catches the refill of the empty main hand left out of the chronicle, given in more than one line for
+// one encounter, or put before the paragraph of its own encounter, which it follows in time.
+test("an encounter whose strike refilled the main hand gives one line of it after its paragraph, among the actions, and a strike that did not refill gives none", () => {
+  // decision: D-340 "The refill of an empty slot of the gear (D-457) gives one entry of its own"
+  const { chronicle, state } = sentChronicle();
+  const turn = (refill) => ({
+    kind: "combatExchange",
+    minute: 10,
+    exchange: {
+      creatureAction: { kind: "strike", damage: 7, characterHealth: 93 },
+      characterAction: {
+        ruleId: 1,
+        action: { kind: "strikeWithStick" },
+        refill,
+        damage: 6,
+        creatureHealth: 12,
+        characterHealth: 93,
+      },
+    },
+  });
+  const ended = {
+    kind: "combatEnded",
+    minute: 10,
+    outcome: "creatureDefeated",
+  };
+  recordEvents(chronicle, state, [attacked(5)]);
+  recordEvents(chronicle, state, [turn(true), turn(false), ended]);
+  const line = entry(10, "action", "Bierze patyk z plecaka do ręki");
+  assert.deepEqual(rowsOf(chronicle), [line, { paragraph: 5 }, waitAt(0)]);
+  assert.deepEqual(rowsOf(chronicle, "action"), [line, waitAt(0)]);
+  assert.deepEqual(rowsOf(chronicle, "combat"), [{ paragraph: 5 }]);
+
+  recordEvents(chronicle, state, [attacked(30)]);
+  recordEvents(chronicle, state, [turn(false), ended]);
+  assert.deepEqual(rowsOf(chronicle), [{ paragraph: 30 }, line, waitAt(0)]);
+});
+
+// Catches a refill the simulation makes that the chronicle never hears of: the events of a map run
+// the simulation plays, with a character who holds no stick and carries three, fighting a wolf.
+test("a real encounter in which the strike takes a stick into the empty hand gives the line of it among the entries, once, after its paragraph", () => {
+  // decision: D-340 "The refill of an empty slot of the gear (D-457) gives one entry of its own"
+  const map = MAPS.forestDeep;
+  const program = programFromRules({
+    condition: { kind: "always" },
+    action: { kind: "strikeWithStick" },
+  });
+  const noGear = {
+    mainHand: null,
+    secondHand: null,
+    head: null,
+    torso: null,
+    legs: null,
+    pocket1: null,
+    pocket2: null,
+    pocket3: null,
+  };
+  const threeSticks = { stick: 3, berry: 0, moss: 0, fiber: 0, bandage: 0 };
+  let events = [];
+  let run = null;
+  for (let seed = 1; seed < 50 && events.length === 0; seed += 1) {
+    run = newMapRun(
+      map,
+      seed,
+      program,
+      { mapId: "forestDeep", characterId: 1 },
+      undefined,
+      {},
+      threeSticks,
+      noGear,
+    ).run;
+    const played = [];
+    while (!run.death && !run.completion && run.minute < 2000) {
+      const step = stepMinute(run, map, program);
+      run = step.run;
+      played.push(...step.events);
+      if (played.some((event) => event.kind === "combatEnded")) break;
+    }
+    if (played.some((event) => event.kind === "combatEnded")) events = played;
+  }
+  assert.ok(events.length > 0, "a seed gives an encounter");
+  const chronicle = createChronicle({ run: null });
+  chronicle.record({ state: { run }, events }, { run: null });
+  const resolved = events.find((event) => event.kind === "combatEnded");
+  const rows = rowsOf(chronicle);
+  const lines = rows.filter(
+    (row) => row.text === "Bierze patyk z plecaka do ręki",
+  );
+  assert.deepEqual(lines, [
+    entry(resolved.minute, "action", "Bierze patyk z plecaka do ręki"),
+  ]);
+  assert.ok(
+    rows.indexOf(lines[0]) < rows.findIndex((row) => "paragraph" in row),
+    "the line stands above the paragraph, which it follows in time",
+  );
 });
 
 // Catches a wait after an attack given no entry: the encounter ended the wait before it.

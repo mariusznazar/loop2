@@ -139,6 +139,37 @@ test("a strike that refilled the empty main hand reads its refill as an element 
   );
 });
 
+// Catches a refill that leaves no line of its own in the chronicle, a line that keeps the actor the
+// paragraph of the encounter gives it, a line for a turn that did not refill and one for a turn in
+// which the character did nothing.
+test("the chronicle writes the refill of an empty main hand as a line of its own with no actor, at the minute the turns resolve", () => {
+  // decision: D-340 "The refill of an empty slot of the gear (D-457) gives one entry of its own"
+  const turn = (characterAction) => ({
+    kind: "combatExchange",
+    minute: 15,
+    exchange: {
+      creatureAction: { kind: "strike", damage: 7, characterHealth: 93 },
+      characterAction,
+    },
+  });
+  const strike = (refill) => ({
+    ruleId: 1,
+    action: { kind: "strikeWithStick" },
+    refill,
+    damage: 6,
+    creatureHealth: 18,
+    characterHealth: 93,
+  });
+  assert.deepEqual(eventEntry(turn(strike(true)), null), {
+    kind: "action",
+    minute: 15,
+    text: "Bierze patyk z plecaka do ręki",
+    role: "text",
+  });
+  assert.equal(eventEntry(turn(strike(false)), null), null);
+  assert.equal(eventEntry(turn(null), null), null);
+});
+
 // decision: D-367 "The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading."
 test("the end of „Załóż” in the same reading as a gathering leaves the scene no effect of the gathering", () => {
   const program = setProgram(

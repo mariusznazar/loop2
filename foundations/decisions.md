@@ -7082,7 +7082,7 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141 · derives from D-338
 - **Verification:** invariants: rule-state-from-pick. tests: the last encounter's facts kept in the
   map run and its paragraph in `text` standing as one entry of the chronicle at the game minute of
-  the attack, with no entry for an exchange or the end of the encounter and nowhere in the world
+  the attack, with no entry for an exchange of blows or the end of the encounter and nowhere in the world
   area, giving the creature's starting health and program before the turns and each action and its
   outcome in order with the result after them; the paragraph standing through „Wznów”, an edit and a
   load until the next attack moves it or „Restart” or „Zakończ” removes it, and a completion before
@@ -11600,21 +11600,34 @@ Jagoda”, „Eksploruj” or „Zjedz — jagoda”, with no number of a rule a
 wait gives one entry of the same kind when it starts, „Czeka — żadna reguła nie pasuje”, and none
 for the game minutes it lasts.
 
+The refill of an empty slot of the gear (D-457) gives one entry of its own, „Bierze patyk z plecaka
+do ręki” for the main hand, with no name of an actor, at the game minute the turns of its encounter
+resolve.
+
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-338 · derives from D-334
+- **Relations:** derives from D-338 · derives from D-334 · derives from D-457
 - **Verification:** tests: the entry of the start of an action in the words of its rule's row, with
   no number of a rule, and no entry at the end of an action; one entry „Czeka — żadna reguła nie
   pasuje” when a wait starts and none for the game minutes it lasts, a wait after an attack and a
-  wait after a load in an action each giving its entry.
+  wait after a load in an action each giving its entry; one entry „Bierze patyk z plecaka do ręki”
+  for the refill of an empty main hand in a turn of an encounter, with no actor, at the game minute
+  the turns resolve and after the paragraph of its encounter, and none for a turn with no refill.
 - **Origin:** none
 
 *Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
 entry leads to its rule, and the entry of a wait shows when the character stood because no rule fit;
 loop noted the start of an action and a wait too, in words of its own. Accepted with it: the
 chronicle does not show which rule started an action, nor that a gathering brought nothing; why a
-rule did not start is told by the bar at the rule (D-308).
-*Rejected:* entries of actions with no entry of a wait — the chronicle does not show when the
+rule did not start is told by the bar at the rule (D-308). The paragraph of an encounter writes the
+refill of the hand with the name of its actor, as every element of the paragraph reads (D-147), and
+the entries of the chronicle name no actor, so the refill has its own entry, since a piece taken
+into the hand is a change of the gear that the player follows among the actions, as the start of
+„Załóż” is (D-458). Accepted with it: the refill stands twice in the chronicle, in its own entry and
+in the paragraph of its encounter.
+*Rejected:* the refill written only in the paragraph of its encounter, with its actor — the
+chronicle then shows no line of it among the actions, though the start of „Załóż” has one; entries
+of actions with no entry of a wait — the chronicle does not show when the
 character stood because no rule fit; the number of the rule in the entry, as „Zbierz — Patyk ·
 reguła 2.1” — numbers change when rules move, so an old entry would point to another rule, and the
 lines grow longer; an entry at the start and another with the outcome, as in loop („Wrócił z niczym:

@@ -2,8 +2,9 @@
  * The row of a place of the gear: the name the player reads for a slot of that place, the words
  * that name the place in the line of gear on the screen of a map run, absent where no item of the
  * data fits the place yet, and the words of an action that takes a piece from the backpack into an
- * empty slot of the place when it uses it (D-457), after the name of the one who acts, absent where
- * no action of the data takes a piece from the place yet.
+ * empty slot of the place when it uses it (D-457), after the name of the one who acts in the paragraph
+ * of an encounter and with its first letter capitalized, with no actor, in the chronicle (D-340),
+ * absent where no action of the data takes a piece from the place yet.
  */
 type PlaceRow = { name: string; line?: string; refill?: string };
 
