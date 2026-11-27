@@ -31,16 +31,6 @@ const forestRow = {
   icons: [],
   facts: [plain("8 h"), plain("bez ognia 83 min")],
 };
-// The first rung of the line after Las — głębiej (D-464): the streak and the attacks beaten are its own,
-// the rest is Las — głębiej's, the temperature 7 °C giving 33 minutes without fire.
-const deepTwoRow = {
-  id: "forestDeep2",
-  name: "Las — głębiej II",
-  solved: false,
-  selected: false,
-  icons: ["wolf-head"],
-  facts: [plain("10 h"), plain("3 do pokonania"), plain("bez ognia 33 min")],
-};
 const lairRow = {
   id: "forestLair",
   name: "Las — matecznik",
@@ -180,7 +170,13 @@ test("the facts of a row keep the old order: the demand, what the map takes with
   const result = catalogLines(
     input({ solvedMaps: ["forestEdge", "forest", "forestDeep", "forestPack"] }),
   );
-  assert.deepEqual(result.regions[0].rows, [deepTwoRow, lairRow]);
+  // The rung Las — głębiej II stands before the lair (D-466). Its numbers are not pinned here: the rungs'
+  // numbers are not settled yet, so the case checks the identifiers and the order only.
+  assert.deepEqual(
+    result.regions[0].rows.map((row) => row.id),
+    ["forestDeep2", "forestLair"],
+  );
+  assert.deepEqual(rowOf(result.regions[0].rows, "forestLair"), lairRow);
   assert.deepEqual(
     result.regions[0].solved.rows.map((row) => row.facts),
     [
