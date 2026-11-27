@@ -260,4 +260,6 @@ One run of `progression --maps forest --out .runs/<name>.md` on seeds 1-100 took
 wall-clock time, the build of about two seconds included, measured once with the `time` command. The
 second table adds one more measurement of each map that another map opens, from its opener's
 character: a run that names `forest` measures `forest` twice and its opener `forestEdge` once, and
-prints the rows of `forest` only. The full run over every map on seeds 1-500 was not timed.
+prints the rows of `forest` only. The full run over every map on seeds 1-500, with all the reference
+programs, took about 4 minutes 27 seconds of wall-clock time, the build included, measured once with the
+`time` command, with nothing else running.
