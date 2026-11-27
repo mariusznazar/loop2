@@ -265,6 +265,46 @@ test("a map is also measured with the character of the map that opens it, and is
   assert.equal(edge.harder, null);
 });
 
+// Catches the comparison measured without the stock that the maps before the opener give. The
+// practice enters a measured run only through the ranks of a branch that opens an action, and the
+// practice of Las buys none, so a comparison measured with no practice gives the same share here.
+// decision: D-448 "A map is harder than the map that opens it: measured with one character on both maps — the one the balance instrument's mode `progression` builds for the map that opens it, from what the maps before that one gave —"
+test("a map whose opener stands after other maps is compared with the practice and the stock the opener was measured with", () => {
+  const programIds = ["forestBest", "forestDeepBest"];
+  const { rows, maps } = measureProgression({
+    mapIds: ["forest", "forestDeep"],
+    seeds: SEEDS,
+    programIds,
+  });
+  const forest = maps.find((map) => map.mapId === "forest");
+  const deep = maps.find((map) => map.mapId === "forestDeep");
+  assert.equal(deep.opener, "forest");
+  // The opener's character: the practice Las was measured with and, for each program, the stock its
+  // row of Las brought out by manual runs of Skraj lasu, the map before Las.
+  const shareWith = (programId, chest) =>
+    sweep({
+      mapId: "forestDeep",
+      program: REFERENCE_PROGRAMS[programId],
+      seeds: SEEDS,
+      skills: skillsFor(REFERENCE_PROGRAMS[programId], forest.practiceIn),
+      chest,
+    }).summary.solvedShare;
+  const openerStock = (programId) =>
+    rows.find((row) => row.mapId === "forest" && row.programId === programId)
+      .stock.chest;
+  const expected = Math.max(
+    ...programIds.map((programId) =>
+      shareWith(programId, openerStock(programId)),
+    ),
+  );
+  assert.ok(
+    expected > Math.max(...programIds.map((id) => shareWith(id, {}))),
+    "precondition: the stock of the maps before the opener changes the best share",
+  );
+  assert.equal(deep.withOpenerShare, expected);
+  assert.equal(deep.openerBestShare, forest.bestShare);
+});
+
 // decision: D-438 "In one measurement of the balance instrument in its mode `progression`, a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500"
 test("a map whose best program solves one seed of eight, a share far below a fifth, is solvable", () => {
   const { rows, maps } = measureProgression({
