@@ -1,3 +1,4 @@
+import { takesItem, type ItemAction } from "./action-targets.js";
 import {
   BRANCHES,
   SKILLS,
@@ -5,9 +6,17 @@ import {
   type BranchDef,
   type BranchEffect,
   type BranchId,
+  type GrownPair,
+  type SkillDef,
   type SkillId,
 } from "./data/skills.js";
-import type { Action, CharacterSkills, GameState, Practice } from "./types.js";
+import type {
+  Action,
+  CharacterSkills,
+  GameState,
+  ItemId,
+  Practice,
+} from "./types.js";
 import type { GameResult } from "./game.js";
 
 /** New characters own only practice and purchased ranks; all other skill values are derived. */
@@ -110,14 +119,48 @@ export function branchActionAvailable(
   });
 }
 
-/** One successful effect grants one practice, regardless of pieces moved or tiles revealed. */
+/** The item an action names as its target; undefined for an action that takes no item. */
+export function targetItem(action: Action): ItemId | undefined {
+  return takesItem(action.kind) ? (action as ItemAction).item : undefined;
+}
+
+/**
+ * Whether a pair of a character skill covers an action's verb and target: the verb is the same and
+ * the pair names no item, which covers every target of its verb, or names the action's item.
+ */
+export function pairCovers(
+  pair: GrownPair,
+  action: Action["kind"],
+  item?: ItemId,
+): boolean {
+  return (
+    pair.action === action && (pair.item === undefined || pair.item === item)
+  );
+}
+
+/** The character skills, in the order of the data, whose pairs cover an action's verb and target. */
+export function skillsGrowing(
+  action: Action["kind"],
+  item?: ItemId,
+): SkillId[] {
+  return (Object.keys(SKILLS) as SkillId[]).filter((skill) =>
+    (SKILLS[skill] as SkillDef).grownBy.some((pair) =>
+      pairCovers(pair, action, item),
+    ),
+  );
+}
+
+/**
+ * One successful effect grants one practice, regardless of pieces moved or tiles revealed, to the
+ * character skill whose pair covers the action's verb and, for an action that takes an item, its
+ * item.
+ */
 export function practiced(
   practice: Practice,
   action: Action["kind"],
+  item?: ItemId,
 ): Practice {
-  const id = (Object.keys(SKILLS) as SkillId[]).find((skill) =>
-    (SKILLS[skill].actions as readonly string[]).includes(action),
-  );
+  const id = skillsGrowing(action, item)[0];
   return id ? { ...practice, [id]: (practice[id] ?? 0) + 1 } : practice;
 }
 

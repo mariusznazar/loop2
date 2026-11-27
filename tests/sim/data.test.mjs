@@ -646,19 +646,30 @@ test("the character skills grow the listed pairs of verb and target, and the wal
   // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
-    Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
+    Object.values(SKILLS).map((skill) => [skill.name, skill.grownBy]),
     [
-      ["Eksploracja", ["explore"]],
-      ["Zbieranie małych przedmiotów", ["gather", "patrol"]],
-      ["Wytwarzanie ogniska", ["craftCampfire", "feedCampfire"]],
-      ["Jedzenie", ["eat"]],
-      ["Rzucanie czaru Płomyk", ["lightCampfire", "lightItem"]],
-      ["Walka bronią jednoręczną", ["strikeWithStick"]],
-      ["Kopanie", ["kick"]],
-      ["Unik przed ciosem", ["dodge"]],
+      ["Eksploracja", [{ action: "explore" }]],
+      [
+        "Zbieranie małych przedmiotów",
+        [{ action: "gather" }, { action: "patrol" }],
+      ],
+      [
+        "Wytwarzanie ogniska",
+        [{ action: "craftCampfire" }, { action: "feedCampfire" }],
+      ],
+      ["Jedzenie", [{ action: "eat" }]],
+      [
+        "Rzucanie czaru Płomyk",
+        [{ action: "lightCampfire" }, { action: "lightItem" }],
+      ],
+      ["Walka bronią jednoręczną", [{ action: "strikeWithStick" }]],
+      ["Kopanie", [{ action: "kick" }]],
+      ["Unik przed ciosem", [{ action: "dodge" }]],
     ],
   );
-  const grown = Object.values(SKILLS).flatMap((skill) => skill.actions);
+  const grown = Object.values(SKILLS).flatMap((skill) =>
+    skill.grownBy.map((pair) => pair.action),
+  );
   assert.equal(new Set(grown).size, grown.length, "an action in two skills");
   const free = Object.keys(ACTIONS).filter((id) => !grown.includes(id));
   assert.deepEqual(free, [

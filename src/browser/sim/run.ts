@@ -28,6 +28,7 @@ import {
   practiced,
   skillBonus,
   sumPractice,
+  targetItem,
 } from "./skills.js";
 import { neighbours, sameHex, tileAt } from "./hex.js";
 import { drawLayout } from "./layout.js";
@@ -672,7 +673,8 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
       });
     } else {
       const used = finishUse(landed, action);
-      if (used !== landed) practice = practiced(practice, action.kind);
+      if (used !== landed)
+        practice = practiced(practice, action.kind, targetItem(action));
       landed = used;
       character = landed.character;
     }

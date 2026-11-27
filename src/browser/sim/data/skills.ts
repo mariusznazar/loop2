@@ -1,56 +1,75 @@
 import type { ActionId } from "./actions.js";
+import type { ItemId } from "./items.js";
 import type { Revelation } from "./revelations.js";
+
+/**
+ * A pair of verb and target that a character skill grows (D-193): an action and, for an action that
+ * takes an item as its target, optionally that item. A pair with no item covers every target of its
+ * verb.
+ */
+export type GrownPair = {
+  action: ActionId;
+  item?: ItemId;
+};
 
 export type SkillDef = {
   /** Name shown to the player. */
   name: string;
-  /** The actions, each a pair of verb and target, that the skill grows. */
-  actions: readonly ActionId[];
+  /** The pairs of verb and target that the skill grows. */
+  grownBy: readonly GrownPair[];
   thresholds: readonly number[];
   /**
-   * The event that reveals the skill's tree where its first action is no event of its own: present
+   * The event that reveals the skill's tree where its first pair is no event of its own: present
    * only for a skill whose first action the Understanding holds from the start of a new game. A
-   * tree of any other skill enters the Understanding with the first action it grows.
+   * tree of any other skill enters the Understanding with the first pair it grows.
    */
   revealedBy?: Revelation;
 };
 
 /**
- * The character skills. An action that no skill grows stands in none and is open to every
+ * The character skills. An action whose pair no skill grows stands in none and is open to every
  * character: the walks "Wędruj", "Idź" and "Idź — ognisko".
  */
 const skills = {
   exploration: {
     name: "Eksploracja",
-    actions: ["explore"],
+    grownBy: [{ action: "explore" }],
     thresholds: [15, 45, 100, 200],
     revealedBy: { kind: "explored" },
   },
   smallItemGathering: {
     name: "Zbieranie małych przedmiotów",
-    actions: ["gather", "patrol"],
+    grownBy: [{ action: "gather" }, { action: "patrol" }],
     thresholds: [30, 80, 160, 280, 450],
   },
   campfireCrafting: {
     name: "Wytwarzanie ogniska",
-    actions: ["craftCampfire", "feedCampfire"],
+    grownBy: [{ action: "craftCampfire" }, { action: "feedCampfire" }],
     thresholds: [20, 55, 110, 190],
   },
-  eating: { name: "Jedzenie", actions: ["eat"], thresholds: [15, 40, 80] },
+  eating: {
+    name: "Jedzenie",
+    grownBy: [{ action: "eat" }],
+    thresholds: [15, 40, 80],
+  },
   flameSpell: {
     name: "Rzucanie czaru Płomyk",
-    actions: ["lightCampfire", "lightItem"],
+    grownBy: [{ action: "lightCampfire" }, { action: "lightItem" }],
     thresholds: [2, 6, 14],
   },
   oneHandedCombat: {
     name: "Walka bronią jednoręczną",
-    actions: ["strikeWithStick"],
+    grownBy: [{ action: "strikeWithStick" }],
     thresholds: [15, 40, 100, 300],
   },
-  kicking: { name: "Kopanie", actions: ["kick"], thresholds: [10, 30] },
+  kicking: {
+    name: "Kopanie",
+    grownBy: [{ action: "kick" }],
+    thresholds: [10, 30],
+  },
   dodging: {
     name: "Unik przed ciosem",
-    actions: ["dodge"],
+    grownBy: [{ action: "dodge" }],
     thresholds: [4, 15],
   },
 } as const;
