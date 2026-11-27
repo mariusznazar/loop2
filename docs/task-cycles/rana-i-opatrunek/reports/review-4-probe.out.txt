@@ -1,7 +1,0 @@
-fitsSlot(splint, pocket1): false
-combatPiece(splint in backpack, empty pockets): {"slot":"pocket1","refill":true}
-first turn with Ucisk — szyna: {"ruleId":1,"action":{"kind":"pressure","item":"splint"},"refill":true,"damage":0,"creatureHealth":24,"characterHealth":43}
-backpack splint after: 0
-turn kinds in the saved fight: ["pressure","kick","pressure","kick","kick","kick","kick","kick","kick","kick"]
-load with the branch removed: ok: true
-loaded turn 0: {"ruleId":1,"action":{"kind":"pressure","item":"bandage"},"refill":false,"damage":0,"creatureHealth":24,"characterHealth":58}
