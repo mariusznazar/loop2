@@ -85,7 +85,8 @@ The way into a map run:
    fill „Adres e-mail”, „Hasło” (at least 12 characters) and „Powtórz hasło”, and click „Załóż konto”
    under the fields. „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” is
    expected here.
-2. In „Drużyna”, fill „Imię nowej postaci” and click „Załóż”.
+2. In „Drużyna”, fill „Imię nowej postaci” in the tile at the end of the cards and click „Załóż”. A new
+   team has that tile open; a team that holds a character opens it with „+ postać” first.
 3. Click „Mapy” in the bar, then the row „Skraj lasu” in the list, then „Wejdź” at the character (its button
    reads „Wejdź: <name>, mapa Skraj lasu”). The line „Minuta …” appears and its number grows once a second
    at the pace 1×.
@@ -343,7 +344,8 @@ state, then start the loop with `startLoop(state, { mapId, characterId }, realMs
 `src/browser/sim/loop.ts`, which refuses a map not among the solved ones. `loadSavedGame` refuses a
 document whose loop breaks the rules of `earningLoop` in `src/browser/sim/saved-game.ts`: the map must be solved,
 the run going on and the character's own, `completed` below `runNumber`, and `inARow` not above
-`loopRecord`, which is not above `completed`. To get the report „Gdy cię nie było” of a return,
+`loopRecord`, which is not above `completed`. To get the report of a return — the sentence „Bez ciebie …”
+above „Drużyna” and its lines in the cards of the characters —
 stamp the document with a time hours back, `savedGame(withSaveTime(state, Date.now() - 6 * 3600 *
 1000))`, send it as above and reload at once.
 
