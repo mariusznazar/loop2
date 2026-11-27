@@ -90,8 +90,8 @@ export function ValueCellParts({ cell }: { cell: CellParts }) {
 
 /**
  * The face of the tile of a slot of the gear: the icon of a piece drawn as a mask, in the colour of
- * the text beside it (D-43), hidden from a reader of the screen, since the button carries the piece's
- * name; or the pale name of the slot. The look stands in `styles.css`.
+ * the text beside it (D-43), hidden from a reader of the screen, since the button carries the name the
+ * screen gives it; or the pale name of the slot. The look stands in `styles.css`.
  */
 function TileFaceParts({ face }: { face: TileFace }) {
   return "icon" in face ? (
@@ -136,9 +136,9 @@ type ReactButtonCommon = {
 
 /**
  * What a screen gives the tile of a slot of the gear: the icon of the piece the slot holds, as the
- * file name in `assets/icons` without the extension, with the piece's name, which is the button's
- * name for a reader of the screen since the tile shows the icon alone; or, for a slot that holds
- * nothing, the name of the slot, which the tile shows pale in place of an icon.
+ * file name in `assets/icons` without the extension, with the name the button has for a reader of
+ * the screen since the tile shows the icon alone — the screen writes it „{miejsce}: {rzecz}” — or,
+ * for a slot that holds nothing, the name of the slot, which the tile shows pale in place of an icon.
  */
 export type TileFace = { icon: string; name: string } | { slotName: string };
 

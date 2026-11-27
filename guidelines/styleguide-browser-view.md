@@ -1118,7 +1118,7 @@ between them).
 - **Decision:** D-445 · D-446 · D-447 · D-454 · D-461 · D-462 · D-199 · D-200 · D-217 · D-218 · D-244 · D-245 · D-287 · D-280 · D-282 · D-272 · D-288 · D-289 · D-291 · D-389 · D-39 · D-40 · D-43 · D-44 · D-396
 - **Invariant:** none
 - **Good:** Lewy blok z imieniem w `text-strong` u góry, pod nim „pokolenie 2”, znaczek maga i „Mag żywiołów” w `text-secondary`, pod nimi ramka z „W obozie” w `text`, a pod ramką sekcja „Wyposażenie” z nagłówkiem w `text-label`: ludzik dwa razy większy niż na pasie obozu, na płaskim tle bloku, pośrodku ośmiu kwadratowych kafelków — po lewej „Głowa”, „Tułów” i „Nogi”, po prawej „Ręka główna” i „Druga ręka”, pod nim trzy kieszenie — z samą ikoną patyka w `text-strong` na kafelku ręki głównej i z bladymi nazwami miejsc w `text-label` na pustych; po dotknięciu kafelka ręki jego ramka w `selected`, a pod kafelkami „Ręka główna: patyk” w `text-strong` i komórki wyboru, wśród nich „Zdejmij” bez ikony, a gdy skrzynka jest pełna, wyszarzone z powodem „skrzynka pełna” w `text-secondary`; przy postaci w pętli nad kafelkami „Postać jest w pętli. Zmiana działa od następnego przejścia.” w `text-secondary`; w prawym bloku wiersz drzewa „▸ Eksploracja · poziom 4 · pasek · 100 / 200 · 3 pkt” z paskiem o torze w `text-disabled` i wypełnieniu w `text`, „3 pkt” w `text-strong`, a zaraz po nazwie „+1 pkt czeka w pętli” w `text`.
-- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik obok imienia u góry lewego bloku albo w wielkości ludzika z pasa obozu; ludzik na kawałku polany albo z tekstem na nim; nazwa przedmiotu albo liczba napisana na kafelku z ikoną; wybrany kafelek zaznaczony tłem `highlight` zamiast ramki w `selected`; blada nazwa miejsca w `text-disabled`, jakby miejsca nie dało się użyć; kafelek miejsca, do którego nic nie pasuje, ukryty do chwili, gdy gracz ma pasujący przedmiot; kafelek jako `<button>` ekranu z klasą własną albo kafelek niższy albo węższy niż `--touch-target-min` w układzie telefonu; „Zdejmij” z ikoną; wyszarzona komórka wyboru bez powodu; sekcja „Wyposażenie” w prawym bloku nad „Umiejętnościami”; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte i kafelek wybrany przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
+- **Bad:** Pasek wprawy w `positive` albo jego tor w `highlight`, którego na `panel` prawie nie widać; „+1 pkt czeka w pętli” na zielono; ramka z nagłówkiem albo z przyciskiem innym niż „Zatrzymaj”; ludzik obok imienia u góry lewego bloku albo w wielkości ludzika z pasa obozu; ludzik na kawałku polany albo z tekstem na nim; nazwa przedmiotu albo liczba napisana na kafelku z ikoną; kafelek z ikoną, który czytnik ekranu czyta samą nazwą przedmiotu, bez miejsca; wybrany kafelek zaznaczony tłem `highlight` zamiast ramki w `selected`; blada nazwa miejsca w `text-disabled`, jakby miejsca nie dało się użyć; kafelek miejsca, do którego nic nie pasuje, ukryty do chwili, gdy gracz ma pasujący przedmiot; kafelek jako `<button>` ekranu z klasą własną albo kafelek niższy albo węższy niż `--touch-target-min` w układzie telefonu; „Zdejmij” z ikoną; wyszarzona komórka wyboru bez powodu; sekcja „Wyposażenie” w prawym bloku nad „Umiejętnościami”; ekran w jednej kolumnie w układzie komputera albo w dwóch kolumnach w układzie telefonu; drzewa rozwinięte i kafelek wybrany przy wejściu na ekran; zwijak drzewa jako osobna kontrolka zamiast wspólnego przycisku.
 
 Ekran Postać (`#/postac/{n}`, D-281) ma dwa obszary, każdy osobny (D-282), i każdy stoi w bloku
 `screen-area`, jak kolumny ekranów Siedziba, Mapy, Wiedza i Przejście: na tle `panel` z cienką ramką
@@ -1159,8 +1159,10 @@ wtedy nad „Umiejętnościami” prawego.
   także to, do którego nic z danych gry jeszcze nie pasuje: jest wtedy puste (D-454).
   - Kafelek miejsca, które coś trzyma, pokazuje samą ikonę przedmiotu z danych gry, tę samą co przy
     rzeczy w obszarze Zrozumienie ekranu Wiedza, rysowaną maską w `text-strong`, bo obok niej nie
-    ma tekstu (D-43, jak ikona nad głową maga); nazwy przedmiotu ani liczby na nim nie ma, nazwę
-    przedmiotu czyta czytnik ekranu.
+    ma tekstu (D-43, jak ikona nad głową maga); nazwy przedmiotu ani liczby na nim nie ma, a czytnik
+    ekranu czyta miejsce i przedmiot razem, „{miejsce}: {rzecz}” („Ręka główna: patyk”), tak jak
+    brzmi nagłówek wyboru, z kieszeniami po numerach („Kieszeń 1: opatrunek”), więc trzy opatrunki
+    w trzech kieszeniach nie brzmią jednakowo.
   - Kafelek miejsca, które nic nie trzyma, pokazuje bladą nazwę miejsca w `text-label`: bladość daje
     rola, nie przezroczystość ani nowy kolor. Nie jest w `text-disabled`, bo `text-disabled` mówi,
     że tego nie da się teraz użyć, a puste miejsce da się wybrać.
@@ -1173,7 +1175,8 @@ wtedy nad „Umiejętnościami” prawego.
   albo „Zdejmij” też zamyka wybór. Każde wejście na ekran zaczyna bez wybranego kafelka, jak drzewa
   zaczynają zwinięte.
   - Nad komórkami stoi nagłówek „{miejsce}: {rzecz}”, a przy pustym miejscu „{miejsce}: nic”,
-    w `text-strong`, bo to nazwa, na którą patrzy się najpierw (D-40).
+    z kieszeniami po numerach — „Kieszeń 1: opatrunek”, „Kieszeń 2: nic” — w `text-strong`, bo to
+    nazwa, na którą patrzy się najpierw (D-40).
   - Komórki to komórki wyboru wspólnej kontrolki, te same, których używa wybór czynności w edytorze
     programu (reguła States of shared controls, D-288): jedna na każdy przedmiot ze skrzynki, który
     pasuje do miejsca, z ikoną przedmiotu rysowaną maską w kolorze nazwy obok (D-291, D-43), nazwą

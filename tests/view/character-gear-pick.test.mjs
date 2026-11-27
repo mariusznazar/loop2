@@ -141,7 +141,7 @@ test("a touch of the tile of a held slot opens the pick of the chest's items tha
 
     // A pocket holds nothing: its pick lists the bandages the chest holds, and no „Zdejmij”.
     await press(tile(page.root, "pocket2"));
-    assert.equal(headingOf(page.root), "Kieszeń: nic");
+    assert.equal(headingOf(page.root), "Kieszeń 2: nic");
     assert.deepEqual(facesOf(page.root), [
       {
         name: "3 × opatrunek",
@@ -153,9 +153,10 @@ test("a touch of the tile of a held slot opens the pick of the chest's items tha
   });
 });
 
-// Catches a heading that names the pocket by its number or a place with the piece of another slot, and a
-// pick that stays out of the document where the slot holds nothing and the chest nothing that fits.
-test("the heading of a pick says „{miejsce}: {rzecz}” for a held slot and „{miejsce}: nic” for an empty one, the pockets by the one name of their place", async () => {
+// Catches a heading that names a pocket by the name of its place alone, so that the three pockets read
+// alike, a place with the piece of another slot, and a pick that stays out of the document where the slot
+// holds nothing and the chest nothing that fits.
+test("the heading of a pick says „{miejsce}: {rzecz}” for a held slot and „{miejsce}: nic” for an empty one, the pockets by their numbers", async () => {
   await withPage(async (page) => {
     const state = stateWith({
       gear: { ...NOTHING, pocket1: "bandage", pocket3: "bandage" },
@@ -167,9 +168,9 @@ test("the heading of a pick says „{miejsce}: {rzecz}” for a held slot and �
       headings.push(headingOf(page.root));
     }
     assert.deepEqual(headings, [
-      "Kieszeń: opatrunek",
-      "Kieszeń: nic",
-      "Kieszeń: opatrunek",
+      "Kieszeń 1: opatrunek",
+      "Kieszeń 2: nic",
+      "Kieszeń 3: opatrunek",
       "Głowa: nic",
       "Ręka główna: nic",
     ]);
@@ -277,7 +278,7 @@ test("a second touch of the chosen tile closes the pick and a touch of another t
       1,
       "one pick at a time",
     );
-    assert.equal(headingOf(page.root), "Kieszeń: nic");
+    assert.equal(headingOf(page.root), "Kieszeń 1: nic");
     assert.equal(
       tile(page.root, "mainHand").getAttribute("aria-pressed"),
       "false",
@@ -463,7 +464,7 @@ test("the entry runs the two acts through the store's act that counts the time f
     );
     assert.equal(
       tile(page.root, "pocket2").getAttribute("aria-label"),
-      "opatrunek",
+      "Kieszeń 2: opatrunek",
       "and the tile shows the piece",
     );
 

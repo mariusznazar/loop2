@@ -4,7 +4,9 @@
  * with the tiles of the eight slots of its gear around it — on its left „Głowa”, „Tułów” and „Nogi”, on
  * its right „Ręka główna” and „Druga ręka”, under it a row of the three pockets. Each tile is a tile of
  * the shared button (D-44): the icon of the piece its slot holds, or the pale name of its place where
- * the slot holds nothing; every slot stands, a slot no item of the data fits yet too (D-454).
+ * the slot holds nothing, and a tile with an icon is named for a reader of the screen „{miejsce}: {rzecz}”
+ * as the heading of its pick is, the pockets by their numbers; every slot stands, a slot no item of the
+ * data fits yet too (D-454).
  *
  * The tiles show the gear the game keeps at the character outside a map run (D-452): for a character in
  * an earning loop that is the gear of its next map run, with „Postać jest w pętli. Zmiana działa od
@@ -66,12 +68,33 @@ function slotsOf(places: readonly GearPlace[]): GearSlot[] {
     );
 }
 
-/** What the tile of a slot shows: the icon of its piece, named by the piece, or the name of its place. */
+/**
+ * The name of a slot as the player reads it: the name of its place, and for a place of several slots
+ * the slot's number from 1 after it — „Ręka główna”, „Kieszeń 1”, „Kieszeń 2”.
+ */
+function slotName(slot: GearSlot): string {
+  const place = GEAR_SLOTS[slot];
+  const name = GEAR_PLACES[place].name;
+  const siblings = (Object.keys(GEAR_SLOTS) as GearSlot[]).filter(
+    (other) => GEAR_SLOTS[other] === place,
+  );
+  return siblings.length === 1 ? name : `${name} ${siblings.indexOf(slot) + 1}`;
+}
+
+/** What a slot holds and what it holds it as: „{miejsce}: {rzecz}” or „{miejsce}: nic”. */
+function slotLine(slot: GearSlot, piece: ItemId | null): string {
+  return `${slotName(slot)}: ${piece === null ? "nic" : ITEMS[piece].name}`;
+}
+
+/**
+ * What the tile of a slot shows: the icon of its piece, named for a reader of the screen by the slot
+ * and the piece, as the heading of the pick reads, or the name of its place, which names the tile.
+ */
 function faceOf(character: Character, slot: GearSlot): TileFace {
   const piece = character.gear[slot];
   return piece === null
     ? { slotName: GEAR_PLACES[GEAR_SLOTS[slot]].name }
-    : { icon: ITEMS[piece].icon, name: ITEMS[piece].name };
+    : { icon: ITEMS[piece].icon, name: slotLine(slot, piece) };
 }
 
 /** The two acts of the section, which the screen sends out as it sends its others (D-461). */
@@ -101,9 +124,7 @@ function GearPickCells({
   onTake: () => void;
 }) {
   const held = character.gear[slot];
-  const heading = `${GEAR_PLACES[GEAR_SLOTS[slot]].name}: ${
-    held === null ? "nic" : ITEMS[held].name
-  }`;
+  const heading = slotLine(slot, held);
   return (
     <div className="character-gear-pick" role="group" aria-label={heading}>
       <h4 className="character-gear-pick-heading">{heading}</h4>

@@ -221,7 +221,10 @@ function tileSample(
   };
 }
 
-const ITEM_TILE: TileFace = { icon: TILE_ICON, name: "Przykładowy przedmiot" };
+const ITEM_TILE: TileFace = {
+  icon: TILE_ICON,
+  name: "Ręka główna: przykładowy przedmiot",
+};
 const SLOT_TILE: TileFace = { slotName: "Ręka główna" };
 
 /** The select list in a state; it keeps the position chosen in its own state, as a screen would. */

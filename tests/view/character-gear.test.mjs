@@ -206,8 +206,9 @@ test("eight tiles stand around the figure from the creation of the character: he
 });
 
 // Catches an icon taken from anywhere but the item in the slot, a name or a count written on the tile, a
-// tile that shows what another slot holds, and a tile whose reader hears no name.
-test("a tile of a slot that holds a piece shows the icon of its item alone, named for a reader by the item, and the other tiles keep their pale names", async () => {
+// tile that shows what another slot holds, a tile whose reader hears no name, and one whose reader hears
+// the item alone, so that three bandages in three pockets are read as one and the same.
+test("a tile of a slot that holds a piece shows the icon of its item alone, named for a reader „{miejsce}: {rzecz}”, the pockets by their numbers, and the other tiles keep their pale names", async () => {
   await withPage(async (page) => {
     const gear = {
       ...NOTHING,
@@ -228,14 +229,14 @@ test("a tile of a slot that holds a piece shows the icon of its item alone, name
     ]);
     const { right, pockets } = tilesOf(page.root);
     const stick = right[0];
-    assert.equal(stick.getAttribute("aria-label"), "patyk");
+    assert.equal(stick.getAttribute("aria-label"), "Ręka główna: patyk");
     assert.equal(stick.textContent, "", "no name and no count on the tile");
     assert.equal(
       stick.querySelector(".icon-mask").getAttribute("aria-hidden"),
       "true",
     );
-    assert.equal(pockets[0].getAttribute("aria-label"), "opatrunek");
-    assert.equal(pockets[2].getAttribute("aria-label"), "opatrunek");
+    assert.equal(pockets[0].getAttribute("aria-label"), "Kieszeń 1: opatrunek");
+    assert.equal(pockets[2].getAttribute("aria-label"), "Kieszeń 3: opatrunek");
     assert.equal(pockets[1].getAttribute("aria-label"), null);
     assert.equal(right[1].textContent, "Druga ręka");
   });
