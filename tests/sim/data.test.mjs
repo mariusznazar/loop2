@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS, REGIONS } from "../../dist/browser/sim/data/maps.js";
+import {
+  MAPS,
+  REGIONS,
+  composeMaps,
+} from "../../dist/browser/sim/data/maps.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
@@ -98,6 +102,9 @@ test("each map's data name its region, and the region stands in the list of regi
     forest: "Las",
     forestDeep: "Las",
     forestPack: "Las",
+    forestDeep2: "Las",
+    forestDeep3: "Las",
+    forestDeep4: "Las",
     forestLair: "Las",
   });
   for (const region of Object.values(regionOf)) {
@@ -105,19 +112,311 @@ test("each map's data name its region, and the region stands in the list of regi
   }
 });
 
-test("the maps stand in the order of the chain, each one opened by the one before it", () => {
+test("the maps stand in the order D-466 gives, each map's opener standing before it", () => {
   // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-466 "A new map stands in the order of the game maps' data right after the last map that the map opening it already opens and after the line of rungs (D-465) that grows from that last map"
   const ids = Object.keys(MAPS);
   assert.deepEqual(ids, [
     "forestEdge",
     "forest",
     "forestDeep",
     "forestPack",
+    "forestDeep2",
+    "forestDeep3",
+    "forestDeep4",
     "forestLair",
   ]);
   assert.equal(MAPS.forestEdge.opensAfter, undefined);
   for (let at = 1; at < ids.length; at += 1) {
-    assert.equal(MAPS[ids[at]].opensAfter, ids[at - 1], ids[at]);
+    const opener = ids.indexOf(MAPS[ids[at]].opensAfter);
+    assert.ok(opener >= 0 && opener < at, `${ids[at]} stands after its opener`);
+  }
+});
+
+test("Las — głębiej opens the wolf pack and the first rung, each rung opens the next, and the wolf pack opens the lair", () => {
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-464 "A rung stands in the game maps' data as a row of its own that names the map that opens it"
+  const openedBy = (opener) =>
+    Object.keys(MAPS).filter((id) => MAPS[id].opensAfter === opener);
+  assert.deepEqual(openedBy("forestDeep"), ["forestPack", "forestDeep2"]);
+  assert.deepEqual(openedBy("forestDeep2"), ["forestDeep3"]);
+  assert.deepEqual(openedBy("forestDeep3"), ["forestDeep4"]);
+  assert.deepEqual(openedBy("forestDeep4"), []);
+  assert.deepEqual(openedBy("forestPack"), ["forestLair"]);
+});
+
+/** A made-up map that opens made-up rungs: its numbers are the test's, not the game's. */
+const FIELD = {
+  name: "Pole",
+  region: "Las",
+  carryIn: 3,
+  width: 4,
+  height: 4,
+  entrance: { col: 1, row: 1 },
+  ambientTemperature: 20,
+  stepMinutes: 5,
+  resources: [
+    { id: "stick", density: 0.7, stock: 12, renewMinutes: 30 },
+    { id: "berry", density: 0.5, stock: 8, renewMinutes: 40 },
+    { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
+  ],
+  attackers: [{ id: "wolf", chancePerMinute: 0.01, cooldownMinutes: 180 }],
+  solving: { streak: 540, defeatedAttacks: 2 },
+  solvingText: "tekst warunku pola",
+  goalText: "Krótko o polu.",
+  completionText: "Pole rozwiązane",
+  recordCreature: "wolf",
+};
+/** The three sentences a made-up rung writes by hand. */
+const SENTENCES = {
+  solvingText: "tekst warunku stopnia",
+  goalText: "Krótko o stopniu.",
+  completionText: "Pole II rozwiązane",
+};
+
+/** The table of the made-up map and one rung's row, as the game's data hold them. */
+const tableWith = (row) => ({
+  field: FIELD,
+  fieldRung: { opensAfter: "field", ...SENTENCES, ...row },
+});
+
+test("a rung takes the numbers its row gives and everything else from the map that opens it", () => {
+  // decision: D-464 "A rung stands in the game maps' data as a row of its own that names the map that opens it and gives only those numbers of the map's data in which the rung differs from that map — the grid, the entrance, the ambient temperature, the game minutes to enter a tile, the density, stock and renewal of a resource, the chance and cooldown of an attacker, the solving condition and the caps of what is carried in and out — and takes all the rest from that map"
+  const { fieldRung } = composeMaps(
+    tableWith({
+      carryIn: 0,
+      width: 6,
+      height: 7,
+      entrance: null,
+      ambientTemperature: 5,
+      stepMinutes: 10,
+      carryOut: 2,
+      solving: { streak: 600 },
+    }),
+  );
+  assert.deepEqual(fieldRung, {
+    name: "Pole II",
+    region: "Las",
+    carryIn: 0,
+    carryOut: 2,
+    width: 6,
+    height: 7,
+    entrance: null,
+    ambientTemperature: 5,
+    stepMinutes: 10,
+    resources: FIELD.resources,
+    attackers: FIELD.attackers,
+    solving: { streak: 600, defeatedAttacks: 2 },
+    solvingText: "tekst warunku stopnia",
+    goalText: "Krótko o stopniu.",
+    completionText: "Pole II rozwiązane",
+    opensAfter: "field",
+    recordCreature: "wolf",
+  });
+});
+
+test("a row that gives no number of its own composes a rung with the opener's numbers and its own sentences and name", () => {
+  // decision: D-464 "Its sentence of the solving condition (D-133), its one short sentence of what it demands (D-327) and its completion text (D-132) are written by hand in its row"
+  const { field, fieldRung } = composeMaps(tableWith({}));
+  assert.deepEqual(fieldRung, {
+    ...FIELD,
+    ...SENTENCES,
+    name: "Pole II",
+    opensAfter: "field",
+  });
+  assert.deepEqual(field, FIELD, "a map that is no rung stands as written");
+});
+
+test("a rung's resources and attackers are matched to the opener's by identifier, whatever order its row writes them in, and keep the opener's order", () => {
+  // decision: D-464 "A rung has the same resources in the same order, the same attackers and the same kinds of solving condition as the map that opens it, which its row matches by identifier and by kind and changes in their numbers alone"
+  const { fieldRung } = composeMaps(
+    tableWith({
+      resources: [
+        { id: "moss", density: 0.2 },
+        { id: "stick", stock: 20, renewMinutes: 25 },
+      ],
+      attackers: [{ id: "wolf", chancePerMinute: 0.02 }],
+    }),
+  );
+  assert.deepEqual(fieldRung.resources, [
+    { id: "stick", density: 0.7, stock: 20, renewMinutes: 25 },
+    { id: "berry", density: 0.5, stock: 8, renewMinutes: 40 },
+    { id: "moss", density: 0.2, stock: 6, renewMinutes: 60 },
+  ]);
+  assert.deepEqual(fieldRung.attackers, [
+    { id: "wolf", chancePerMinute: 0.02, cooldownMinutes: 180 },
+  ]);
+});
+
+test("a resource of density 0 keeps its place on the rung's list and no map run of the rung places it", async () => {
+  // decision: D-464 "A rung has the same resources in the same order, the same attackers and the same kinds of solving condition as the map that opens it, which its row matches by identifier and by kind and changes in their numbers alone, and a resource the rung is not to give takes the density 0, so that no map run places it"
+  const { newMapRun } = await import("../../dist/browser/sim/run.js");
+  const { fieldRung } = composeMaps(
+    tableWith({ resources: [{ id: "berry", density: 0 }] }),
+  );
+  assert.deepEqual(
+    fieldRung.resources.map(({ id, density }) => [id, density]),
+    [
+      ["stick", 0.7],
+      ["berry", 0],
+      ["moss", 0.4],
+    ],
+  );
+  const program = programFromRules(rule(ALWAYS, EXPLORE));
+  let sticks = 0;
+  for (let seed = 1; seed <= 10; seed += 1) {
+    const { tiles } = newMapRun(fieldRung, seed, program, SENT).run;
+    for (const tile of tiles) {
+      assert.ok(!tile.stock.berry, `a berry on a tile of seed ${seed}`);
+      if (tile.stock.stick) sticks += 1;
+    }
+  }
+  assert.ok(sticks > 0, "precondition: the other resources are placed");
+});
+
+test("a row that would add a resource, an attacker or a kind of solving condition the opener lacks is refused, and a row without it composes", () => {
+  // decision: D-464 "A rung has the same resources in the same order, the same attackers and the same kinds of solving condition as the map that opens it"
+  const bare = { ...FIELD, solving: { streak: 540 } };
+  delete bare.attackers;
+  delete bare.recordCreature;
+  const onBare = (row) => ({
+    field: bare,
+    fieldRung: { opensAfter: "field", ...SENTENCES, ...row },
+  });
+  assert.ok(composeMaps(tableWith({ solving: { streak: 1 } })).fieldRung);
+  assert.ok(composeMaps(onBare({ solving: { streak: 1 } })).fieldRung);
+  assert.throws(
+    () =>
+      composeMaps(tableWith({ resources: [{ id: "fiber", density: 0.3 }] })),
+    /fiber/,
+  );
+  assert.throws(
+    () => composeMaps(tableWith({ attackers: [{ id: "bear" }] })),
+    /bear/,
+  );
+  assert.throws(
+    () => composeMaps(onBare({ attackers: [{ id: "wolf" }] })),
+    /wolf/,
+  );
+  assert.throws(
+    () => composeMaps(onBare({ solving: { defeatedAttacks: 3 } })),
+    /defeatedAttacks/,
+  );
+});
+
+test("a row that names a resource or an attacker twice is refused", () => {
+  // decision: D-464 "A rung has the same resources in the same order, the same attackers and the same kinds of solving condition as the map that opens it, which its row matches by identifier and by kind and changes in their numbers alone"
+  assert.throws(
+    () =>
+      composeMaps(
+        tableWith({
+          resources: [
+            { id: "stick", density: 0.1 },
+            { id: "stick", density: 0.2 },
+          ],
+        }),
+      ),
+    /stick/,
+  );
+  assert.throws(
+    () =>
+      composeMaps(tableWith({ attackers: [{ id: "wolf" }, { id: "wolf" }] })),
+    /wolf/,
+  );
+});
+
+test("a rung whose opener stands later in the data, or nowhere in it, is refused", () => {
+  // decision: D-466 "A new map stands in the order of the game maps' data right after the last map that the map opening it already opens and after the line of rungs (D-465) that grows from that last map"
+  const row = { opensAfter: "field", ...SENTENCES };
+  assert.throws(() => composeMaps({ fieldRung: row, field: FIELD }), /field/);
+  assert.throws(() => composeMaps({ fieldRung: row }), /field/);
+  assert.throws(
+    () =>
+      composeMaps({ field: FIELD, other: { ...row, opensAfter: "toString" } }),
+    /toString/,
+  );
+});
+
+test("a rung is named after the first map of its line that is no rung with the Roman numeral of its place in the line from II, and no row writes the name", () => {
+  // decision: D-465 "The game composes the name of a rung in the code of the game maps' data (`src/browser/sim/data/maps.ts`), so that it stands in the maps' data as the name of every map does, and no row of the data writes it: the name of the first map of the rung's line of rungs that is no rung, a space and the Roman numeral of the rung's place in that line, the first rung taking II and each next one the numeral after that of the rung that opens it"
+  const numerals = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  const table = { field: FIELD };
+  numerals.forEach((_, at) => {
+    table[`rung${at + 2}`] = {
+      opensAfter: at === 0 ? "field" : `rung${at + 1}`,
+      ...SENTENCES,
+    };
+  });
+  const maps = composeMaps(table);
+  assert.deepEqual(
+    Object.keys(maps).map((id) => maps[id].name),
+    ["Pole", ...numerals.map((numeral) => `Pole ${numeral}`)],
+  );
+});
+
+test("a rung whose opener is a map that is no rung, standing after rungs of another line, starts a line of its own", () => {
+  // decision: D-465 "A line of rungs is a map that is no rung together with the rung it opens and each rung that a rung of the line opens"
+  const grove = { ...FIELD, name: "Gaj", opensAfter: "field" };
+  const maps = composeMaps({
+    field: FIELD,
+    fieldRung: { opensAfter: "field", ...SENTENCES },
+    fieldRungTwo: { opensAfter: "fieldRung", ...SENTENCES },
+    grove,
+    groveRung: { opensAfter: "grove", ...SENTENCES },
+    groveRungTwo: { opensAfter: "groveRung", ...SENTENCES },
+  });
+  assert.deepEqual(
+    Object.keys(maps).map((id) => maps[id].name),
+    ["Pole", "Pole II", "Pole III", "Gaj", "Gaj II", "Gaj III"],
+  );
+});
+
+test("the rungs of the game are named Las — głębiej II, III and IV, with a completion text that names the rung", () => {
+  // decision: D-465 "A line of rungs is a map that is no rung together with the rung it opens and each rung that a rung of the line opens, so the rung that Las — głębiej opens is „Las — głębiej II”, the rung that one opens „Las — głębiej III” and the next „Las — głębiej IV”, never „Las — głębiej II II”"
+  // decision: D-464 "Its sentence of the solving condition (D-133), its one short sentence of what it demands (D-327) and its completion text (D-132) are written by hand in its row, the completion text naming the rung by the name the game composes (D-465), as „Las — głębiej II rozwiązany”"
+  const names = {
+    forestDeep2: "Las — głębiej II",
+    forestDeep3: "Las — głębiej III",
+    forestDeep4: "Las — głębiej IV",
+  };
+  for (const [id, name] of Object.entries(names)) {
+    assert.ok(id in MAPS, `precondition: ${id} stands in the data`);
+    assert.equal(MAPS[id].name, name, id);
+    assert.equal(MAPS[id].completionText, `${name} rozwiązany`, id);
+  }
+});
+
+test("each rung of the game has the resources in the same order, the attackers, the kinds of solving condition, the region and the record creature of the map that opens it, and sentences of its own", () => {
+  // decision: D-464 "A rung has the same resources in the same order, the same attackers and the same kinds of solving condition as the map that opens it"
+  // decision: D-464 "Its sentence of the solving condition (D-133), its one short sentence of what it demands (D-327) and its completion text (D-132) are written by hand in its row, the completion text naming the rung by the name the game composes (D-465), as „Las — głębiej II rozwiązany”"
+  const rungs = ["forestDeep2", "forestDeep3", "forestDeep4"];
+  for (const id of rungs) {
+    assert.ok(id in MAPS, `precondition: ${id} stands in the data`);
+    const rung = MAPS[id];
+    const opener = MAPS[rung.opensAfter];
+    const ids = (list) => (list ?? []).map((entry) => entry.id);
+    assert.deepEqual(ids(rung.resources), ids(opener.resources), id);
+    assert.deepEqual(ids(rung.attackers), ids(opener.attackers), id);
+    assert.deepEqual(
+      Object.keys(rung.solving).sort(),
+      Object.keys(opener.solving).sort(),
+      id,
+    );
+    assert.equal(rung.region, opener.region, id);
+    assert.equal(rung.recordCreature, opener.recordCreature, id);
+    for (const sentence of ["solvingText", "goalText", "completionText"]) {
+      assert.notEqual(rung[sentence], opener[sentence], `${id} ${sentence}`);
+    }
+  }
+});
+
+test("the sentence of each map's solving condition begins with the minutes of the map's own streak", () => {
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
+  for (const [id, map] of Object.entries(MAPS)) {
+    assert.ok(
+      map.solvingText.startsWith(`${map.solving.streak} minut `),
+      `${id}: ${map.solvingText}`,
+    );
   }
 });
 

@@ -10,7 +10,8 @@ through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, 
 The new game of each start has an Understanding that holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives. Its solved maps include Skraj lasu, Las, Las — głębiej and
-Las — wataha, the prerequisites for each map of MAP_RESOURCES down to Las — matecznik (D-149); this
+Las — wataha, Las — głębiej II and Las — głębiej III, the prerequisites for each map of
+MAP_RESOURCES down to Las — matecznik (D-149); this
 input opens the maps without changing their generated tiles.
 
 Reading of the sentence:
@@ -84,6 +85,24 @@ MAP_RESOURCES = {
         {"id": "moss", "stock": 6},
         {"id": "fiber", "stock": 6},
     ),
+    "forestDeep2": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
+    "forestDeep3": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
+    "forestDeep4": (
+        {"id": "stick", "stock": 12},
+        {"id": "berry", "stock": 8},
+        {"id": "moss", "stock": 6},
+        {"id": "fiber", "stock": 6},
+    ),
     "forestLair": (
         {"id": "stick", "stock": 12},
         {"id": "berry", "stock": 8},
@@ -138,7 +157,8 @@ for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(
       await newKnowingGame(game, join(simDirectory, 'game.js')), config.program).state;
-    state = { ...state, solvedMaps: ['forestEdge', 'forest', 'forestDeep', 'forestPack'] };
+    state = { ...state, solvedMaps: ['forestEdge', 'forest', 'forestDeep', 'forestPack',
+      'forestDeep2', 'forestDeep3'] };
     state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });
