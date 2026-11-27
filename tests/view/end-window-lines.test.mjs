@@ -424,11 +424,13 @@ test("the trip rows give what the character entered with, the revealed terrain a
 });
 
 // Catches a button after a death, a button for a map that the completed map does not open, or a missing
-// button after the completion of Las (D-132, D-53, D-149).
+// button after the completion of Las (D-132, D-53, D-149), and the buttons of a map that opens two maps out
+// of the order of the maps' data (D-466).
 test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of a map that opens none", () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
   // decision: D-368 "The window scrolls in itself while its buttons"
+  // decision: D-466 "The catalog of the screen Mapy, within the groups each of its views makes and after the place each view gives the solved maps among them (D-325, D-331, and for „Co daje” the rule of the screen Mapy in `guidelines/styleguide-browser-view.md`), and the end-of-run window show the maps in the order of the game maps' data, the buttons „Otwarte: {mapa} →” after a completion included"
   assert.deepEqual(wayOnButtons(runOf({ completion: { minute: 480 } })), [
     { mapId: "forestDeep", text: "Otwarte: Las — głębiej →" },
   ]);
