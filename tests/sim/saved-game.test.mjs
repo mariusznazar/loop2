@@ -870,7 +870,7 @@ const loopOf10 = (id) => ({
 
 /**
  * The record of the map run of the document of the current version, written out by hand: 212 game
- * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage, 5
+ * minutes of which 5 are the fight the map run's last combat tells of, 10 the making of a bandage, 10
  * the tending with one and 4 the putting of pieces on the gear, the longest streak of 40 above the streak going on (16) and below the game
  * minute, and the sticks the character took from the chest at the start.
  */
@@ -881,14 +881,14 @@ const RUN_RECORD = {
     wander: 30,
     walkTo: 20,
     walkToCampfire: 6,
-    gather: 55,
+    gather: 50,
     patrol: 0,
     craftCampfire: 20,
     lightCampfire: 5,
     lightItem: 0,
     feedCampfire: 5,
     eat: 5,
-    tend: 5,
+    tend: 10,
     equip: 4,
     craft: 10,
     wait: 2,
@@ -1141,7 +1141,7 @@ const LAST_COMBAT = {
  * holds its tree and the action „Ucisk”; the map run's practice and its character's skills, the
  * snapshot at its start, hold it, and so does the practice of its last combat, `LAST_COMBAT`, whose
  * two last turns are turns of „Ucisk”. The map run's practice counts the two strikes and the two turns
- * of „Ucisk” of that combat, and the one tending with a bandage, the 5 minutes of „Opatrz” its record
+ * of „Ucisk” of that combat, and the one tending with a bandage, the 10 minutes of „Opatrz” its record
  * holds.
  */
 const [ALA_V11, OLA_V11, EWA_V11] = DOCUMENT_V11.game.team.characters;

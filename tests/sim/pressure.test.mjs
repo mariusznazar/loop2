@@ -311,9 +311,8 @@ test("the piece of „Ucisk” comes from the first pocket holding its item, els
     );
 });
 
-// Catches a refill that puts into an empty pocket a piece of an item the data fit to no pocket, which
-// would let „Ucisk” heal with a piece taken straight from the backpack. No item of the data but the
-// bandage heals, so a second healing item is laid in the data, once fitting no place and once a pocket.
+// No item of the data but the bandage heals, so a second healing item is laid in the data, once fitting
+// no place and once a pocket.
 test("„Ucisk” of a healing item that fits no pocket takes no piece from the backpack and is refused „brakuje 1 × {rzecz}”; one that fits a pocket refills the first empty pocket", () => {
   // decision: D-456 "An item whose data name no place fits no slot."
   // decision: D-457 "That action then takes a fitting piece from the backpack into the slot itself and acts at once, with no time besides its own."
