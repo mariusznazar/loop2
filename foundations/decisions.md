@@ -11623,10 +11623,13 @@ rule did not start is told by the bar at the rule (D-308). The paragraph of an e
 refill of the hand with the name of its actor, as every element of the paragraph reads (D-147), and
 the entries of the chronicle name no actor, so the refill has its own entry, since a piece taken
 into the hand is a change of the gear that the player follows among the actions, as the start of
-„Załóż” is (D-458). Accepted with it: the refill stands twice in the chronicle, in its own entry and
-in the paragraph of its encounter.
+„Załóż” outside an encounter is (D-458). Accepted with it: the refill stands twice in the
+chronicle, in its own entry and in the paragraph of its encounter; a „Załóż” turn inside an
+encounter has no entry of its own, as no turn of an encounter has but the refill, and stands in the
+paragraph alone.
 *Rejected:* the refill written only in the paragraph of its encounter, with its actor — the
-chronicle then shows no line of it among the actions, though the start of „Załóż” has one; entries
+chronicle then shows no line of it among the actions, though the start of „Załóż” outside an
+encounter has one; entries
 of actions with no entry of a wait — the chronicle does not show when the
 character stood because no rule fit; the number of the rule in the entry, as „Zbierz — Patyk ·
 reguła 2.1” — numbers change when rules move, so an old entry would point to another rule, and the
