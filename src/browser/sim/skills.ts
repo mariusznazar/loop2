@@ -1,4 +1,5 @@
 import { takesItem, type ItemAction } from "./action-targets.js";
+import { ITEMS } from "./data/items.js";
 import {
   BRANCHES,
   SKILLS,
@@ -90,6 +91,16 @@ export function skillBonus(
         ("amount" in effect ? effect.amount : 1)
     );
   }, 0);
+}
+
+/**
+ * The health one piece of a healing item gives back to a character: the item's healing of the data
+ * plus the bought healing of its tree, 5 for each rank of „Mocniejszy zwój” (D-145). An item the data
+ * give no healing gives none.
+ */
+export function healingOf(skills: CharacterSkills, item: ItemId): number {
+  const healing = ITEMS[item].healing;
+  return healing ? healing.health + skillBonus(skills, "healing") : 0;
 }
 
 /** Applies the run's duration bonuses and the one-game-minute floor. */

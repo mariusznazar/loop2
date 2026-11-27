@@ -25,6 +25,7 @@ import { PATROL_LIMIT } from "./data/skills.js";
 import {
   actionMinutes,
   copySkills,
+  healingOf,
   practiced,
   skillBonus,
   sumPractice,
@@ -262,7 +263,8 @@ type Landing = Pick<
  * health by the target's healing, not above full health (D-145); „Załóż” moves one piece of its
  * target from the backpack into the slot it fits and the piece the slot held into the backpack
  * (D-458). Where what the action needs is no longer there, nothing changes — health full at the end
- * of „Opatrz” included.
+ * of „Opatrz” included. The health „Opatrz” gives back is the target's healing with the bought
+ * ranks of its tree (`healingOf`, D-145).
  */
 function landUse(state: Landing, action: Action): Landing {
   const { character } = state;
@@ -372,7 +374,7 @@ function landUse(state: Landing, action: Action): Landing {
       return {
         ...state,
         character: using(action.item, 1),
-        body: tendedBody(state.body, healing.health),
+        body: tendedBody(state.body, healingOf(character.skills, action.item)),
       };
     }
     default:
@@ -576,7 +578,13 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
       picks: false,
     };
   }
-  const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
+  const lived = bodyMinute(
+    run.body,
+    warmthAt(run, run.character.at),
+    map,
+    BALANCE.body.healthRegain +
+      skillBonus(run.character.skills, "healthRegain"),
+  );
   // Nature energy comes back in the body's step, right after satiety falls (D-71).
   const natureEnergy = regainedNatureEnergy(
     run.natureEnergy,

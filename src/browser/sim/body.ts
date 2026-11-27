@@ -80,12 +80,15 @@ export type HealthLossCause = "cold" | "hunger" | "coldAndHunger";
  * neither, not above the starting health. Health at 0 or less stands at 0 and gives the cause of
  * death: cold where chilled, otherwise hunger. `lostHealth` says whether the character lost health
  * to cold or hunger in this minute, that is, was chilled or starving after the step; `healthLoss`
- * gives the cause of that loss from the same two readings, null where there was none.
+ * gives the cause of that loss from the same two readings, null where there was none. Where neither,
+ * the health regained is `healthRegain`, the data's number by default (D-387), and the sum is kept at
+ * the body's decimal places.
  */
 export function bodyMinute(
   body: Body,
   warmth: number,
   map: MapDef,
+  healthRegain: number = BALANCE.body.healthRegain,
 ): {
   body: Body;
   death: DeathCause | null;
@@ -121,7 +124,7 @@ export function bodyMinute(
   if (chilled) health = decimal(health - rules.healthLossChilled);
   if (starving) health = decimal(health - rules.healthLossStarving);
   if (!chilled && !starving)
-    health = Math.min(rules.startHealth, decimal(health + rules.healthRegain));
+    health = Math.min(rules.startHealth, decimal(health + healthRegain));
 
   if (health <= 0) {
     return {
