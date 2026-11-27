@@ -99,12 +99,12 @@ function headerOf(basis) {
 }
 
 /** A number as the table shows it, or a dash where the figure has no value. */
-function plain(value) {
+export function plain(value) {
   return value === null ? "—" : String(value);
 }
 
 /** A share in percent as the table shows it, or a dash where the share has no value. */
-function share(value) {
+export function share(value) {
   return value === null ? "—" : `${value} %`;
 }
 
@@ -132,7 +132,7 @@ function cellsOf(row) {
 }
 
 /** A line of the table: the cells with a pipe in them escaped, between the pipes. */
-function lineOf(cells) {
+export function lineOf(cells) {
   return `| ${cells.map((cell) => String(cell).replaceAll("|", "\\|")).join(" | ")} |`;
 }
 

@@ -237,6 +237,34 @@ test("a map no program solves is not solvable, whatever it is measured with", ()
   assert.equal(maps[0].solvable, false);
 });
 
+test("a map is also measured with the character of the map that opens it, and is harder where its best share is the smaller", () => {
+  const { maps } = measureProgression({
+    mapIds: ["forest", "forestEdge"],
+    seeds: SEEDS,
+    programIds: FEW,
+  });
+  const forest = maps.find((map) => map.mapId === "forest");
+  const edge = maps.find((map) => map.mapId === "forestEdge");
+  assert.equal(forest.opener, "forestEdge");
+  assert.equal(forest.openerBestShare, edge.bestShare);
+  // Skraj lasu opens no map, so its character is a new one: no practice and no stock.
+  const shares = FEW.map(
+    (programId) =>
+      sweep({
+        mapId: "forest",
+        program: REFERENCE_PROGRAMS[programId],
+        seeds: SEEDS,
+        skills: buildSkills(),
+        chest: {},
+      }).summary.solvedShare,
+  );
+  assert.equal(forest.withOpenerShare, Math.max(...shares));
+  assert.equal(forest.harder, forest.withOpenerShare < edge.bestShare);
+  assert.equal(edge.opener, null);
+  assert.equal(edge.withOpenerShare, null);
+  assert.equal(edge.harder, null);
+});
+
 // decision: D-438 "In one measurement of the balance instrument in its mode `progression`, a map can be solved where its best reference program, played with the character built from what the maps before it gave, solves at least one of the seeds 1 to 500"
 test("a map whose best program solves one seed of eight, a share far below a fifth, is solvable", () => {
   const { rows, maps } = measureProgression({
@@ -282,7 +310,8 @@ test("the table has one line per map and program with the figures of the map che
     programIds: FEW,
   });
   const text = renderProgression(result);
-  const [header, ...lines] = cellsOf(text);
+  const [firstTable] = text.split("\n\n");
+  const [header, ...lines] = cellsOf(firstTable);
   assert.equal(header.length, 6);
   const columns = [
     "Map",
@@ -336,7 +365,8 @@ test("one sentence under the table says with what each map was measured, the num
   const text = renderProgression(result);
   const [table, sentence, ...rest] = text.trimEnd().split("\n\n");
   assert.ok(table.startsWith("|"));
-  assert.equal(rest.length, 0);
+  assert.equal(rest.length, 1, "the second table follows the sentence");
+  assert.ok(rest[0].startsWith("| Map | Best share"), rest[0]);
   assert.equal(sentence.split("\n").length, 1, "one line");
   const forest = result.maps.find((map) => map.mapId === "forest");
   const runs = forest.manualRuns;
@@ -344,4 +374,48 @@ test("one sentence under the table says with what each map was measured, the num
   assert.ok(sentence.includes(`Las: ${runs} manual run`), sentence);
   assert.ok(sentence.includes("Skraj lasu: no manual run"), sentence);
   assert.equal(sentence.match(/\./g).length, 1, "one sentence");
+});
+
+test("the second table has a row per map with its best share, whether it can be solved, its opener and the shares with the opener's character, and names no identifier", () => {
+  const result = measureProgression({
+    mapIds: ["forestEdge", "forest"],
+    seeds: SEEDS,
+    programIds: FEW,
+  });
+  const text = renderProgression(result);
+  const [, , openers] = text.trimEnd().split("\n\n");
+  const [header, ...lines] = cellsOf(openers);
+  assert.deepEqual(header, [
+    "Map",
+    "Best share (seeds 1-8)",
+    "Can be solved",
+    "Opener",
+    "Opener's best share",
+    "Best share with the opener's character",
+    "Harder than the opener",
+  ]);
+  const edge = result.maps.find((map) => map.mapId === "forestEdge");
+  const forest = result.maps.find((map) => map.mapId === "forest");
+  assert.deepEqual(lines, [
+    [
+      "Skraj lasu",
+      `${edge.bestShare} %`,
+      edge.solvable ? "yes" : "no",
+      "—",
+      "—",
+      "—",
+      "—",
+    ],
+    [
+      "Las",
+      `${forest.bestShare} %`,
+      forest.solvable ? "yes" : "no",
+      "Skraj lasu",
+      `${edge.bestShare} %`,
+      `${forest.withOpenerShare} %`,
+      forest.harder ? "yes" : "no",
+    ],
+  ]);
+  for (const id of FEW)
+    assert.ok(!text.includes(id), `the text holds the identifier ${id}`);
 });
