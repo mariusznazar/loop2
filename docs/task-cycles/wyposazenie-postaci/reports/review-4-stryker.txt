@@ -1,0 +1,96 @@
+﻿[NoCoverage] StringLiteral
+src/browser/sim/combat.ts:125:23
+-         throw new Error("combat: selected action has no combat effect");
++         throw new Error("");
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:51:7
+-     if (item === null || combatPiece(character, item) !== "refill")
++     if (false || combatPiece(character, item) !== "refill")
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:84:35
+-       turn < BALANCE.combatTurns && characterHealth > 0 && creatureHealth > 0;
++       turn < BALANCE.combatTurns && true && creatureHealth > 0;
+Tests ran:
+[Survived] EqualityOperator
+src/browser/sim/combat.ts:84:35
+-       turn < BALANCE.combatTurns && characterHealth > 0 && creatureHealth > 0;
++       turn < BALANCE.combatTurns && characterHealth >= 0 && creatureHealth > 0;
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:124:9
+-       if (!effect)
++       if (false)
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:135:11
+-         if (damage > 0) practice = practiced(practice, rule.action.kind);
++         if (true) practice = practiced(practice, rule.action.kind);
+Tests ran:
+[Survived] EqualityOperator
+src/browser/sim/combat.ts:135:11
+-         if (damage > 0) practice = practiced(practice, rule.action.kind);
++         if (damage >= 0) practice = practiced(practice, rule.action.kind);
+Tests ran:
+[Survived] StringLiteral
+src/browser/sim/program.ts:423:29
+-     if (held === item) return "held";
++     if (held === item) return "";
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/program.ts:424:7
+-     if (held === null && character.backpack[item] > 0) return "refill";
++     if (true && character.backpack[item] > 0) return "refill";
+Tests ran:
+[Survived] LogicalOperator
+src/browser/sim/program.ts:431:10
+-     return effect && "item" in effect && effect.item ? effect.item : null;
++     return effect || "item" in effect && effect.item ? effect.item : null;
+Tests ran:
+[Survived] LogicalOperator
+src/browser/sim/program.ts:431:10
+-     return effect && "item" in effect && effect.item ? effect.item : null;
++     return effect && "item" in effect || effect.item ? effect.item : null;
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/program.ts:431:10
+-     return effect && "item" in effect && effect.item ? effect.item : null;
++     return true && effect.item ? effect.item : null;
+Tests ran:
+[Survived] ConditionalExpression
+src/browser/sim/saved-game.ts:757:7
+-     if (!isCombatAction(acted)) refuse();
++     if (false) refuse();
+Tests ran:
+[Survived] CallExpression
+src/browser/sim/saved-game.ts:757:31
+-     if (!isCombatAction(acted)) refuse();
++     if (!isCombatAction(acted)) ;
+Tests ran:
+File           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+All files      |  92.31 |   92.82 |      168 |         0 |         13 |        1 |        0 |
+ combat.ts     |  92.86 |   93.81 |       91 |         0 |          6 |        1 |        0 |
+ program.ts    |  85.29 |   85.29 |       29 |         0 |          5 |        0 |        0 |
+All files      |  92.31 |   92.82 |      168 |         0 |         13 |        1 |        0 |
+ combat.ts     |  92.86 |   93.81 |       91 |         0 |          6 |        1 |        0 |
+ program.ts    |  85.29 |   85.29 |       29 |         0 |          5 |        0 |        0 |
+ run.ts        | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
+ saved-game.ts |  95.74 |   95.74 |       45 |         0 |          2 |        0 |        0 |
+ combat.ts     |  92.86 |   93.81 |       91 |         0 |          6 |        1 |        0 |
+ program.ts    |  85.29 |   85.29 |       29 |         0 |          5 |        0 |        0 |
+ run.ts        | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
+ saved-game.ts |  95.74 |   95.74 |       45 |         0 |          2 |        0 |        0 |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+ program.ts    |  85.29 |   85.29 |       29 |         0 |          5 |        0 |        0 |
+ run.ts        | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
+ saved-game.ts |  95.74 |   95.74 |       45 |         0 |          2 |        0 |        0 |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+19:22:52 (35668) INFO JsonReporter Your report can be found at: file:///.runs/review-4/head/.runs/stryker/mutation.json
+ run.ts        | 100.00 |  100.00 |        3 |         0 |          0 |        0 |        0 |
+ saved-game.ts |  95.74 |   95.74 |       45 |         0 |          2 |        0 |        0 |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+19:22:52 (35668) INFO JsonReporter Your report can be found at: file:///.runs/review-4/head/.runs/stryker/mutation.json
+19:22:52 (35668) INFO MutationTestExecutor Done in 7 minutes and 34 seconds.
+19:22:52 (35668) INFO MutationTestExecutor Done in 7 minutes and 34 seconds.

@@ -1,0 +1,38 @@
+✖ the earning loop of a row starts with the gear given to the check, so its loop columns are those of a loop started with that gear (188.1143ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 297.2361
+
+✖ failing tests:
+
+test at tests\balance\check-map.test.mjs:323:1
+✖ the earning loop of a row starts with the gear given to the check, so its loop columns are those of a loop started with that gear (188.1143ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   deathShare: 40,
+  +   putPerMapRun: 2.89,
+  +   takenPerMapRun: 9.56
+  -   deathShare: 0,
+  -   putPerMapRun: 4,
+  -   takenPerMapRun: 12.57
+    }
+  
+      at TestContext.<anonymous> (file:///.runs/review-whole/head/tests/balance/check-map.test.mjs:362:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { takenPerMapRun: 9.56, putPerMapRun: 2.89, deathShare: 40 },
+    expected: { takenPerMapRun: 12.57, putPerMapRun: 4, deathShare: 0 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
