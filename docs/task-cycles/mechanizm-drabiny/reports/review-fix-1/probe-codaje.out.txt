@@ -1,5 +1,0 @@
-data order: forestEdge, forest, forestDeep, forestPack, forestDeep2, forestDeep3, forestDeep4, forestLair
-moss: forest(solved), forestDeep(solved), forestDeep2(solved), forestPack, forestDeep3
-fiber: forest(solved), forestDeep(solved), forestDeep2(solved), forestPack, forestDeep3
-stick: forestEdge(solved), forest(solved), forestDeep(solved), forestDeep2(solved), forestPack, forestDeep3
-berry: forestEdge(solved), forest(solved), forestDeep(solved), forestDeep2(solved), forestPack, forestDeep3

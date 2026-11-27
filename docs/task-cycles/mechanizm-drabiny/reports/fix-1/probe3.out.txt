@@ -1,9 +1,0 @@
-command: node .runs/fix-1/probe3.mjs forestDeep4 1 8   (run from the worktree root at d7136c57 + the fix's test; every reference program, seeds 1-8)
-ms 21508
-forestEdge best forestBest 100 in.sig undefined paid.sig 41 withOpener null
-forest best forestLoopWithStock 100 in.sig 41 paid.sig 27 withOpener 87.5
-forestDeep best forestDeepBest 87.5 in.sig 68 paid.sig 33 withOpener 87.5
-forestDeep2 best forestDeepBest 87.5 in.sig 101 paid.sig 39 withOpener 87.5
-forestDeep3 best forestDeepBest 62.5 in.sig 140 paid.sig 40 withOpener 62.5
-forestDeep4 best forestDeepBest 25 in.sig 180 paid.sig 46 withOpener 25
-(in.sig = practiceIn.smallItemGathering; the branch patrol needs 3 points = practice 160; no opener reaches it)
