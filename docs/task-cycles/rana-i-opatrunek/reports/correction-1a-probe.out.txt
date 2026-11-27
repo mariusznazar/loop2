@@ -1,0 +1,5 @@
+offer outside a map run: ["bandage","board"]
+backpack moss: 4
+activity: {"kind":"rule","ruleId":2,"action":{"kind":"craft","item":"board"}}
+rule signs: {"1":{"bar":"blocked","reason":"jeszcze nieodkryte: Wytwórz"},"2":{"bar":"go","reason":null},"3":{"bar":"go","reason":null}}
+offer in the map run: ["bandage","board"]

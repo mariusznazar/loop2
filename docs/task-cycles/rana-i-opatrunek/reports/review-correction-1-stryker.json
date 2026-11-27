@@ -1,0 +1,28 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "tap",
+  "plugins": ["@stryker-mutator/tap-runner"],
+  "checkers": [],
+  "mutate": [
+    "src/browser/sim/understanding.ts:97-109",
+    "src/browser/sim/understanding.ts:136-150"
+  ],
+  "buildCommand": "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json",
+  "concurrency": 4,
+  "ignorePatterns": [".runs", ".the-way", "dist", "out", "stryker-review-correction-1.json"],
+  "tempDirName": ".stryker-tmp",
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": { "fileName": "out/stryker-review-correction-1.json" },
+  "tap": {
+    "testFiles": [
+      "tests/sim/action-targets.test.mjs",
+      "tests/sim/repertoire.test.mjs",
+      "tests/sim/tending.test.mjs",
+      "tests/sim/pressure.test.mjs",
+      "tests/sim/rule-signs.test.mjs",
+      "tests/sim/gear-wear.test.mjs",
+      "tests/sim/program.test.mjs",
+      "tests/sim/discovery.test.mjs"
+    ]
+  }
+}
