@@ -4861,7 +4861,7 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
 - **Origin:** none
 
 *Rationale:* the Understanding is the one gain a death never takes, and before this screen the player saw it nowhere, so after losing a character the player saw only what was lost and not what stayed. The predecessor game, loop, has such a screen, with a count of the things known. The screen is for recalling what the player already knows. Buying stands on Postać, so the same rows do not stand on two screens. Accepted with it: one more screen, and with the discoveries the game has today the collection is short.
-*Rejected:* the same rows of skills on two screens, as in loop — the rows of Postać repeated in Wiedza; the left area with, for a game that knows no thing yet, the sentence of loop „Pusto. Zrozumienie rośnie z zetknięcia: odsłania je to, co postać napotka na mapie.” — one sentence and its test more, and a player sees it only where a game starts with no known action; the heading „Poznane” in place of „Zrozumienie” — a departure from loop, which writes „Zrozumienie”, and if the tutorial names the record „Zrozumienie”, the player learns one thing under two names; one list of names with no groups, counters and icons — less than loop, whose screens are the minimum this game takes, and a list with no groups reads worse at a dozen things; the trees always open — about 22 rows at eight trees and fourteen branches, where loop kept the trees folded; the trees under the heading of an archetype, as in loop — today one group with a heading that tells nothing apart, and loop gave the group a description of the archetype that the data of this game do not have; before the first known tree a sentence on the right, such as „Drzewa umiejętności poznasz razem z czynnościami, które rozwijają.” — the area would not stand empty, but the game would announce skills before the player discovers them, which the screen Postać avoids; no rule for the counters — what the first counter counts, conditions and trees included, and how a numeral declines would be left to each author of the screen.
+*Rejected:* the same rows of skills on two screens, as in loop — the rows of Postać repeated in Wiedza; the left area with, for a game that knows no thing yet, the sentence of loop „Pusto. Zrozumienie rośnie z zetknięcia: odsłania je to, co postać napotka na mapie.” — one sentence and its test more, and a player sees it only where a game starts with no known action; the heading „Poznane” in place of „Zrozumienie” — a departure from loop, which writes „Zrozumienie”, and if the tutorial names the record „Zrozumienie”, the player learns one thing under two names; one list of names with no groups, counters and icons — less than loop, whose screens are the minimum this game takes, and a list with no groups reads worse at a dozen things; the trees always open — about 27 rows at nine trees and eighteen branches, where loop kept the trees folded; the trees under the heading of an archetype, as in loop — today one group with a heading that tells nothing apart, and loop gave the group a description of the archetype that the data of this game do not have; before the first known tree a sentence on the right, such as „Drzewa umiejętności poznasz razem z czynnościami, które rozwijają.” — the area would not stand empty, but the game would announce skills before the player discovers them, which the screen Postać avoids; no rule for the counters — what the first counter counts, conditions and trees included, and how a numeral declines would be left to each author of the screen.
 
 ### D-421 — Which stylesheets does the browser view have, and what does each hold?
 
@@ -6652,15 +6652,12 @@ These numbers are requirements of the game, held in its data (D-18), that tests 
 - **Verification:** tests: the body's start and caps of 37.0 °C, 100 satiety and 100 health, its
   cooling by 0.002 °C for each degree of its map's air below 37.0 on Las and on Las — głębiej,
   its fall of 0.6 satiety, its thresholds of chill and hunger, its losses of 0.35 health each and
-  its regaining of 0.05; a gathering's 10 game minutes and chance of 0.7; the game minutes,
+  its regaining of 0.05, each bought rank of „Szybkie gojenie” adding 0.05 to it, the regaining
+  stopping at full health with the ranks bought and standing still in a minute of combat whatever
+  they are; a gathering's 10 game minutes and chance of 0.7; the game minutes,
   sticks and minutes of burning of making, lighting and feeding a campfire and of lighting a
   stick, the warmth of a burning campfire and of a burning stick, and the game minutes, berry and
-  satiety of eating. For the ranks of „Szybkie gojenie”, which no test holds yet, an agent compares
-  a change with the part no test holds:
-  - complies: a body that is neither chilled nor starving, with two ranks of „Szybkie gojenie”
-    bought, regaining 0.15 health in a game minute outside combat, and one with none regaining 0.05
-  - violates: a body with ranks of „Szybkie gojenie” bought regaining only 0.05, or a rank adding
-    another amount than 0.05
+  satiety of eating.
 - **Origin:** none
 
 *Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The regain of health by itself is the number of a body with no bought rank of „Szybkie gojenie”, whose ranks add to it, so the number stays the body's own and a branch of a tree raises it, as the branches of other trees raise the numbers of their actions. The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
@@ -7028,19 +7025,18 @@ The character uses „Ucisk — {rzecz}” as well, an action of combat that the
   stick in the main hand taking that stick, one with an empty main hand and a stick in the backpack
   taking the stick into the hand and striking in the same turn, and none taking a stick from the
   backpack while the hand holds one or from a pocket; „Załóż — patyk” in a combat turn taking that
-  turn of the character. For a creature's dodge, the end of an encounter and „Ucisk — {rzecz}”,
-  which no test holds yet, an agent compares a change with the part no test holds:
+  turn of the character; „Ucisk — Opatrunek” in a combat turn using up the bandage of the first
+  pocket that holds one, and with none in a pocket taking one from the backpack through the first
+  empty pocket in the same turn, an item that fits no pocket taken into none and refused, giving
+  back what „Opatrz — Opatrunek” gives with the same bandage, the bought ranks of „Mocniejszy zwój”
+  included, never above full health, and passed over at full health, opened to the character that
+  bought its branch alone, while „Opatrz” stays out of combat. For a creature's dodge and the end
+  of an encounter, an agent compares a change with the part no test holds:
   - complies: a dodge of the character answered by a dodge of the wolf, the reduction then taking 5
     off the wolf's next bite; a reduction set in the last turn of an encounter gone at the first bite
-    of the next; „Ucisk — Opatrunek” in a combat turn at 40 health with a bandage in a pocket giving
-    back what „Opatrz — Opatrunek” gives and using up that bandage, with an empty pocket and a
-    bandage in the backpack taking the bandage into the pocket and giving the health in the same
-    turn, at 90 health giving back only up to 100, and at 100 health not carried out
+    of the next
   - violates: a wolf dodge consuming the character’s reduction; a reduction left from one encounter
-    lowering the first bite of the next; „Ucisk — Opatrunek” using up a bandage from the backpack
-    while a pocket holds one, giving back more or less than „Opatrz — Opatrunek” does with the same
-    bandage, raising health above full or being carried out at full health; „Opatrz” carried out in
-    a combat turn
+    lowering the first bite of the next
 - **Origin:** none
 
 *Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection. The strike takes its weapon from the hand of the gear, which is where the character wields it (D-451), and from the backpack only to fill an empty hand, so that without a rule of a program putting something into the hand the strike takes the stick itself (D-457). The numbers of the actions and of the ranks of their branches are those of the predecessor game, loop, taken as the requirement, except the ranks of the two combat branches „Mocniejszy cios” and „Cięższy kop”, which D-379 sets. „Ucisk — {rzecz}” is a dressing of its own that a turn of combat can hold, so the player writes a rule of combat for it with a threshold other than that of a rule outside combat, and „Opatrz”, whose ten minutes a fight does not give, stays outside combat (D-140, D-145). It takes its piece from a pocket, where the gear keeps what the character has at hand (D-456), refilled from the backpack as the strike refills the hand (D-457), and it gives back the health of „Opatrz” with the same item, so that the healing of an item stands in one place. Accepted with it: the player writes two rules for one bandage, one for the pocket in combat and one for the backpack outside it; a bandage in a turn gives back as much health as several bites of the wolf take, so a character with a stock of bandages outlasts almost every fight with the wolf; the balance of loop was measured in a different game, so this one can come out easier or harder; with two ranks of the dodge branch the dodge takes the whole strike of the wolf; later tuning is a change of data and tests.
@@ -7060,13 +7056,8 @@ A stick stays in the main hand after a strike, with its condition unchanged.
   health was lost to cold, to hunger or to a blow of combat, and never above full health; „Opatrz”
   not carried out in combat or at full health, and the piece staying in the backpack where health
   is full when it ends; the stick staying in the main hand after an encounter fought with it, with
-  nothing of it changed. For the increase of the healing by „Mocniejszy zwój”, which no test holds
-  yet, an agent compares a change with the part no test holds:
-  - complies: „Opatrz — Opatrunek” at 20 health with two ranks of „Mocniejszy zwój” bought giving
-    back 10 health more than with none
-  - violates: „Opatrz — Opatrunek” giving back the same health with ranks of „Mocniejszy zwój”
-    bought as with none, or the increase held in the code of the action rather than read from the
-    bought ranks
+  nothing of it changed; „Opatrz — Opatrunek” giving back 5 health more for each bought rank of
+  „Mocniejszy zwój”, and no more than full health with the ranks bought.
 - **Origin:** none
 
 *Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; breakage would cost a different balance. A bandage gives health back whatever took it, so the game keeps no account of wounds apart from the rest of the health. The action takes its piece and gives its health when it ends, as a lighting takes its sticks when it ends (D-63), so an interruption costs time alone, and it cannot be carried out at full health, as „Zapal — ognisko” cannot be at a burning campfire, so a rule „Zawsze → Opatrz — Opatrunek” never stops a program at full health. A bought rank of „Mocniejszy zwój” raises what a bandage gives back, as a bought branch of another tree raises what its action does, so the healing is one number of the thing and the ranks add to it. Accepted with it: below full health such a rule uses up a whole bandage for a point of health, and the condition „Zdrowie poniżej”, which defends against it, is known to the player only from the first wolf attack (D-143); a bandage gives health back on the cold maps too, which is a stock for a program, though it does not save a streak, since a game minute with health lost to cold or hunger sets the streak to zero.
@@ -7103,7 +7094,8 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
   map run and its paragraph in `text` standing as one entry of the chronicle at the game minute of
   the attack, with no entry for an exchange of blows or the end of the encounter and nowhere in the world
   area, giving the creature's starting health and program before the turns and each action and its
-  outcome in order with the result after them; the paragraph standing through „Wznów”, an edit and a
+  outcome in order with the result after them, the outcome of a turn of „Ucisk” being the mage's own
+  health after it, cut down to a whole number as the body row cuts it, with no creature's health; the paragraph standing through „Wznów”, an edit and a
   load until the next attack moves it or „Restart” or „Zakończ” removes it, and a completion before
   the turns keeping the attack description with no outcome; the paragraph in a section of its own in
   the end-of-run window, outside „Ostatnie minuty”; „Teraz” reading „Walczy z wilkiem” in every
@@ -7149,13 +7141,9 @@ An attacking creature appears in the encounter's text and in the scene, and the 
 - **Relations:** derives from D-120 · derives from D-144
 - **Verification:** tests: „Uderz — patyk” growing „Walka bronią jednoręczną”, „Kopnij” growing
   „Kopanie” and „Odskocz” growing „Unik przed ciosem”, each of these skills among the elemental
-  mage's predispositions. For „Ucisk — {rzecz}” growing „Opatrywanie małych ran”, which no test
-  holds yet, an agent compares a change with the part no test holds:
-  - complies: „Ucisk — Opatrunek” ending in effect adding one practice to „Opatrywanie małych
-    ran”, the skill that „Wytwórz — Opatrunek” and „Opatrz — Opatrunek” grow too, and the skill
-    standing among the elemental mage's predispositions
-  - violates: „Ucisk — Opatrunek” growing a skill other than „Opatrywanie małych ran”, or no
-    skill; „Opatrywanie małych ran” left out of the elemental mage's predispositions
+  mage's predispositions; „Ucisk — {rzecz}” with every target of healing growing „Opatrywanie
+  małych ran”, the skill that „Wytwórz — Opatrunek” and „Opatrz — Opatrunek” grow too, and that skill
+  among the elemental mage's predispositions.
 - **Origin:** none
 
 *Rationale:* Combat actions belong to skills like other learned actions, so predispositions govern their availability. „Ucisk — {rzecz}” dresses a wound as „Opatrz — {rzecz}” does, so it grows the skill of the dressing and of the making of the bandage, and a mage that dresses a wound outside combat can do so in it.
@@ -7352,7 +7340,9 @@ An action ending in effect adds one practice to the character skill its pair of 
   also of a scout revealing seven tiles, of a gathering, also of two pieces, of „Obchód”, of a
   crafting, a feeding, a lighting of a campfire and of a stick, of eating, also at full satiety,
   and of each blow with a stick, the blows of a combat added in the game minute it resolves, and of
-  each dodge that removes damage from a strike; none for a gathering that misses, an action with no
+  each dodge that removes damage from a strike; one practice of „Opatrywanie małych ran” for a
+  crafting and a tending of the bandage and for a turn of „Ucisk”, none for a crafting of another
+  item; none for a gathering that misses, an action with no
   effect, or a dodge that no strike follows. For the practice of a kick, an agent compares a change
   with the part no test holds:
   - complies: a kick that deals damage adding one practice to „Kopanie” in the turn it lands
@@ -7391,7 +7381,10 @@ A character skill tree with all its branches enters the Understanding in the gam
 - **Verification:** tests: the tree of a character skill entering the Understanding in the game
   minute that discovers the first action it grows, the gathering tree together with „Obchód”, and
   the tree of Eksploracja, whose first action the Understanding holds from the start, with the first
-  finished exploration, in the simulation and in the data of the trees and actions; the band of a
+  finished exploration, in the simulation and in the data of the trees and actions; a tree whose
+  first action is a pair of verb and item entering with the pair whose verb and item the
+  Understanding holds after the minute, one of them new in it, and by neither the verb nor the item
+  alone; the band of a
   discovery naming each tree beside the actions and items, followed by the sentence of the
   conditions.
 - **Origin:** none
@@ -7471,18 +7464,16 @@ Below an open tree each branch gives its name, rank and maximum rank, descriptio
   practice of the map run going on included, and nowhere where it gives none or the character is in
   no earning loop; the trees folded at each building of the screen and opened and folded again by a
   click on the row of a tree; each branch's name, rank and maximum rank and description, „teraz → po
-  kupnie · cena” for a numerical branch, the price alone for „Zwiad”, and „Kup” disabled for too few
+  kupnie · cena” for a numerical branch, the price alone for „Zwiad” and for „Ucisk” with no
+  before-and-after value, and „Kup” disabled for too few
   points and for a full branch; a full branch keeping its present value alone. For the heading of the
-  section, the keyboard on the fold of a row in a real browser, the price alone of „Obchód” and
-  „Czysty płomień” and the price alone of „Ucisk”, which no test holds yet, an agent compares a
-  change with the part no test holds:
+  section, the keyboard on the fold of a row in a real browser and the price alone of „Obchód” and
+  „Czysty płomień”, an agent compares a change with the part no test holds:
   - complies: the section headed „Umiejętności”; Enter and Space on the fold of the row of a tree
     opening the tree in the browser, as the browser's own click of a native button; „Obchód” at
-    rank 0 reading its description and „cena 3” with no before-and-after values; „Ucisk” at rank 0
-    reading its description and „cena 3” with no before-and-after values
+    rank 0 reading its description and „cena 3” with no before-and-after values
   - violates: the section standing with no heading „Umiejętności”; a key handler on the fold that
-    stops Enter or Space; „false → true” beside „Czysty płomień”; „teraz … → po kupnie …” beside
-    „Ucisk”
+    stops Enter or Space; „false → true” beside „Czysty płomień”
 - **Origin:** none
 
 *Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. A tree read as one row in columns with a bar shows at once how far each tree is from its next point, and its words stand where the eye finds them in every row, as in the predecessor game, loop, whose screen of a character was the measure of this one. Folded trees keep all the rows and their bars in sight at once, with nine trees and eighteen branches. The mark of the practice waiting in an earning loop tells the player, at the tree, that a point is already earned and waits to be taken; its words say „czeka w pętli” and not „po zatrzymaniu”, as in loop, because „Odbierz” pays that practice too (D-189), and it stands in `text`, as the practice to take stands in the report of D-246, since green says that something works or is active (D-39). Accepted with it: to buy a rank the player opens the tree first, one click more than with the branches always shown; the mark in `text` is easier to miss than a green one; no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
@@ -7583,28 +7574,24 @@ Each rank of a branch of „Opatrywanie małych ran” gives the effect below, a
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-191
-- **Verification:** tests: the thresholds of eight of the nine character skills, each giving a level
+- **Verification:** tests: the thresholds of the nine character skills, each giving a level
   and a point; the effects of „Pełna garść”, „Obchód”, „Oszczędne dorzucanie”, „Zgrabna konstrukcja”,
   „Szybka ręka”, „Wprawny krok”, „Długi krok”, „Mocniejszy cios”, „Cięższy kop”, „Zwinny odskok”
   and „Szybki posiłek”, and „Wprawne oko” turning a draw just above the chance of a gathering into
   a hit; the prices of „Mocniejszy cios”, „Cięższy kop” and „Zwiad”, the first two of „Zgrabna
   konstrukcja” together and the third above 1, the first two of „Wprawny krok” within 3 points, the
   first of „Oszczędne dorzucanie” and „Szybki posiłek”, the third of „Długi krok”, and the one rank
-  of „Czysty płomień”. For the size of the gain of „Wprawne oko”, the other prices, and these
-  numbers standing in the data of the character skills, and for the threshold, the effects and the
-  prices of „Opatrywanie małych ran”, which no test holds yet, an agent compares a change with the
-  part no test holds:
+  of „Czysty płomień”; the four branches of „Opatrywanie małych ran” with their prices, „Mocniejszy
+  zwój” adding 5 health to a bandage and „Szybkie gojenie” 0.05 health regained by itself for each
+  rank, „Wprawna dłoń” taking 2 minutes off „Opatrz” for each rank, and „Ucisk” costing 3 and
+  opening its action to its buyer alone. For the size of the gain of „Wprawne oko”, the other
+  prices, and these numbers standing in the data of the character skills, an agent compares a
+  change with the part no test holds:
   - complies: „Obchód” bought for 3 points; „Zwinny odskok” bought to its second rank for 1 and then
-    1 point; the thresholds read by the simulation from the data of the character skills;
-    „Opatrywanie małych ran” giving a level and a point at 10, 28, 60 and 110 practice; „Mocniejszy
-    zwój” bought to its third rank for 1, 1 and then 2 points, each rank adding 5 health to a
-    bandage; „Wprawna dłoń” taking 2 minutes off „Opatrz” for each rank; „Szybkie gojenie” bought
-    for 2 and then 3 points; „Ucisk” bought for 3 points
+    1 point; the thresholds read by the simulation from the data of the character skills
   - violates: a rank of „Wprawne oko”, „Pełna garść”, „Szybka ręka” or „Zwinny odskok” bought for a
     price other than the one listed; „Wprawne oko” adding 4 percentage points; a threshold written
-    into the code of the simulation rather than into the data; a threshold of „Opatrywanie małych
-    ran” other than 10, 28, 60 or 110; „Szybkie gojenie” bought to its second rank for 2 points;
-    „Ucisk” bought for a price other than 3; „Mocniejszy zwój” adding 4 health a rank
+    into the code of the simulation rather than into the data
 - **Origin:** none
 
 *Rationale:* the curves, the effects and the prices of the other skills are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). The curve and the three numerical branches of „Opatrywanie małych ran” are those of that game's data as well, and „Ucisk”, a branch with no number to raise, costs 3 as the other branches that open an action or carry no number do, „Obchód”, „Czysty płomień” and „Zwiad”. The numbers of the three combat trees and their two branches are not the old loop game's: they are set lower so that the points of combat can be earned on the first maps with combat, and are to be corrected either way when more maps are balanced. Accepted with it: the balance of the old numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; „Mocniejszy zwój” and „Szybkie gojenie” are two new kinds of effect of a branch, a healing from a bandage and a regain of health by itself, in the code and in the tests, and „Szybkie gojenie” heals with no bandage as well, so a tree grown on bandages helps a player who carries none; once progress carries over between versions of the game, lowering this generosity takes points from players. This decision forbids other numbers until it is changed, so tuning the numbers later is a change of this decision as well as of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
@@ -7700,10 +7687,11 @@ tile, is open to every character, and an archetype never filters items.
 - **Relations:** derives from D-119
 - **Verification:** tests: a character skill left out of the predispositions taking out of the
   repertoire every action whose pair of verb and target it grows, and only those; with no
-  predisposition the actions no character skill grows, the walks and „Wędruj”, staying open, „Wytwórz”
-  and „Opatrz” with the bandage as the target, which „Opatrywanie małych ran” grows, leaving the
-  repertoire with that skill, and conditions and items never filtered; an action opened by a branch open only to the character that
-  bought the branch, in the program editor and in the simulation.
+  predisposition the actions no character skill grows, the walks and „Wędruj”, staying open,
+  „Wytwórz” and „Opatrz” with the bandage as the target, which „Opatrywanie małych ran” grows,
+  leaving the repertoire with that skill, and conditions and items never filtered; an action opened
+  by a branch open only to the character that bought the branch, in the program editor and in the
+  simulation.
 - **Origin:** none
 
 *Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
@@ -8400,7 +8388,7 @@ A program rule whose condition holds and whose action the game's check refuses n
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-309 · derives from D-310 · derives from D-457 · derives from D-458
-- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule; „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack reading „brakuje {ile} × {rzecz}”, with the first piece the backpack lacks in the recipe's order, and „Opatrz — {rzecz}” at full health reading „zdrowie pełne” before „brakuje …”, a rule refused at full health passed over for the next; the strike short of its stick with none in the main hand or the backpack, and not with a stick in the hand alone; „Załóż — {rzecz}” reading „brakuje 1 × {rzecz}”, „już założone: {rzecz}” or „kieszenie pełne”, the state of the slot before the lack in the backpack. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
+- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule; „Wytwórz — {rzecz}” and „Opatrz — {rzecz}” short of a thing in the backpack reading „brakuje {ile} × {rzecz}”, with the first piece the backpack lacks in the recipe's order, and „Opatrz — {rzecz}” at full health reading „zdrowie pełne” before „brakuje …”, a rule refused at full health passed over for the next; the strike short of its stick with none in the main hand or the backpack, and not with a stick in the hand alone; „Ucisk — {rzecz}” in a combat turn reading „zdrowie pełne” at the health of the turn before „brakuje 1 × {rzecz}”, a bandage in a pocket or in the backpack enough, a rule refused at full health passed over for the next; „Załóż — {rzecz}” reading „brakuje 1 × {rzecz}”, „już założone: {rzecz}” or „kieszenie pełne”, the state of the slot before the lack in the backpack. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
   - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
   - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
@@ -8419,7 +8407,9 @@ An action is a verb with a target, and the targets a verb takes follow from the 
   property of the items in the data, in the simulation, in the pick of the rule panel and in the
   balance instrument, a second item laid in a test or in an overlay alone becoming a target of each
   and moss of neither, and the check of a program refusing either verb with a target the data do
-  not give; a program of every kind of action of today, as a previous save of version 9 holds it,
+  not give; the targets of „Ucisk” following the healing property of the items in the data, a second
+  item laid in a test becoming one, and the check of a program refusing „Ucisk” with another item or
+  none; a program of every kind of action of today, as a previous save of version 9 holds it,
   read and appended with exactly its content, each such kind of action, „Idź — ognisko” and „Zjedz —
   jagoda” among them, keeping the kind it has.
 - **Origin:** none
@@ -10352,9 +10342,9 @@ An action whose price its target gives, „Wytwórz” and „Opatrz” with an 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310 · derives from D-443
-- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's; for „Wytwórz” and „Opatrz” with an item as the target, no price at their cells of the pick of actions, the price of the action with each target, the recipe's pieces for „Wytwórz” and one piece of the target for „Opatrz”, in brackets after the target's name in the pick of its target, the price of the chosen target in the action field, and no price in the row of the rule. For „Ucisk” with an item as the target, which no test holds yet, an agent compares a change with the part no test holds:
-  - complies: the cell of „Ucisk” in the pick of actions showing no price, the pick of its target showing „Opatrunek (1 opatrunek)” and the action chosen in the panel „Ucisk — Opatrunek (1 opatrunek)”
-  - violates: the cell of „Ucisk” showing „(1 opatrunek)” after its name; the row of a rule with „Ucisk — Opatrunek” showing a price
+- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's; for „Wytwórz” and „Opatrz” with an item as the target, no price at their cells of the pick of actions, the price of the action with each target, the recipe's pieces for „Wytwórz” and one piece of the target for „Opatrz”, in brackets after the target's name in the pick of its target, the price of the chosen target in the action field, and no price in the row of the rule; the same for „Ucisk” with an item as the target, its price one piece of the target, its cell of the pick showing no price, the pick of its target showing „Opatrunek (1 opatrunek)” and the action chosen in the panel „Ucisk — Opatrunek (1 opatrunek)”. For the row of a rule with „Ucisk”, which no test holds yet, an agent compares a change with the part no test holds:
+  - complies: the row of a rule with „Ucisk — Opatrunek” standing with the action's name and no price
+  - violates: the row of a rule with „Ucisk — Opatrunek” showing a price
 - **Origin:** none
 
 *Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use. „Ucisk” uses up the piece of its target as „Opatrz” does, so its price is read where that of „Opatrz” is. An action whose price its target gives shows the price at each target, so the player compares the targets before choosing one; while a verb has a single target, that gives the player nothing more than the chosen action does.
@@ -11651,7 +11641,9 @@ resolve.
   pasuje” when a wait starts and none for the game minutes it lasts, a wait after an attack and a
   wait after a load in an action each giving its entry; one entry „Bierze patyk z plecaka do ręki”
   for the refill of an empty main hand in a turn of an encounter, with no actor, at the game minute
-  the turns resolve and after the paragraph of its encounter, and none for a turn with no refill.
+  the turns resolve and after the paragraph of its encounter, and none for a turn with no refill;
+  one entry „Bierze opatrunek z plecaka do kieszeni” for the refill of an empty pocket by a turn of
+  „Ucisk”, and none for a turn of „Ucisk” with no refill.
 - **Origin:** none
 
 *Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
