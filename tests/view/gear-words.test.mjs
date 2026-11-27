@@ -192,7 +192,7 @@ test("the chronicle writes the refill of an empty pocket by „Ucisk” as a lin
   assert.deepEqual(eventEntry(turn(true), null), {
     kind: "action",
     minute: 15,
-    text: "Bierze opatrunek z plecaka do kieszeni",
+    text: "Bierze przedmiot z plecaka do kieszeni",
     role: "text",
   });
   assert.equal(eventEntry(turn(false), null), null);

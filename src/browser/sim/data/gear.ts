@@ -26,7 +26,9 @@ export const GEAR_PLACES = {
   pocket: {
     name: "Kieszeń",
     line: "pod ręką",
-    refill: "bierze opatrunek z plecaka do kieszeni",
+    // No item named: any item the data fit to a pocket is taken into it, and the data hold no form of
+    // an item's name that fits a sentence.
+    refill: "bierze przedmiot z plecaka do kieszeni",
   },
 } as const satisfies Record<string, PlaceRow>;
 
@@ -34,8 +36,9 @@ export const GEAR_PLACES = {
 export type GearPlace = keyof typeof GEAR_PLACES;
 
 /**
- * The slot a combat action that uses an item, „Uderz — patyk”, takes its piece from, and no other
- * (D-456): the main hand.
+ * The slot a combat action that uses an item and names no place of its own in its data, „Uderz —
+ * patyk”, takes its piece from, and no other (D-456): the main hand. An action that names a place, as
+ * „Ucisk” names the pocket, takes its piece from the slots of that place.
  */
 export const WIELDING_SLOT = "mainHand" satisfies GearSlot;
 
