@@ -368,7 +368,7 @@ test("the list of accounts marks no item of the menu bar", () => {
 
 test("Siedziba and the screen of a character mark the headquarters item of the menu bar", () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem(HEADQUARTERS), "headquarters");
   assert.equal(
     markedMenuItem({ kind: "character", characterId: 2 }),
@@ -383,13 +383,13 @@ test("Programy and a program of Programy mark the programs item of the menu bar"
 });
 
 test("the screen of a map run marks no item of the menu bar", () => {
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem({ kind: "run", characterId: 2 }), null);
 });
 
 test("the maps screen and a map's screen mark the maps item of the menu bar", () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-280 "The card of a character on Siedziba is, whole, a link named by the character's name to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem(MAPS_SCREEN), "maps");
   assert.equal(markedMenuItem({ kind: "map", mapId: "forest" }), "maps");
 });
