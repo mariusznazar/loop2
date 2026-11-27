@@ -310,7 +310,7 @@ test("an open tree stays open when the game state is drawn again, and a screen b
 });
 
 // Catches a level, practice, points, a rank bought or a button of buying drawn on the screen, and a
-// control other than the rows of the trees; and a draw that writes anything into the game state.
+// control other than the folds of the trees; and a draw that writes anything into the game state.
 test("the screen shows no level, practice, points or buying, and changes nothing in the game state", async () => {
   // decision: D-416 "The screen Wiedza shows the actions, items and creatures in the Understanding and the skill trees to read, with no levels and no buying"
   await withPage(async (page) => {
@@ -341,7 +341,7 @@ test("the screen shows no level, practice, points or buying, and changes nothing
     const shown = page.root.textContent;
     for (const word of ["poziom", "wprawa", "punkty", "Kup", "→", "kupion"])
       assert.ok(!shown.includes(word), `no "${word}" on the screen`);
-    assert.equal(all(page.root, "button").length, 2, "only the rows of trees");
+    assert.equal(all(page.root, "button").length, 2, "only the folds of trees");
     assert.ok(
       all(page.root, "button").every((button) =>
         button.hasAttribute("aria-expanded"),
